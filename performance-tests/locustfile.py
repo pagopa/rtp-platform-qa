@@ -1,4 +1,6 @@
-from locust import HttpUser, task, between
+from locust import between
+from locust import HttpUser
+from locust import task
 
 
 class WebsiteUser(HttpUser):
@@ -6,4 +8,4 @@ class WebsiteUser(HttpUser):
 
     @task
     def load_test(self):
-        self.client.get("/")
+        self.client.get('/')

@@ -1,6 +1,6 @@
 from behave import given
-from behave import when
 from behave import then
+from behave import when
 
 
 @given('the Ente Creditore is on the web page')
