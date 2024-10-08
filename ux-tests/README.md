@@ -1,0 +1,4 @@
+Run:
+```
+playwright install
+```
