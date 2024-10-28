@@ -1,0 +1,45 @@
+name: Run Tests
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 1 * * *'  # Scheduled every day at 01:00 UTC
+  workflow_dispatch:  # Allows manual run
+
+jobs:
+  Integration_test:
+    runs-on: ubuntu-latest
+    name: Run Tests
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+      - name: Setup Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r bdd-tests/requirements.txt
+          pip install -r functional-tests/requirements.txt
+          pip install -r fuzz-tests/requirements.txt
+          pip install -r performance-tests/requirements.txt
+          pip install -r ux-tests/requirements.txt
+          playwright install
+          pip install -e .
+      - name: 'Run functional tests'
+        run: |
+          pytest functional-tests/tests/
+      - name: 'Run BDD tests'
+        run: |
+          behave bdd-tests/features/
+      - name: 'Run UX tests'
+        run: |
+          pytest ux-tests/tests/
+      - name: 'Run performance tests'
+        run: |
+          locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
+      - name: 'Run fuzz tests'
+        run: |
+          pytest fuzz-tests/test_fuzz.py
