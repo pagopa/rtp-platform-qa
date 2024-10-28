@@ -39,7 +39,25 @@ It's recommended to use a virtual environment to manage dependencies.
   source .venv/bin/activate
   ```
 
-### 3. Install Dependencies
+3. Upgrade pip:
+
+  ```bash
+  pip install --upgrade pip
+  ```
+
+3. Install local packages:
+
+  ```bash
+  pip install -r requirements
+  ```
+
+4. Install common dependencies:
+
+  ```bash
+  pip install -e .
+  ```
+
+### 3. Install specific dependencies for test type
 
 Each test type has its own requirements.txt file. You can install dependencies for individual test types using the
 following commands:
