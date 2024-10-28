@@ -27,8 +27,9 @@ jobs:
           pip install -r fuzz-tests/requirements.txt
           pip install -r performance-tests/requirements.txt
           pip install -r ux-tests/requirements.txt
-          npx playwright install --with-deps
           pip install playwright
+          playwright install-deps
+          playwright install
           pip install -e .
       - name: 'Run functional tests'
         run: |
