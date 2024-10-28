@@ -6,3 +6,4 @@ default_timeout: 5000
 long_timeout: 60000
 iso_date_format: '%Y-%m-%dT%H:%M:%S.000%z'
 landing_page_path: "https://rtp.uat.cstar.pagopa.it"
+send_rtp_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/v1/rtps"
