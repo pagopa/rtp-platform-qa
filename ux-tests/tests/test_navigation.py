@@ -7,7 +7,8 @@ from utils.dataset import generate_rtp_data
 @pytest.fixture(scope='session')
 def playwright_browser():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        # browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
         yield browser
         browser.close()
 
@@ -26,15 +27,13 @@ def test_rtp_form_submission(page):
 
     page.fill('input[id="noticeNumber"]', rtp_data['noticeNumber'])
     page.fill('input[id="amount"]', rtp_data['amount'])
-    page.fill('textarea[id="description"]', rtp_data['description'])
-    page.fill('input[id="expiryDate"]', rtp_data['expiryDate'])
-    page.fill('input[id="payee.name"]', rtp_data['payeeCompanyName'])
-    page.fill('input[id="payee.id"]', rtp_data['payeeId'])
+    page.fill('input[id="description"]', rtp_data['description'])
+    page.fill('input[placeholder="DD/MM/YYYY"]', rtp_data['expiryDate'])
+    page.fill('input[id="payeeCompanyName"]', rtp_data['payeeCompanyName'])
+    page.fill('input[id="payee"]', rtp_data['payeeId'])
     page.fill('input[id="payerId"]', rtp_data['payerId'])
 
-    page.click('button[id="submit"]')
+    page.click('button[id="paymentNoticeButtonContinue"]')
 
-    response_message = page.locator('#response')
-    assert not response_message.text_content() == 'An error occurred: Failed to fetch'
-    assert not response_message.text_content() == 'Error creating the request to pay.'
-    assert response_message.text_content() == 'Request to pay created successfully!'
+    popup_message = page.locator("div[role='dialog'] p.MuiDialogContentText-root")
+    assert popup_message.text_content() == 'Request to pay created successfully!'
