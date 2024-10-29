@@ -7,8 +7,7 @@ from utils.dataset import generate_rtp_data
 @pytest.fixture(scope='session')
 def playwright_browser():
     with sync_playwright() as p:
-        # browser = p.chromium.launch(headless=True)
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(headless=True)
         yield browser
         browser.close()
 
