@@ -21,11 +21,14 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          pip install -r requirements.txt
           pip install -r bdd-tests/requirements.txt
           pip install -r functional-tests/requirements.txt
           pip install -r fuzz-tests/requirements.txt
           pip install -r performance-tests/requirements.txt
           pip install -r ux-tests/requirements.txt
+          pip install playwright
+          playwright install-deps
           playwright install
           pip install -e .
       - name: 'Run functional tests'
