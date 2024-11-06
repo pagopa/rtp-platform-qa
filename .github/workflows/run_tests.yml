@@ -24,7 +24,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r bdd-tests/requirements.txt
           pip install -r functional-tests/requirements.txt
-          pip install -r fuzz-tests/requirements.txt
+          pip install -r contract-tests/requirements.txt
           pip install -r performance-tests/requirements.txt
           pip install -r ux-tests/requirements.txt
           pip install playwright
@@ -43,6 +43,6 @@ jobs:
       - name: 'Run performance tests'
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
-      - name: 'Run fuzz tests'
+      - name: 'Run contract tests'
         run: |
-          pytest fuzz-tests/test_fuzz.py
+          pytest contract-tests/* --disable-warnings --alluredir allure-results
