@@ -86,10 +86,10 @@ pip install -r ux-tests/requirements.txt
 pip install -r performance-tests/requirements.txt
 ```
 
-#### Fuzz Tests:
+#### Contract Tests:
 
 ```bash
-pip install -r fuzz-tests/requirements.txt
+pip install -r contract-tests/requirements.txt
 ```
 
 ## Test Overview
@@ -149,15 +149,15 @@ Performance tests help evaluate how the platform performs under heavy performanc
 locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
 ```
 
-### Fuzz Tests
+### Contract Tests
 
-Fuzz tests use Hypothesis to generate random input values to test the robustness of various functions and handle
-unexpected input cases.
+Contract tests use Schemathesis to generate random input values to test the adhesion to OpenAPI specification of the
+service.
 
-- Location: fuzz-tests/
-- Tool: Hypothesis
+- Location: contract-tests/
+- Tool: Schemathesis
 - Command to run:
 
 ```bash
-pytest fuzz-tests/test_fuzz.py
+pytest contract-tests/* --disable-warnings --alluredir allure-results
 ```
