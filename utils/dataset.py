@@ -11,7 +11,7 @@ def generate_rtp_data():
 
     payer_fiscal_code = ''.join([str(random.randint(0, 9)) for _ in range(11)])
 
-    amount = f"{random.randint(0, 999999)}"
+    amount = round(random.uniform(0, 99999999), 2)
 
     description = ''.join(random.choices(string.ascii_letters + string.digits, k=random.randint(0, 140)))
 

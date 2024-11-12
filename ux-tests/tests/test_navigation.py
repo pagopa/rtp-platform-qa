@@ -1,7 +1,11 @@
 import pytest
+from playwright.sync_api import expect
 from playwright.sync_api import sync_playwright
 
+from config.configuration import config
 from utils.dataset import generate_rtp_data
+
+page_url = config.landing_page_path
 
 
 @pytest.fixture(scope='session')
@@ -22,10 +26,10 @@ def page(playwright_browser):
 def test_rtp_form_submission(page):
     rtp_data = generate_rtp_data()
 
-    page.goto('https://rtp.dev.cstar.pagopa.it/')
+    page.goto(page_url)
 
     page.fill('input[id="noticeNumber"]', rtp_data['noticeNumber'])
-    page.fill('input[id="amount"]', rtp_data['amount'])
+    page.fill('input[id="amount"]', str(rtp_data['amount']))
     page.fill('input[id="description"]', rtp_data['description'])
     page.fill('input[placeholder="DD/MM/YYYY"]', rtp_data['expiryDate'])
     page.fill('input[id="payeeCompanyName"]', rtp_data['payeeCompanyName'])
@@ -35,4 +39,26 @@ def test_rtp_form_submission(page):
     page.click('button[id="paymentNoticeButtonContinue"]')
 
     popup_message = page.locator("div[role='dialog'] p.MuiDialogContentText-root")
-    assert popup_message.text_content() == 'Request to pay created successfully!'
+    expect(popup_message).to_be_visible()
+    expect(popup_message).to_have_text('Request to pay created successfully!')
+
+
+def test_comma_not_allowed(page):
+    rtp_data = generate_rtp_data()
+
+    page.goto(page_url)
+
+    page.fill('input[id="noticeNumber"]', rtp_data['noticeNumber'])
+    page.fill('input[id="amount"]', str(rtp_data['amount']).replace('.', ','))
+    page.fill('input[id="description"]', rtp_data['description'])
+    page.fill('input[placeholder="DD/MM/YYYY"]', rtp_data['expiryDate'])
+    page.fill('input[id="payeeCompanyName"]', rtp_data['payeeCompanyName'])
+    page.fill('input[id="payee"]', rtp_data['payeeId'])
+    page.fill('input[id="payerId"]', rtp_data['payerId'])
+
+    validation_message = page.locator('#amount-helper-text')
+    expect(validation_message).to_have_text('Enter a valid number. To separate decimals use the dot (.)')
+
+    page.click('button[id="paymentNoticeButtonContinue"]')
+    popup_message = page.locator("div[role='dialog'] p.MuiDialogContentText-root")
+    expect(popup_message).not_to_be_visible()
