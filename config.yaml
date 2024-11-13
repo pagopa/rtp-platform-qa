@@ -8,4 +8,5 @@ iso_date_format: '%Y-%m-%dT%H:%M:%S.000%z'
 landing_page_path: "https://rtp.uat.cstar.pagopa.it"
 rtp_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/v1"
 send_rtp_path: "/rtps"
-rtp_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/openapi.yaml'
+create_rtp_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/openapi.yaml'
+activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/activation.yaml'
