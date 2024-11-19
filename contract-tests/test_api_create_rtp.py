@@ -1,11 +1,9 @@
-import pytest
-import requests
 import schemathesis
 from schemathesis import Case
 
 from config.configuration import config
 
-SPEC_URL = config.rtp_api_specification
+SPEC_URL = config.create_rtp_api_specification
 BASE_URL = config.rtp_base_url_path
 
 schema = schemathesis.from_uri(SPEC_URL, base_url=BASE_URL)
