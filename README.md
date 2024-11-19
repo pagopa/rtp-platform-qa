@@ -159,5 +159,5 @@ service.
 - Command to run:
 
 ```bash
-pytest contract-tests/* --disable-warnings --alluredir allure-results
+pytest contract-tests/*.py --disable-warnings --alluredir allure-results
 ```
