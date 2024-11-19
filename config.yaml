@@ -1,4 +1,4 @@
-SECRET_PATH: "conf/.secrets.yaml"
+SECRET_PATH: "config/.secrets.yaml"
 # Default environment. Overridden if specified through environment variable (prefixed by conf.RTP_ENV_VAR_PREFIX current value)
 TARGET_ENV: "uat"
 API_KEY_HEADER: "Ocp-Apim-Subscription-Key"
@@ -10,3 +10,4 @@ rtp_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/v1"
 send_rtp_path: "/rtps"
 create_rtp_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/openapi.yaml'
 activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/activation.yaml'
+mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'

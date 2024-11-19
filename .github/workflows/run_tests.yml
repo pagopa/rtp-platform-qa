@@ -31,6 +31,11 @@ jobs:
           playwright install-deps
           playwright install
           pip install -e .
+      - name: 'Load secrets'
+        run: echo "$SECRETS" >> ./config/.secrets.yaml
+        env:
+          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
+        id: load_secrets
       - name: 'Run functional tests'
         run: |
           pytest functional-tests/tests/
