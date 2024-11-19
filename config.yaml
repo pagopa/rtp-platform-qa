@@ -6,7 +6,8 @@ default_timeout: 5000
 long_timeout: 60000
 iso_date_format: '%Y-%m-%dT%H:%M:%S.000%z'
 landing_page_path: "https://rtp.uat.cstar.pagopa.it"
-rtp_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/v1"
+rtp_creation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/"
+activation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/activation"
 send_rtp_path: "/rtps"
 activation_path: "/activations"
 create_rtp_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/openapi.yaml'

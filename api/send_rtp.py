@@ -2,7 +2,7 @@ import requests
 
 from config.configuration import config
 
-SEND_RTP_URL = config.rtp_base_url_path + config.send_rtp_path
+SEND_RTP_URL = config.rtp_creation_base_url_path + config.send_rtp_path
 
 
 def send_rtp(rtp_payload):
