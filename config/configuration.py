@@ -1,5 +1,7 @@
 """Parse configuration file to obtain current settings.
 """
+import logging
+
 from dynaconf import Dynaconf
 
 IDPAY_ENV_VAR_PREFIX = 'RTP'
@@ -10,3 +12,14 @@ config = Dynaconf(
     envvar_prefix=IDPAY_ENV_VAR_PREFIX,
     settings_files=['config.yaml'],
 )
+
+# Load the secrets for the specified environment
+secrets = {}
+
+try:
+    all_secrets = Dynaconf(settings_files=config.SECRET_PATH)
+    if config.TARGET_ENV in all_secrets:
+        secrets = all_secrets[config.TARGET_ENV]
+except AttributeError as e:
+    logging.error(e)
+    exit()
