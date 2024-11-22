@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 
 from config.configuration import config
@@ -14,7 +16,8 @@ def activate(access_token: str, payer_fiscal_code: str, service_provider_id: str
         url=ACTIVATION_URL,
         headers={
             'Authorization': f'{access_token}',
-            'Version': 'v1'
+            'Version': 'v1',
+            'RequestId': str(uuid.uuid4())
         },
         json={
             'payer': {
