@@ -18,5 +18,5 @@ Feature: Service Providers activate debtors
   @unhappy_path @authentication @activation
   Scenario: A Service Provider tries to activates a debtor without having the correct credentials
     Given the debtor A has fiscal code random
-    When the Service Provider activates the debtor A
+    When the Service Provider tries to activate the debtor A
     Then the activation fails because the Service Provider has wrong credentials
