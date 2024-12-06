@@ -12,4 +12,5 @@ send_rtp_path: "/rtps"
 activation_path: "/activations"
 create_rtp_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/openapi.yaml'
 activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/activation.yaml'
+send_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/send.openapi.yaml'
 mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
