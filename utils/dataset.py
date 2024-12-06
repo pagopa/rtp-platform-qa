@@ -10,10 +10,8 @@ fake = Faker('it_IT')
 TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
 
 
-def generate_rtp_data():
+def generate_rtp_data(payer_id: str = '' ):
     notice_number = ''.join([str(random.randint(0, 9)) for _ in range(18)])
-
-    payer_fiscal_code = ''.join([str(random.randint(0, 9)) for _ in range(11)])
 
     amount = round(random.uniform(0, 99999999), 2)
 
@@ -21,18 +19,21 @@ def generate_rtp_data():
 
     expiry_date = (datetime.now() + timedelta(days=random.randint(1, 365))).strftime('%Y-%m-%d')
 
-    payee_company_name = TEST_PAYEE_COMPANY_NAME
+    if not payer_id:
+        payer_id = fake_fc()
 
-    payee_fiscal_code = ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))])
+    payee = {
+        'payeeId': ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))]),
+        'name': TEST_PAYEE_COMPANY_NAME
+    }
 
     return {
         'noticeNumber': notice_number,
-        'payerId': payer_fiscal_code,
         'amount': amount,
         'description': description,
         'expiryDate': expiry_date,
-        'payeeCompanyName': payee_company_name,
-        'payeeId': payee_fiscal_code
+        'payerId': payer_id,
+        'payee': payee
     }
 
 
