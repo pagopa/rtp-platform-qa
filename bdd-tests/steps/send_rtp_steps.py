@@ -14,9 +14,15 @@ def when_sp_sends_rtp(context, debtor_name: str):
 
 
 @then('the RTP is created correctly')
-def then_the_rtp_is_delivered(context):
+def then_the_rtp_is_created(context):
     assert context.latest_rtp_response.status_code == 201
 
+@then('the RTP is not created because {reason_ko}')
+def then_the_rtp_is_not_created(context, reason_ko):
+    reason_ko = reason_ko.upper()
+
+    if reason_ko == 'THE SERVICE PROVIDER IS NOT AUTHENTICATED':
+        assert context.latest_rtp_response.status_code == 401
 
 @given('the Ente Creditore is on the web page')
 def given_ec_on_page(context):
