@@ -51,3 +51,13 @@ jobs:
       - name: 'Run contract tests'
         run: |
           pytest contract-tests/* --disable-warnings --alluredir allure-results/contract
+      - name: Build test report
+        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+        if: always()
+        continue-on-error: true
+        with:
+          gh_pages: gh-pages
+          allure_results: allure-results
+          allure_report: allure-report
+          allure_history: allure-history
+          keep_reports: 30
