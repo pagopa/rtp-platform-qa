@@ -38,16 +38,16 @@ jobs:
         id: load_secrets
       - name: 'Run functional tests'
         run: |
-          pytest functional-tests/tests/
+          pytest functional-tests/tests/ --alluredir allure-results/functional
       - name: 'Run BDD tests'
         run: |
-          behave bdd-tests/features/
+          behave bdd-tests/features/ --format allure_behave.formatter:AllureFormatter -o allure-results/bdd --junit-directory=junit --junit --summary --show-timings -v
       - name: 'Run UX tests'
         run: |
-          pytest ux-tests/tests/
+          pytest ux-tests/tests/ --alluredir allure-results/ux
       - name: 'Run performance tests'
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
       - name: 'Run contract tests'
         run: |
-          pytest contract-tests/* --disable-warnings --alluredir allure-results
+          pytest contract-tests/* --disable-warnings --alluredir allure-results/contract
