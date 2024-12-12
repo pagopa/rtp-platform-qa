@@ -1,5 +1,5 @@
 allure-pytest==2.13.5
 dynaconf==3.2.6
+faker==22.5.1
 requests==2.32.3
 urllib3==1.26.19
-faker==22.5.1
