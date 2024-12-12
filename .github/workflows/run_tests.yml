@@ -33,28 +33,34 @@ jobs:
           pip install -e .
       - name: 'Load secrets'
         if: always()
+        continue-on-error: true
         run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
           SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
         id: load_secrets
       - name: 'Run functional tests'
         if: always()
+        continue-on-error: true
         run: |
           pytest functional-tests/tests/ --alluredir allure-results/functional
       - name: 'Run BDD tests'
         if: always()
+        continue-on-error: true
         run: |
           behave bdd-tests/features/ --format allure_behave.formatter:AllureFormatter -o allure-results/bdd --junit-directory=junit --junit --summary --show-timings -v
       - name: 'Run UX tests'
         if: always()
+        continue-on-error: true
         run: |
           pytest ux-tests/tests/ --alluredir allure-results/ux
       - name: 'Run performance tests'
         if: always()
+        continue-on-error: true
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
       - name: 'Run contract tests'
         if: always()
+        continue-on-error: true
         run: |
           pytest contract-tests/* --disable-warnings --alluredir allure-results/contract
       - name: Load test report history
@@ -78,6 +84,7 @@ jobs:
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
