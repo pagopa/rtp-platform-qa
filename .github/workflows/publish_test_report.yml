@@ -1,0 +1,40 @@
+name: "Publish test report"
+
+on:
+  workflow_call:
+    inputs:
+      ALLURE_SUBFOLDER:
+        required: true
+        type: string
+
+jobs:
+  Build_Report:
+    runs-on: ubuntu-latest
+    name: Build Allure Report
+    steps:
+      - name: Load test report history
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build test report
+        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+        if: always()
+        continue-on-error: true
+        with:
+          gh_pages: gh-pages
+          allure_results: allure-results
+          allure_report: allure-report
+          allure_history: allure-history
+          subfolder: ${{ inputs.ALLURE_SUBFOLDER }}
+          keep_reports: 30
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
+        if: always()
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
