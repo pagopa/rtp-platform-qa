@@ -42,17 +42,17 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          pytest functional-tests/tests/ --alluredir allure-results/functional
+          pytest functional-tests/tests/ --alluredir allure-results
       - name: 'Run BDD tests'
         if: always()
         continue-on-error: true
         run: |
-          behave bdd-tests/features/ --format allure_behave.formatter:AllureFormatter -o allure-results/bdd --junit-directory=junit --junit --summary --show-timings -v
+          behave bdd-tests/features/ --format allure_behave.formatter:AllureFormatter -o allure-results --junit-directory=junit --junit --summary --show-timings -v
       - name: 'Run UX tests'
         if: always()
         continue-on-error: true
         run: |
-          pytest ux-tests/tests/ --alluredir allure-results/ux
+          pytest ux-tests/tests/ --alluredir allure-results
       - name: 'Run performance tests'
         if: always()
         continue-on-error: true
@@ -62,7 +62,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          pytest contract-tests/* --disable-warnings --alluredir allure-results/contract
+          pytest contract-tests/* --disable-warnings --alluredir allure-results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
         if: always()
@@ -79,7 +79,6 @@ jobs:
           allure_results: allure-results
           allure_report: allure-report
           allure_history: allure-history
-          subfolder: "*"
           keep_reports: 30
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
