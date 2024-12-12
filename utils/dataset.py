@@ -13,7 +13,7 @@ TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
 def generate_rtp_data(payer_id: str = '' ):
     notice_number = ''.join([str(random.randint(0, 9)) for _ in range(18)])
 
-    amount = round(random.uniform(0, 99999999), 2)
+    amount = round(random.uniform(0, 999999999), 2)
 
     description = ''.join(random.choices(string.ascii_letters + string.digits, k=random.randint(0, 140)))
 
