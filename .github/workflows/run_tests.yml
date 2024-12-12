@@ -32,23 +32,29 @@ jobs:
           playwright install
           pip install -e .
       - name: 'Load secrets'
+        if: always()
         run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
           SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
         id: load_secrets
       - name: 'Run functional tests'
+        if: always()
         run: |
           pytest functional-tests/tests/ --alluredir allure-results/functional
       - name: 'Run BDD tests'
+        if: always()
         run: |
           behave bdd-tests/features/ --format allure_behave.formatter:AllureFormatter -o allure-results/bdd --junit-directory=junit --junit --summary --show-timings -v
       - name: 'Run UX tests'
+        if: always()
         run: |
           pytest ux-tests/tests/ --alluredir allure-results/ux
       - name: 'Run performance tests'
+        if: always()
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
       - name: 'Run contract tests'
+        if: always()
         run: |
           pytest contract-tests/* --disable-warnings --alluredir allure-results/contract
       - name: Load test report history
