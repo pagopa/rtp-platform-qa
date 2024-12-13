@@ -1,0 +1,7 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","1120","test_activate_debtor","tests","Fri Dec 13 14:31:30 GMT 2024","passed","Fri Dec 13 14:31:31 GMT 2024","","test_activation","",""
+"","516","test_get_token_with_invalid_client_secret","tests","Fri Dec 13 14:31:32 GMT 2024","passed","Fri Dec 13 14:31:33 GMT 2024","","test_auth","",""
+"","366","test_send_rtp_api","tests","Fri Dec 13 14:31:33 GMT 2024","failed","Fri Dec 13 14:31:33 GMT 2024","","test_send_rtp","",""
+"","147","test_send_rtp","tests","Fri Dec 13 14:31:33 GMT 2024","passed","Fri Dec 13 14:31:33 GMT 2024","","test_landing_page","",""
+"","711","test_get_token_with_invalid_client_id","tests","Fri Dec 13 14:31:32 GMT 2024","passed","Fri Dec 13 14:31:32 GMT 2024","","test_auth","",""
+"","572","test_get_valid_token","tests","Fri Dec 13 14:31:31 GMT 2024","passed","Fri Dec 13 14:31:32 GMT 2024","","test_auth","",""
