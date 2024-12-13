@@ -28,6 +28,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r functional-tests/requirements.txt
+          pip install -e .
       - name: 'Load secrets'
         if: always()
         continue-on-error: true
