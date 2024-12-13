@@ -6,7 +6,7 @@ on:
       - main
   schedule:
     - cron: '0 1 * * *'  # Scheduled every day at 01:00 UTC
-  workflow_dispatch:  # Allows manual run
+  workflow_dispatch: # Allows manual run
     inputs:
       Functional:
         type: boolean
@@ -18,12 +18,27 @@ on:
         description: Run BDD tests
         required: false
         default: true
+      UX:
+        type: boolean
+        description: Run BDD tests
+        required: false
+        default: true
+      Performance:
+        type: boolean
+        description: Run BDD tests
+        required: false
+        default: true
+      Contract:
+        type: boolean
+        description: Run BDD tests
+        required: false
+        default: true
 
 jobs:
   Functional_Tests:
     runs-on: ubuntu-latest
-    name: Run Tests
-    if: always() && (github.event.inputs.BDD  == 'true' || !github.event.inputs.BDD)
+    name: Functional
+    if: always() && (github.event.inputs.Functional  == 'true' || !github.event.inputs.Functional)
     steps:
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
       - name: Setup Python
@@ -36,18 +51,18 @@ jobs:
           pip install -r requirements.txt
           pip install -r functional-tests/requirements.txt
           pip install -e .
-      - name: 'Load secrets'
+      - name: Load secrets
         if: always()
         continue-on-error: true
         run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
           SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
         id: load_secrets
-      - name: 'Run functional tests'
+      - name: Run functional tests
         if: always()
         continue-on-error: true
         run: |
-          pytest functional-tests/tests/ --alluredir allure-results --clean-alluredir
+          pytest functional-tests/tests/ --alluredir allure-results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
         if: always()
@@ -77,11 +92,9 @@ jobs:
 
   BDD_Tests:
     runs-on: ubuntu-latest
-    needs: [
-      Functional_Tests
-    ]
+    needs: Functional_Tests
     if: always() && (github.event.inputs.BDD  == 'true' || !github.event.inputs.BDD)
-    name: Run Tests
+    name: BDD
     steps:
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
       - name: Setup Python
@@ -94,14 +107,14 @@ jobs:
           pip install -r requirements.txt
           pip install -r bdd-tests/requirements.txt
           pip install -e .
-      - name: 'Load secrets'
+      - name: Load secrets
         if: always()
         continue-on-error: true
         run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
           SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
         id: load_secrets
-      - name: 'Run BDD tests'
+      - name: Run BDD tests
         if: always()
         continue-on-error: true
         run: |
@@ -123,6 +136,149 @@ jobs:
           allure_report: allure-report
           allure_history: allure-history
           subfolder: bdd
+          keep_reports: 30
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
+        if: always()
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+  UX_Tests:
+    runs-on: ubuntu-latest
+    needs: BDD_Tests
+    if: always() && (github.event.inputs.UX  == 'true' || !github.event.inputs.UX)
+    name: UX
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+      - name: Setup Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r ux-tests/requirements.txt
+          pip install -e .
+      - name: Load secrets
+        if: always()
+        continue-on-error: true
+        run: echo "$SECRETS" >> ./config/.secrets.yaml
+        env:
+          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
+        id: load_secrets
+      - name: Run UX tests
+        if: always()
+        continue-on-error: true
+        run: |
+          pytest ux-tests/tests/ --alluredir allure-results
+      - name: Load test report history
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build test report
+        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+        if: always()
+        continue-on-error: true
+        with:
+          gh_pages: gh-pages
+          allure_results: allure-results
+          allure_report: allure-report
+          allure_history: allure-history
+          subfolder: ux
+          keep_reports: 30
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
+        if: always()
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+
+  Performance_Tests:
+    runs-on: ubuntu-latest
+    needs: UX_Tests
+    if: always() && (github.event.inputs.Performance  == 'true' || !github.event.inputs.Performance)
+    name: Performance
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+      - name: Setup Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r performance-tests/requirements.txt
+          pip install -e .
+      - name: Load secrets
+        if: always()
+        continue-on-error: true
+        run: echo "$SECRETS" >> ./config/.secrets.yaml
+        env:
+          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
+        id: load_secrets
+      - name: Run Performance tests
+        if: always()
+        continue-on-error: true
+        run: |
+          locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com --html .report/report.html
+
+  Contract_Tests:
+    runs-on: ubuntu-latest
+    needs: Performance_Tests
+    if: always() && (github.event.inputs.Contract  == 'true' || !github.event.inputs.Contract)
+    name: Contract
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+      - name: Setup Python
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r contract-tests/requirements.txt
+          pip install -e .
+      - name: Load secrets
+        if: always()
+        continue-on-error: true
+        run: echo "$SECRETS" >> ./config/.secrets.yaml
+        env:
+          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
+        id: load_secrets
+      - name: 'Run contract tests
+        if: always()
+        continue-on-error: true
+        run: |
+          pytest contract-tests/ --disable-warnings --alluredir allure-results
+      - name: Load test report history
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build test report
+        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+        if: always()
+        continue-on-error: true
+        with:
+          gh_pages: gh-pages
+          allure_results: allure-results
+          allure_report: allure-report
+          allure_history: allure-history
+          subfolder: contract
           keep_reports: 30
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
