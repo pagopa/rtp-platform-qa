@@ -161,7 +161,6 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -r requirements.txt
-          pip install -r ux-tests/requirements.txt
           pip install -e .
       - name: Load secrets
         if: always()
