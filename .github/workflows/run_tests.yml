@@ -20,17 +20,17 @@ on:
         default: true
       UX:
         type: boolean
-        description: Run BDD tests
+        description: Run UX tests
         required: false
         default: true
       Performance:
         type: boolean
-        description: Run BDD tests
+        description: Run Performance tests
         required: false
         default: true
       Contract:
         type: boolean
-        description: Run BDD tests
+        description: Run Contract tests
         required: false
         default: true
 
