@@ -17,7 +17,7 @@ def generate_rtp_data():
 
     amount = round(random.uniform(0, 99999999), 2)
 
-    description = ''.join(random.choices(string.ascii_letters + string.digits, k=random.randint(0, 140)))
+    description = ''.join(random.choices(string.ascii_letters + string.digits + ' ', k=random.randint(0, 140)))
 
     expiry_date = (datetime.now() + timedelta(days=random.randint(1, 365))).strftime('%Y-%m-%d')
 

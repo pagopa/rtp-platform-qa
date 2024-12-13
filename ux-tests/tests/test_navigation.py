@@ -62,3 +62,18 @@ def test_comma_not_allowed(page):
     page.click('button[id="paymentNoticeButtonContinue"]')
     popup_message = page.locator("div[role='dialog'] p.MuiDialogContentText-root")
     expect(popup_message).not_to_be_visible()
+
+
+def test_whitespace_allowed_in_description_and_payee_company_name(page):
+    page.goto(page_url)
+
+    description = 'Description with spaces'
+    payee_company_name = 'Payee company name with spaces'
+
+    page.fill('input[id="description"]', description)
+    filled_description = page.locator('input[id="description"]')
+    assert filled_description.input_value() == description
+
+    page.fill('input[id="payeeCompanyName"]', payee_company_name)
+    filled_description = page.locator('input[id="payeeCompanyName"]')
+    assert filled_description.input_value() == payee_company_name
