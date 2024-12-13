@@ -7,11 +7,23 @@ on:
   schedule:
     - cron: '0 1 * * *'  # Scheduled every day at 01:00 UTC
   workflow_dispatch:  # Allows manual run
+    inputs:
+      Functional:
+        type: boolean
+        description: Run functional tests
+        required: false
+        default: true
+      BDD:
+        type: boolean
+        description: Run BDD tests
+        required: false
+        default: true
 
 jobs:
   Functional_Tests:
     runs-on: ubuntu-latest
     name: Run Tests
+    if: github.event.inputs.Functional  == 'true' || !github.event.inputs.Functional
     steps:
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
       - name: Setup Python
@@ -68,6 +80,7 @@ jobs:
     needs: [
       Functional_Tests
     ]
+    if: github.event.inputs.BDD  == 'true' || !github.event.inputs.BDD
     name: Run Tests
     steps:
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
