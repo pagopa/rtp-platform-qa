@@ -34,7 +34,7 @@ jobs:
         if: always()
         continue-on-error: true
         run: |
-          pytest functional-tests/tests/ --alluredir allure-results
+          pytest functional-tests/tests/ --alluredir allure-results --clean-alluredir
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
         if: always()
@@ -51,59 +51,6 @@ jobs:
           allure_results: allure-results
           allure_report: allure-report
           allure_history: allure-history
-          keep_reports: 30
-      - name: Publish test report
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
-        if: always()
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-
-  BDD_Tests:
-    runs-on: ubuntu-latest
-    name: Run Tests
-    steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
-        with:
-          python-version: 3.x
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r bdd-tests/requirements.txt
-      - name: 'Load secrets'
-        if: always()
-        continue-on-error: true
-        run: echo "$SECRETS" >> ./config/.secrets.yaml
-        env:
-          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
-        id: load_secrets
-      - name: 'Run functional tests'
-        if: always()
-        continue-on-error: true
-        run: |
-          behave bdd-tests/features/ --format allure_behave.formatter:AllureFormatter -o allure-results/bdd
-      - name: Load test report history
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - name: Build test report
-        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
-        if: always()
-        continue-on-error: true
-        with:
-          gh_pages: gh-pages
-          allure_results: allure-results
-          allure_report: allure-report
-          allure_history: allure-history
-          subfolder: bdd
           keep_reports: 30
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
