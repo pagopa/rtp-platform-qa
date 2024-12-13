@@ -257,7 +257,7 @@ jobs:
         env:
           SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
         id: load_secrets
-      - name: 'Run contract tests
+      - name: Run contract tests
         if: always()
         continue-on-error: true
         run: |
