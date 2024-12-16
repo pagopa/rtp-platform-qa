@@ -8,3 +8,8 @@ from config.configuration import secrets
 def given_ec_on_page(context):
     access_token = get_valid_access_token(client_id=secrets.client_id, client_secret=secrets.client_secret)
     context.access_token = access_token
+
+
+@given('the Service Provider is unauthenticated')
+def given_ec_on_page(context):
+    context.access_token = ''
