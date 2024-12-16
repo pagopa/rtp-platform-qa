@@ -26,7 +26,7 @@ def page(playwright_browser):
     page.close()
 
 
-@allure.feature('RTP send')
+@allure.feature('RTP Submission')
 @allure.story('RTP submission though web page')
 @allure.title('RTP form is filled and submitted')
 def test_rtp_form_submission(page):
