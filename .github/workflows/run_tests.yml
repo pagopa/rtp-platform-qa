@@ -89,6 +89,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+      - name: Save functional test report
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        id: upload_functional_test_results
+        with:
+          name: functional-report
+          path: allure-history
+
 
   BDD_Tests:
     runs-on: ubuntu-latest
@@ -282,6 +289,41 @@ jobs:
           allure_report: allure-report
           allure_history: allure-history
           subfolder: contract
+          keep_reports: 30
+      - name: Publish test report
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
+        if: always()
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+  Aggregate_Reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Copy functional reports
+        uses: actions/download-artifact@v4
+        with:
+          path: allure-reports
+          merge-multiple: true
+          run-id: upload_functional_test_results
+      - name: Load test report history
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Build test report
+        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+        if: always()
+        continue-on-error: true
+        with:
+          gh_pages: gh-pages
+          allure_results: allure-results
+          allure_report: allure-report
+          allure_history: allure-history
           keep_reports: 30
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
