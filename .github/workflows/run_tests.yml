@@ -67,7 +67,7 @@ jobs:
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_functional_test_results
         with:
-          name: allure-results
+          name: allure-results-functional
           path: allure-results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
@@ -129,7 +129,7 @@ jobs:
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_bdd_test_results
         with:
-          name: allure-results
+          name: allure-results-bdd
           path: allure-results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
@@ -194,7 +194,7 @@ jobs:
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_ux_test_results
         with:
-          name: allure-results
+          name: allure-results-ux
           path: allure-results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
@@ -286,7 +286,7 @@ jobs:
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_contract_test_results
         with:
-          name: allure-results
+          name: allure-results-contract
           path: allure-results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
