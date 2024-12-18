@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from api.auth import get_access_token
@@ -5,7 +6,11 @@ from api.auth import get_valid_access_token
 from config.configuration import secrets
 
 
+@allure.feature('Authentication')
+@allure.story('Service Provider authentication')
+@allure.title('A Service Provider is authenticated')
 @pytest.mark.auth
+@pytest.mark.happy_path
 def test_get_valid_token():
     token = get_valid_access_token(client_id=secrets.client_id, client_secret=secrets.client_secret)
 
@@ -14,7 +19,11 @@ def test_get_valid_token():
     assert len(token) > 7, "Token should not be empty after 'Bearer '"
 
 
+@allure.feature('Authentication')
+@allure.story('Service Provider authentication')
+@allure.title('A Service Provider with invalid client ID is not authenticated')
 @pytest.mark.auth
+@pytest.mark.unhappy_path
 def test_get_token_with_invalid_client_id():
     invalid_client_id = '00000000-0000-0000-0000-000000000000'
     token_response = get_access_token(client_id=invalid_client_id,
@@ -23,7 +32,11 @@ def test_get_token_with_invalid_client_id():
     assert f'Client {invalid_client_id} not found' in str(token_response.json()['descriptions'])
 
 
+@allure.feature('Authentication')
+@allure.story('Service Provider authenticated')
+@allure.title('A Service Provider with invalid client secret is not authenticated')
 @pytest.mark.auth
+@pytest.mark.unhappy_path
 def test_get_token_with_invalid_client_secret():
     invalid_client_secret = '000000000000000000000000000000000000'
     token_response = get_access_token(client_id=secrets.client_id,
