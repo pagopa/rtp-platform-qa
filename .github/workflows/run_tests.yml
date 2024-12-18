@@ -317,7 +317,7 @@ jobs:
 
   Aggregate_Results:
     runs-on: ubuntu-latest
-    needs: Functional_Tests
+    needs: Contract_Tests
     if: always()
     steps:
       - name: Copy functional results
