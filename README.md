@@ -48,7 +48,7 @@ It's recommended to use a virtual environment to manage dependencies.
 3. Install local packages:
 
   ```bash
-  pip install -r requirements
+  pip install -r requirements.txt
   ```
 
 4. Install common dependencies:

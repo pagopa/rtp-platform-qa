@@ -1,2 +1,2 @@
+allure-behave==2.13.5
 behave==1.2.6
-faker==22.5.1
