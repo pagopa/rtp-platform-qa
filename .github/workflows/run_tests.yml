@@ -369,3 +369,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+
+  Extract_Fail_Rate_And_Notify:
+    needs: Aggregate_Results
+    if: always()
+    uses: ./.github/workflows/extract_allure_fail_rate.yml
+    with:
+      THRESHOLD: 80
+    secrets: inherit
