@@ -375,5 +375,5 @@ jobs:
     if: always()
     uses: ./.github/workflows/extract_allure_fail_rate.yml
     with:
-      THRESHOLD: 80
+      THRESHOLD: 20
     secrets: inherit
