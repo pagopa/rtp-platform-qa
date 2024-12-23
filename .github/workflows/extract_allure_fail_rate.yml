@@ -65,7 +65,7 @@ jobs:
 
   SendSlackNotification:
     needs: ExtractFailRate
-    uses: ./.github/workflows/send_notification.yml
+    uses: ./.github/workflows/send_slack_notification.yml
     if: always()
     with:
       FAIL_RATE: ${{ needs.ExtractFailRate.outputs.FAIL_RATE }}
