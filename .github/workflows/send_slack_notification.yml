@@ -43,7 +43,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": " https://pagopa.github.io/pagopa-platform-integration-test/${{ inputs.LATEST_FOLDER }}/index.html | Success Rate: *${{ inputs.SUCCESS_RATE }}%*"
+                    "text": " https://pagopa.github.io/${{ github.event.repository.name }}/${{ inputs.LATEST_FOLDER }}/index.html | Success Rate: *${{ inputs.SUCCESS_RATE }}%*"
                   }
                 }
               ]
