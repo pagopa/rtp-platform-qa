@@ -1,0 +1,52 @@
+name: "Send notification"
+
+on:
+  workflow_call:
+    inputs:
+      FAIL_RATE:
+        required: false
+        type: string
+      SEND_NOTIFICATION:
+        required: true
+        type: string
+      LATEST_FOLDER:
+        required: true
+        type: string
+      SUCCESS_RATE:
+        required: true
+        type: string
+    secrets:
+      SLACK_WEBHOOK_URL:
+        required: true
+
+jobs:
+  Notify:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    if: ${{ inputs.SEND_NOTIFICATION == 'true' }}
+    steps:
+      - name: Send notification to Slack
+        id: slack
+        uses: slackapi/slack-github-action@485a9d42d3a73031f12ec201c457e2162c45d02d #v2.0.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ github.event.repository.name }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": " https://pagopa.github.io/${{ github.event.repository.name }}/${{ inputs.LATEST_FOLDER }}/index.html | Success Rate: *${{ inputs.SUCCESS_RATE }}%*"
+                  }
+                }
+              ]
+            }
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: webhook-trigger

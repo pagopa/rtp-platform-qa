@@ -1,0 +1,75 @@
+name: Extract Fail Rate from Allure
+
+on:
+  workflow_call:
+    inputs:
+      THRESHOLD:
+        required: true
+        type: number
+
+jobs:
+  ExtractFailRate:
+    runs-on: ubuntu-latest
+    outputs:
+      FAIL_RATE: ${{ env.FAIL_RATE }}
+      SEND_NOTIFICATION: ${{ env.SEND_NOTIFICATION }}
+      SUCCESS_RATE: ${{ env.SUCCESS_RATE }}
+      LATEST_FOLDER: ${{ env.LATEST_FOLDER }}
+    steps:
+      - name: Clone gh-pages branch into a temporary directory
+        if: always()
+        continue-on-error: true
+        run: |
+          git clone --branch gh-pages --depth 1 https://github.com/pagopa/${{ github.event.repository.name }}.git temp-gh-pages
+          echo "Cloned gh-pages branch into temp-gh-pages directory."
+      - name: Find Latest Run Directory
+        if: always()
+        continue-on-error: true
+        id: find_latest_run
+        run: |
+          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
+          echo "Latest directory: $latest_dir"
+          echo "latest_dir=$latest_dir" >> $GITHUB_OUTPUT
+      - name: Extract Fail Rate from Allure
+        run: |
+          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
+          summary_file="$latest_dir/widgets/summary.json"
+          latest_folder=$(basename "$latest_dir" | grep -oE '[0-9]+')
+          if [ -f "$summary_file" ]; then
+            failed=$(jq '.statistic.failed // 0' "$summary_file")
+            total=$(jq '.statistic.total // 0' "$summary_file")
+
+            if [ "$failed" -eq 0 ]; then
+              fail_rate_number=0
+              success_rate_string="100.00"
+            else
+              fail_rate=$(echo "$failed / $total * 100" | bc -l)
+              fail_rate_number=$(printf "%.0f" $fail_rate)
+              success_rate=$(echo "100 - $fail_rate" | bc -l)
+              success_rate_string=$(printf "%.2f" $success_rate)
+            fi
+          else
+            fail_rate_number=0
+          fi
+
+          if [ "$fail_rate_number" -gt ${{ inputs.THRESHOLD }} ]; then
+            send_notification=true
+          else
+            send_notification=false
+          fi
+
+          echo "FAIL_RATE=$fail_rate_number" >> $GITHUB_ENV
+          echo "SEND_NOTIFICATION=$send_notification" >> $GITHUB_ENV
+          echo "SUCCESS_RATE=$success_rate_string" >> $GITHUB_ENV
+          echo "LATEST_FOLDER=$latest_folder" >> $GITHUB_ENV
+
+  SendSlackNotification:
+    needs: ExtractFailRate
+    uses: ./.github/workflows/send_slack_notification.yml
+    if: always()
+    with:
+      FAIL_RATE: ${{ needs.ExtractFailRate.outputs.FAIL_RATE }}
+      SUCCESS_RATE: ${{ needs.ExtractFailRate.outputs.SUCCESS_RATE }}
+      SEND_NOTIFICATION: ${{ needs.ExtractFailRate.outputs.SEND_NOTIFICATION }}
+      LATEST_FOLDER: ${{ needs.ExtractFailRate.outputs.LATEST_FOLDER }}
+    secrets: inherit
