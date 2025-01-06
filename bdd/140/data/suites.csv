@@ -1,0 +1,5 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","1421","A Service Provider activates a debtor","","Mon Jan 06 07:07:58 GMT 2025","broken","Mon Jan 06 07:08:00 GMT 2025","","","",""
+"","1","Successful login","","Mon Jan 06 07:08:02 GMT 2025","passed","Mon Jan 06 07:08:02 GMT 2025","","","",""
+"","359","A Service Provider tries to activates a debtor without having the correct credentials","","Mon Jan 06 07:08:02 GMT 2025","failed","Mon Jan 06 07:08:02 GMT 2025","","","",""
+"","2197","A Service Provider tries to activates a debtor 2 times, failing the second attempt","","Mon Jan 06 07:08:00 GMT 2025","failed","Mon Jan 06 07:08:02 GMT 2025","","","",""
