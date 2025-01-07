@@ -1,6 +1,6 @@
 Feature: Service Providers activate debtors
 
-  @happy_path @authentication @activation @test1
+  @happy_path @authentication @activation
   Scenario: A Service Provider activates a debtor
     Given the Service Provider is authenticated
     And the debtor A has fiscal code random
