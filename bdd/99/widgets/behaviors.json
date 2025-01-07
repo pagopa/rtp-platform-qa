@@ -1,1 +1,0 @@
-{"total":2,"items":[{"uid":"cd1b9948868e6265c9bb6a15902d5512","name":"Service Providers activate debtors","statistic":{"failed":2,"broken":1,"skipped":0,"passed":0,"unknown":0,"total":3}},{"uid":"5dd8bcdfa8a23f788c79b4b06057cc9a","name":"Send RTP feature","statistic":{"failed":0,"broken":0,"skipped":0,"passed":1,"unknown":0,"total":1}}]}
