@@ -321,25 +321,25 @@ jobs:
     if: always()
     steps:
       - name: Copy functional results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
           run-id: upload_functional_test_results
       - name: Copy BDD results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
           run-id: upload_bdd_test_results
       - name: Copy UX results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
           run-id: upload_ux_test_results
       - name: Copy contract results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
