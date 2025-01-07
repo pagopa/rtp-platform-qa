@@ -11,7 +11,7 @@ Feature: Send RTP through API
     And the debtor A receives the RTP
 
   @unhappy_path @authentication @send
-  Scenario: An authenticated Service Provider can send an RTP to an activated debtor
+  Scenario: An authenticated Service Provider cannot send an RTP to an activated debtor
     Given the Service Provider is unauthenticated
     When the Service Provider sends an RTP to the debtor A
     Then the RTP is not created because the Service Provider is not authenticated
