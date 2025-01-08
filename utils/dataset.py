@@ -1,4 +1,5 @@
 import random
+import re
 import string
 from datetime import datetime
 from datetime import timedelta
@@ -9,6 +10,7 @@ fake = Faker('it_IT')
 
 TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
 
+uuidv4_pattern = re.compile(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}')
 
 def generate_rtp_data(payer_id: str = '' ):
     notice_number = ''.join([str(random.randint(0, 9)) for _ in range(18)])
