@@ -1,4 +1,5 @@
 from behave import given
+from behave import when
 
 from api.auth import get_valid_access_token
 from config.configuration import secrets
@@ -11,5 +12,6 @@ def given_ec_on_page(context):
 
 
 @given('the Service Provider is unauthenticated')
+@when('the Service Provider is unauthenticated')
 def given_ec_on_page(context):
     context.access_token = ''

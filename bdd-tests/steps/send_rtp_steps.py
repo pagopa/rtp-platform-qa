@@ -24,6 +24,10 @@ def then_the_rtp_is_not_created(context, reason_ko):
     if reason_ko == 'THE SERVICE PROVIDER IS NOT AUTHENTICATED':
         assert context.latest_rtp_response.status_code == 401
 
+    if reason_ko == 'THE DEBTOR IS NOT ACTIVATED':
+        assert context.latest_rtp_response.status_code == 422
+
+
 @given('the Ente Creditore is on the web page')
 def given_ec_on_page(context):
     assert True, 'This test should not fail'
