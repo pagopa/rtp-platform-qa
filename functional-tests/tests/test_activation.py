@@ -3,8 +3,10 @@ import pytest
 
 from api.activation import activate
 from api.auth import get_valid_access_token
+from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
+from utils.dataset import uuidv4_pattern
 
 
 @allure.feature('Activation')
@@ -19,3 +21,9 @@ def test_activate_debtor():
 
     res = activate(access_token, debtor_fc, secrets.service_provider_id)
     assert res.status_code == 201, 'Error activating debtor'
+
+    location = res.headers['Location']
+    location_split = location.split('/')
+
+    assert '/'.join(location_split[:-1]) == config.activation_base_url_path + config.activation_path
+    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
