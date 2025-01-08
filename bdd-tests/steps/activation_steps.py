@@ -25,8 +25,6 @@ def given_sp_tries_to_activate_debtor(context, debtor_name, role):
 
 @then('the activation fails because the Service Provider has wrong credentials')
 def then_sp_fails_activation_wrong_credentials(context):
-    print(context.access_tokens)
-    print(context.latest_activation_response.json)
     assert context.latest_activation_response.status_code == 401
 
 
