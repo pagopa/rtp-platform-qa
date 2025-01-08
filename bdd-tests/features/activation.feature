@@ -15,7 +15,7 @@ Feature: Debtor Service Providers activate debtors
     When the debtor Service Provider tries to activate the debtor A
     Then the activation fails because debtor A is already activated
 
-  @unhappy_path @authentication @activation @test1
+  @unhappy_path @authentication @activation
   Scenario: A Service Provider tries to activates a debtor without having the correct credentials
     Given the debtor A has fiscal code random
     And the debtor Service Provider is unauthenticated
