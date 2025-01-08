@@ -1,7 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","380","An RTP is sent through API","tests","Tue Dec 17 15:58:23 GMT 2024","failed","Tue Dec 17 15:58:23 GMT 2024","","test_send_rtp","",""
-"","488","A Service Provider with invalid client secret is not authenticated","tests","Tue Dec 17 15:58:22 GMT 2024","passed","Tue Dec 17 15:58:22 GMT 2024","","test_auth","",""
-"","1094","A debtor is activated by an authenticated service provider","tests","Tue Dec 17 15:58:20 GMT 2024","passed","Tue Dec 17 15:58:21 GMT 2024","","test_activation","",""
-"","412","A Service Provider with invalid client ID is not authenticated","tests","Tue Dec 17 15:58:22 GMT 2024","passed","Tue Dec 17 15:58:22 GMT 2024","","test_auth","",""
-"","186","The RTP web page is reachable","tests","Tue Dec 17 15:58:22 GMT 2024","passed","Tue Dec 17 15:58:23 GMT 2024","","test_landing_page","",""
-"","566","A Service Provider is authenticated","tests","Tue Dec 17 15:58:21 GMT 2024","passed","Tue Dec 17 15:58:22 GMT 2024","","test_auth","",""
