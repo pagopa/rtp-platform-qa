@@ -14,7 +14,7 @@ from utils.dataset import generate_rtp_data
 @pytest.mark.happy_path
 def test_send_rtp_api():
     rtp_data = generate_rtp_data()
-    access_token = get_valid_access_token(client_id=secrets.client_id, client_secret=secrets.client_secret)
+    access_token = get_valid_access_token(client_id=secrets.creditor_service_provider.client_id, client_secret=secrets.creditor_service_provider.client_secret)
 
     response = send_rtp(access_token=access_token, rtp_payload=rtp_data)
     assert response.status_code == 201
