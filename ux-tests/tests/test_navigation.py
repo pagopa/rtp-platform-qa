@@ -37,8 +37,7 @@ def test_rtp_form_submission(page):
     page.fill('input[id="noticeNumber"]', rtp_data['noticeNumber'])
     page.fill('input[id="amount"]', str(rtp_data['amount']))
     page.fill('input[id="description"]', rtp_data['description'])
-    page.fill('input[placeholder="DD/MM/YYYY"]',
-              str(datetime.strptime(rtp_data['expiryDate'], '%Y-%m-%d').strftime('%d/%m/%Y')))
+    page.fill('input[placeholder="DD/MM/YYYY"]', str(datetime.strptime(rtp_data['expiryDate'], '%Y-%m-%d').strftime('%d/%m/%Y')))
     page.fill('input[id="payeeCompanyName"]', rtp_data['payee']['name'])
     page.fill('input[id="payee"]', rtp_data['payee']['payeeId'])
     page.fill('input[id="payerId"]', rtp_data['payerId'])
