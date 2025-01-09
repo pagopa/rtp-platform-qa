@@ -1,7 +1,10 @@
+from datetime import datetime
+
 import allure
 import pytest
 
 from api.activation import activate
+from api.activation import get_activation_by_payer_id
 from api.auth import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
@@ -27,3 +30,14 @@ def test_activate_debtor():
 
     assert '/'.join(location_split[:-1]) == config.activation_base_url_path + config.activation_path
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
+
+    res = get_activation_by_payer_id(access_token, debtor_fc)
+    assert res.status_code == 200
+    assert res.json()['payer']['fiscalCode'] == debtor_fc
+    assert res.json()['payer']['rtpSpId'] == secrets.debtor_service_provider.service_provider_id
+    assert bool(uuidv4_pattern.fullmatch(res.json()['id']))
+
+    try:
+        datetime.strptime(res.json()['effectiveActivationDate'], '%Y-%m-%dT%H:%M:%S.%f')
+    except ValueError:
+        assert False, 'Invalid date format'
