@@ -46,7 +46,7 @@ def test_activate_debtor():
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
-@allure.title('The actiavation request bust contain lower case fiscal code')
+@allure.title('The activation request bust contain lower case fiscal code')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
@@ -56,4 +56,19 @@ def test_activate_debtor():
     debtor_fc = fake_fc().lower()
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
+    assert res.status_code == 400
+
+
+@allure.feature('Activation')
+@allure.story('Debtor activation')
+@allure.title('Find by payer id request bust contain lower case fiscal code')
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_activate_debtor():
+    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
+                                          client_secret=secrets.debtor_service_provider.client_secret)
+    debtor_fc = fake_fc().lower()
+
+    res = get_activation_by_payer_id(access_token, debtor_fc)
     assert res.status_code == 400
