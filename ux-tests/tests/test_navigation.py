@@ -61,8 +61,8 @@ def test_comma_not_allowed(page):
     page.fill('input[id="amount"]', str(rtp_data['amount']).replace('.', ','))
     page.fill('input[id="description"]', rtp_data['description'])
     page.fill('input[placeholder="DD/MM/YYYY"]', rtp_data['expiryDate'])
-    page.fill('input[id="payeeCompanyName"]', rtp_data['payeeCompanyName'])
-    page.fill('input[id="payee"]', rtp_data['payeeId'])
+    page.fill('input[id="payeeCompanyName"]', rtp_data['payee']['name'])
+    page.fill('input[id="payee"]', rtp_data['payee']['payeeId'])
     page.fill('input[id="payerId"]', rtp_data['payerId'])
 
     validation_message = page.locator('#amount-helper-text')
