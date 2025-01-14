@@ -26,6 +26,5 @@ def test_send_rtp_api():
                    secrets.debtor_service_provider.service_provider_id)
     assert res.status_code == 201, 'Error activating debtor'
 
-    rtp_data['payerId'] = rtp_data['payerId']
     response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
     assert response.status_code == 201
