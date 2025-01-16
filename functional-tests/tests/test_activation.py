@@ -50,7 +50,7 @@ def test_activate_debtor():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_activate_debtor():
+def test_cannot_activate_debtor_lower_fiscal_code():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
                                           client_secret=secrets.debtor_service_provider.client_secret)
     debtor_fc = fake_fc().lower()
@@ -65,7 +65,7 @@ def test_activate_debtor():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_activate_debtor():
+def test_cannot_get_activation_lower_fiscal_code():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
                                           client_secret=secrets.debtor_service_provider.client_secret)
     debtor_fc = fake_fc().lower()
