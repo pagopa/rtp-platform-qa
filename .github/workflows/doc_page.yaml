@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Allows manual run
+      - SRTP-170-generate-feature-doc
 
 permissions:
   contents: write
