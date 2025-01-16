@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - SRTP-170-generate-feature-doc
 
 permissions:
   contents: write
