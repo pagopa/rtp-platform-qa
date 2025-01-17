@@ -27,7 +27,7 @@ def generate_rtp_data(payer_id: str = '' ):
     payee = {
         'payeeId': ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))]),
         'name': TEST_PAYEE_COMPANY_NAME,
-        'protocolId': 'ABC/124'
+        'payTrxRef': 'ABC/124'
     }
 
     payer = {
