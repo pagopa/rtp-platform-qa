@@ -1,7 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","36262","Find by payer id request bust contain lower case fiscal code","tests","Fri Jan 17 07:05:49 GMT 2025","passed","Fri Jan 17 07:06:26 GMT 2025","","test_activation","",""
-"","124","The RTP web page is reachable","tests","Fri Jan 17 07:06:28 GMT 2025","passed","Fri Jan 17 07:06:28 GMT 2025","","test_landing_page","",""
-"","1095","A Service Provider is authenticated","tests","Fri Jan 17 07:06:26 GMT 2025","passed","Fri Jan 17 07:06:27 GMT 2025","","test_auth","",""
-"","399","A Service Provider with invalid client ID is not authenticated","tests","Fri Jan 17 07:06:27 GMT 2025","passed","Fri Jan 17 07:06:27 GMT 2025","","test_auth","",""
-"","810","A Service Provider with invalid client secret is not authenticated","tests","Fri Jan 17 07:06:27 GMT 2025","passed","Fri Jan 17 07:06:28 GMT 2025","","test_auth","",""
-"","3111","Debtor fiscal code must be lower case during RTP send","tests","Fri Jan 17 07:06:28 GMT 2025","failed","Fri Jan 17 07:06:31 GMT 2025","","test_send_rtp","",""
