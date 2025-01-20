@@ -1,4 +1,4 @@
-Feature: Send RTP through API
+Feature: A Creditor Service Provider sends an RTP through API
 
   Background:
     Given the debtor A has fiscal code random
