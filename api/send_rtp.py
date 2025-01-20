@@ -13,6 +13,7 @@ def send_rtp(access_token: str, rtp_payload):
     return requests.post(
         headers={
             'Authorization': f'{access_token}',
+            'Version': 'v1'
         },
         url=SEND_RTP_URL,
         json=rtp_payload,
