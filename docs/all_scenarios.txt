@@ -1,0 +1,8 @@
+A Service Provider tries to activates a debtor without having the correct credentials
+A debtor Service Provider activates a debtor
+A debtor Service Provider cannot send an RTP
+A debtor Service Provider tries to activates a debtor 2 times, failing the second attempt
+An authenticated Service Provider cannot send an RTP to an activated debtor
+An authenticated Service Provider cannot send an RTP to an unactivated debtor
+An authenticated creditor Service Provider can send an RTP to an activated debtor
+Successful login
