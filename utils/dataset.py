@@ -26,16 +26,28 @@ def generate_rtp_data(payer_id: str = '' ):
 
     payee = {
         'payeeId': ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))]),
-        'name': TEST_PAYEE_COMPANY_NAME
+        'name': TEST_PAYEE_COMPANY_NAME,
+        'payTrxRef': 'ABC/124'
     }
 
-    return {
+    payer = {
+        'name': 'Test Name',
+        'payerId': payer_id
+    }
+
+    payment_notice = {
         'noticeNumber': notice_number,
         'amount': amount,
         'description': description,
+        'subject': 'Test payment notice',
         'expiryDate': expiry_date,
-        'payerId': payer_id,
-        'payee': payee
+    }
+
+
+    return {
+        'payee': payee,
+        'payer': payer,
+        'paymentNotice': payment_notice
     }
 
 

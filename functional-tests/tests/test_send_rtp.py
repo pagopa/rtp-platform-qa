@@ -22,7 +22,7 @@ def test_send_rtp_api():
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret)
 
-    res = activate(debtor_service_provider_access_token, rtp_data['payerId'],
+    res = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
                    secrets.debtor_service_provider.service_provider_id)
     assert res.status_code == 201, 'Error activating debtor'
 
@@ -35,7 +35,7 @@ def test_send_rtp_api():
 @allure.title('Debtor fiscal code must be lower case during RTP send')
 @pytest.mark.send
 @pytest.mark.unhappy_path
-def test_send_rtp_api():
+def test_cannot_send_rtp_api_lower_fiscal_code():
     rtp_data = generate_rtp_data()
 
     debtor_service_provider_access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
@@ -44,10 +44,10 @@ def test_send_rtp_api():
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret)
 
-    res = activate(debtor_service_provider_access_token, rtp_data['payerId'],
+    res = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
                    secrets.debtor_service_provider.service_provider_id)
     assert res.status_code == 201, 'Error activating debtor'
 
-    rtp_data['payerId'] = rtp_data['payerId'].lower()
+    rtp_data['payer']['payerId'] = rtp_data['payer']['payerId'].lower()
     response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
-    assert response.status_code == 422
+    assert response.status_code == 400
