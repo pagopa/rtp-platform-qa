@@ -1,4 +1,4 @@
-Feature: Send RTP through web page
+Feature: A Creditor Service Provider sends an RTP through web page
 
   Background: the Ente Creditore is on the web page
 

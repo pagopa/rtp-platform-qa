@@ -1,4 +1,4 @@
-Feature: Debtor Service Providers activate debtors
+Feature: A Debtor Service Providers activates a debtor
 
   @happy_path @authentication @activation
   Scenario: A debtor Service Provider activates a debtor
