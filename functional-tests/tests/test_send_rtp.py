@@ -51,3 +51,29 @@ def test_cannot_send_rtp_api_lower_fiscal_code():
     rtp_data['payer']['payerId'] = rtp_data['payer']['payerId'].lower()
     response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
     assert response.status_code == 400
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP')
+@allure.title('The service returns the mocked server error')
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_receive_server_error_from_mock():
+    mock_fiscal_code = 'RSSMRA85T10X000D'
+    expected_mocked_failure_status_code = 500
+
+    rtp_data = generate_rtp_data()
+
+    rtp_data['payer']['payerId'] = mock_fiscal_code
+
+    debtor_service_provider_access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
+                                                                  client_secret=secrets.debtor_service_provider.client_secret)
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret)
+
+    activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
+             secrets.debtor_service_provider.service_provider_id)
+
+    response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
+    assert response.status_code == expected_mocked_failure_status_code
