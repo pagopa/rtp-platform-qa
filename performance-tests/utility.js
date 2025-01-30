@@ -15,3 +15,40 @@ export function getValidAccessToken(access_token_url, client_id, client_secret) 
 
     return res.json().access_token;
 }
+
+
+export function generateRTPPayload(payerId) {
+    const noticeNumber = Array.from({ length: 18 }, () => Math.floor(Math.random() * 10)).join('');
+    const amount = (Math.random() * 999999);
+    const description = 'Paga questo avviso';
+    const expiryDate = new Date(Date.now() + Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    if (!payerId) {
+        payerId = 'AAABBB01A01A001A';
+    }
+
+    const payee = {
+         "name": "Comune di Smartino",
+        "payeeId": "77777777777",
+        "payTrxRef": "ABC/124"
+    };
+
+    const payer = {
+        name: 'Pigrolo',
+        payerId: payerId
+    };
+
+    const paymentNotice = {
+        noticeNumber: noticeNumber,
+        amount: parseFloat(amount),
+        description: description,
+        subject: 'TARI 2025',
+        expiryDate: expiryDate,
+    };
+
+    return {
+        payee: payee,
+        payer: payer,
+        paymentNotice: paymentNotice
+    };
+}
