@@ -3,6 +3,7 @@ import { check } from 'k6';
 import { sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import { getValidAccessToken } from './utility.js';
+import { generateRTPPayload } from './utility.js';
 
 const config = {
     access_token_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token',
@@ -38,6 +39,18 @@ export function setup() {
 }
 
 export default function (data) {
-  console.log('Token:', data.access_token);
-}
+  const rtpPayload = generateRTPPayload();
 
+  const sendHeaders = {
+    'Version': 'v1',
+    'RequestId': 'bd615b4a-066d-443e-8dd2-a28a39931fee',
+    'Authorization': 'Bearer ' + data.access_token,
+    'Content-Type': 'application/json'
+  };
+
+  const activateRes = http.post(config.send_url, JSON.stringify(rtpPayload), { headers: sendHeaders , discardResponseBodies: true });
+
+    check(activateRes, {
+        'status is 201': (r) => r.status === 201,
+    });
+}
