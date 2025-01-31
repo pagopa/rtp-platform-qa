@@ -22,10 +22,23 @@ export const options = {
   discardResponseBodies: true,
   scenarios: {
     contacts: {
-      executor: 'per-vu-iterations',
-      vus: 10,
-      iterations: 20,
-      maxDuration: '5s',
+      executor: 'constant-arrival-rate',
+
+      // How long the test lasts
+      duration: '5m',
+
+      // How many iterations per timeUnit
+      rate: 100,
+
+      // Start `rate` iterations per second
+      timeUnit: '1s',
+
+      // Pre-allocate 2 VUs before starting the test
+      preAllocatedVUs: 100,
+
+      // Spin up a maximum of 50 VUs to sustain the defined
+      // constant arrival rate.
+      maxVUs: 100,
     },
   },
 };
@@ -43,7 +56,7 @@ export default function (data) {
 
   const sendHeaders = {
     'Version': 'v1',
-    'RequestId': 'bd615b4a-066d-443e-8dd2-a28a39931fee',
+    'RequestId': uuidv4(),
     'Authorization': 'Bearer ' + data.access_token,
     'Content-Type': 'application/json'
   };
