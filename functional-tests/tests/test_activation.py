@@ -57,6 +57,8 @@ def test_cannot_activate_debtor_lower_fiscal_code():
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
     assert res.status_code == 400
+    assert res.json()['errors']['code'] == 'Pattern'
+    assert res.json()['errors']['description'].startswith(debtor_fc + 'must match')
 
 
 @allure.feature('Activation')
