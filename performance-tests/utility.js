@@ -24,7 +24,7 @@ export function generateRTPPayload(payerId) {
     const expiryDate = new Date(Date.now() + Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     if (!payerId) {
-        payerId = 'AAABBB01A01A001A';
+        payerId = 'LOADFC01A01A001X';
     }
 
     const payee = {
