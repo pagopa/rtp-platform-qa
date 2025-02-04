@@ -23,21 +23,10 @@ export const options = {
   scenarios: {
     contacts: {
       executor: 'constant-arrival-rate',
-
-      // How long the test lasts
       duration: '5m',
-
-      // How many iterations per timeUnit
       rate: 100,
-
-      // Start `rate` iterations per second
       timeUnit: '1s',
-
-      // Pre-allocate 2 VUs before starting the test
       preAllocatedVUs: 100,
-
-      // Spin up a maximum of 50 VUs to sustain the defined
-      // constant arrival rate.
       maxVUs: 100,
     },
   },
