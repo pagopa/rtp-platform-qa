@@ -4,8 +4,10 @@ import pytest
 from api.activation import activate
 from api.auth import get_valid_access_token
 from api.send_rtp import send_rtp
+from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import generate_rtp_data
+from utils.dataset import uuidv4_pattern
 
 
 @allure.feature('RTP Send')
@@ -22,12 +24,17 @@ def test_send_rtp_api():
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret)
 
-    res = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
+    activation_response = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
                    secrets.debtor_service_provider.service_provider_id)
-    assert res.status_code == 201, 'Error activating debtor'
+    assert activation_response.status_code == 201, 'Error activating debtor'
 
-    response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
-    assert response.status_code == 201
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    location_split = location.split('/')
+    assert '/'.join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
+    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
 
 
 @allure.feature('RTP Send')
