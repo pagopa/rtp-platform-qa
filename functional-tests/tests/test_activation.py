@@ -46,7 +46,7 @@ def test_activate_debtor():
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
-@allure.title('The activation request bust contain lower case fiscal code')
+@allure.title('The activation request must contain lower case fiscal code')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
@@ -63,7 +63,7 @@ def test_cannot_activate_debtor_lower_fiscal_code():
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
-@allure.title('Find by payer id request bust contain lower case fiscal code')
+@allure.title('Find by payer id request must contain lower case fiscal code')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
@@ -74,3 +74,18 @@ def test_cannot_get_activation_lower_fiscal_code():
 
     res = get_activation_by_payer_id(access_token, debtor_fc)
     assert res.status_code == 400
+
+
+@allure.feature('Activation')
+@allure.story('Debtor activation')
+@allure.title('A debtor service provider fails activation due to wrong service provider id')
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_fail_activate_debtor_incongruent_service_provider():
+    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
+                                          client_secret=secrets.debtor_service_provider.client_secret)
+    debtor_fc = fake_fc()
+
+    res = activate(access_token, debtor_fc, 'WRONGS01')
+    assert res.status_code == 403
