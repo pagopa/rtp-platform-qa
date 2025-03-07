@@ -3,7 +3,7 @@ import pytest
 
 from api.auth import get_cbi_access_token, get_valid_access_token
 from api.debtor_service_provider import send_srtp_to_cbi
-from config.configuration import secrets
+from config.configuration import secrets, config
 from utils.cryptography import client_credentials_to_auth_token
 from utils.cryptography import pfx_to_pem
 from utils.dataset import generate_cbi_rtp_data
@@ -24,7 +24,7 @@ def test_send_rtp_to_cbi():
         secrets.CBI_client_id,
         secrets.CBI_client_secret
     )
-    cert, key, _ = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64)
+    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path, config.key_path)
     cbi_token = get_cbi_access_token(cert, key, auth)
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
@@ -46,7 +46,7 @@ def test_send_rtp_to_cbi_invalid_amount():
         secrets.CBI_client_id,
         secrets.CBI_client_secret
     )
-    cert, key, _ = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64)
+    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path, config.key_path)
     cbi_token = get_cbi_access_token(cert, key, auth)
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
@@ -68,7 +68,7 @@ def test_send_rtp_to_cbi_expired_date():
         secrets.CBI_client_id,
         secrets.CBI_client_secret
     )
-    cert, key, _ = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64)
+    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path, config.key_path)
     cbi_token = get_cbi_access_token(cert, key, auth)
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
