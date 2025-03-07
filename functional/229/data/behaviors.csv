@@ -1,0 +1,7 @@
+"BROKEN","EPIC","FAILED","FEATURE","PASSED","SKIPPED","STORY","UNKNOWN"
+"0","","1","RTP Send","3","0","Service provider sends an RTP","0"
+"0","","0","Activation","4","0","Debtor activation","0"
+"0","","3","RTP Send","0","0","Service provider sends an RTP to CBI","0"
+"0","","0","Web page","1","0","The RTP web page is reachable","0"
+"0","","0","Authentication","1","0","Service Provider authenticated","0"
+"0","","0","Authentication","2","0","Service Provider authentication","0"
