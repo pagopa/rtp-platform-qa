@@ -2,6 +2,7 @@ import allure
 import pytest
 
 from api.activation import activate
+from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from api.send_rtp import send_rtp
 from config.configuration import config
@@ -18,14 +19,18 @@ from utils.dataset import uuidv4_pattern
 def test_send_rtp_api():
     rtp_data = generate_rtp_data()
 
-    debtor_service_provider_access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                                                  client_secret=secrets.debtor_service_provider.client_secret)
+    debtor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token)
+
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret)
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
 
     activation_response = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
-                   secrets.debtor_service_provider.service_provider_id)
+                                   secrets.debtor_service_provider.service_provider_id)
     assert activation_response.status_code == 201, 'Error activating debtor'
 
     send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
@@ -46,10 +51,13 @@ def test_cannot_send_rtp_api_lower_fiscal_code():
     rtp_data = generate_rtp_data()
 
     debtor_service_provider_access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                                                  client_secret=secrets.debtor_service_provider.client_secret)
+                                                                  client_secret=secrets.debtor_service_provider.client_secret,
+                                                                  access_token_function=get_access_token)
+
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret)
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
 
     res = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
                    secrets.debtor_service_provider.service_provider_id)
@@ -74,10 +82,13 @@ def test_receive_server_error_from_mock():
     rtp_data['payer']['payerId'] = mock_fiscal_code
 
     debtor_service_provider_access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                                                  client_secret=secrets.debtor_service_provider.client_secret)
+                                                                  client_secret=secrets.debtor_service_provider.client_secret,
+                                                                  access_token_function=get_access_token)
+
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret)
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
 
     activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
              secrets.debtor_service_provider.service_provider_id)
@@ -94,11 +105,15 @@ def test_receive_server_error_from_mock():
 def test_field_error_in_body():
     rtp_data = generate_rtp_data()
 
-    debtor_service_provider_access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                                                  client_secret=secrets.debtor_service_provider.client_secret)
+    debtor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token)
+
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret)
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
 
     res = activate(debtor_service_provider_access_token, rtp_data['payer']['payerId'],
                    secrets.debtor_service_provider.service_provider_id)

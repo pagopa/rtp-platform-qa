@@ -12,11 +12,13 @@ from config.configuration import secrets
 @pytest.mark.auth
 @pytest.mark.happy_path
 def test_get_valid_token():
-    token = get_valid_access_token(client_id=secrets.creditor_service_provider.client_id, client_secret=secrets.creditor_service_provider.client_secret)
+    access_token = get_valid_access_token(client_id=secrets.creditor_service_provider.client_id,
+                                          client_secret=secrets.creditor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
 
-    assert isinstance(token, str), 'Token must be a string'
-    assert token.startswith('Bearer '), "Token must start with 'Bearer '"
-    assert len(token) > 7, "Token should not be empty after 'Bearer '"
+    assert isinstance(access_token, str), 'Token must be a string'
+    assert access_token.startswith('Bearer '), "Token must start with 'Bearer '"
+    assert len(access_token) > 7, "Token should not be empty after 'Bearer '"
 
 
 @allure.feature('Authentication')

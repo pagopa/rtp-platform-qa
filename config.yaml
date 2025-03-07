@@ -1,4 +1,6 @@
 SECRET_PATH: "config/.secrets.yaml"
+cert_path: "config/cert.pem"
+key_path: "config/key.pem"
 # Default environment. Overridden if specified through environment variable (prefixed by conf.RTP_ENV_VAR_PREFIX current value)
 TARGET_ENV: "uat"
 API_KEY_HEADER: "Ocp-Apim-Subscription-Key"
@@ -13,3 +15,5 @@ activation_path: "/activations"
 activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/activation.yaml'
 send_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/send.openapi.yaml'
 mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
+cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/auth/oauth/v2/token'
+cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/sp/sepa-request-to-pay-requests'
