@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.auth import get_cbi_access_token
+from api.auth import get_cbi_access_token, get_valid_access_token
 from api.debtor_service_provider import send_srtp_to_cbi
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
@@ -43,8 +43,8 @@ def test_send_rtp_to_cbi_invalid_amount():
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
-        secrets.debtor_service_provider.client_id,
-        secrets.debtor_service_provider.client_secret
+        secrets.CBI_client_id,
+        secrets.CBI_client_secret
     )
     cert, key, _ = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64)
     cbi_token = get_cbi_access_token(cert, key, auth)
@@ -65,8 +65,8 @@ def test_send_rtp_to_cbi_expired_date():
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
-        secrets.debtor_service_provider.client_id,
-        secrets.debtor_service_provider.client_secret
+        secrets.CBI_client_id,
+        secrets.CBI_client_secret
     )
     cert, key, _ = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64)
     cbi_token = get_cbi_access_token(cert, key, auth)

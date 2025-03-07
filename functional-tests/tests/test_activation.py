@@ -5,6 +5,7 @@ import pytest
 
 from api.activation import activate
 from api.activation import get_activation_by_payer_id
+from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
@@ -20,7 +21,8 @@ from utils.dataset import uuidv4_pattern
 @pytest.mark.happy_path
 def test_activate_debtor():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret)
+                                          client_secret=secrets.debtor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
     debtor_fc = fake_fc()
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
@@ -52,7 +54,8 @@ def test_activate_debtor():
 @pytest.mark.unhappy_path
 def test_cannot_activate_debtor_lower_fiscal_code():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret)
+                                          client_secret=secrets.debtor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
     debtor_fc = fake_fc().lower()
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
@@ -69,7 +72,8 @@ def test_cannot_activate_debtor_lower_fiscal_code():
 @pytest.mark.unhappy_path
 def test_cannot_get_activation_lower_fiscal_code():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret)
+                                          client_secret=secrets.debtor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
     debtor_fc = fake_fc().lower()
 
     res = get_activation_by_payer_id(access_token, debtor_fc)
@@ -84,7 +88,8 @@ def test_cannot_get_activation_lower_fiscal_code():
 @pytest.mark.happy_path
 def test_fail_activate_debtor_incongruent_service_provider():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret)
+                                          client_secret=secrets.debtor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
     debtor_fc = fake_fc()
 
     res = activate(access_token, debtor_fc, 'WRONGS01')
