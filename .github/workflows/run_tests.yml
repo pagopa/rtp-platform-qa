@@ -377,7 +377,7 @@ jobs:
 
   Extract_Fail_Rate_And_Notify:
     needs: Aggregate_Results
-    if: always()
+    if: success()
     uses: ./.github/workflows/extract_allure_fail_rate.yml
     with:
       THRESHOLD: 20
