@@ -6,6 +6,7 @@ from playwright.sync_api import expect
 from playwright.sync_api import sync_playwright
 
 from config.configuration import config
+from config.configuration import secrets
 from utils.dataset import generate_rtp_data
 
 page_url = config.landing_page_path
@@ -33,14 +34,26 @@ def test_rtp_form_submission(page):
     rtp_data = generate_rtp_data()
 
     page.goto(page_url)
+    expect(page).to_have_url(config.login_page_path)
 
-    page.fill('input[id="noticeNumber"]', rtp_data['paymentNotice']['noticeNumber'])
-    page.fill('input[id="amount"]', str(rtp_data['paymentNotice']['amount']))
-    page.fill('input[id="description"]', rtp_data['paymentNotice']['description'])
+    page.fill('input[name="username"]', secrets.webpage.username)
+    page.fill('input[name="password"]', secrets.webpage.password)
+    page.click('button[id=":r2:"]')
+
+    expect(page).to_have_url(page_url)
+
+    page.fill('input[name="payee.name"]', rtp_data['payee']['name'])
+    page.fill('input[name="payee.payeeId"]', rtp_data['payee']['payeeId'])
+    page.fill('input[name="payee.payTrxRef"]', rtp_data['paymentNotice']['noticeNumber'])
+
+    page.fill('input[name="payer.name"]', rtp_data['payer']['payerId'])
+    page.fill('input[name="payer.payerId"]', rtp_data['payer']['payerId'])
+
+    page.fill('input[name="paymentNotice.noticeNumber"]', rtp_data['paymentNotice']['noticeNumber'])
+    page.fill('input[name="paymentNotice.amount"]', str(rtp_data['paymentNotice']['amount']))
     page.fill('input[placeholder="DD/MM/YYYY"]', str(datetime.strptime(rtp_data['paymentNotice']['expiryDate'], '%Y-%m-%d').strftime('%d/%m/%Y')))
-    page.fill('input[id="payeeCompanyName"]', rtp_data['payee']['name'])
-    page.fill('input[id="payee"]', rtp_data['payee']['payeeId'])
-    page.fill('input[id="payerId"]', rtp_data['payer']['payerId'])
+    page.fill('input[name="paymentNotice.subject"]', rtp_data['paymentNotice']['description'])
+    page.fill('input[name="paymentNotice.description"]', rtp_data['paymentNotice']['description'])
 
     page.click('button[id="paymentNoticeButtonContinue"]')
 
