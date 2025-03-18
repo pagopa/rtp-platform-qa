@@ -95,3 +95,20 @@ def test_field_error_in_body():
     assert response.status_code == 400
     assert response.json()['error'] == 'NotNull.createRtpDtoMono.payee.payeeId'
     assert response.json()['details'] == 'payee.payeeId must not be null'
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to a non-activated debtor')
+@allure.title('An RTP is sent through API')
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_cannot_send_rtp_not_activated_user():
+    rtp_data = generate_rtp_data()
+
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
+
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 422
