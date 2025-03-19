@@ -12,7 +12,7 @@ rtp_creation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/"
 activation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/activation"
 send_rtp_path: "rtps"
 activation_path: "/activations"
-callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/callback"
+callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
 mock_service_provider_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/sepa-request-to-pay-requests"
 activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/activation.yaml'
 send_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/send.openapi.yaml'
