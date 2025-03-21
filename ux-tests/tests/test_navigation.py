@@ -54,12 +54,12 @@ def test_rtp_form_submission(page):
     page.fill('input[placeholder="DD/MM/YYYY"]', str(datetime.strptime(rtp_data['paymentNotice']['expiryDate'], '%Y-%m-%d').strftime('%d/%m/%Y')))
     page.fill('input[name="paymentNotice.subject"]', rtp_data['paymentNotice']['description'])
     page.fill('input[name="paymentNotice.description"]', rtp_data['paymentNotice']['description'])
+    page.click('[type=submit]')
 
-    page.click('button[id="paymentNoticeButtonContinue"]')
-
-    popup_message = page.locator("div[role='dialog'] p.MuiDialogContentText-root")
-    expect(popup_message).to_be_visible()
-    expect(popup_message).to_have_text('Request to pay created successfully!')
+    popup_message = page.locator("div[role='dialog']")
+    expect(popup_message).to_have_text('Richiesta di pagamento inviata correttamente')
+    # popup_message = page.locator("div[role='alert']")
+    # expect(popup_message).to_have_text('Errore durante la creazione della richiesta di pagamento')
 
 
 @allure.feature('RTP Submission')
