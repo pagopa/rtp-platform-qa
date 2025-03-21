@@ -1,9 +1,10 @@
 import allure
 import pytest
 
-from api.auth import get_cbi_access_token, get_valid_access_token
+from api.auth import get_cbi_access_token
 from api.debtor_service_provider import send_srtp_to_cbi
-from config.configuration import secrets, config
+from config.configuration import config
+from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
 from utils.cryptography import pfx_to_pem
 from utils.dataset import generate_cbi_rtp_data
