@@ -10,6 +10,9 @@ def srtp_callback(cert_path: str, key_path: str, rtp_payload):
             key_path
         ),
         url=config.callback_url,
+        headers={
+            'Version': 'v1'
+        },
         json=rtp_payload,
         timeout=config.default_timeout
     )
