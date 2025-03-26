@@ -34,6 +34,7 @@ def page(playwright_browser):
 @allure.title('RTP form is filled and submitted')
 def test_rtp_form_submission(page):
     rtp_data = generate_rtp_data()
+    rtp_data['payer']['payerId'] = 'CPPRML60T46X000R'
 
     page.goto(page_url)
     expect(page).to_have_url(config.login_page_path)
