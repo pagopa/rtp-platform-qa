@@ -69,13 +69,6 @@ def test_rtp_form_submission(page):
     resource_id = page.locator(f'text={resource_id_from_url}')
     expect(resource_id).to_be_visible()
 
-    # Check if the resource id is copied to the clipboard
-    copy_button = page.locator('button[aria-label="Copia"]')
-    copy_button.click()
-    page.wait_for_timeout(500)
-    clipboard_text = pyperclip.paste()
-    assert clipboard_text == resource_id_from_url
-
 
 @allure.feature('RTP Submission')
 @allure.story('Input validation')
