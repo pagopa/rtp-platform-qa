@@ -2,7 +2,8 @@ import allure
 import pytest
 
 from api.callback import srtp_callback
-from config.configuration import secrets, config
+from config.configuration import config
+from config.configuration import secrets
 from utils.cryptography import pfx_to_pem
 from utils.dataset import generate_rtp_data
 
