@@ -12,7 +12,7 @@ import uuid
 @allure.feature('RTP Cancel')
 @allure.story('Service provider cancels RTP')
 @allure.title('RTP is successfully cancelled')
-@pytest.mark.callback
+@pytest.mark.cancel
 @pytest.mark.happy_path
 def test_cancel_rtp_success():
     rtp_data = generate_rtp_data()
@@ -44,9 +44,9 @@ def test_cancel_rtp_success():
 @allure.feature('RTP Callback')
 @allure.story('Service provider receives RTP callback')
 @allure.title('RTP callback is successfully received')
-@pytest.mark.callback
-@pytest.mark.happy_path
-def test_cancel_rtp_with_fake_resource_id():
+@pytest.mark.cancel
+@pytest.mark.unhappy_path
+def test_cancel_rtp_with_nonexistent_resource_id():
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret,
