@@ -16,5 +16,5 @@ def cancel_rtp(access_token: str, rtp_id: str):
     return requests.post(
         headers=headers,
         url=url,
-        timeout=config.cancel_api_timeout
+        timeout=config.default_timeout
     )

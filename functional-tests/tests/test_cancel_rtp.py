@@ -1,13 +1,15 @@
+import uuid
+
 import allure
 import pytest
 
 from api.activation import activate
-from api.auth import get_valid_access_token, get_access_token
+from api.auth import get_access_token
+from api.auth import get_valid_access_token
 from api.cancel_rtp import cancel_rtp
 from api.send_rtp import send_rtp
-from config.configuration import config, secrets
+from config.configuration import secrets
 from utils.dataset import generate_rtp_data
-import uuid
 
 @allure.feature('RTP Cancel')
 @allure.story('Service provider cancels RTP')
