@@ -40,7 +40,7 @@ def test_cancel_rtp_success():
     resource_id = location.split('/')[-1]
 
     cancel_response = cancel_rtp(creditor_service_provider_access_token, resource_id)
-    assert cancel_response.status_code == 200
+    assert cancel_response.status_code == 204
 
 
 @allure.feature('RTP Callback')

@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 
 from config.configuration import config
@@ -10,7 +12,8 @@ def cancel_rtp(access_token: str, rtp_id: str):
 
     headers = {
         'Authorization': f'{access_token}',
-        'Version': config.cancel_api_version
+        'Version': config.cancel_api_version,
+        'RequestId': str(uuid.uuid4())
     }
 
     return requests.post(
