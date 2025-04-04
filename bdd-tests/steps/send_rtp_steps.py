@@ -12,10 +12,16 @@ def when_sp_sends_rtp(context, debtor_name: str, role: str):
     res = send_rtp(access_token=context.access_tokens[role], rtp_payload=generate_rtp_data(payer_id=debtor_fc))
     context.latest_rtp_response = res
 
+@given('the {role} Service Provider sent an RTP to the debtor {debtor_name}')
+def given_sp_sent_rtp(context, debtor_name: str, role: str):
+    when_sp_sends_rtp(context, debtor_name, role)
+    then_the_rtp_is_created(context)
 
 @then('the RTP is created correctly')
 def then_the_rtp_is_created(context):
     assert context.latest_rtp_response.status_code == 201
+    resource_id = context.latest_rtp_response.headers['Location'].split('/')[-1]
+    context.latest_rtp_resource_id = resource_id
 
 
 @then('the RTP is not created because {reason_ko}')
