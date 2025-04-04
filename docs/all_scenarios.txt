@@ -5,4 +5,7 @@ A debtor Service Provider tries to activates a debtor 2 times, failing the secon
 An authenticated Service Provider cannot send an RTP to an activated debtor
 An authenticated Service Provider cannot send an RTP to an unactivated debtor
 An authenticated creditor Service Provider can send an RTP to an activated debtor
+Attempt to cancel a non-existing RTP
+Attempt to cancel an already cancelled RTP
 Successful login
+Successfully cancel a Request to Pay
