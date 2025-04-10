@@ -207,3 +207,35 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
         },
         'callbackUrl': 'http://spsrtp.api.uat.cstar.pagopa.it'
     }
+
+
+def generate_callback_data():
+    return {
+        'resourceId': '456789123-rtp-response-001',
+        'AsynchronousSepaRequestToPayResponse': {
+            'CdtrPmtActvtnReqStsRpt': {
+                'GrpHdr': {
+                    'MsgId': 'RESPONSE-MSG-001',
+                    'CreDtTm': '2025-03-21T10:15:30',
+                    'InitgPty': {
+                        'Id': {
+                            'OrgId': {
+                                'AnyBIC': 'MOCKSP04'
+                            }
+                        }
+                    }
+                },
+                'OrgnlGrpInfAndSts': {
+                    'OrgnlMsgId': 'ORIGINAL-REQ-001',
+                    'OrgnlMsgNmId': 'pain.013.001.08',
+                    'OrgnlCreDtTm': '2025-03-20T14:30:00'
+                }
+            }
+        },
+        '_links': {
+            'initialSepaRequestToPayUri': {
+                'href': 'https://api-rtp-cb.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001',
+                'templated': False
+            }
+        }
+    }
