@@ -234,7 +234,7 @@ def generate_callback_data():
         },
         '_links': {
             'initialSepaRequestToPayUri': {
-                'href': 'https://api-rtp-cb.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001',
+                'href': 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001',
                 'templated': False
             }
         }
