@@ -94,3 +94,22 @@ def test_fail_activate_debtor_incongruent_service_provider():
 
     res = activate(access_token, debtor_fc, 'WRONGS01')
     assert res.status_code == 403
+
+
+@allure.feature('Activation')
+@allure.story('Debtor activation')
+@allure.title('A debtor cannot be activated more than once')
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_fail_activate_debtor_two_times():
+    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
+                                          client_secret=secrets.debtor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
+    debtor_fc = fake_fc()
+
+    res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
+    assert res.status_code == 201, f'Error activating debtor, expected 201 but got {res.status_code}'
+
+    res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
+    assert res.status_code == 409, f'Error activating debtor, expected 409 but got {res.status_code}'
+    assert res.json()['errors'][0]['code'] == 'Conflict.activationReqDtoMono.payer.fiscalCode'
