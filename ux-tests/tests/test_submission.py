@@ -2,31 +2,13 @@ import re
 from datetime import datetime
 
 import allure
-import pytest
 from playwright.sync_api import expect
-from playwright.sync_api import sync_playwright
 
 from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import generate_rtp_data
 
 page_url = config.landing_page_path
-
-
-@pytest.fixture(scope='session')
-def playwright_browser():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        yield browser
-        browser.close()
-
-
-@pytest.fixture
-def page(playwright_browser):
-    page = playwright_browser.new_page()
-    yield page
-    page.close()
-
 
 @allure.feature('RTP Submission')
 @allure.story('RTP submission though web page')

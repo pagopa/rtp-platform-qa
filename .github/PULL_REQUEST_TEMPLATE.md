@@ -50,19 +50,10 @@
 
 ### Did you update dependencies accordingly?
 
-Run:
-
-- `pipenv run pip freeze > requirements.txt`
-- `pipenv install -r requirements.txt`
-
-and check for changes.
-
-- [ ] Yes
-  - [ ] `requirements.txt`
-  - [ ] `Pipfile`
-  - [ ] `Pipfile.lock`
+- [ ] Yes (which requirements.txt did you update?)
+<!--- Describe which requirements.txt did you update -->
 - [ ] Not needed
-- [ ] No (_please provide further information_)
+
 
 ### Other information
 
