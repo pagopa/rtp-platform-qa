@@ -209,7 +209,7 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
     }
 
 
-def generate_callback_data():
+def generate_callback_data(BIC: str = 'MOCKSP04') -> dict:
     return {
         'resourceId': '456789123-rtp-response-001',
         'AsynchronousSepaRequestToPayResponse': {
@@ -220,7 +220,7 @@ def generate_callback_data():
                     'InitgPty': {
                         'Id': {
                             'OrgId': {
-                                'AnyBIC': 'MOCKSP04'
+                                'AnyBIC': BIC
                             }
                         }
                     }
