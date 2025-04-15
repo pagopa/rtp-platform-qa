@@ -322,7 +322,7 @@ jobs:
   Aggregate_Results:
     runs-on: ubuntu-latest
     needs: Contract_Tests
-    if: always() && github.ref == 'refs/heads/slack\-notifications'
+    if: always() && github.ref == 'refs/heads/slack-notifications'
     steps:
       - name: Copy functional results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
