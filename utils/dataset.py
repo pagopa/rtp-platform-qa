@@ -209,7 +209,7 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
     }
 
 
-def generate_callback_data(BIC: str = 'MOCKSP04') -> dict:
+def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
     return {
         'resourceId': '456789123-rtp-response-001',
         'AsynchronousSepaRequestToPayResponse': {
@@ -236,6 +236,101 @@ def generate_callback_data(BIC: str = 'MOCKSP04') -> dict:
             'initialSepaRequestToPayUri': {
                 'href': 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001',
                 'templated': False
+            }
+        }
+    }
+
+
+def generate_static_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
+    return {
+        'resourceId': 'TestRtpMessageJZixUlWE3uYcb4k3lF4',
+        'AsynchronousSepaRequestToPayResponse': {
+            'resourceId': 'TestRtpMessageJZixUlWE3uYcb4k3lF4',
+            'Document': {
+                'CdtrPmtActvtnReqStsRpt': {
+                    'GrpHdr': {
+                        'MsgId': '6588c58bcba84b0382422d45e5d04257',
+                        'CreDtTm': '2025-03-27T14:10:16.972736305Z',
+                        'InitgPty': {
+                            'Id': {
+                                'OrgId': {
+                                    'AnyBIC': BIC
+                                }
+                            }
+                        }
+                    },
+                    'OrgnlGrpInfAndSts': {
+                        'OrgnlMsgId': 'TestRtpMessageRP4El6L3npCOG9cbS8D',
+                        'OrgnlMsgNmId': 'pain.013.001.07',
+                        'OrgnlCreDtTm': '2025-03-27T15:10:11Z'
+                    },
+                    'OrgnlPmtInfAndSts': [
+                        {
+                            'OrgnlPmtInfId': 'ab85fbb7a48a4a669b5436ee5b497036',
+                            'TxInfAndSts': {
+                                'StsId': '6588c58bcba84b0382422d45e5d04257',
+                                'OrgnlInstrId': 'TestRtpMessageZaGCFHXTNi4kaFainM',
+                                'OrgnlEndToEndId': '302001234876234678',
+                                'TxSts': 'RJCT',
+                                'StsRsnInf': {
+                                    'Orgtr': {
+                                        'Id': {
+                                            'OrgId': {
+                                                'AnyBIC': BIC
+                                            }
+                                        }
+                                    }
+                                },
+                                'OrgnlTxRef': {
+                                    'PmtTpInf': {
+                                        'SvcLvl': {'Cd': 'SRTP'},
+                                        'LclInstrm': {'Prtry': 'NOTPROVIDED'}
+                                    },
+                                    'RmtInf': {'Ustrd': 'ATS001/TARI 2025 rata unica'},
+                                    'Cdtr': {
+                                        'Id': {
+                                            'OrgId': {
+                                                'Othr': {
+                                                    'Id': 'RTP-O5FCa40wJH-1743084611744',
+                                                    'SchmeNm': {'Cd': 'BOID'}
+                                                }
+                                            }
+                                        },
+                                        'Nm': 'test-creditor'
+                                    },
+                                    'Dbtr': {
+                                        'Id': {
+                                            'PrvtId': {
+                                                'Othr': {
+                                                    'Id': 'RTP-iIMMmCHVUr-1743084611744',
+                                                    'SchmeNm': {'Cd': 'POID'}
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'DbtrAgt': {
+                                        'FinInstnId': {'BICFI': BIC}
+                                    },
+                                    'CdtrAgt': {
+                                        'FinInstnId': {'BICFI': BIC}
+                                    },
+                                    'CdtrAcct': {
+                                        'Id': {
+                                            'IBAN': 'IT81E0300203280398564542723'
+                                        }
+                                    },
+                                    'Amt': {'InstdAmt': 122},
+                                    'ReqdExctnDt': {
+                                        'Dt': '2025-03-24Z'
+                                    },
+                                    'XpryDt': {
+                                        'Dt': '2025-04-26Z'
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
             }
         }
     }
