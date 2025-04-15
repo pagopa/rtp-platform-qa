@@ -241,7 +241,7 @@ def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
     }
 
 
-def generate_static_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
+def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
     return {
         'resourceId': 'TestRtpMessageJZixUlWE3uYcb4k3lF4',
         'AsynchronousSepaRequestToPayResponse': {
