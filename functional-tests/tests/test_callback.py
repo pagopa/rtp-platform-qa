@@ -83,3 +83,41 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08P_compliant():
                                       cert_path=cert,
                                       key_path=key)
     assert callback_response.status_code == 403, f'Expecting error from callback, expected 403 got {callback_response.status_code}'
+
+
+@allure.feature('RTP Callback')
+@allure.story('Service provider sends a callback referred to an RTP')
+@allure.title('Failed callback for non existing Service Provider - DS-04b compliant')
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant():
+    callback_data = generate_callback_data_DS_04b_compliant(BIC='MOCKSP99')
+
+    cert, key = pfx_to_pem(secrets.debtor_service_provider_mock_PFX_base64,
+                           secrets.debtor_service_provider_mock_PFX_password_base64,
+                           config.cert_path,
+                           config.key_path)
+
+    callback_response = srtp_callback(rtp_payload=callback_data,
+                                      cert_path=cert,
+                                      key_path=key)
+    assert callback_response.status_code == 400, f'Expecting error from callback, expected 400 got {callback_response.status_code}'
+
+
+@allure.feature('RTP Callback')
+@allure.story('Service provider sends a callback referred to an RTP')
+@allure.title('Failed callback for non existing Service Provider - DS-08P compliant')
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rtp_callback_non_existing_service_provider_DS_08P_compliant():
+    callback_data = generate_callback_data_DS_08P_compliant(BIC='MOCKSP99')
+
+    cert, key = pfx_to_pem(secrets.debtor_service_provider_mock_PFX_base64,
+                           secrets.debtor_service_provider_mock_PFX_password_base64,
+                           config.cert_path,
+                           config.key_path)
+
+    callback_response = srtp_callback(rtp_payload=callback_data,
+                                      cert_path=cert,
+                                      key_path=key)
+    assert callback_response.status_code == 400, f'Expecting error from callback, expected 400 got {callback_response.status_code}'
