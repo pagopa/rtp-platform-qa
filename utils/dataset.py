@@ -210,13 +210,20 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
 
 
 def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
+    message_id = str(uuid.uuid4())
+    resource_id = f'TestRtpMessage{generate_random_string(16)}'
+    original_msg_id = f'TestRtpMessage{generate_random_string(20)}'
+
+    create_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    original_time = (datetime.now() + timedelta(minutes=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
     return {
-        'resourceId': '456789123-rtp-response-001',
+        'resourceId': resource_id,
         'AsynchronousSepaRequestToPayResponse': {
             'CdtrPmtActvtnReqStsRpt': {
                 'GrpHdr': {
-                    'MsgId': 'RESPONSE-MSG-001',
-                    'CreDtTm': '2025-03-21T10:15:30',
+                    'MsgId': message_id,
+                    'CreDtTm': create_time,
                     'InitgPty': {
                         'Id': {
                             'OrgId': {
@@ -226,15 +233,15 @@ def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
                     }
                 },
                 'OrgnlGrpInfAndSts': {
-                    'OrgnlMsgId': 'ORIGINAL-REQ-001',
+                    'OrgnlMsgId': original_msg_id,
                     'OrgnlMsgNmId': 'pain.013.001.08',
-                    'OrgnlCreDtTm': '2025-03-20T14:30:00'
+                    'OrgnlCreDtTm': original_time
                 }
             }
         },
         '_links': {
             'initialSepaRequestToPayUri': {
-                'href': 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/123456789-original-req-001',
+                'href': f'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/{resource_id}',
                 'templated': False
             }
         }
@@ -242,15 +249,27 @@ def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
 
 
 def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
+    message_id = str(uuid.uuid4())
+    resource_id = f'TestRtpMessage{generate_random_string(16)}'
+    original_msg_id = f'TestRtpMessage{generate_random_string(20)}'
+    transaction_id = f'RTP-{generate_random_string(9)}-{int(datetime.now().timestamp() * 1000)}'
+
+    create_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    original_time = (datetime.now() + timedelta(minutes=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    amount = round(random.uniform(1, 999999), 2)
+    expiry_date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime('%Y-%m-%d')
+    execution_date = (datetime.now() + timedelta(days=random.randint(1, 15))).strftime('%Y-%m-%d')
+
     return {
-        'resourceId': 'TestRtpMessageJZixUlWE3uYcb4k3lF4',
+        'resourceId': resource_id,
         'AsynchronousSepaRequestToPayResponse': {
-            'resourceId': 'TestRtpMessageJZixUlWE3uYcb4k3lF4',
+            'resourceId': resource_id,
             'Document': {
                 'CdtrPmtActvtnReqStsRpt': {
                     'GrpHdr': {
-                        'MsgId': '6588c58bcba84b0382422d45e5d04257',
-                        'CreDtTm': '2025-03-27T14:10:16.972736305Z',
+                        'MsgId': message_id,
+                        'CreDtTm': create_time,
                         'InitgPty': {
                             'Id': {
                                 'OrgId': {
@@ -260,17 +279,17 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
                         }
                     },
                     'OrgnlGrpInfAndSts': {
-                        'OrgnlMsgId': 'TestRtpMessageRP4El6L3npCOG9cbS8D',
+                        'OrgnlMsgId': original_msg_id,
                         'OrgnlMsgNmId': 'pain.013.001.07',
-                        'OrgnlCreDtTm': '2025-03-27T15:10:11Z'
+                        'OrgnlCreDtTm': original_time
                     },
                     'OrgnlPmtInfAndSts': [
                         {
-                            'OrgnlPmtInfId': 'ab85fbb7a48a4a669b5436ee5b497036',
+                            'OrgnlPmtInfId': str(uuid.uuid4()),
                             'TxInfAndSts': {
-                                'StsId': '6588c58bcba84b0382422d45e5d04257',
-                                'OrgnlInstrId': 'TestRtpMessageZaGCFHXTNi4kaFainM',
-                                'OrgnlEndToEndId': '302001234876234678',
+                                'StsId': message_id,
+                                'OrgnlInstrId': f'TestRtpMessage{generate_random_string(20)}',
+                                'OrgnlEndToEndId': ''.join(random.choices('0123456789', k=18)),
                                 'TxSts': 'RJCT',
                                 'StsRsnInf': {
                                     'Orgtr': {
@@ -286,23 +305,23 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
                                         'SvcLvl': {'Cd': 'SRTP'},
                                         'LclInstrm': {'Prtry': 'NOTPROVIDED'}
                                     },
-                                    'RmtInf': {'Ustrd': 'ATS001/TARI 2025 rata unica'},
+                                    'RmtInf': {'Ustrd': fake.sentence()},
                                     'Cdtr': {
                                         'Id': {
                                             'OrgId': {
                                                 'Othr': {
-                                                    'Id': 'RTP-O5FCa40wJH-1743084611744',
+                                                    'Id': transaction_id,
                                                     'SchmeNm': {'Cd': 'BOID'}
                                                 }
                                             }
                                         },
-                                        'Nm': 'test-creditor'
+                                        'Nm': fake.company()
                                     },
                                     'Dbtr': {
                                         'Id': {
                                             'PrvtId': {
                                                 'Othr': {
-                                                    'Id': 'RTP-iIMMmCHVUr-1743084611744',
+                                                    'Id': transaction_id,
                                                     'SchmeNm': {'Cd': 'POID'}
                                                 }
                                             }
@@ -316,15 +335,16 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
                                     },
                                     'CdtrAcct': {
                                         'Id': {
-                                            'IBAN': 'IT81E0300203280398564542723'
+                                            'IBAN': IBAN.generate('IT', bank_code='00000', account_code=str(
+                                                round(random.random() * math.pow(10, 10))) + '99').compact
                                         }
                                     },
-                                    'Amt': {'InstdAmt': 122},
+                                    'Amt': {'InstdAmt': amount},
                                     'ReqdExctnDt': {
-                                        'Dt': '2025-03-24Z'
+                                        'Dt': f'{execution_date}Z'
                                     },
                                     'XpryDt': {
-                                        'Dt': '2025-04-26Z'
+                                        'Dt': f'{expiry_date}Z'
                                     }
                                 }
                             }
@@ -334,3 +354,7 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
             }
         }
     }
+
+
+def generate_random_string(length: int) -> str:
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
