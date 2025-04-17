@@ -44,8 +44,8 @@ def test_cancel_rtp_success():
 
 
 @allure.feature('RTP Callback')
-@allure.story('Service provider receives RTP callback')
-@allure.title('RTP callback is successfully received')
+@allure.story('Service provider cancels RTP')
+@allure.title('RTP cancellation fails if ID does not exist')
 @pytest.mark.cancel
 @pytest.mark.unhappy_path
 def test_cancel_rtp_with_nonexistent_resource_id():

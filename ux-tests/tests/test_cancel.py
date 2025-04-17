@@ -11,7 +11,7 @@ def test_rtp_form_cancellation(page):
 
     page.click('button:has-text("Cancella richiesta")')
 
-    modal = page.get_by_role("dialog", name="Vuoi cancellare la richiesta?")
+    modal = page.get_by_role('dialog', name='Vuoi cancellare la richiesta?')
     expect(modal).to_be_visible()
 
     expect(modal.locator('text=Vuoi cancellare la richiesta?')).to_be_visible()
