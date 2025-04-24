@@ -207,3 +207,154 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
         },
         'callbackUrl': 'http://spsrtp.api.uat.cstar.pagopa.it'
     }
+
+
+def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
+    message_id = str(uuid.uuid4())
+    resource_id = f'TestRtpMessage{generate_random_string(16)}'
+    original_msg_id = f'TestRtpMessage{generate_random_string(20)}'
+
+    create_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    original_time = (datetime.now() + timedelta(minutes=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    return {
+        'resourceId': resource_id,
+        'AsynchronousSepaRequestToPayResponse': {
+            'CdtrPmtActvtnReqStsRpt': {
+                'GrpHdr': {
+                    'MsgId': message_id,
+                    'CreDtTm': create_time,
+                    'InitgPty': {
+                        'Id': {
+                            'OrgId': {
+                                'AnyBIC': BIC
+                            }
+                        }
+                    }
+                },
+                'OrgnlGrpInfAndSts': {
+                    'OrgnlMsgId': original_msg_id,
+                    'OrgnlMsgNmId': 'pain.013.001.08',
+                    'OrgnlCreDtTm': original_time
+                }
+            }
+        },
+        '_links': {
+            'initialSepaRequestToPayUri': {
+                'href': f'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/{resource_id}',
+                'templated': False
+            }
+        }
+    }
+
+
+def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
+    message_id = str(uuid.uuid4())
+    resource_id = f'TestRtpMessage{generate_random_string(16)}'
+    original_msg_id = f'TestRtpMessage{generate_random_string(20)}'
+    transaction_id = f'RTP-{generate_random_string(9)}-{int(datetime.now().timestamp() * 1000)}'
+
+    create_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    original_time = (datetime.now() + timedelta(minutes=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    amount = round(random.uniform(1, 999999), 2)
+    expiry_date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime('%Y-%m-%d')
+    execution_date = (datetime.now() + timedelta(days=random.randint(1, 15))).strftime('%Y-%m-%d')
+
+    return {
+        'resourceId': resource_id,
+        'AsynchronousSepaRequestToPayResponse': {
+            'resourceId': resource_id,
+            'Document': {
+                'CdtrPmtActvtnReqStsRpt': {
+                    'GrpHdr': {
+                        'MsgId': message_id,
+                        'CreDtTm': create_time,
+                        'InitgPty': {
+                            'Id': {
+                                'OrgId': {
+                                    'AnyBIC': BIC
+                                }
+                            }
+                        }
+                    },
+                    'OrgnlGrpInfAndSts': {
+                        'OrgnlMsgId': original_msg_id,
+                        'OrgnlMsgNmId': 'pain.013.001.07',
+                        'OrgnlCreDtTm': original_time
+                    },
+                    'OrgnlPmtInfAndSts': [
+                        {
+                            'OrgnlPmtInfId': str(uuid.uuid4()),
+                            'TxInfAndSts': {
+                                'StsId': message_id,
+                                'OrgnlInstrId': f'TestRtpMessage{generate_random_string(20)}',
+                                'OrgnlEndToEndId': ''.join(random.choices('0123456789', k=18)),
+                                'TxSts': 'RJCT',
+                                'StsRsnInf': {
+                                    'Orgtr': {
+                                        'Id': {
+                                            'OrgId': {
+                                                'AnyBIC': BIC
+                                            }
+                                        }
+                                    }
+                                },
+                                'OrgnlTxRef': {
+                                    'PmtTpInf': {
+                                        'SvcLvl': {'Cd': 'SRTP'},
+                                        'LclInstrm': {'Prtry': 'NOTPROVIDED'}
+                                    },
+                                    'RmtInf': {'Ustrd': fake.sentence()},
+                                    'Cdtr': {
+                                        'Id': {
+                                            'OrgId': {
+                                                'Othr': {
+                                                    'Id': transaction_id,
+                                                    'SchmeNm': {'Cd': 'BOID'}
+                                                }
+                                            }
+                                        },
+                                        'Nm': fake.company()
+                                    },
+                                    'Dbtr': {
+                                        'Id': {
+                                            'PrvtId': {
+                                                'Othr': {
+                                                    'Id': transaction_id,
+                                                    'SchmeNm': {'Cd': 'POID'}
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'DbtrAgt': {
+                                        'FinInstnId': {'BICFI': BIC}
+                                    },
+                                    'CdtrAgt': {
+                                        'FinInstnId': {'BICFI': BIC}
+                                    },
+                                    'CdtrAcct': {
+                                        'Id': {
+                                            'IBAN': IBAN.generate('IT', bank_code='00000', account_code=str(
+                                                round(random.random() * math.pow(10, 10))) + '99').compact
+                                        }
+                                    },
+                                    'Amt': {'InstdAmt': amount},
+                                    'ReqdExctnDt': {
+                                        'Dt': f'{execution_date}Z'
+                                    },
+                                    'XpryDt': {
+                                        'Dt': f'{expiry_date}Z'
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+
+
+def generate_random_string(length: int) -> str:
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))

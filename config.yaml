@@ -14,11 +14,12 @@ activation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/activation"
 send_rtp_path: "rtps"
 activation_path: "/activations"
 callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
+callback_api_version: 'v1'
 mock_service_provider_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/sepa-request-to-pay-requests"
 activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/activation.yaml'
 send_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/send.openapi.yaml'
 mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
 cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/auth/oauth/v2/token'
-cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/sp/sepa-request-to-pay-requests'
+cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/srtp/sp/sepa-request-to-pay-requests'
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
