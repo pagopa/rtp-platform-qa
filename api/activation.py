@@ -43,3 +43,18 @@ def get_activation_by_payer_id(access_token: str, payer_fiscal_code: str):
         },
         timeout=config.default_timeout
     )
+
+def get_activation_by_payer_id_without_header(access_token: str, payer_fiscal_code: str):
+    """API to get activation of a debtor
+        :returns: the response of the call.
+        :rtype: requests.Response
+    """
+    return requests.get(
+        url=ACTIVATION_URL+'/payer',
+        headers={
+            'Authorization': f'{access_token}',
+            'RequestId': str(uuid.uuid4()),
+            'PayerId': payer_fiscal_code
+        },
+        timeout=config.default_timeout
+    )
