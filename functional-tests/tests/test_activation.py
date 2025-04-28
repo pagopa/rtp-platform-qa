@@ -5,6 +5,7 @@ import pytest
 
 from api.activation import activate
 from api.activation import get_activation_by_payer_id
+from api.activation import get_activation_by_payer_id_without_header
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from config.configuration import config
@@ -113,3 +114,19 @@ def test_fail_activate_debtor_two_times():
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
     assert res.status_code == 409, f'Error activating debtor, expected 409 but got {res.status_code}'
     assert res.json()['errors'][0]['code'] == '01031000F'
+
+@allure.feature('Activation')
+@allure.story('Debtor activation')
+@allure.title('Get activation by payer id without header returns 404')
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_missing_header():
+    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
+                                          client_secret=secrets.debtor_service_provider.client_secret,
+                                          access_token_function=get_access_token)
+    debtor_fc = fake_fc()
+
+    res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
+    assert res.status_code == 201, 'Error activating debtor'
+    res = get_activation_by_payer_id_without_header(access_token, debtor_fc)
+    assert res.status_code == 404
