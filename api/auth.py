@@ -41,3 +41,22 @@ def get_cbi_access_token(cert_path: str, key_path: str, authorization: str):
     )
 
     return token_response.json()['access_token']
+
+
+def get_poste_access_token(cert_path: str, key_path: str):
+    token_response = requests.post(
+        config.cbi_auth_url,
+        cert=(
+            cert_path,
+            key_path
+        ),
+        headers={
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data={
+            'grant_type': 'client_credentials',
+            'scope': 'srtp'
+        }
+    )
+
+    return token_response.json()['access_token']
