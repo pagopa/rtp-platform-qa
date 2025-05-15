@@ -4,17 +4,11 @@ import pytest
 from api.activation import activate
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
-from api.auth import get_cbi_access_token
-from api.auth import get_poste_access_token
 from api.send_rtp import send_rtp
-from api.send_rtp import send_rtp_to_cbi
-from api.send_rtp import send_rtp_to_poste
 from config.configuration import config
 from config.configuration import secrets
-from utils.cryptography import client_credentials_to_auth_token
 from utils.dataset import generate_rtp_data
 from utils.dataset import uuidv4_pattern
-from utils.cryptography import pfx_to_pem
 
 
 @allure.feature('RTP Send')
@@ -59,16 +53,12 @@ def test_send_rtp_to_cbi():
     fiscal_code = secrets.cbi_activated_fiscal_code
     rtp_data = generate_rtp_data(payer_id=fiscal_code)
 
-    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path,
-                           config.key_path)
-    auth = client_credentials_to_auth_token(
-        secrets.CBI_client_id,
-        secrets.CBI_client_secret
-    )
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
 
-    cbi_token = get_cbi_access_token(cert, key, auth)
-    send_response = send_rtp_to_cbi(f"Bearer {cbi_token}", rtp_data)
-
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201
 
     location = send_response.headers['Location']
@@ -88,29 +78,17 @@ def test_send_rtp_to_poste():
     fiscal_code = secrets.poste_activated_fiscal_code
     rtp_data = generate_rtp_data(payer_id=fiscal_code)
 
-    poste_token = get_valid_access_token(
+    creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+        access_token_function=get_access_token)
 
-    send_response = send_rtp(
-        access_token=poste_token,
-        rtp_payload=rtp_data
-    )
-
-    print(">>> Status code:", send_response.status_code)
-    try:
-        print(">>> Response JSON body:", send_response.json())
-    except ValueError:
-        print(">>> Response text body:", send_response.text)
-
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201
 
     location = send_response.headers['Location']
     location_split = location.split('/')
-    expected_prefix = config.rtp_creation_base_url_path + config.send_rtp_path
-    assert '/'.join(location_split[:-1]) == expected_prefix
+    assert '/'.join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
 
 
