@@ -41,3 +41,5 @@ def get_cbi_access_token(cert_path: str, key_path: str, authorization: str):
     )
 
     return token_response.json()['access_token']
+
+
