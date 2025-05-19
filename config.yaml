@@ -13,7 +13,7 @@ rtp_creation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/"
 activation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/activation"
 send_rtp_path: "rtps"
 activation_path: "/activations"
-payees_registry_path: "/payees"
+payees_registry_path: "payees/payees"
 payees_registry_api_version: "v1"
 callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
 callback_api_version: 'v1'
