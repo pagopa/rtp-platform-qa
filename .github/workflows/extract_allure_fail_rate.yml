@@ -57,7 +57,7 @@ jobs:
           else
             send_notification="false"
           fi
-          
+
           echo "FAIL_RATE=$fail_rate_number" >> $GITHUB_ENV
           echo "SEND_NOTIFICATION=$send_notification" >> $GITHUB_ENV
           echo "SUCCESS_RATE=$success_rate_string" >> $GITHUB_ENV
