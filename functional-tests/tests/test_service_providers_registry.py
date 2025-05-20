@@ -23,7 +23,6 @@ class TestServiceProvidersRegistry:
     @pytest.mark.happy_path
     def test_get_service_providers_success(self):
         response = get_service_providers_registry(self.access_token)
-        print('self.access_token', self.access_token)
 
         assert response.status_code == 200
         data = response.json()
