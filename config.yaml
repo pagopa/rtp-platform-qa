@@ -25,3 +25,5 @@ cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/auth/oauth/v2/to
 cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/srtp/sp/sepa-request-to-pay-requests'
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
+service_providers_registry: 'service_providers/service-providers'
+service_providers_registry_api_version: 'v1'

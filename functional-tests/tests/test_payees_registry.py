@@ -26,6 +26,7 @@ class TestPayeesRegistry:
     @pytest.mark.happy_path
     def test_get_payees_success(self):
         response = get_payee_registry(self.access_token)
+        print('self.access_token', self.access_token)
 
         assert response.status_code == 200
         data = response.json()
@@ -75,3 +76,5 @@ class TestPayeesRegistry:
         response = get_payee_registry('invalid_token')
 
         assert response.status_code == 401
+
+#generate test on group
