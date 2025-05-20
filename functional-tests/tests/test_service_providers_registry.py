@@ -4,7 +4,6 @@ import pytest
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from api.service_providers_registry import get_service_providers_registry
-from config.configuration import config
 from config.configuration import secrets
 
 
@@ -29,7 +28,6 @@ class TestServiceProvidersRegistry:
         assert response.status_code == 200
         data = response.json()
 
-        # Verify top-level structure
         assert 'tsps' in data, "Response should contain 'tsps' array"
         assert 'sps' in data, "Response should contain 'sps' array"
 
@@ -39,7 +37,6 @@ class TestServiceProvidersRegistry:
         assert len(data['tsps']) > 0, "Expected at least one technical service provider"
         assert len(data['sps']) > 0, "Expected at least one service provider"
 
-        # Verify TSP structure
         for tsp in data['tsps']:
             assert 'id' in tsp, "TSP should have an id"
             assert 'name' in tsp, "TSP should have a name"
@@ -53,7 +50,6 @@ class TestServiceProvidersRegistry:
             assert isinstance(tsp['certificate_serial_number'], str), "TSP certificate_serial_number should be a string"
             assert isinstance(tsp['mtls_enabled'], bool), "TSP mtls_enabled should be a boolean"
 
-            # Check oauth2 config if present
             if 'oauth2' in tsp:
                 oauth2 = tsp['oauth2']
                 assert 'token_endpoint' in oauth2, "OAuth2 should have token_endpoint"
@@ -61,7 +57,6 @@ class TestServiceProvidersRegistry:
                 assert isinstance(oauth2['token_endpoint'], str), "OAuth2 token_endpoint should be a string"
                 assert isinstance(oauth2['method'], str), "OAuth2 method should be a string"
 
-                # Optional fields check
                 if 'credentials_transport_mode' in oauth2:
                     assert isinstance(oauth2['credentials_transport_mode'], str)
                 if 'client_id' in oauth2:
@@ -71,7 +66,6 @@ class TestServiceProvidersRegistry:
                 if 'mtls_enabled' in oauth2:
                     assert isinstance(oauth2['mtls_enabled'], bool)
 
-        # Verify SP structure
         for sp in data['sps']:
             assert 'id' in sp, "SP should have an id"
             assert 'name' in sp, "SP should have a name"
@@ -84,7 +78,6 @@ class TestServiceProvidersRegistry:
             if 'role' in sp:
                 assert isinstance(sp['role'], str), "SP role should be a string"
 
-            # Verify each SP has a corresponding TSP
             tsp_ids = [tsp['id'] for tsp in data['tsps']]
             assert sp['tsp_id'] in tsp_ids, f"SP's tsp_id '{sp['tsp_id']}' should reference an existing TSP"
 
