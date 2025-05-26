@@ -14,8 +14,8 @@ class TestServiceProvidersRegistry:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.access_token = get_valid_access_token(
-            client_id=secrets.pagopa_integration.client_id,
-            client_secret=secrets.pagopa_integration.client_secret,
+            client_id=secrets.pagopa_integration_service_registry.client_id,
+            client_secret=secrets.pagopa_integration_service_registry.client_secret,
             access_token_function=get_access_token
         )
 
