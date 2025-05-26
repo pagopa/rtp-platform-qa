@@ -71,9 +71,9 @@ def test_deactivate_debtor_wrong_service_provider():
         access_token_function=get_access_token
     )
 
-    creditor_service_provider_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
+    debtor_service_provider_B_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider_B.client_id,
+        client_secret=secrets.debtor_service_provider_B.client_secret,
         access_token_function=get_access_token
     )
 
@@ -88,5 +88,5 @@ def test_deactivate_debtor_wrong_service_provider():
     location = activation_response.headers['Location']
     activation_id = location.split('/')[-1]
 
-    deactivation_response = deactivate(creditor_service_provider_token, activation_id)
+    deactivation_response = deactivate(debtor_service_provider_B_token, activation_id)
     assert deactivation_response.status_code == 404, f'Expected 404 for deactivation by wrong service provider, got {deactivation_response.status_code}'
