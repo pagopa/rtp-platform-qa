@@ -75,5 +75,3 @@ class TestPayeesRegistry:
         response = get_payee_registry('invalid_token')
 
         assert response.status_code == 401
-
-#generate test on group
