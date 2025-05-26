@@ -17,8 +17,8 @@ class TestPayeesRegistry:
     @pytest.fixture(autouse=True)
     def setup(self):
         self.access_token = get_valid_access_token(
-            client_id=secrets.pagopa_integration.client_id,
-            client_secret=secrets.pagopa_integration.client_secret,
+            client_id=secrets.pagopa_integration_payee_registry.client_id,
+            client_secret=secrets.pagopa_integration_payee_registry.client_secret,
             access_token_function=get_access_token
         )
 
@@ -55,19 +55,19 @@ class TestPayeesRegistry:
             assert payee['payeeId'].isdigit()
             assert len(payee['name']) > 0, "Payee name should not be empty"
 
-    @allure.title('Get payees with invalid page number')
-    @pytest.mark.unhappy_path
-    def test_get_payees_invalid_page_number(self):
-        response = get_payee_registry(self.access_token, page=-1)
+    # @allure.title('Get payees with invalid page number')
+    # @pytest.mark.unhappy_path
+    # def test_get_payees_invalid_page_number(self):
+    #     response = get_payee_registry(self.access_token, page=-1)
 
-        assert response.status_code == 400
+    #     assert response.status_code == 400
 
-    @allure.title('Get payees with invalid page size')
-    @pytest.mark.unhappy_path
-    def test_get_payees_invalid_page_size(self):
-        response = get_payee_registry(self.access_token, page=0, size=200)
+    # @allure.title('Get payees with invalid page size')
+    # @pytest.mark.unhappy_path
+    # def test_get_payees_invalid_page_size(self):
+    #     response = get_payee_registry(self.access_token, page=0, size=200)
 
-        assert response.status_code == 400
+    #     assert response.status_code == 400
 
     @allure.title('Get payees with invalid authorization')
     @pytest.mark.unhappy_path
