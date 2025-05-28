@@ -11,9 +11,28 @@ from utils.dataset import generate_cbi_rtp_data
 from utils.dataset import generate_rtp_data
 
 
-@allure.feature('RTP Send')
-@allure.story('Service provider sends an RTP to CBI')
-@allure.title('An RTP is sent through CBI API')
+@allure.feature("Authentication")
+@allure.story("Client authenticates to CBI")
+@allure.title("Auth endpoint returns valid token")
+@pytest.mark.auth
+def test_get_cbi_access_token():
+    auth = client_credentials_to_auth_token(
+        secrets.CBI_client_id, secrets.CBI_client_secret
+    )
+    cert, key = pfx_to_pem(
+        secrets.CBI_client_PFX_base64,
+        secrets.CBI_client_PFX_password_base64,
+        config.cert_path,
+        config.key_path,
+    )
+    token = get_cbi_access_token(cert, key, auth)
+    print(f"Auth Token: {token}")
+    assert isinstance(token, str) and token
+
+
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP to CBI")
+@allure.title("An RTP is sent through CBI API")
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.cbi
