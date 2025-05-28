@@ -23,7 +23,12 @@ git clone https://github.com/your-repo/platform-testing-repo.git
 cd platform-testing-repo
 ```
 
-### 2. Create a virtual environment
+### 2. Get secrets
+
+Obtain `secrets.yaml` file (based on `config/secrets_template.yaml`) from admins and place it under `config/`.
+
+
+### 3. Create a virtual environment
 
 It's recommended to use a virtual environment to manage dependencies.
 
@@ -57,7 +62,7 @@ It's recommended to use a virtual environment to manage dependencies.
   pip install -e .
   ```
 
-### 3. Install specific dependencies for test type
+### 4. Install specific dependencies for test type
 
 Each test type has its own requirements.txt file. You can install dependencies for individual test types using the
 following commands:
@@ -161,3 +166,10 @@ service.
 ```bash
 pytest contract-tests/*.py --disable-warnings --alluredir allure-results
 ```
+
+## Secrets Management on GitHub
+GitHub actions uses a repository secret that is serialized to a file `secrets.yaml` in the `config` directory during the run.
+This secret must be updated manually by admins when needed.
+
+[Here](https://github.com/pagopa/rtp-platform-qa/settings/secrets/actions) `INTEGRATION_TESTS_SECRETS` can update by pasting the whole YAML content.
+Note that the update is made without gaining access to the current value.
