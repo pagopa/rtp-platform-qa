@@ -2,30 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/Central%20Registry/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/Central%20Registry/activation/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/cancel_RTP/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/send_RTP_through_API/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/send_RTP_through_web_page/</loc>
-         <lastmod>2025-05-26</lastmod>
+         <lastmod>2025-05-28</lastmod>
     </url>
 </urlset>
