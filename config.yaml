@@ -22,7 +22,7 @@ activation_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis
 send_api_specification: 'https://raw.githubusercontent.com/pagopa/rtp-apis/refs/heads/main/src/rtp/api/pagopa/send.openapi.yaml'
 mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
 cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/auth/oauth/v2/token'
-cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/srtp/sp/sepa-request-to-pay-requests'
+cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/sepa-request-to-pay-requests'
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
 service_providers_registry: 'service_providers/service-providers'
