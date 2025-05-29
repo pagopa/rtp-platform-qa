@@ -108,8 +108,8 @@ def test_send_rtp_to_cbi_expired_date():
 
 
 @allure.feature('RTP Send')
-@allure.story('Service provider sends an RTP to CBI directly')
-@allure.title('An RTP is sent through CBI API')
+@allure.story('Service provider sends an RTP to POSTE directly')
+@allure.title('An RTP is sent through POSTE API')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.poste
