@@ -43,7 +43,7 @@ def test_send_rtp_api():
 
 
 @allure.feature('RTP Send')
-@allure.story('Service provider sends an RTP to a provider')
+@allure.story('Service provider sends an RTP to a provider through Sender')
 @allure.title('An RTP is sent to a CBI service with activated fiscal code')
 @pytest.mark.send
 @pytest.mark.happy_path
@@ -52,7 +52,6 @@ def test_send_rtp_api():
 def test_send_rtp_to_cbi():
     fiscal_code = secrets.cbi_activated_fiscal_code
     rtp_data = generate_rtp_data(payer_id=fiscal_code)
-
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret,

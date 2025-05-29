@@ -2,7 +2,7 @@ import allure
 import pytest
 
 from api.auth import get_cbi_access_token
-from api.debtor_service_provider import send_srtp_to_cbi
+from api.debtor_service_provider import send_srtp_to_cbi, send_srtp_to_poste
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
@@ -30,7 +30,7 @@ def test_get_cbi_access_token():
 
 
 @allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP to CBI")
+@allure.story("Service provider sends an RTP to CBI directly")
 @allure.title("An RTP is sent through CBI API")
 @pytest.mark.send
 @pytest.mark.happy_path
@@ -104,3 +104,17 @@ def test_send_rtp_to_cbi_expired_date():
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
     assert response.status_code == 400
+
+
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP to CBI directly")
+@allure.title("An RTP is sent through CBI API")
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.poste
+def test_send_rtp_to_poste():
+    rtp_data = generate_rtp_data()
+    cbi_payload = generate_cbi_rtp_data(rtp_data)
+
+    response = send_srtp_to_poste(cbi_payload)
+    assert response.status_code == 201
