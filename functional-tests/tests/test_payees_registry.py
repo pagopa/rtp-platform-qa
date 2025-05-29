@@ -33,18 +33,18 @@ class TestPayeesRegistry:
         assert 'payees' in data
         assert 'page' in data
         assert isinstance(data['payees'], list)
-        
-        assert len(data['payees']) > 0, "Expected at least one payee in the response"
+
+        assert len(data['payees']) > 0, 'Expected at least one payee in the response'
 
         page_metadata = data['page']
         assert all(key in page_metadata for key in ['totalElements', 'totalPages', 'page', 'size'])
-        
-        assert page_metadata['totalElements'] >= len(data['payees']), "Total elements should be at least the number of payees returned"
-        assert page_metadata['totalPages'] > 0, "Should have at least one page"
-        assert page_metadata['page'] >= 0, "Page number should be non-negative"
-        assert page_metadata['size'] > 0, "Page size should be positive"
-        
-        assert page_metadata['totalElements'] <= page_metadata['totalPages'] * page_metadata['size'], "Total elements should not exceed the capacity of all pages"
+
+        assert page_metadata['totalElements'] >= len(data['payees']), 'Total elements should be at least the number of payees returned'
+        assert page_metadata['totalPages'] > 0, 'Should have at least one page'
+        assert page_metadata['page'] >= 0, 'Page number should be non-negative'
+        assert page_metadata['size'] > 0, 'Page size should be positive'
+
+        assert page_metadata['totalElements'] <= page_metadata['totalPages'] * page_metadata['size'], 'Total elements should not exceed the capacity of all pages'
 
         for payee in data['payees']:
             assert 'payeeId' in payee
@@ -53,7 +53,7 @@ class TestPayeesRegistry:
             assert isinstance(payee['name'], str)
             assert len(payee['payeeId']) in [11, 16]
             assert payee['payeeId'].isdigit()
-            assert len(payee['name']) > 0, "Payee name should not be empty"
+            assert len(payee['name']) > 0, 'Payee name should not be empty'
 
     @allure.title('Get payees with invalid authorization')
     @pytest.mark.unhappy_path

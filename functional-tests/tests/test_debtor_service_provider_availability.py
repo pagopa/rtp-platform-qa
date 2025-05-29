@@ -2,7 +2,8 @@ import allure
 import pytest
 
 from api.auth import get_cbi_access_token
-from api.debtor_service_provider import send_srtp_to_cbi, send_srtp_to_poste
+from api.debtor_service_provider import send_srtp_to_cbi
+from api.debtor_service_provider import send_srtp_to_poste
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
@@ -11,9 +12,9 @@ from utils.dataset import generate_cbi_rtp_data
 from utils.dataset import generate_rtp_data
 
 
-@allure.feature("Authentication")
-@allure.story("Client authenticates to CBI")
-@allure.title("Auth endpoint returns valid token")
+@allure.feature('Authentication')
+@allure.story('Client authenticates to CBI')
+@allure.title('Auth endpoint returns valid token')
 @pytest.mark.auth
 def test_get_cbi_access_token():
     auth = client_credentials_to_auth_token(
@@ -29,9 +30,9 @@ def test_get_cbi_access_token():
     assert isinstance(token, str) and token
 
 
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP to CBI directly")
-@allure.title("An RTP is sent through CBI API")
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to CBI directly')
+@allure.title('An RTP is sent through CBI API')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.cbi
@@ -54,15 +55,15 @@ def test_send_rtp_to_cbi():
     assert response.status_code == 201
 
 
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP to CBI")
-@allure.title("Cannot send RTP with invalid amount")
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to CBI')
+@allure.title('Cannot send RTP with invalid amount')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.cbi
 def test_send_rtp_to_cbi_invalid_amount():
     rtp_data = generate_rtp_data()
-    rtp_data["paymentNotice"]["amount"] = -1
+    rtp_data['paymentNotice']['amount'] = -1
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
@@ -80,15 +81,15 @@ def test_send_rtp_to_cbi_invalid_amount():
     assert response.status_code == 400
 
 
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP to CBI")
-@allure.title("Cannot send RTP with expired date")
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to CBI')
+@allure.title('Cannot send RTP with expired date')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.cbi
 def test_send_rtp_to_cbi_expired_date():
     rtp_data = generate_rtp_data()
-    rtp_data["paymentNotice"]["expiryDate"] = "2020-01-01"
+    rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
@@ -106,9 +107,9 @@ def test_send_rtp_to_cbi_expired_date():
     assert response.status_code == 400
 
 
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP to CBI directly")
-@allure.title("An RTP is sent through CBI API")
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to CBI directly')
+@allure.title('An RTP is sent through CBI API')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.poste

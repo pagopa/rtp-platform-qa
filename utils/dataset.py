@@ -3,8 +3,9 @@ import random
 import re
 import string
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 
 from faker import Faker
 from schwifty import IBAN
@@ -218,7 +219,7 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                 }]
             }
         },
-        'callbackUrl': "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
+        'callbackUrl': 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send'
     }
 
 
