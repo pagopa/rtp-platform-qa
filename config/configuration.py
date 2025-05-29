@@ -1,9 +1,9 @@
 """Parse configuration file to obtain current settings.
 """
 import logging
+from pathlib import Path
 
 from dynaconf import Dynaconf
-from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent.resolve()
 

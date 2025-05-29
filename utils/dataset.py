@@ -5,6 +5,7 @@ import string
 import uuid
 from datetime import datetime
 from datetime import timedelta
+from datetime import timezone
 
 from faker import Faker
 from schwifty import IBAN
@@ -108,17 +109,26 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
         rtp_data = generate_rtp_data()
 
     resource_id = str(uuid.uuid4())
+    sanitized_id = resource_id.replace('-', '')
 
     return {
         'resourceId': resource_id,
         'Document': {
             'CdtrPmtActvtnReq': {
                 'GrpHdr': {
-                    'MsgId': resource_id,
-                    'CreDtTm': datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
+                    'MsgId': sanitized_id,
+                    'CreDtTm': datetime.now(timezone.utc).astimezone().isoformat(timespec='milliseconds'),
                     'NbOfTxs': '1',
                     'InitgPty': {
-                        'Nm': 'PagoPA'
+                        'Nm': 'PagoPA',
+                        'Id': {
+                            'OrgId': {
+                                'Othr': [{
+                                    'Id': rtp_data['payee']['payeeId'],
+                                    'SchmeNm': {'Cd': 'BOID'}
+                                }]
+                            }
+                        }
                     }
                 },
                 'PmtInf': [{
@@ -145,12 +155,12 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                     },
                     'DbtrAgt': {
                         'FinInstnId': {
-                            'BICFI': 'FAKESP01'
+                            'BICFI': 'UNCRITMM'
                         }
                     },
                     'CdtTrfTx': [{
                         'PmtId': {
-                            'InstrId': resource_id,
+                            'InstrId': sanitized_id,
                             'EndToEndId': rtp_data['paymentNotice']['noticeNumber']
                         },
                         'PmtTpInf': {
@@ -194,18 +204,22 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                                     round(random.random() * math.pow(10, 10))) + '99').compact
                             }
                         },
-                        'InstrForCdtrAgt': [{
-                            'InstrInf': rtp_data['payee']['payTrxRef']
-                        }],
+                        'InstrForCdtrAgt': [
+                            {'InstrInf': rtp_data['payee']['payTrxRef']},
+                            {'InstrInf': 'flgConf'}
+                        ],
                         'RmtInf': {
-                            'Ustrd': [rtp_data['paymentNotice']['description']]
+                            'Ustrd': [
+                                f"IMU/{rtp_data['paymentNotice']['noticeNumber']}",
+                                'ATS001/IMU'
+                            ]
                         },
                         'NclsdFile': []
                     }]
                 }]
             }
         },
-        'callbackUrl': 'http://spsrtp.api.uat.cstar.pagopa.it'
+        'callbackUrl': 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send'
     }
 
 

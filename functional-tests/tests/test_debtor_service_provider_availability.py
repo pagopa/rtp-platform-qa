@@ -3,6 +3,7 @@ import pytest
 
 from api.auth import get_cbi_access_token
 from api.debtor_service_provider import send_srtp_to_cbi
+from api.debtor_service_provider import send_srtp_to_poste
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
@@ -11,8 +12,26 @@ from utils.dataset import generate_cbi_rtp_data
 from utils.dataset import generate_rtp_data
 
 
+@allure.feature('Authentication')
+@allure.story('Client authenticates to CBI')
+@allure.title('Auth endpoint returns valid token')
+@pytest.mark.auth
+def test_get_cbi_access_token():
+    auth = client_credentials_to_auth_token(
+        secrets.CBI_client_id, secrets.CBI_client_secret
+    )
+    cert, key = pfx_to_pem(
+        secrets.CBI_client_PFX_base64,
+        secrets.CBI_client_PFX_password_base64,
+        config.cert_path,
+        config.key_path,
+    )
+    token = get_cbi_access_token(cert, key, auth)
+    assert isinstance(token, str) and token
+
+
 @allure.feature('RTP Send')
-@allure.story('Service provider sends an RTP to CBI')
+@allure.story('Service provider sends an RTP to CBI directly')
 @allure.title('An RTP is sent through CBI API')
 @pytest.mark.send
 @pytest.mark.happy_path
@@ -22,10 +41,14 @@ def test_send_rtp_to_cbi():
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
-        secrets.CBI_client_id,
-        secrets.CBI_client_secret
+        secrets.CBI_client_id, secrets.CBI_client_secret
     )
-    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path, config.key_path)
+    cert, key = pfx_to_pem(
+        secrets.CBI_client_PFX_base64,
+        secrets.CBI_client_PFX_password_base64,
+        config.cert_path,
+        config.key_path,
+    )
     cbi_token = get_cbi_access_token(cert, key, auth)
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
@@ -44,10 +67,14 @@ def test_send_rtp_to_cbi_invalid_amount():
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
-        secrets.CBI_client_id,
-        secrets.CBI_client_secret
+        secrets.CBI_client_id, secrets.CBI_client_secret
     )
-    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path, config.key_path)
+    cert, key = pfx_to_pem(
+        secrets.CBI_client_PFX_base64,
+        secrets.CBI_client_PFX_password_base64,
+        config.cert_path,
+        config.key_path,
+    )
     cbi_token = get_cbi_access_token(cert, key, auth)
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
@@ -66,11 +93,29 @@ def test_send_rtp_to_cbi_expired_date():
     cbi_payload = generate_cbi_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
-        secrets.CBI_client_id,
-        secrets.CBI_client_secret
+        secrets.CBI_client_id, secrets.CBI_client_secret
     )
-    cert, key = pfx_to_pem(secrets.CBI_client_PFX_base64, secrets.CBI_client_PFX_password_base64, config.cert_path, config.key_path)
+    cert, key = pfx_to_pem(
+        secrets.CBI_client_PFX_base64,
+        secrets.CBI_client_PFX_password_base64,
+        config.cert_path,
+        config.key_path,
+    )
     cbi_token = get_cbi_access_token(cert, key, auth)
 
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
     assert response.status_code == 400
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to POSTE directly')
+@allure.title('An RTP is sent through POSTE API')
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.poste
+def test_send_rtp_to_poste():
+    rtp_data = generate_rtp_data()
+    cbi_payload = generate_cbi_rtp_data(rtp_data)
+
+    response = send_srtp_to_poste(cbi_payload)
+    assert response.status_code == 201

@@ -43,6 +43,80 @@ def test_send_rtp_api():
 
 
 @allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to a provider through Sender')
+@allure.title('An RTP is sent to a CBI service with activated fiscal code')
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.real_integration
+@pytest.mark.cbi
+def test_send_rtp_to_cbi():
+    fiscal_code = secrets.cbi_activated_fiscal_code
+    rtp_data = generate_rtp_data(payer_id=fiscal_code)
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
+
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    location_split = location.split('/')
+    assert '/'.join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
+    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to a provider')
+@allure.title('An RTP is sent to Poste service with activated fiscal code')
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.real_integration
+@pytest.mark.poste
+def test_send_rtp_to_poste():
+    fiscal_code = secrets.poste_activated_fiscal_code
+    rtp_data = generate_rtp_data(payer_id=fiscal_code)
+
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
+
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    location_split = location.split('/')
+    assert '/'.join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
+    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to a provider')
+@allure.title('An RTP is sent to Hype service with activated fiscal code')
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.real_integration
+@pytest.mark.hype
+def test_send_rtp_to_hype():
+    fiscal_code = secrets.hype_activated_fiscal_code
+    rtp_data = generate_rtp_data(payer_id=fiscal_code)
+
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token)
+
+    send_response = send_rtp(access_token=creditor_service_provider_access_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    location_split = location.split('/')
+    assert '/'.join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
+    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
+
+
+@allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP')
 @allure.title('Debtor fiscal code must be lower case during RTP send')
 @pytest.mark.send

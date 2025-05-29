@@ -167,5 +167,4 @@ cython_debug/
 # Ignore dynaconf secret files
 config/.secrets.yaml
 
-# Ignote pem files
 *.pem

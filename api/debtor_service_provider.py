@@ -16,3 +16,15 @@ def send_srtp_to_cbi(access_token: str, rtp_payload):
         json=rtp_payload,
         timeout=config.default_timeout
     )
+
+def send_srtp_to_poste(rtp_payload):
+    return requests.post(
+        headers={
+            'Idempotency-key;': rtp_payload['resourceId'],
+            'X-Request-ID': str(uuid.uuid4())
+        },
+        url=config.poste_send_url,
+        json=rtp_payload,
+        cert=(config.cert_path, config.key_path),
+        timeout=config.default_timeout
+    )
