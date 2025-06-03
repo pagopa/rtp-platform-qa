@@ -96,6 +96,8 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
           keep_files: true
+          user_name: 'rtp-gh-bot'
+          user_email: 'rtp-github-bot@pagopa.it'
 
   BDD_Tests:
     runs-on: ubuntu-latest
@@ -159,6 +161,8 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
           keep_files: true
+          user_name: 'rtp-gh-bot'
+          user_email: 'rtp-github-bot@pagopa.it'
 
   UX_Tests:
     runs-on: ubuntu-latest
@@ -225,7 +229,8 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
           keep_files: true
-
+          user_name: 'rtp-gh-bot'
+          user_email: 'rtp-github-bot@pagopa.it'
   Performance_Tests:
     runs-on: ubuntu-latest
     needs: UX_Tests
@@ -318,6 +323,8 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
           keep_files: true
+          user_name: 'rtp-gh-bot'
+          user_email: 'rtp-github-bot@pagopa.it'
 
   Aggregate_Results:
     runs-on: ubuntu-latest
@@ -374,6 +381,8 @@ jobs:
           publish_branch: gh-pages
           publish_dir: allure-history
           keep_files: true
+          user_name: 'rtp-gh-bot'
+          user_email: 'rtp-github-bot@pagopa.it'
 
   Extract_Fail_Rate_And_Notify:
     needs: Aggregate_Results
