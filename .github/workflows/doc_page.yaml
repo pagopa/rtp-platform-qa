@@ -38,3 +38,5 @@ jobs:
           publish_dir: site
           destination_dir: docs
           keep_files: true
+          user_name: 'rtp-gh-bot'
+          user_email: 'rtp-github-bot@pagopa.it'
