@@ -2,7 +2,6 @@ import allure
 from playwright.sync_api import expect
 from test_submission import test_rtp_form_submission
 
-
 @allure.feature('RTP Submission')
 @allure.story('RTP cancellation through web page')
 @allure.title('RTP form cancellation test')
