@@ -79,7 +79,6 @@ def test_cannot_get_activation_lower_fiscal_code():
     res = get_activation_by_payer_id(access_token, debtor_fc)
     assert res.status_code == 400
 
-
 @allure.feature('Activation')
 @allure.story('Debtor activation')
 @allure.title('A debtor service provider fails activation due to wrong service provider id')
