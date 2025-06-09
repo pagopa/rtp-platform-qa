@@ -54,10 +54,49 @@ jobs:
       - name: Load secrets
         if: always()
         continue-on-error: true
-        run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
-          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
-        id: load_secrets
+           # Debtor Service Provider
+          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # Debtor Service Provider B
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
+          
+          # Creditor Service Provider
+          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
+          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
+          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # PagoPA Integration
+          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
+          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
+          
+          # Webpage credentials
+          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
+          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
+    
+          # CBI Configuration
+          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
+          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
+          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
+          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
+          
+          # Mock PFX
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
+    
+          # Fiscal Codes
+          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+        run: |
+          echo "Environment variables loaded successfully"
+          # Your application will now have access to all these environment variables
+        id: load_environment
       - name: Run functional tests
         if: always()
         continue-on-error: true
@@ -119,10 +158,49 @@ jobs:
       - name: Load secrets
         if: always()
         continue-on-error: true
-        run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
-          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
-        id: load_secrets
+           # Debtor Service Provider
+          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # Debtor Service Provider B
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
+          
+          # Creditor Service Provider
+          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
+          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
+          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # PagoPA Integration
+          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
+          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
+          
+          # Webpage credentials
+          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
+          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
+    
+          # CBI Configuration
+          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
+          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
+          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
+          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
+          
+          # Mock PFX
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
+    
+          # Fiscal Codes
+          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+        run: |
+          echo "Environment variables loaded successfully"
+          # Your application will now have access to all these environment variables
+        id: load_environment
       - name: Run BDD tests
         if: always()
         continue-on-error: true
@@ -187,10 +265,49 @@ jobs:
       - name: Load secrets
         if: always()
         continue-on-error: true
-        run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
-          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
-        id: load_secrets
+           # Debtor Service Provider
+          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # Debtor Service Provider B
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
+          
+          # Creditor Service Provider
+          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
+          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
+          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # PagoPA Integration
+          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
+          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
+          
+          # Webpage credentials
+          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
+          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
+    
+          # CBI Configuration
+          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
+          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
+          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
+          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
+          
+          # Mock PFX
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
+    
+          # Fiscal Codes
+          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+        run: |
+          echo "Environment variables loaded successfully"
+          # Your application will now have access to all these environment variables
+        id: load_environment
       - name: Run UX tests
         if: always()
         continue-on-error: true
@@ -251,10 +368,49 @@ jobs:
       - name: Load secrets
         if: always()
         continue-on-error: true
-        run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
-          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
-        id: load_secrets
+           # Debtor Service Provider
+          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # Debtor Service Provider B
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
+          
+          # Creditor Service Provider
+          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
+          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
+          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # PagoPA Integration
+          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
+          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
+          
+          # Webpage credentials
+          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
+          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
+    
+          # CBI Configuration
+          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
+          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
+          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
+          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
+          
+          # Mock PFX
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
+    
+          # Fiscal Codes
+          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+        run: |
+          echo "Environment variables loaded successfully"
+          # Your application will now have access to all these environment variables
+        id: load_environment
       - name: Run Performance tests
         if: always()
         continue-on-error: true
@@ -281,10 +437,49 @@ jobs:
       - name: Load secrets
         if: always()
         continue-on-error: true
-        run: echo "$SECRETS" >> ./config/.secrets.yaml
         env:
-          SECRETS: ${{ secrets.INTEGRATION_TESTS_SECRETS }}
-        id: load_secrets
+           # Debtor Service Provider
+          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # Debtor Service Provider B
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
+          
+          # Creditor Service Provider
+          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
+          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
+          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    
+          # PagoPA Integration
+          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
+          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
+          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
+          
+          # Webpage credentials
+          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
+          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
+    
+          # CBI Configuration
+          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
+          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
+          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
+          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
+          
+          # Mock PFX
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
+    
+          # Fiscal Codes
+          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+        run: |
+          echo "Environment variables loaded successfully"
+          # Your application will now have access to all these environment variables
+        id: load_environment
       - name: Run contract tests
         if: always()
         continue-on-error: true
