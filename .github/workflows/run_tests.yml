@@ -37,7 +37,7 @@ on:
 jobs:
   Functional_Tests:
     runs-on: ubuntu-latest
-    environment: uat 
+    environment: dev 
     name: Functional
     if: always() && (github.event.inputs.Functional  == 'true' || !github.event.inputs.Functional)
     steps:
