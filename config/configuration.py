@@ -2,8 +2,18 @@
 """
 import os
 from pathlib import Path
-
 from dynaconf import Dynaconf
+
+# Check if we're running in GitHub Actions
+IS_GITHUB_ACTIONS = os.getenv('GITHUB_ACTIONS', 'false').lower() == 'true'
+
+# Only load .env file if NOT in GitHub Actions
+if not IS_GITHUB_ACTIONS:
+    from dotenv import load_dotenv
+    load_dotenv()
+    print("Running locally - loaded .env file")
+else:
+    print("Running in GitHub Actions - using environment variables")
 
 BASE_DIR = Path(__file__).parent.parent.resolve()
 
