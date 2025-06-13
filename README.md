@@ -224,3 +224,29 @@ This secret must be updated manually by admins when needed.
 # Run it locally
 
 To run the tests locally you need to set up an .env file in the root project dir with all the vars that you can see above.
+
+
+## Project Structure
+
+```
+├── api/
+│   └── __pycache__/
+├── bdd-tests/
+│   ├── Central Registry/
+│   │   └── features/
+│   ├── Creditor Service Provider/
+│   └── steps/
+├── config/
+│   └── __pycache__/
+├── contract-tests/
+├── functional-tests/
+│   ├── __pycache__/
+│   └── tests/
+│       └── __pycache__/
+├── performance-tests/
+├── rtd_platform_qa.egg-info/
+├── utils/
+│   └── __pycache__/
+└── ux-tests/
+    └── tests/
+```
