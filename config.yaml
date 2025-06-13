@@ -26,5 +26,7 @@ cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0
 poste_send_url: 'https://rtp.coll.poste.it:446/iso20022/api/v1/sepa-request-to-pay-requests'
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
+get_rtp_path: "rtps/{rtpId}"
+get_api_version: 'v1'
 service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
