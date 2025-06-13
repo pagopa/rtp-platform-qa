@@ -168,8 +168,59 @@ pytest contract-tests/*.py --disable-warnings --alluredir allure-results
 ```
 
 ## Secrets Management on GitHub
-GitHub actions uses a repository secret that is serialized to a file `secrets.yaml` in the `config` directory during the run.
+GitHub actions uses a repository environments variables that are used by the config to settle up a configuration dictionary.
+All the envs and secrets are inside the repository's environment section under env vars and secret.
+For each environment we have to specify all the variables:
+dev, uat and prod.
+For now we are going to use just the UAT env.
+
 This secret must be updated manually by admins when needed.
 
-[Here](https://github.com/pagopa/rtp-platform-qa/settings/secrets/actions) `INTEGRATION_TESTS_SECRETS` can update by pasting the whole YAML content.
-Note that the update is made without gaining access to the current value.
+
+[Link to env var setting section](https://github.com/pagopa/rtp-platform-qa/settings/environments) 
+
+
+### Debtor Service Provider
+`DEBTOR_SERVICE_PROVIDER_CLIENT_ID` - Client ID for authenticating with the primary debtor service provider  
+`DEBTOR_SERVICE_PROVIDER_ID` - Unique identifier for the primary debtor service provider  
+`DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET` - Secret key for secure authentication with the primary debtor service provider  
+
+### Debtor Service Provider B
+`DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID` - Client ID for authenticating with the secondary debtor service provider  
+`DEBTOR_SERVICE_PROVIDER_B_ID` - Unique identifier for the secondary debtor service provider  
+`DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET` - Secret key for secure authentication with the secondary debtor service provider  
+
+### Creditor Service Provider
+`CREDITOR_SERVICE_PROVIDER_CLIENT_ID` - Client ID for authenticating with the creditor service provider  
+`CREDITOR_SERVICE_PROVIDER_ID` - Unique identifier for the creditor service provider  
+`CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET` - Secret key for secure authentication with the creditor service provider  
+
+### PagoPA Integration
+`PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID` - Client ID for accessing PagoPA payee registry services  
+`PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET` - Secret key for authenticating with PagoPA payee registry  
+
+`PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID` - Client ID for accessing PagoPA service registry  
+`PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET` - Secret key for authenticating with PagoPA service registry  
+
+### Webpage Authentication
+`WEBPAGE_USERNAME` - Username for web application login authentication  
+`WEBPAGE_PASSWORD` - Password for web application login authentication  
+
+### CBI Configuration
+`CBI_CLIENT_ID` - Client ID for CBI (Customer to Business Interaction) service authentication  
+`CBI_CLIENT_SECRET` - Secret key for CBI service authentication  
+`CBI_CLIENT_PFX_BASE64` - Base64 encoded PFX certificate for CBI client authentication  
+`CBI_CLIENT_PFX_PASSWORD_BASE64` - Base64 encoded password for the CBI PFX certificate  
+`CBI_ACTIVATED_FISCAL_CODE` - Fiscal code for activated CBI services  
+
+### Mock Service Provider Configuration
+`DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64` - Base64 encoded PFX certificate for mock debtor service provider testing  
+`DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64` - Base64 encoded password for the mock debtor service provider PFX certificate  
+
+### Poste Configuration
+`POSTE_ACTIVATED_FISCAL_CODE` - Fiscal code for activated Poste Italiane services
+
+
+# Run it locally
+
+To run the tests locally you need to set up an .env file in the root project dir with all the vars that you can see above.
