@@ -150,7 +150,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r bdd-tests/requirements.txt
           pip install -e .
-      - name: Load secrets
+      - name: Run BDD tests
         if: always()
         continue-on-error: true
         env:
@@ -192,13 +192,6 @@ jobs:
           # Fiscal Codes
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-        run: |
-          echo "Environment variables loaded successfully"
-          # Your application will now have access to all these environment variables
-        id: load_environment
-      - name: Run BDD tests
-        if: always()
-        continue-on-error: true
         run: |
           behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
       - name: Save BDD test results
@@ -258,7 +251,7 @@ jobs:
           playwright install-deps
           playwright install
           pip install -e .
-      - name: Load secrets
+      - name: Run UX tests
         if: always()
         continue-on-error: true
         env:
@@ -300,13 +293,6 @@ jobs:
           # Fiscal Codes
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-        run: |
-          echo "Environment variables loaded successfully"
-          # Your application will now have access to all these environment variables
-        id: load_environment
-      - name: Run UX tests
-        if: always()
-        continue-on-error: true
         run: |
           pytest ux-tests/tests/ --alluredir allure-results
       - name: Save UX test results
@@ -362,7 +348,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r performance-tests/requirements.txt
           pip install -e .
-      - name: Load secrets
+      - name: Run Performance tests
         if: always()
         continue-on-error: true
         env:
@@ -404,13 +390,6 @@ jobs:
           # Fiscal Codes
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-        run: |
-          echo "Environment variables loaded successfully"
-          # Your application will now have access to all these environment variables
-        id: load_environment
-      - name: Run Performance tests
-        if: always()
-        continue-on-error: true
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com --html .report/report.html
 
@@ -432,7 +411,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r contract-tests/requirements.txt
           pip install -e .
-      - name: Load secrets
+      - name: Run contract tests
         if: always()
         continue-on-error: true
         env:
@@ -474,13 +453,6 @@ jobs:
           # Fiscal Codes
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-        run: |
-          echo "Environment variables loaded successfully"
-          # Your application will now have access to all these environment variables
-        id: load_environment
-      - name: Run contract tests
-        if: always()
-        continue-on-error: true
         run: |
           pytest contract-tests/ --disable-warnings --alluredir allure-results
       - name: Save contract test results
