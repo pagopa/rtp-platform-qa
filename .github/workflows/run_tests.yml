@@ -52,7 +52,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r functional-tests/requirements.txt
           pip install -e .
-      - name: Load secrets
+      - name: Run functional tests
         if: always()
         continue-on-error: true
         env:
@@ -94,13 +94,6 @@ jobs:
           # Fiscal Codes
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-        run: |
-          echo "Environment variables loaded successfully"
-          # Your application will now have access to all these environment variables
-        id: load_environment
-      - name: Run functional tests
-        if: always()
-        continue-on-error: true
         run: |
           pytest functional-tests/tests/ --alluredir allure-results
       - name: Save functional test results
@@ -157,10 +150,6 @@ jobs:
           pip install -r requirements.txt
           pip install -r bdd-tests/requirements.txt
           pip install -e .
-      - name: Debug secrets (masked)
-        run: |
-          echo "DEBTOR_MOCK_PFX exists: $([[ -n '${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}' ]] && echo 'yes' || echo 'no')"
-          echo "CBI_PFX exists: $([[ -n '${{ secrets.CBI_CLIENT_PFX_BASE64 }}' ]] && echo 'yes' || echo 'no')"
       - name: Load secrets
         if: always()
         continue-on-error: true
