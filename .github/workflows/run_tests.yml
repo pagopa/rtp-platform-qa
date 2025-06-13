@@ -157,6 +157,10 @@ jobs:
           pip install -r requirements.txt
           pip install -r bdd-tests/requirements.txt
           pip install -e .
+      - name: Debug secrets (masked)
+        run: |
+          echo "DEBTOR_MOCK_PFX exists: $([[ -n '${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}' ]] && echo 'yes' || echo 'no')"
+          echo "CBI_PFX exists: $([[ -n '${{ secrets.CBI_CLIENT_PFX_BASE64 }}' ]] && echo 'yes' || echo 'no')"
       - name: Load secrets
         if: always()
         continue-on-error: true
