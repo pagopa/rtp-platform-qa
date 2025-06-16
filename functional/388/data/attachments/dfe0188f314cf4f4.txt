@@ -1,0 +1,33 @@
+
+🕵️ GET https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/5c064c05-17a5-4afc-85ec-3751143acc7c
+   headers= {'Authorization': 'Bearer eyJraWQiOiJjYWZlOWJiMzY2YWU0ZTNjOWM4YWM1NGUyNTJiMTRkNi9lZTNkNTZiN2Y2Yjc0NjcyYWY4MjUyNDJmMDUwNjcxNCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIxNTM3NjM3MTAwOSIsImF1ZCI6Im1pbC5wYWdvcGEuaXQiLCJjbGllbnRJZCI6IjVlOWZhZGEzLTNmMTYtNDUzNi05ODMwLTY2YWZiZDIxZGYyOSIsImlzcyI6Imh0dHBzOi8vYXBpLW1jc2hhcmVkLnVhdC5jc3Rhci5wYWdvcGEuaXQvYXV0aCIsImdyb3VwcyI6WyJ3cml0ZV9ydHBfc2VuZCIsInJlYWRfcnRwX2FjdGl2YXRpb25zIiwicmVhZF9ydHBfc2VuZCJdLCJleHAiOjE3NTAwNzA4MjMsImlhdCI6MTc1MDA2OTAyMywianRpIjoiZDAxOTI4M2MtMjkzZS00MmM2LWIxMWMtYzE0NWY2NzMxOWM2In0.aEuzqZ8M32ckuiOYkSQ9Ce4O0txGC8rHbKuV0K-8_WRzHUem8PUfiShmilK_ADPKL8x9qGRIkjnuyCGbRBBwLVkxJVKtw0agj4j6ieeEacYtm14FpCd-V1AP_tHe_K6DOWJK7CR8SQoLS2W5EV-QMqm2oY8sTt3P1lzzXCK4TVH-aRdjyMRNNQpPW58yZTKunieIMvzwTqctjYosAFgG5iAs2PiFJxlx3KAr2bVkcs0u9DVqHneDThy-ifV7pORUgWgLFz_HAjraX3yCyNSqFfXXuh1_WSLXKv7Mg-vCtl4I7b9FVLmssMrfw3MVzRmlntAKxPn2QI6pFCLWggMrV4Vc4giewtIB_ezwwurqL5KHRd6qciNrC2bic70XIvy-fFJUnBU6970cDcVkxZDxyJofbTVCVXW9ZMSpEOaleTQxedBRKxhfgXZ7bD2CnlqsyRARStXQGNXwdSaYhqar768rWrht07WF6Mf6fuayIL450yK-e0YX6wdXUCfDMPgjemaRNA9gvNFmsMoBCsAemoZ31-wLR7_cBcFmqj7Hz58aOztqBqEmPgWJkLzukZiKr0qQ5FZabUPTh3xb-8QhjYYT2psJqQnFdRPKVLwY6qOZV9Pj6hiFye_E36h_QI7bRRXDLL_RG9IkaENB3tJqGzzHIIj0o91FfqyT7zdw4IA', 'Version': 'v1', 'RequestId': '5d409a1d-1b28-4e02-8ad0-4234056b6c48', 'Content-Type': 'application/json'}
+   → status: 200
+   → body  : {
+  "resourceID" : "5c064c05-17a5-4afc-85ec-3751143acc7c",
+  "noticeNumber" : "108909137353803804",
+  "amount" : 1.710104392E7,
+  "description" : "q6B0Ng9IFKH Afd3nNlBpX6zRIxbB7JnlmEWBCWrKSxPKWZps2",
+  "expiryDate" : "2025-11-30",
+  "payerName" : "Test Name",
+  "payerId" : "DNRCHL03C70X000A",
+  "payeeName" : "Test payee company name",
+  "payeeId" : "8057195862417189",
+  "subject" : "Test payment notice",
+  "savingDateTime" : "2025-06-16T12:19:38.379",
+  "serviceProviderDebtor" : "MOCKSP04",
+  "iban" : "IT96K999999999900SRTPPAGOPA",
+  "payTrxRef" : "ABC/124",
+  "flgConf" : "flgConf",
+  "status" : "SENT",
+  "serviceProviderCreditor" : "15376371009",
+  "events" : [ {
+    "timestamp" : "2025-06-16T10:19:38.447",
+    "precStatus" : null,
+    "triggerEvent" : "CREATE_RTP"
+  }, {
+    "timestamp" : "2025-06-16T10:19:38.761",
+    "precStatus" : "CREATED",
+    "triggerEvent" : "SEND_RTP"
+  } ]
+} 
+
