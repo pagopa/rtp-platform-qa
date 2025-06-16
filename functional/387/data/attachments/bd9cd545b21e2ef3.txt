@@ -1,0 +1,12 @@
+
+🕵️ GET https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/123-not-a-uuid
+   headers= {'Authorization': 'Bearer eyJraWQiOiJjYWZlOWJiMzY2YWU0ZTNjOWM4YWM1NGUyNTJiMTRkNi9lZTNkNTZiN2Y2Yjc0NjcyYWY4MjUyNDJmMDUwNjcxNCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIxNTM3NjM3MTAwOSIsImF1ZCI6Im1pbC5wYWdvcGEuaXQiLCJjbGllbnRJZCI6IjVlOWZhZGEzLTNmMTYtNDUzNi05ODMwLTY2YWZiZDIxZGYyOSIsImlzcyI6Imh0dHBzOi8vYXBpLW1jc2hhcmVkLnVhdC5jc3Rhci5wYWdvcGEuaXQvYXV0aCIsImdyb3VwcyI6WyJ3cml0ZV9ydHBfc2VuZCIsInJlYWRfcnRwX2FjdGl2YXRpb25zIiwicmVhZF9ydHBfc2VuZCJdLCJleHAiOjE3NTAwNTk1MDQsImlhdCI6MTc1MDA1NzcwNCwianRpIjoiNDU0YWM5ZDQtNjUxMC00NjNjLThmODYtZWJhNTE1YWI2YjFhIn0.hGa8nFcDp-ZmTYUVzohx83CGxa31RoZ1VZhGKx87pJxxt5oA36ux5FghM2pnzj2bcEFaruRLIAUHt0T6vXbTP6aGRnlpK7Dxcd8s6o9D05bHfsFT-R2acnkRydZMlzjtC_1B98d6dkKQbrK6TStAICx5iN-Bf7zxR6TUCsdI_NBxOryUmWfcESNsWF1PMGeakaY9LmUQrSuq0X_9scTxL4aPNQ0Jshhz4pIqdwmqyeCTmfgAhN6HK_tfH0VaJhgJJo63Nujw3flGpnNtMaw6sPFnd6lL-k4z0bwMnDSdONCIcbS_81e7Nr6glHVo0MHCvdlvExXB9nRDw-XQ-q55BcXatHNZna9xPAMjTQ2k4XU6mCnpOkNW251CzQ5l_ixSJinEkBR6HkTBB5YUzYP2GINmLUBiLJ88DJbSiLiP1Q6JUMYXkHf2_sKgXb3InvZ-0XEqPYeP60-XNhDQiWI3FEqJCHEECC_tOixAt4Yy9iO8SB4ZNaF_df9UX2BeZp4mmanGIhMWIJ4R09BharEUgtwA61ngMOYB-XakXcFqQA_fCuZKVPR6qIfstzwKQYH4rxf74x07SpICuHas0bxXoEAQ6P5u2MS4Wezb6nb92qeno5v4502IM29NKGu4HDv-FMi9vsh6kiFbsvCF5KFiTWsTZHbTDdE39kSe3uOCQSc', 'Version': 'v1', 'RequestId': '32ae7fef-d07a-4900-83fe-609bb8f1f145', 'Content-Type': 'application/json'}
+   → status: 400
+   → body  : {
+  "timestamp" : "2025-06-16T07:11:02.753+00:00",
+  "path" : "/rtps/123-not-a-uuid",
+  "status" : 400,
+  "error" : "Bad Request",
+  "requestId" : "a78c116b-22822"
+} 
+
