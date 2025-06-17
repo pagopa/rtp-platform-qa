@@ -20,7 +20,7 @@ uuidv4_pattern = re.compile(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89a
 def generate_rtp_data(payer_id: str = ''):
     notice_number = ''.join([str(random.randint(0, 9)) for _ in range(18)])
 
-    amount = round(random.uniform(0, 999999999), 2)
+    amount = random.randint(0, 999999999)
 
     description = ''.join(random.choices(string.ascii_letters + string.digits + ' ', k=random.randint(0, 140)))
 
