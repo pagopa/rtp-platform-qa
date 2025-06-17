@@ -1,0 +1,33 @@
+
+🕵️ GET https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/8fbc450a-ff71-4cde-9755-2bf1fb391e42
+   headers= {'Authorization': 'Bearer eyJraWQiOiJjYWZlOWJiMzY2YWU0ZTNjOWM4YWM1NGUyNTJiMTRkNi9lZTNkNTZiN2Y2Yjc0NjcyYWY4MjUyNDJmMDUwNjcxNCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIxNTM3NjM3MTAwOSIsImF1ZCI6Im1pbC5wYWdvcGEuaXQiLCJjbGllbnRJZCI6IjVlOWZhZGEzLTNmMTYtNDUzNi05ODMwLTY2YWZiZDIxZGYyOSIsImlzcyI6Imh0dHBzOi8vYXBpLW1jc2hhcmVkLnVhdC5jc3Rhci5wYWdvcGEuaXQvYXV0aCIsImdyb3VwcyI6WyJ3cml0ZV9ydHBfc2VuZCIsInJlYWRfcnRwX2FjdGl2YXRpb25zIiwicmVhZF9ydHBfc2VuZCJdLCJleHAiOjE3NTAxNzE5MjAsImlhdCI6MTc1MDE3MDEyMCwianRpIjoiYmJlNzE3ODktZmI1ZS00Nzg2LTg2ZTYtYjI0Yjk5MmJmZmI0In0.OZVFtCMf9Xx997zDIkDaTJas-lz4o9E84dLx-bRFVvCLXUiUOD2XUVJOtmnJcURNzuFeIE66ZaH1MsJel2V58yL3MOWj4aqL7YLA878KbcUPYtAkmRHpLJDfIVJXNNbaMVUbQlYo47ejixkL7en2XvDv7_LML4xTCLCilY1jp-DuscLpymLttX3ksN1lU50pGGxNDD9NTu3exN2PynhnbE78RMvKRxxDLLQAwHwzxzh2PNnLH7WAiNg0zaQEQbR-EGVnj3sUHQ12usylTT4avFdfAKmlW9uZ99nhDqAkEL8y2g_mOv6eGfZH3vfLMSt4Hq9vXEh1WzBEXJwNFX6ZCsjn5kUHuUaalwxh-qgXrcAtFYAuNfxHwk2OeP9vLyPAC80oG7UtZ8yi3aFsQIcMLNsa-cR_O7BGPdp1xlPgGnhgm8Sa8GI_lB8Cq3SgwAXSwlwJfRAF_lnKFMNvezZFTO8xT0WcvEKBF3TVpGDXJl16lZKcd9cScvgte8a8F9ea7KEughW1kgAEMxA6c2iwdtFnF0NoA5PAfeJMRZJR9ecy4kgcS5epU4jtpFiAN4l6tqU-khZdJYtGdok4OJSJVfY9rI45f4JzrFsJPe7sojfgCsdInKK2m0MrJuSWCFEP8oKvfUeb9hyCU4abPW_KAaPRtE34hdvHjyotRTf8Bms', 'Version': 'v1', 'RequestId': '57c39dc7-5b0b-4982-89f0-3bbf95d7217b', 'Content-Type': 'application/json'}
+   → status: 200
+   → body  : {
+  "resourceID" : "8fbc450a-ff71-4cde-9755-2bf1fb391e42",
+  "noticeNumber" : "521297390185249415",
+  "amount" : 4.9798102269E8,
+  "description" : "jr1GPz2snX1kbdtmj259Vd1",
+  "expiryDate" : "2025-07-09",
+  "payerName" : "Test Name",
+  "payerId" : "SRGMRA95M01X000K",
+  "payeeName" : "Test payee company name",
+  "payeeId" : "90801553552",
+  "subject" : "Test payment notice",
+  "savingDateTime" : "2025-06-17T16:24:40.638",
+  "serviceProviderDebtor" : "MOCKSP04",
+  "iban" : "IT96K999999999900SRTPPAGOPA",
+  "payTrxRef" : "ABC/124",
+  "flgConf" : "flgConf",
+  "status" : "SENT",
+  "serviceProviderCreditor" : "15376371009",
+  "events" : [ {
+    "timestamp" : "2025-06-17T14:24:40.698",
+    "precStatus" : null,
+    "triggerEvent" : "CREATE_RTP"
+  }, {
+    "timestamp" : "2025-06-17T14:24:41.029",
+    "precStatus" : "CREATED",
+    "triggerEvent" : "SEND_RTP"
+  } ]
+} 
+
