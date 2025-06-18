@@ -17,7 +17,7 @@ TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
 uuidv4_pattern = re.compile(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}')
 
 
-def generate_rtp_data(payer_id: str = ''):
+def generate_rtp_data(payer_id: str = '', payee_id: str = ''):
     notice_number = ''.join([str(random.randint(0, 9)) for _ in range(18)])
 
     amount = random.randint(0, 999999999)
@@ -28,9 +28,12 @@ def generate_rtp_data(payer_id: str = ''):
 
     if not payer_id:
         payer_id = fake_fc()
+    
+    if not payee_id:
+        payee_id = random_payee_id()
 
     payee = {
-        'payeeId': ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))]),
+        'payeeId': payee_id,
         'name': TEST_PAYEE_COMPANY_NAME,
         'payTrxRef': 'ABC/124'
     }
@@ -53,6 +56,10 @@ def generate_rtp_data(payer_id: str = ''):
         'payer': payer,
         'paymentNotice': payment_notice
     }
+
+def random_payee_id():
+    """Generates a random payee ID, which can be either 11 or 16 digits long."""
+    return ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))])
 
 
 def fake_fc(age: int = None, custom_month: int = None, custom_day: int = None, sex: str = None):

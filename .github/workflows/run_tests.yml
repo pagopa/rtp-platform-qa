@@ -410,8 +410,8 @@ jobs:
           
           DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
           DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
-    
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
         run: |
           pytest contract-tests/ --disable-warnings --alluredir allure-results

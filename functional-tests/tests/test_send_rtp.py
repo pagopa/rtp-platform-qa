@@ -51,7 +51,9 @@ def test_send_rtp_api():
 @pytest.mark.cbi
 def test_send_rtp_to_cbi():
     fiscal_code = secrets.cbi_activated_fiscal_code
-    rtp_data = generate_rtp_data(payer_id=fiscal_code)
+    payee_id = secrets.cbi_payee_id
+    rtp_data = generate_rtp_data(payer_id=fiscal_code, payee_id=str(payee_id))
+
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret,
