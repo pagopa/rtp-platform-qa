@@ -75,4 +75,5 @@ secrets.CBI_client_PFX_password_base64 = os.getenv('CBI_CLIENT_PFX_PASSWORD_BASE
 secrets.debtor_service_provider_mock_PFX_base64 = os.getenv('DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64')
 secrets.debtor_service_provider_mock_PFX_password_base64 = os.getenv('DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64')
 secrets.cbi_activated_fiscal_code = os.getenv('CBI_ACTIVATED_FISCAL_CODE')
+secrets.cbi_payee_id = os.getenv('CBI_PAYEE_ID')
 secrets.poste_activated_fiscal_code = os.getenv('POSTE_ACTIVATED_FISCAL_CODE')
