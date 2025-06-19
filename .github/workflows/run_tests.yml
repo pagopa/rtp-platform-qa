@@ -85,6 +85,7 @@ jobs:
           DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
     
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
         run: |
           pytest functional-tests/tests/ --alluredir allure-results
@@ -175,6 +176,7 @@ jobs:
           DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
     
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
         run: |
           behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
@@ -268,6 +270,7 @@ jobs:
           DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
     
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
         run: |
           pytest ux-tests/tests/ --alluredir allure-results
@@ -357,6 +360,7 @@ jobs:
           DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
     
           CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com --html .report/report.html
