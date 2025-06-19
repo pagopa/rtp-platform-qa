@@ -1,0 +1,33 @@
+
+🕵️ GET https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/fbf0b44e-ee79-43ba-a8b3-087a73837212
+   headers= {'Authorization': 'Bearer eyJraWQiOiJjYWZlOWJiMzY2YWU0ZTNjOWM4YWM1NGUyNTJiMTRkNi9lZTNkNTZiN2Y2Yjc0NjcyYWY4MjUyNDJmMDUwNjcxNCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiIxNTM3NjM3MTAwOSIsImF1ZCI6Im1pbC5wYWdvcGEuaXQiLCJjbGllbnRJZCI6IjVlOWZhZGEzLTNmMTYtNDUzNi05ODMwLTY2YWZiZDIxZGYyOSIsImlzcyI6Imh0dHBzOi8vYXBpLW1jc2hhcmVkLnVhdC5jc3Rhci5wYWdvcGEuaXQvYXV0aCIsImdyb3VwcyI6WyJ3cml0ZV9ydHBfc2VuZCIsInJlYWRfcnRwX2FjdGl2YXRpb25zIiwicmVhZF9ydHBfc2VuZCJdLCJleHAiOjE3NTAzMzAzNzksImlhdCI6MTc1MDMyODU3OSwianRpIjoiNGQwMjJjNzItMjdiNi00YTQ3LWI5N2UtNzU4NmM2YTI2MWU3In0.E9DYGuKEvhh3ZN9wyss2TIs1fQYetemns7RfCay7v-iCCTlQH1to5ffEW1jpCZz9gk7vO3ape01oM_BwmgpGKT3nZ6pJNX5Bb0JGQtIqeLZgxM_-vfULc0zpmVjEYrL4obJBGLfERpcuy0CDhmGM0VY-jPFkUR0-YH5gnyHL6mADhox145U5MpmcR4Wr-iwbru3l8Tdzb23d0HKCALU_4axUyM4zGN1r8tMswtHjULsoLINbOMpCgyFhskoqSun4rKlXR0wo9wrCpNPFi9ffXe21954TzP2ZJ4PeP9C8iQ7Nvuwa62R-qCTdh04swnYqW8RDTUp_6ZhDY-VaFvgM_npmJsr_LGaode1Hqhbhn6rTVphB19cgm25rVVTTwDhrOzA4I_xU6xFY3kWU9pI5B6gW7WAdq3M1PdZ_BQC_3WLwcwJH4j3SkPIXmt4K6j08Ig7Eb8zfY64Ih6AA028ck8AEL0jg6n4gF9qG3110u4dLUddRAR7gBSDVnq41_u2cGPQIAxChEk3H96beWo4K4IPRotuAqJcQkCU5Kw6UXk8AbsMgBIVFIRPL_h4by7eUCoE26eREQ273v02rdJJcBIoTjmZFVAdlzPZNLfFgDAx7jvnOGFa9Vkv_lFnayAkuAqZoFW1nBQANpc5nbWaUzvFe43b4gPEZsssa26kEZqQ', 'Version': 'v1', 'RequestId': 'f1af1d14-88af-4ba2-915a-b8ccc18ce094', 'Content-Type': 'application/json'}
+   → status: 200
+   → body  : {
+  "resourceID" : "fbf0b44e-ee79-43ba-a8b3-087a73837212",
+  "noticeNumber" : "382774851005726558",
+  "amount" : 1.82080879E8,
+  "description" : "LbmSeVPT9omL6DaRw1xwGHTyhHNbetAe2Mc5GloiauzIy25YMqDsp1f7T2tRlYW6nbuRl7rXiu4pawZvSVV cwz2z7xTvG 6shJimGYb3BjYr",
+  "expiryDate" : "2025-09-21",
+  "payerName" : "Test Name",
+  "payerId" : "CRSNTN65H25X000Q",
+  "payeeName" : "Test payee company name",
+  "payeeId" : "6980994111843557",
+  "subject" : "Test payment notice",
+  "savingDateTime" : "2025-06-19T12:25:30.408",
+  "serviceProviderDebtor" : "MOCKSP04",
+  "iban" : "IT96K999999999900SRTPPAGOPA",
+  "payTrxRef" : "ABC/124",
+  "flgConf" : "flgConf",
+  "status" : "SENT",
+  "serviceProviderCreditor" : "15376371009",
+  "events" : [ {
+    "timestamp" : "2025-06-19T10:25:30.476",
+    "precStatus" : null,
+    "triggerEvent" : "CREATE_RTP"
+  }, {
+    "timestamp" : "2025-06-19T10:25:30.745",
+    "precStatus" : "CREATED",
+    "triggerEvent" : "SEND_RTP"
+  } ]
+} 
+
