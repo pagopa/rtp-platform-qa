@@ -1,0 +1,6 @@
+
+🕵️ GET https://api-rtp.uat.cstar.pagopa.it/rtp/rtps/1660bff4-990b-4818-aae8-1c8a57a043cc
+   headers= {'Authorization': '', 'Version': 'v1', 'RequestId': '98b60a0d-d326-4337-845a-6ddc560beacb', 'Content-Type': 'application/json'}
+   → status: 401
+   → body  :  
+
