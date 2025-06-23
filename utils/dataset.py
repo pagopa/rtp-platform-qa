@@ -257,7 +257,14 @@ def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
                     'OrgnlMsgId': original_msg_id,
                     'OrgnlMsgNmId': 'pain.013.001.08',
                     'OrgnlCreDtTm': original_time
-                }
+                },
+                'OrgnlPmtInfAndSts': [
+                    {
+                        'TxInfAndSts': {
+                            'TxSts': ['RJCT']
+                        }
+                    }
+                ]
             }
         },
         '_links': {
