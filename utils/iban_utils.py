@@ -1,11 +1,12 @@
 import math
 import random
+
 from schwifty import IBAN
 
 
 def generate_random_iban() -> str:
     """Generate a random Italian IBAN for testing purposes.
-    
+
     Returns:
         Compact IBAN string
     """
@@ -18,7 +19,7 @@ def generate_random_iban() -> str:
 
 def generate_sepa_iban() -> str:
     """Generate a random IBAN for SEPA transactions.
-    
+
     Returns:
         Compact IBAN string with specific format for SEPA
     """

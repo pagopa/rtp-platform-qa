@@ -11,6 +11,7 @@ from api.cancel_rtp import cancel_rtp
 @given('the {role} Service sent a cancellation request for the RTP')
 def when_sp_cancel_rtp(context, role):
     cancel_response = cancel_rtp(context.access_tokens[role], context.latest_rtp_resource_id)
+    context.cancel_rtp_response = cancel_response
     assert cancel_response.status_code == 204, f'Error cancelling RTP, got status code: {cancel_response.status_code}'
 
 

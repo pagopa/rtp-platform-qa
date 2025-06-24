@@ -1,24 +1,26 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
+
 from faker import Faker
 
 fake = Faker('it_IT')
 
 
 def fake_fc(
-    age: int = None, 
-    custom_month: int = None, 
-    custom_day: int = None, 
+    age: int = None,
+    custom_month: int = None,
+    custom_day: int = None,
     sex: str = None
 ) -> str:
     """Generate a fake fiscal code with customizable parameters.
-    
+
     Args:
         age: Age of the fake fiscal code
         custom_month: Custom month for the fiscal code (1-12)
         custom_day: Custom day for the fiscal code (1-31)
         sex: Sex of the person ('M' or 'F')
-        
+
     Returns:
         A fake fiscal code string
     """
@@ -52,10 +54,10 @@ def fake_fc(
 
 def month_number_to_fc_letter(month_num: int) -> str:
     """Convert month number to fiscal code letter.
-    
+
     Args:
         month_num: Month number (1-12)
-        
+
     Returns:
         Corresponding fiscal code letter
     """

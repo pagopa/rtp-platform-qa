@@ -4,10 +4,10 @@ import string
 
 def generate_random_string(length: int) -> str:
     """Generate a random string of specified length with letters and digits.
-    
+
     Args:
         length: Length of the string to generate
-        
+
     Returns:
         Random string containing letters and digits
     """
@@ -16,7 +16,7 @@ def generate_random_string(length: int) -> str:
 
 def generate_random_organization_id() -> str:
     """Generate a random 11-digit organization ID.
-    
+
     Returns:
         String containing 11 random digits
     """
@@ -25,7 +25,7 @@ def generate_random_organization_id() -> str:
 
 def random_payee_id() -> str:
     """Generate a random payee ID, which can be either 11 or 16 digits long.
-    
+
     Returns:
         String containing 11 or 16 random digits
     """
@@ -34,7 +34,7 @@ def random_payee_id() -> str:
 
 def generate_notice_number() -> str:
     """Generate a random 18-digit notice number.
-    
+
     Returns:
         String containing 18 random digits
     """
@@ -43,10 +43,10 @@ def generate_notice_number() -> str:
 
 def generate_random_digits(length: int) -> str:
     """Generate a random string of digits.
-    
+
     Args:
         length: Length of the digit string to generate
-        
+
     Returns:
         String containing random digits
     """

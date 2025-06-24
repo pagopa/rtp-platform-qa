@@ -1,14 +1,15 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 
 
 def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
     """Generate a random expiry date in the future.
-    
+
     Args:
         min_days: Minimum days from now
         max_days: Maximum days from now
-        
+
     Returns:
         Date string in YYYY-MM-DD format
     """
@@ -17,11 +18,11 @@ def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
 
 def generate_execution_date(min_days: int = 1, max_days: int = 15) -> str:
     """Generate a random execution date in the future.
-    
+
     Args:
         min_days: Minimum days from now
         max_days: Maximum days from now
-        
+
     Returns:
         Date string in YYYY-MM-DD format
     """
@@ -30,7 +31,7 @@ def generate_execution_date(min_days: int = 1, max_days: int = 15) -> str:
 
 def generate_create_time() -> str:
     """Generate current timestamp for creation time.
-    
+
     Returns:
         Timestamp string in ISO format with microseconds
     """
@@ -39,10 +40,10 @@ def generate_create_time() -> str:
 
 def generate_future_time(minutes: int = 1) -> str:
     """Generate a future timestamp.
-    
+
     Args:
         minutes: Minutes to add to current time
-        
+
     Returns:
         Timestamp string in ISO format
     """
