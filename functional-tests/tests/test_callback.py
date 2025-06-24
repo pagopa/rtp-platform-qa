@@ -77,8 +77,43 @@ def test_receive_rtp_callback_DS_04b_compliant():
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08P_compliant():
-    callback_data = generate_callback_data_DS_08P_compliant()
+    rtp_data = generate_rtp_data()
 
+    debtor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token,
+    )
+
+    creditor_service_provider_access_token = get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token,
+    )
+
+    activation_response = activate(
+        debtor_service_provider_access_token,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code == 201
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+
+    original_msg_id = resource_id.replace("-", "")
+
+    callback_data = generate_callback_data_DS_08P_compliant()
+    callback_data["AsynchronousSepaRequestToPayResponse"]["Document"]["CdtrPmtActvtnReqStsRpt"][
+        "OrgnlGrpInfAndSts"
+    ]["OrgnlMsgId"] = original_msg_id
+
+    print('callback_data', callback_data)
     cert, key = pfx_to_pem(
         secrets.debtor_service_provider_mock_PFX_base64,
         secrets.debtor_service_provider_mock_PFX_password_base64,

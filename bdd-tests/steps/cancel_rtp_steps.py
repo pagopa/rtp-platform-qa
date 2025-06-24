@@ -27,7 +27,7 @@ def then_rtp_already_cancelled(context):
 
 @then('the RTP is cancelled')
 def then_rtp_is_cancelled(context):
-    assert context.latest_cancel_response.status_code == 204, f'Expected RTP to be cancelled, got status code: {context.latest_cancel_response.status_code}'
+    assert context.cancel_rtp_response.status_code == 204, f'Expected RTP to be cancelled, got status code: {context.cancel_rtp_response.status_code}'
 
 
 @when('the {role} Service Provider send a cancellation request for a non-existing RTP')
