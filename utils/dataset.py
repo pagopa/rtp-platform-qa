@@ -1,6 +1,5 @@
 import math
 import random
-import re
 import string
 import uuid
 from datetime import datetime
@@ -9,14 +8,23 @@ from datetime import timezone
 
 from faker import Faker
 from schwifty import IBAN
+from config.configuration import config, secrets
 
 fake = Faker('it_IT')
 
 TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
 
-uuidv4_pattern = re.compile(
-    r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
-)
+
+def generate_random_organization_id():
+    return ''.join([str(random.randint(0, 9)) for _ in range(11)])
+
+
+def generate_random_iban():
+    return IBAN.generate(
+        'IT',
+        bank_code='00000',
+        account_code=str(round(random.random() * pow(10, 12)))
+    ).compact
 
 
 def generate_rtp_data(payer_id: str = '', payee_id: str = ''):
@@ -111,13 +119,28 @@ def month_number_to_fc_letter(month_num):
         return 'A'
 
 
-def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
-    """Generates CBI-compliant RTP payload"""
+def generate_cbi_rtp_data(rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None) -> dict:
+    """Generates CBI-compliant RTP payload
+
+    Args:
+        rtp_data: Optional RTP data to base the payload on
+        payee_id: Optional payee ID to use (defaults to CBI_PAYEE_ID from secrets)
+    """
     if not rtp_data:
         rtp_data = generate_rtp_data()
 
+    if not payee_id:
+        payee_id = secrets.cbi_payee_id
+    
+    if not creditor_agent_id:
+        creditor_agent_id = secrets.creditor_agent_id
+
     resource_id = str(uuid.uuid4())
     sanitized_id = resource_id.replace('-', '')
+
+    initiating_party_id = generate_random_organization_id()
+    organization_name = fake.company()
+    creditor_iban = generate_random_iban()
 
     return {
         'resourceId': resource_id,
@@ -130,11 +153,11 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                     .isoformat(timespec='milliseconds'),
                     'NbOfTxs': '1',
                     'InitgPty': {
-                        'Nm': 'PagoPA',
+                        'Nm': organization_name,
                         'Id': {
                             'OrgId': {
                                 'Othr': [
-                                    {'Id': '15376371009', 'SchmeNm': {'Cd': 'BOID'}}
+                                    {'Id': initiating_party_id, 'SchmeNm': {'Cd': 'BOID'}}
                                 ]
                             }
                         },
@@ -164,24 +187,20 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                             {
                                 'PmtId': {
                                     'InstrId': sanitized_id,
-                                    'EndToEndId': rtp_data['paymentNotice'][
-                                        'noticeNumber'
-                                    ],
+                                    'EndToEndId': rtp_data['paymentNotice']['noticeNumber'],
                                 },
                                 'PmtTpInf': {
                                     'SvcLvl': {'Cd': 'SRTP'},
                                     'LclInstrm': {'Prtry': 'PAGOPA'},
                                 },
                                 'Amt': {
-                                    'InstdAmt': float(
-                                        rtp_data['paymentNotice']['amount']
-                                    )
+                                    'InstdAmt': float(rtp_data['paymentNotice']['amount'])
                                 },
                                 'ChrgBr': 'SLEV',
                                 'CdtrAgt': {
                                     'FinInstnId': {
                                         'Othr': {
-                                            'Id': '15376371009',
+                                            'Id': creditor_agent_id,
                                             'SchmeNm': {'Cd': 'BOID'},
                                         }
                                     }
@@ -192,7 +211,7 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                                         'OrgId': {
                                             'Othr': [
                                                 {
-                                                    'Id': '77777777777',
+                                                    'Id': payee_id,
                                                     'SchmeNm': {'Cd': 'BOID'},
                                                 }
                                             ]
@@ -200,7 +219,7 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                                     },
                                 },
                                 'CdtrAcct': {
-                                    'Id': {'IBAN': 'IT96K999999999900SRTPPAGOPA'}
+                                    'Id': {'IBAN': creditor_iban}
                                 },
                                 'InstrForCdtrAgt': [
                                     {
@@ -221,7 +240,7 @@ def generate_cbi_rtp_data(rtp_data: dict = None) -> dict:
                 ],
             }
         },
-        'callbackUrl': 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send',
+        'callbackUrl': config.callback_url,
     }
 
 
