@@ -28,11 +28,55 @@ config = Dynaconf(
 config.cert_path = str(BASE_DIR / config.cert_path)
 config.key_path  = str(BASE_DIR / config.key_path)
 
-# Secrets configuration with automatic environment variable loading
+# Secrets configuration - maintain backward compatibility with existing code
 secrets = Dynaconf(
     envvar_prefix='',  # No prefix for secrets
-    environments=False,
-    settings_files=['config/secrets.yaml'],
-    # Enable automatic environment variable override
-    auto_cast=True,
+    environments=False,  # Disable environment switching
+    settings_files=[],  # No files, only environment variables
 )
+
+# Service Provider configurations with nested structure for backward compatibility
+secrets.debtor_service_provider = Dynaconf(
+    client_id=os.getenv('DEBTOR_SERVICE_PROVIDER_CLIENT_ID'),
+    service_provider_id=os.getenv('DEBTOR_SERVICE_PROVIDER_ID'),
+    client_secret=os.getenv('DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET'),
+)
+
+secrets.debtor_service_provider_B = Dynaconf(
+    client_id=os.getenv('DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID'),
+    service_provider_id=os.getenv('DEBTOR_SERVICE_PROVIDER_B_ID'),
+    client_secret=os.getenv('DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET'),
+)
+
+secrets.creditor_service_provider = Dynaconf(
+    client_id=os.getenv('CREDITOR_SERVICE_PROVIDER_CLIENT_ID'),
+    service_provider_id=os.getenv('CREDITOR_SERVICE_PROVIDER_ID'),
+    client_secret=os.getenv('CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET'),
+)
+
+secrets.pagopa_integration_payee_registry = Dynaconf(
+    client_id=os.getenv('PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID'),
+    client_secret=os.getenv('PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET'),
+)
+
+secrets.pagopa_integration_service_registry = Dynaconf(
+    client_id=os.getenv('PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID'),
+    client_secret=os.getenv('PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET'),
+)
+
+secrets.webpage = Dynaconf(
+    username=os.getenv('WEBPAGE_USERNAME'),
+    password=os.getenv('WEBPAGE_PASSWORD'),
+)
+
+# Direct attributes for backward compatibility
+secrets.CBI_client_id = os.getenv('CBI_CLIENT_ID')
+secrets.CBI_client_secret = os.getenv('CBI_CLIENT_SECRET')
+secrets.CBI_client_PFX_base64 = os.getenv('CBI_CLIENT_PFX_BASE64')
+secrets.CBI_client_PFX_password_base64 = os.getenv('CBI_CLIENT_PFX_PASSWORD_BASE64')
+secrets.debtor_service_provider_mock_PFX_base64 = os.getenv('DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64')
+secrets.debtor_service_provider_mock_PFX_password_base64 = os.getenv('DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64')
+secrets.cbi_activated_fiscal_code = os.getenv('CBI_ACTIVATED_FISCAL_CODE')
+secrets.cbi_payee_id = os.getenv('CBI_PAYEE_ID')
+secrets.creditor_agent_id = os.getenv('CREDITOR_AGENT_ID')
+secrets.poste_activated_fiscal_code = os.getenv('POSTE_ACTIVATED_FISCAL_CODE')
