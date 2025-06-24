@@ -1,46 +1,46 @@
 import math
 import random
-import string
 import uuid
-from datetime import datetime
-from datetime import timedelta
-from datetime import timezone
-
+from datetime import datetime, timedelta, timezone
 from faker import Faker
-from schwifty import IBAN
+
 from config.configuration import config, secrets
+from .generators import (
+    generate_random_string, 
+    generate_random_organization_id, 
+    random_payee_id,
+    generate_notice_number,
+    generate_random_digits
+)
+from .fiscal_code_utils import fake_fc
+from .iban_utils import generate_random_iban, generate_sepa_iban
+from .datetime_utils import (
+    generate_expiry_date, 
+    generate_execution_date,
+    generate_create_time,
+    generate_future_time
+)
+from .text_utils import generate_random_description, generate_transaction_id
 
 fake = Faker('it_IT')
 
 TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
 
 
-def generate_random_organization_id():
-    return ''.join([str(random.randint(0, 9)) for _ in range(11)])
-
-
-def generate_random_iban():
-    return IBAN.generate(
-        'IT',
-        bank_code='00000',
-        account_code=str(round(random.random() * pow(10, 12)))
-    ).compact
-
-
-def generate_rtp_data(payer_id: str = '', payee_id: str = ''):
-    notice_number = ''.join([str(random.randint(0, 9)) for _ in range(18)])
-
+def generate_rtp_data(payer_id: str = '', payee_id: str = '') -> dict:
+    """Generate RTP (Request to Pay) data for testing.
+    
+    Args:
+        payer_id: Optional payer ID, generates random if not provided
+        payee_id: Optional payee ID, generates random if not provided
+        
+    Returns:
+        Dictionary containing payee, payer, and payment notice data
+    """
+    notice_number = generate_notice_number()
     amount = random.randint(0, 999999999)
-
-    description = ''.join(
-        random.choices(
-            string.ascii_letters + string.digits + ' ', k=random.randint(0, 140)
-        )
-    )
-
-    expiry_date = (datetime.now() + timedelta(days=random.randint(1, 365))).strftime(
-        '%Y-%m-%d'
-    )
+    description = generate_random_description()
+    expiry_date = generate_expiry_date()
 
     if not payer_id:
         payer_id = fake_fc()
@@ -67,64 +67,20 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = ''):
     return {'payee': payee, 'payer': payer, 'paymentNotice': payment_notice}
 
 
-def random_payee_id():
-    """Generates a random payee ID, which can be either 11 or 16 digits long."""
-    return ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))])
-
-
-def fake_fc(
-    age: int = None, custom_month: int = None, custom_day: int = None, sex: str = None
-):
-    """Faker wrapper that generates a fake fiscal code with customizable parameters.
-    :param age: Age of the fake fiscal code.
-    :param custom_month: Custom month for the fiscal code (1-12).
-    :param custom_day: Custom day for the fiscal code (1-31).
-    :param sex: Sex of the person ('M' or 'F').
-    :returns: A fake fiscal code.
-    :rtype: str
-    """
-    fake_cf = fake.ssn()
-
-    surname = fake_cf[:3]
-    name = fake_cf[3:6]
-    year = fake_cf[6:8]
-    checksum = fake_cf[15]
-
-    if age is not None:
-        year = (datetime.now() - timedelta(days=int(age) * 365)).strftime('%Y')[2:]
-
-    if custom_month is not None and 1 <= custom_month <= 12:
-        month_letter = month_number_to_fc_letter(custom_month)
-    else:
-        month_letter = fake_cf[8]
-
-    if custom_day is not None and 1 <= custom_day <= 31:
-        day = str(custom_day).zfill(2)
-        if sex == 'F':
-            day = int(day) + 40
-        else:
-            if int(day) > 31:
-                day = str(int(day) - 40).zfill(2)
-    else:
-        day = fake_cf[9:11]
-
-    return f"{surname}{name}{year}{month_letter}{day}X000{checksum}"
-
-
-def month_number_to_fc_letter(month_num):
-    months = ['A', 'B', 'C', 'D', 'E', 'H', 'L', 'M', 'P', 'R', 'S', 'T']
-    if 1 <= int(month_num) <= 12:
-        return months[int(month_num) - 1]
-    else:
-        return 'A'
-
-
-def generate_cbi_rtp_data(rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None) -> dict:
-    """Generates CBI-compliant RTP payload
+def generate_cbi_rtp_data(
+    rtp_data: dict = None, 
+    payee_id: str = None, 
+    creditor_agent_id: str = None
+) -> dict:
+    """Generate CBI-compliant RTP payload.
 
     Args:
         rtp_data: Optional RTP data to base the payload on
         payee_id: Optional payee ID to use (defaults to CBI_PAYEE_ID from secrets)
+        creditor_agent_id: Optional creditor agent ID
+        
+    Returns:
+        Dictionary containing CBI-compliant RTP payload
     """
     if not rtp_data:
         rtp_data = generate_rtp_data()
@@ -245,14 +201,20 @@ def generate_cbi_rtp_data(rtp_data: dict = None, payee_id: str = None, creditor_
 
 
 def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
+    """Generate DS-04b compliant callback data.
+    
+    Args:
+        BIC: Bank Identifier Code
+        
+    Returns:
+        Dictionary containing DS-04b compliant callback data
+    """
     message_id = str(uuid.uuid4())
     resource_id = f"TestRtpMessage{generate_random_string(16)}"
     original_msg_id = f"TestRtpMessage{generate_random_string(20)}"
 
-    create_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    original_time = (datetime.now() + timedelta(minutes=1)).strftime(
-        '%Y-%m-%dT%H:%M:%SZ'
-    )
+    create_time = generate_create_time()
+    original_time = generate_future_time(1)
 
     return {
         'resourceId': resource_id,
@@ -281,25 +243,25 @@ def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
 
 
 def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
+    """Generate DS-08P compliant callback data.
+    
+    Args:
+        BIC: Bank Identifier Code
+        
+    Returns:
+        Dictionary containing DS-08P compliant callback data
+    """
     message_id = str(uuid.uuid4())
     resource_id = f"TestRtpMessage{generate_random_string(16)}"
     original_msg_id = f"TestRtpMessage{generate_random_string(20)}"
-    transaction_id = (
-        f"RTP-{generate_random_string(9)}-{int(datetime.now().timestamp() * 1000)}"
-    )
+    transaction_id = generate_transaction_id()
 
-    create_time = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    original_time = (datetime.now() + timedelta(minutes=1)).strftime(
-        '%Y-%m-%dT%H:%M:%SZ'
-    )
+    create_time = generate_create_time()
+    original_time = generate_future_time(1)
 
     amount = round(random.uniform(1, 999999), 2)
-    expiry_date = (datetime.now() + timedelta(days=random.randint(1, 30))).strftime(
-        '%Y-%m-%d'
-    )
-    execution_date = (datetime.now() + timedelta(days=random.randint(1, 15))).strftime(
-        '%Y-%m-%d'
-    )
+    expiry_date = generate_expiry_date(1, 30)
+    execution_date = generate_execution_date(1, 15)
 
     return {
         'resourceId': resource_id,
@@ -323,9 +285,7 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
                             'TxInfAndSts': {
                                 'StsId': message_id,
                                 'OrgnlInstrId': f"TestRtpMessage{generate_random_string(20)}",
-                                'OrgnlEndToEndId': ''.join(
-                                    random.choices('0123456789', k=18)
-                                ),
+                                'OrgnlEndToEndId': generate_random_digits(18),
                                 'TxSts': 'RJCT',
                                 'StsRsnInf': {
                                     'Orgtr': {'Id': {'OrgId': {'AnyBIC': BIC}}}
@@ -360,19 +320,7 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
                                     'DbtrAgt': {'FinInstnId': {'BICFI': BIC}},
                                     'CdtrAgt': {'FinInstnId': {'BICFI': BIC}},
                                     'CdtrAcct': {
-                                        'Id': {
-                                            'IBAN': IBAN.generate(
-                                                'IT',
-                                                bank_code='00000',
-                                                account_code=str(
-                                                    round(
-                                                        random.random()
-                                                        * math.pow(10, 10)
-                                                    )
-                                                )
-                                                + '99',
-                                            ).compact
-                                        }
+                                        'Id': {'IBAN': generate_sepa_iban()}
                                     },
                                     'Amt': {'InstdAmt': amount},
                                     'ReqdExctnDt': {'Dt': f"{execution_date}Z"},
@@ -385,7 +333,3 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
             },
         },
     }
-
-
-def generate_random_string(length: int) -> str:
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
