@@ -177,7 +177,7 @@ For now we are going to use just the UAT env.
 This secret must be updated manually by admins when needed.
 
 
-[Link to env var setting section](https://github.com/pagopa/rtp-platform-qa/settings/environments) 
+[Link to env var setting section](https://github.com/pagopa/rtp-platform-qa/settings/environments)
 
 
 ### Debtor Service Provider

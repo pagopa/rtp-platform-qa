@@ -19,7 +19,7 @@ from utils.dataset import uuidv4_pattern
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor():    
+def test_activate_debtor():
     access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
                                           client_secret=secrets.debtor_service_provider.client_secret,
                                           access_token_function=get_access_token)

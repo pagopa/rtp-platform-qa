@@ -1,9 +1,9 @@
 allure-pytest==2.13.5
 allure-python-commons==2.13.5
 cryptography==44.0.2
+dotenv==0.9.9
 dynaconf==3.2.6
 faker==22.5.1
 requests==2.32.4
 schwifty==2025.1.0
 urllib3==2.5.0
-dotenv==0.9.9
