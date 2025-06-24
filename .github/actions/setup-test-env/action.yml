@@ -1,0 +1,52 @@
+name: 'Setup Test Environment'
+description: 'Sets up Python environment and installs dependencies for different test types'
+inputs:
+  test-type:
+    description: 'Type of test (functional, bdd, ux, performance, contract)'
+    required: true
+  python-version:
+    description: 'Python version'
+    required: false
+    default: '3.x'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
+      with:
+        python-version: ${{ inputs.python-version }}
+    
+    - name: Install base dependencies
+      shell: bash
+      run: |
+        pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+    
+    - name: Install test-specific dependencies
+      shell: bash
+      run: |
+        case "${{ inputs.test-type }}" in
+          "functional")
+            pip install -r functional-tests/requirements.txt
+            ;;
+          "bdd")
+            pip install -r bdd-tests/requirements.txt
+            ;;
+          "ux")
+            pip install playwright pytest-playwright
+            playwright install-deps
+            playwright install
+            ;;
+          "performance")
+            pip install -r performance-tests/requirements.txt
+            ;;
+          "contract")
+            pip install -r contract-tests/requirements.txt
+            ;;
+          *)
+            echo "Unknown test type: ${{ inputs.test-type }}"
+            exit 1
+            ;;
+        esac

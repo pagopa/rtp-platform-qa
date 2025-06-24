@@ -1,0 +1,50 @@
+name: 'Generate Allure Report'
+description: 'Generates and publishes Allure test reports'
+inputs:
+  test-type:
+    description: 'Type of test for subfolder naming'
+    required: true
+  artifact-name:
+    description: 'Name of the artifact to upload'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Save test results
+      uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: allure-results
+    
+    - name: Load test report history
+      uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+      if: always()
+      continue-on-error: true
+      with:
+        ref: gh-pages
+        path: gh-pages
+    
+    - name: Build test report
+      uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+      if: always()
+      continue-on-error: true
+      with:
+        gh_pages: gh-pages
+        allure_results: allure-results
+        allure_report: allure-report
+        allure_history: allure-history
+        subfolder: ${{ inputs.test-type }}
+        keep_reports: 30
+    
+    - name: Publish test report
+      uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
+      if: always()
+      continue-on-error: true
+      with:
+        github_token: ${{ github.token }}
+        publish_branch: gh-pages
+        publish_dir: allure-history
+        keep_files: true
+        user_name: 'rtp-gh-bot'
+        user_email: 'rtp-github-bot@pagopa.it'
