@@ -177,7 +177,7 @@ For now we are going to use just the UAT env.
 This secret must be updated manually by admins when needed.
 
 
-[Link to env var setting section](https://github.com/pagopa/rtp-platform-qa/settings/environments) 
+[Link to env var setting section](https://github.com/pagopa/rtp-platform-qa/settings/environments)
 
 
 ### Debtor Service Provider
@@ -212,6 +212,8 @@ This secret must be updated manually by admins when needed.
 `CBI_CLIENT_PFX_BASE64` - Base64 encoded PFX certificate for CBI client authentication  
 `CBI_CLIENT_PFX_PASSWORD_BASE64` - Base64 encoded password for the CBI PFX certificate  
 `CBI_ACTIVATED_FISCAL_CODE` - Fiscal code for activated CBI services  
+`CBI_PAYEE_ID`- CBI payee ID
+`CREDITOR_AGENT_ID`- Creditor agent ID
 
 ### Mock Service Provider Configuration
 `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64` - Base64 encoded PFX certificate for mock debtor service provider testing  
