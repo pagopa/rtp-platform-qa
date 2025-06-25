@@ -1,5 +1,5 @@
-import math
 import random
+import re
 import uuid
 from datetime import datetime
 from datetime import timedelta
@@ -27,6 +27,10 @@ from config.configuration import secrets
 fake = Faker('it_IT')
 
 TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
+
+uuidv4_pattern = re.compile(
+    r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
+)
 
 
 def generate_rtp_data(payer_id: str = '', payee_id: str = '') -> dict:
@@ -70,9 +74,7 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '') -> dict:
 
 
 def generate_cbi_rtp_data(
-    rtp_data: dict = None,
-    payee_id: str = None,
-    creditor_agent_id: str = None
+    rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None
 ) -> dict:
     """Generate CBI-compliant RTP payload.
 
@@ -115,7 +117,10 @@ def generate_cbi_rtp_data(
                         'Id': {
                             'OrgId': {
                                 'Othr': [
-                                    {'Id': initiating_party_id, 'SchmeNm': {'Cd': 'BOID'}}
+                                    {
+                                        'Id': initiating_party_id,
+                                        'SchmeNm': {'Cd': 'BOID'},
+                                    }
                                 ]
                             }
                         },
@@ -145,14 +150,18 @@ def generate_cbi_rtp_data(
                             {
                                 'PmtId': {
                                     'InstrId': sanitized_id,
-                                    'EndToEndId': rtp_data['paymentNotice']['noticeNumber'],
+                                    'EndToEndId': rtp_data['paymentNotice'][
+                                        'noticeNumber'
+                                    ],
                                 },
                                 'PmtTpInf': {
                                     'SvcLvl': {'Cd': 'SRTP'},
                                     'LclInstrm': {'Prtry': 'PAGOPA'},
                                 },
                                 'Amt': {
-                                    'InstdAmt': float(rtp_data['paymentNotice']['amount'])
+                                    'InstdAmt': float(
+                                        rtp_data['paymentNotice']['amount']
+                                    )
                                 },
                                 'ChrgBr': 'SLEV',
                                 'CdtrAgt': {
@@ -176,9 +185,7 @@ def generate_cbi_rtp_data(
                                         }
                                     },
                                 },
-                                'CdtrAcct': {
-                                    'Id': {'IBAN': creditor_iban}
-                                },
+                                'CdtrAcct': {'Id': {'IBAN': creditor_iban}},
                                 'InstrForCdtrAgt': [
                                     {
                                         'InstrInf': f"ATR113/{rtp_data['payee']['payTrxRef']}"
@@ -321,9 +328,7 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
                                     },
                                     'DbtrAgt': {'FinInstnId': {'BICFI': BIC}},
                                     'CdtrAgt': {'FinInstnId': {'BICFI': BIC}},
-                                    'CdtrAcct': {
-                                        'Id': {'IBAN': generate_sepa_iban()}
-                                    },
+                                    'CdtrAcct': {'Id': {'IBAN': generate_sepa_iban()}},
                                     'Amt': {'InstdAmt': amount},
                                     'ReqdExctnDt': {'Dt': f"{execution_date}Z"},
                                     'XpryDt': {'Dt': f"{expiry_date}Z"},
