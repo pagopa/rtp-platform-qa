@@ -116,7 +116,8 @@ def test_send_rtp_to_cbi_expired_date():
 @pytest.mark.poste
 def test_send_rtp_to_poste():
     rtp_data = generate_rtp_data()
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    poste_payload = generate_cbi_rtp_data(rtp_data, bic='PPAYITR1XXX')
 
-    response = send_srtp_to_poste(cbi_payload)
+    response = send_srtp_to_poste(poste_payload)
+
     assert response.status_code == 201
