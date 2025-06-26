@@ -31,5 +31,7 @@ def send_srtp_to_poste(rtp_payload):
         },
         url=config.poste_send_url,
         json=rtp_payload,
-        timeout=config.default_timeout
+        cert=(config.cert_path, config.key_path),
+        timeout=config.default_timeout,
+        verify=False
     )
