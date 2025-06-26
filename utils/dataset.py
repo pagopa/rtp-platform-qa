@@ -33,18 +33,21 @@ uuidv4_pattern = re.compile(
 )
 
 
-def generate_rtp_data(payer_id: str = '', payee_id: str = '') -> dict:
+def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '') -> dict:
     """Generate RTP (Request to Pay) data for testing.
 
     Args:
         payer_id: Optional payer ID, generates random if not provided
         payee_id: Optional payee ID, generates random if not provided
+        bic: Optional BIC code for debtor agent
 
     Returns:
         Dictionary containing payee, payer, and payment notice data
     """
     notice_number = generate_notice_number()
-    amount = random.randint(0, 999999999)
+    amount = random.randint(100, 10000)
+    # amount = random.randint(0, 999999999)
+
     description = generate_random_description()
     expiry_date = generate_expiry_date()
 
@@ -70,11 +73,16 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '') -> dict:
         'expiryDate': expiry_date,
     }
 
-    return {'payee': payee, 'payer': payer, 'paymentNotice': payment_notice}
+    rtp_data = {'payee': payee, 'payer': payer, 'paymentNotice': payment_notice}
+
+    if bic:
+        rtp_data['bic'] = bic
+
+    return rtp_data
 
 
 def generate_cbi_rtp_data(
-    rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None
+    rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None, bic: str = None
 ) -> dict:
     """Generate CBI-compliant RTP payload.
 
@@ -82,6 +90,7 @@ def generate_cbi_rtp_data(
         rtp_data: Optional RTP data to base the payload on
         payee_id: Optional payee ID to use (defaults to CBI_PAYEE_ID from secrets)
         creditor_agent_id: Optional creditor agent ID
+        bic: Optional BIC code (deprecated, use rtp_data['bic'] instead)
 
     Returns:
         Dictionary containing CBI-compliant RTP payload
@@ -92,6 +101,9 @@ def generate_cbi_rtp_data(
     if not payee_id:
         payee_id = secrets.cbi_payee_id
 
+    if bic:
+        rtp_data['bic'] = bic
+
     if not creditor_agent_id:
         creditor_agent_id = secrets.creditor_agent_id
 
@@ -101,6 +113,8 @@ def generate_cbi_rtp_data(
     initiating_party_id = generate_random_organization_id()
     organization_name = fake.company()
     creditor_iban = generate_random_iban()
+
+    debtor_bic = bic if bic else 'UNCRITMM'
 
     return {
         'resourceId': resource_id,
@@ -145,7 +159,7 @@ def generate_cbi_rtp_data(
                                 }
                             },
                         },
-                        'DbtrAgt': {'FinInstnId': {'BICFI': 'UNCRITMM'}},
+                        'DbtrAgt': {'FinInstnId': {'BICFI': debtor_bic}},
                         'CdtTrfTx': [
                             {
                                 'PmtId': {
@@ -268,6 +282,7 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
     create_time = generate_create_time()
     original_time = generate_future_time(1)
 
+    # amount = random.randint(0, 999999999)
     amount = round(random.uniform(1, 999999), 2)
     expiry_date = generate_expiry_date(1, 30)
     execution_date = generate_execution_date(1, 15)
