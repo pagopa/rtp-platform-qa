@@ -24,6 +24,7 @@ mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
 cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/nexi/oauth/v2/token'
 cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/sepa-request-to-pay-requests'
 poste_send_url: 'https://rtp.svil.poste.it:446/iso20022/api/v1/sepa-request-to-pay-requests'
+iccrea_send_url: 'https://r5i-svil.api.gbi.bcc.it/pagopa4/pagopa-broker-api/pagopa/srtp/sepa-request-to-pay-requests'
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
 get_rtp_path: "rtps/{rtpId}"

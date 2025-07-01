@@ -5,6 +5,7 @@ import pytest
 from api.auth import get_cbi_access_token
 from api.debtor_service_provider import send_srtp_to_cbi
 from api.debtor_service_provider import send_srtp_to_poste
+from api.debtor_service_provider import send_srtp_to_iccrea
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
@@ -39,7 +40,7 @@ def test_get_cbi_access_token():
 @pytest.mark.cbi
 def test_send_rtp_to_cbi():
     rtp_data = generate_rtp_data()
-    cbi_payload = generate_epc_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data, bic='UNCRITMM')
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -66,7 +67,7 @@ def test_send_rtp_to_cbi():
 def test_send_rtp_to_cbi_invalid_amount():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['amount'] = -1
-    cbi_payload = generate_epc_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data, bic='UNCRITMM')
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -92,7 +93,7 @@ def test_send_rtp_to_cbi_invalid_amount():
 def test_send_rtp_to_cbi_expired_date():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
-    cbi_payload = generate_epc_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data, bic='UNCRITMM')
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -134,7 +135,7 @@ def test_send_rtp_to_poste():
 def test_send_rtp_to_poste_invalid_amount():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['amount'] = -1
-    poste_payload = generate_epc_rtp_data(rtp_data)
+    poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
     response = send_srtp_to_poste(poste_payload)
 
     assert response.status_code == 400
@@ -148,7 +149,7 @@ def test_send_rtp_to_poste_invalid_amount():
 def test_send_rtp_to_poste_over_limit_amount():
     over_limit_amount = 1_000_000_000_000
     rtp_data = generate_rtp_data(amount=over_limit_amount)
-    poste_payload = generate_epc_rtp_data(rtp_data)
+    poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
     response = send_srtp_to_poste(poste_payload)
 
     assert response.status_code == 400
@@ -163,7 +164,22 @@ def test_send_rtp_to_poste_over_limit_amount():
 def test_send_rtp_to_poste_expired_date():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
-    poste_payload = generate_epc_rtp_data(rtp_data)
+    poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
 
     response = send_srtp_to_poste(poste_payload)
     assert response.status_code == 400
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to ICCREA directly')
+@allure.title('An RTP is sent through ICCREA API')
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.iccrea
+def test_send_rtp_to_iccrea():
+    rtp_data = generate_rtp_data(payer_id=secrets.iccrea_activated_fiscal_code)
+    iccrea_payload = generate_epc_rtp_data(rtp_data, bic='ICRAITRRXXX')
+    print(iccrea_payload)
+    response = send_srtp_to_iccrea(iccrea_payload)
+
+    assert response.status_code == 201

@@ -114,7 +114,7 @@ def generate_epc_rtp_data(
     organization_name = fake.company()
     creditor_iban = generate_random_iban()
 
-    debtor_bic = bic if bic else 'UNCRITMM'
+    debtor_bic = bic
 
     return {
         'resourceId': resource_id,
