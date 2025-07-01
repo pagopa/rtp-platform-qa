@@ -1,3 +1,4 @@
+import random
 import allure
 import pytest
 
@@ -115,7 +116,8 @@ def test_send_rtp_to_cbi_expired_date():
 @pytest.mark.happy_path
 @pytest.mark.poste
 def test_send_rtp_to_poste():
-    rtp_data = generate_rtp_data()
+    amount = random.randint(100, 10000)
+    rtp_data = generate_rtp_data(amount=amount)
     poste_payload = generate_cbi_rtp_data(rtp_data, bic='PPAYITR1XXX')
 
     response = send_srtp_to_poste(poste_payload)
