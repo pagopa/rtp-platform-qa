@@ -33,7 +33,7 @@ uuidv4_pattern = re.compile(
 )
 
 
-def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '') -> dict:
+def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amount: int = None) -> dict:
     """Generate RTP (Request to Pay) data for testing.
 
     Args:
@@ -45,8 +45,8 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '') -> 
         Dictionary containing payee, payer, and payment notice data
     """
     notice_number = generate_notice_number()
-    amount = random.randint(100, 10000)
-    # amount = random.randint(0, 999999999)
+    if amount is None:
+        amount = random.randint(0, 999999999)
 
     description = generate_random_description()
     expiry_date = generate_expiry_date()
@@ -81,7 +81,7 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '') -> 
     return rtp_data
 
 
-def generate_cbi_rtp_data(
+def generate_epc_rtp_data(
     rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None, bic: str = None
 ) -> dict:
     """Generate CBI-compliant RTP payload.

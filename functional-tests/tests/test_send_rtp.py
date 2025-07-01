@@ -97,9 +97,7 @@ def test_send_rtp_to_cbi():
 @pytest.mark.poste
 def test_send_rtp_to_poste():
     amount = random.randint(100, 10000)
-    rtp_data = generate_rtp_data(
-        payer_id=secrets.poste_activated_fiscal_code, amount=amount
-    )
+    rtp_data = generate_rtp_data(payer_id=secrets.poste_activated_fiscal_code, amount=amount)
 
     creditor_service_provider_access_token = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
