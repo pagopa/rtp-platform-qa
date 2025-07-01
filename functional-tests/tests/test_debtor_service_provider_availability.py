@@ -1,3 +1,4 @@
+import random
 import allure
 import pytest
 
@@ -8,7 +9,7 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
 from utils.cryptography import pfx_to_pem
-from utils.dataset import generate_cbi_rtp_data
+from utils.dataset import generate_epc_rtp_data
 from utils.dataset import generate_rtp_data
 
 
@@ -38,7 +39,7 @@ def test_get_cbi_access_token():
 @pytest.mark.cbi
 def test_send_rtp_to_cbi():
     rtp_data = generate_rtp_data()
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -65,7 +66,7 @@ def test_send_rtp_to_cbi():
 def test_send_rtp_to_cbi_invalid_amount():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['amount'] = -1
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -91,7 +92,7 @@ def test_send_rtp_to_cbi_invalid_amount():
 def test_send_rtp_to_cbi_expired_date():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -115,9 +116,54 @@ def test_send_rtp_to_cbi_expired_date():
 @pytest.mark.happy_path
 @pytest.mark.poste
 def test_send_rtp_to_poste():
-    rtp_data = generate_rtp_data()
-    poste_payload = generate_cbi_rtp_data(rtp_data, bic='PPAYITR1XXX')
+    amount = random.randint(100, 10000)
+    rtp_data = generate_rtp_data(amount=amount)
+    poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
 
     response = send_srtp_to_poste(poste_payload)
 
     assert response.status_code == 201
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to POSTE')
+@allure.title('Cannot send RTP with invalid amount')
+@pytest.mark.send
+@pytest.mark.unhappy_path
+@pytest.mark.poste
+def test_send_rtp_to_poste_invalid_amount():
+    rtp_data = generate_rtp_data()
+    rtp_data['paymentNotice']['amount'] = -1
+    poste_payload = generate_epc_rtp_data(rtp_data)
+    response = send_srtp_to_poste(poste_payload)
+
+    assert response.status_code == 400
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to POSTE')
+@allure.title('Cannot send RTP with an amount over the POSTE limit')
+@pytest.mark.send
+@pytest.mark.unhappy_path
+@pytest.mark.poste
+def test_send_rtp_to_poste_over_limit_amount():
+    over_limit_amount = 1_000_000_000_000
+    rtp_data = generate_rtp_data(amount=over_limit_amount)
+    poste_payload = generate_epc_rtp_data(rtp_data)
+    response = send_srtp_to_poste(poste_payload)
+
+    assert response.status_code == 400
+
+
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP to POSTE')
+@allure.title('Cannot send RTP with expired date')
+@pytest.mark.send
+@pytest.mark.unhappy_path
+@pytest.mark.poste
+def test_send_rtp_to_poste_expired_date():
+    rtp_data = generate_rtp_data()
+    rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
+    poste_payload = generate_epc_rtp_data(rtp_data)
+
+    response = send_srtp_to_poste(poste_payload)
+    assert response.status_code == 400
