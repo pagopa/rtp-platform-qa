@@ -146,7 +146,8 @@ def test_send_rtp_to_poste_invalid_amount():
 @pytest.mark.unhappy_path
 @pytest.mark.poste
 def test_send_rtp_to_poste_over_limit_amount():
-    rtp_data = generate_rtp_data()
+    over_limit_amount = 1_000_000_000_000
+    rtp_data = generate_rtp_data(amount=over_limit_amount)
     poste_payload = generate_epc_rtp_data(rtp_data)
     response = send_srtp_to_poste(poste_payload)
 
