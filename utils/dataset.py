@@ -81,7 +81,7 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amo
     return rtp_data
 
 
-def generate_cbi_rtp_data(
+def generate_epc_rtp_data(
     rtp_data: dict = None, payee_id: str = None, creditor_agent_id: str = None, bic: str = None
 ) -> dict:
     """Generate CBI-compliant RTP payload.

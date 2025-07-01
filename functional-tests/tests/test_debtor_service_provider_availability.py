@@ -9,7 +9,7 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
 from utils.cryptography import pfx_to_pem
-from utils.dataset import generate_cbi_rtp_data
+from utils.dataset import generate_epc_rtp_data
 from utils.dataset import generate_rtp_data
 
 
@@ -39,7 +39,7 @@ def test_get_cbi_access_token():
 @pytest.mark.cbi
 def test_send_rtp_to_cbi():
     rtp_data = generate_rtp_data()
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -66,7 +66,7 @@ def test_send_rtp_to_cbi():
 def test_send_rtp_to_cbi_invalid_amount():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['amount'] = -1
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -92,7 +92,7 @@ def test_send_rtp_to_cbi_invalid_amount():
 def test_send_rtp_to_cbi_expired_date():
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
-    cbi_payload = generate_cbi_rtp_data(rtp_data)
+    cbi_payload = generate_epc_rtp_data(rtp_data)
 
     auth = client_credentials_to_auth_token(
         secrets.CBI_client_id, secrets.CBI_client_secret
@@ -118,7 +118,7 @@ def test_send_rtp_to_cbi_expired_date():
 def test_send_rtp_to_poste():
     amount = random.randint(100, 10000)
     rtp_data = generate_rtp_data(amount=amount)
-    poste_payload = generate_cbi_rtp_data(rtp_data, bic='PPAYITR1XXX')
+    poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
 
     response = send_srtp_to_poste(poste_payload)
 
