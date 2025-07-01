@@ -222,6 +222,9 @@ This secret must be updated manually by admins when needed.
 ### Poste Configuration
 `POSTE_ACTIVATED_FISCAL_CODE` - Fiscal code for activated Poste Italiane services
 
+### Iccrea Configuration
+`ICCREA_ACTIVATED_FISCAL_CODE` - Fiscal code for activated ICCREA services
+
 
 # Run it locally
 
