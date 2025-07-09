@@ -34,7 +34,6 @@ on:
         required: false
         default: true
 
-# Global environment variables - defined once and inherited by all jobs
 env:
   DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
   DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
@@ -60,6 +59,7 @@ env:
   CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
   CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
   POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+  ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
 
 jobs:
   Functional_Tests:
