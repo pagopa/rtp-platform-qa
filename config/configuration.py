@@ -29,12 +29,14 @@ config = Dynaconf(
 config.cert_path = str(BASE_DIR / config.cert_path)
 config.key_path  = str(BASE_DIR / config.key_path)
 
+# Secrets configuration - maintain backward compatibility with existing code
 secrets = Dynaconf(
     envvar_prefix='',  # No prefix for secrets
     environments=False,  # Disable environment switching
     settings_files=[],  # No files, only environment variables
 )
 
+# Service Provider configurations with nested structure for backward compatibility
 secrets.debtor_service_provider = Dynaconf(
     client_id=os.getenv('DEBTOR_SERVICE_PROVIDER_CLIENT_ID'),
     service_provider_id=os.getenv('DEBTOR_SERVICE_PROVIDER_ID'),

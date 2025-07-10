@@ -1,11 +1,12 @@
 import random
+
 import allure
 import pytest
 
 from api.auth import get_cbi_access_token
 from api.debtor_service_provider import send_srtp_to_cbi
-from api.debtor_service_provider import send_srtp_to_poste
 from api.debtor_service_provider import send_srtp_to_iccrea
+from api.debtor_service_provider import send_srtp_to_poste
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import client_credentials_to_auth_token
