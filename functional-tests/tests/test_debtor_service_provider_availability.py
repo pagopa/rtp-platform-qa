@@ -53,9 +53,7 @@ def test_send_rtp_to_cbi():
         config.key_path,
     )
     cbi_token = get_cbi_access_token(cert, key, auth)
-
     response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
-
     assert response.status_code == 201
 
 
@@ -180,7 +178,5 @@ def test_send_rtp_to_poste_expired_date():
 def test_send_rtp_to_iccrea():
     rtp_data = generate_rtp_data(payer_id=secrets.iccrea_activated_fiscal_code)
     iccrea_payload = generate_epc_rtp_data(rtp_data, bic='ICRAITRRXXX')
-    print(iccrea_payload)
     response = send_srtp_to_iccrea(iccrea_payload)
-
     assert response.status_code == 201
