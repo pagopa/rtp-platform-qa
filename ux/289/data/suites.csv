@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","2434","RTP form is filled and submitted","tests","Mon Apr 14 07:10:49 GMT 2025","passed","Mon Apr 14 07:10:52 GMT 2025","","test_navigation","",""
-"","1541","Whitespaces is allowed in description and company name field","tests","Mon Apr 14 07:10:52 GMT 2025","passed","Mon Apr 14 07:10:53 GMT 2025","","test_navigation","",""
