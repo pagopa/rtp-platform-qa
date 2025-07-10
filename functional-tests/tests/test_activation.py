@@ -1,11 +1,12 @@
+import uuid
 from datetime import datetime
 
 import allure
 import pytest
-import uuid
 
 from api.activation import activate
-from api.activation import get_activation_by_payer_id, get_activation_by_id
+from api.activation import get_activation_by_id
+from api.activation import get_activation_by_payer_id
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from config.configuration import config
