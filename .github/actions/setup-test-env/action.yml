@@ -16,14 +16,14 @@ runs:
       uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
       with:
         python-version: ${{ inputs.python-version }}
-    
+
     - name: Install base dependencies
       shell: bash
       run: |
         pip install --upgrade pip
         pip install -r requirements.txt
         pip install -e .
-    
+
     - name: Install test-specific dependencies
       shell: bash
       run: |
