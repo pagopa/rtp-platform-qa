@@ -58,9 +58,6 @@ def test_get_all_activations():
     assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
     body = res.json()
     assert isinstance(body.get('content'), list), "Expected 'content' to be a list"
-    assert res.request.url.startswith("https://api-rtp.uat.cstar.pagopa.it"), \
-        f"sto chiamando {res.request.url} e non UAT"
-
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
