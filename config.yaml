@@ -31,3 +31,4 @@ get_rtp_path: "rtps/{rtpId}"
 get_api_version: 'v1'
 service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
+activation_list_path: "/activations"
