@@ -1,4 +1,5 @@
 import uuid
+
 import requests
 
 from config.configuration import config
@@ -58,5 +59,3 @@ def get_all_activations(access_token: str, page: int = 0, size: int = 16):
         params={'page': page, 'size': size},
         timeout=config.default_timeout
     )
-
-

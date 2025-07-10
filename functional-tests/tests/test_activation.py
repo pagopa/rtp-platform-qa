@@ -3,9 +3,13 @@ from datetime import datetime
 import allure
 import pytest
 
-from api.activation import activate, get_activation_by_payer_id, get_all_activations
-from api.auth import get_access_token, get_valid_access_token
-from config.configuration import config, secrets
+from api.activation import activate
+from api.activation import get_activation_by_payer_id
+from api.activation import get_all_activations
+from api.auth import get_access_token
+from api.auth import get_valid_access_token
+from config.configuration import config
+from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.dataset import uuidv4_pattern
 
@@ -134,7 +138,7 @@ def test_fail_activate_debtor_two_times():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-@pytest.mark.parametrize("page,size", [(-1,16), (0,-5)])
+@pytest.mark.parametrize('page,size', [(-1,16), (0,-5)])
 def test_get_all_activations_invalid_params(page, size):
     access_token = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
