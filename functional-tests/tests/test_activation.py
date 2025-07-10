@@ -61,7 +61,8 @@ def test_get_all_activations():
     res = get_all_activations(access_token, page=0, size=16)
     assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
     body = res.json()
-    assert isinstance(body.get('content'), list), "Expected 'content' to be a list"
+    assert isinstance(body.get('activations'), list), "Expected 'activations' to be a list"
+    assert isinstance(body.get('page'), dict), "Expected 'page' metadata to be present and be a dict"
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
@@ -147,7 +148,11 @@ def test_get_all_activations_invalid_params(page, size):
     )
     res = get_all_activations(access_token, page=page, size=size)
     assert res.status_code == 400, f'Expected 400 for invalid params, got {res.status_code}'
-
+    body = res.json()
+    assert isinstance(body.get('errors'), list), "Expected 'errors' list in response"
+    assert body['errors'], 'Expected at least one error entry'
+    assert 'code' in body['errors'][0], "Each error must have a 'code'"
+    assert 'description' in body['errors'][0], "Each error must have a 'description'"
 
 @allure.feature('Activation')
 @allure.story('List Activations')
@@ -158,3 +163,8 @@ def test_get_all_activations_unauthorized():
     fake_token = 'Bearer invalid.token'
     res = get_all_activations(fake_token)
     assert res.status_code == 401, f'Expected 401 but got {res.status_code}'
+    body = res.json()
+    assert 'message' in body, "Expected 'message' in 401 response"
+    assert isinstance(body['message'], str), "Expected 'message' to be a string"
+    assert 'statusCode' in body, "Expected 'statusCode' in 401 response"
+    assert body['statusCode'] == 401, f"Expected statusCode 401 but got {body['statusCode']}"
