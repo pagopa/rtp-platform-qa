@@ -89,6 +89,8 @@ jobs:
           CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
           ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
+          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ secrets.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
           pytest functional-tests/tests/ --alluredir allure-results
       - name: Save functional test results
@@ -182,6 +184,8 @@ jobs:
           CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
           ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
+          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ secrets.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
           behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
       - name: Save BDD test results
@@ -278,6 +282,8 @@ jobs:
           CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
           ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
+          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ secrets.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
           pytest ux-tests/tests/ --alluredir allure-results
       - name: Save UX test results
@@ -370,6 +376,8 @@ jobs:
           CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
           ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
+          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ secrets.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com --html .report/report.html
 
@@ -427,6 +435,8 @@ jobs:
           CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
           ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
+          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ secrets.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
           pytest contract-tests/ --disable-warnings --alluredir allure-results
       - name: Save contract test results

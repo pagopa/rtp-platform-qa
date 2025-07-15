@@ -225,6 +225,9 @@ This secret must be updated manually by admins when needed.
 ### Iccrea Configuration
 `ICCREA_ACTIVATED_FISCAL_CODE` - Fiscal code for activated ICCREA services
 
+### DEBT POSITION
+`DEBT_POSITIONS_SUBSCRIPTION_KEY`
+`DEBT_POSITIONS_ORGANIZATION_ID`
 
 # Run it locally
 

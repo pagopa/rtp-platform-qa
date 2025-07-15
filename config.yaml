@@ -33,3 +33,5 @@ service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
 activation_list_path: "/activations"
 activation_by_id_path: "/activations/{activationId}"
+debt_positions_base_url_path: "https://api.uat.platform.pagopa.it"
+debt_positions_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
