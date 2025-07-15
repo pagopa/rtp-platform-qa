@@ -1,13 +1,15 @@
-import uuid
 import random
+import uuid
 
 import allure
 import pytest
 
-from api.debt_position import create_debt_position
 from api.activation import activate
-from api.auth import get_access_token, get_valid_access_token
+from api.auth import get_access_token
+from api.auth import get_valid_access_token
+from api.debt_position import create_debt_position
 from config.configuration import secrets
+from utils.dataset import create_debt_position_payload
 from utils.dataset import fake_fc
 
 
@@ -38,51 +40,7 @@ def test_create_debt_position_happy_path():
     iupd = uuid.uuid4().hex
     iuv = ''.join(random.choices('0123456789', k=17))
 
-    payload = {
-        "iupd": iupd,
-        "type": "F",
-        "fiscalCode": debtor_fc,
-        "fullName": "John Doe",
-        "streetName": "streetName",
-        "civicNumber": "11",
-        "postalCode": "00100",
-        "city": "city",
-        "province": "RM",
-        "region": "RM",
-        "country": "IT",
-        "email": "lorem@lorem.com",
-        "phone": "333-123456789",
-        "companyName": "companyName",
-        "officeName": "officeName",
-        "switchToExpired": False,
-        "paymentOption": [
-            {
-                "iuv": iuv,
-                "amount": 10000,
-                "description": "Canone Unico Patrimoniale - CORPORATE",
-                "isPartialPayment": False,
-                "dueDate": "2025-07-21T12:42:40.625Z",
-                "retentionDate": "2025-09-24T12:42:40.625Z",
-                "fee": 0,
-                "transfer": [
-                    {
-                        "idTransfer": "1",
-                        "amount": 8000,
-                        "remittanceInformation": "remittanceInformation 1",
-                        "category": "9/0201102IM/",
-                        "iban": "IT0000000000000000000000000000"
-                    },
-                    {
-                        "idTransfer": "2",
-                        "amount": 2000,
-                        "remittanceInformation": "remittanceInformation 2",
-                        "category": "9/0201102IM/",
-                        "iban": "IT0000000000000000000000000000"
-                    }
-                ]
-            }
-        ]
-    }
+    payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
 
     res = create_debt_position(subscription_key, organization_id, payload, to_publish=True)
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'

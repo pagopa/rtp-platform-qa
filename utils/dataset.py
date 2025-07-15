@@ -355,3 +355,70 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
             },
         },
     }
+
+def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
+    """
+    Generate a payload for debt position creation.
+
+    Args:
+        debtor_fc (str, optional): Fiscal code of the debtor. If None, a new one is generated.
+        iupd (str, optional): IUPD. If None, a new UUID is generated.
+        iuv (str, optional): IUV. If None, a random 17-digit number is generated.
+
+    Returns:
+        dict: Debt position payload
+    """
+    if debtor_fc is None:
+        debtor_fc = fake_fc()
+
+    if iupd is None:
+        iupd = uuid.uuid4().hex
+
+    if iuv is None:
+        iuv = ''.join(random.choices('0123456789', k=17))
+
+    return {
+        'iupd': iupd,
+        'type': 'F',
+        'fiscalCode': debtor_fc,
+        'fullName': 'John Doe',
+        'streetName': 'streetName',
+        'civicNumber': '11',
+        'postalCode': '00100',
+        'city': 'city',
+        'province': 'RM',
+        'region': 'RM',
+        'country': 'IT',
+        'email': 'lorem@lorem.com',
+        'phone': '333-123456789',
+        'companyName': 'companyName',
+        'officeName': 'officeName',
+        'switchToExpired': False,
+        'paymentOption': [
+            {
+                'iuv': iuv,
+                'amount': 10000,
+                'description': 'Canone Unico Patrimoniale - CORPORATE',
+                'isPartialPayment': False,
+                'dueDate': '2025-07-21T12:42:40.625Z',
+                'retentionDate': '2025-09-24T12:42:40.625Z',
+                'fee': 0,
+                'transfer': [
+                    {
+                        'idTransfer': '1',
+                        'amount': 8000,
+                        'remittanceInformation': 'remittanceInformation 1',
+                        'category': '9/0201102IM/',
+                        'iban': 'IT0000000000000000000000000000'
+                    },
+                    {
+                        'idTransfer': '2',
+                        'amount': 2000,
+                        'remittanceInformation': 'remittanceInformation 2',
+                        'category': '9/0201102IM/',
+                        'iban': 'IT0000000000000000000000000000'
+                    }
+                ]
+            }
+        ]
+    }
