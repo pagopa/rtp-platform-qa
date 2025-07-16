@@ -73,6 +73,11 @@ secrets.debt_positions = Dynaconf(
     organization_id=os.getenv('DEBT_POSITIONS_ORGANIZATION_ID'),
 )
 
+secrets.debt_positions_dev = Dynaconf(
+    subscription_key=os.getenv('DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY'),
+    organization_id=os.getenv('DEBT_POSITIONS_DEV_ORGANIZATION_ID'),
+)
+
 # Direct attributes for backward compatibility
 secrets.CBI_client_id = os.getenv('CBI_CLIENT_ID')
 secrets.CBI_client_secret = os.getenv('CBI_CLIENT_SECRET')
