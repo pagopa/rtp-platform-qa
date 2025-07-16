@@ -1,3 +1,5 @@
+import uuid
+
 import allure
 import pytest
 
@@ -8,6 +10,7 @@ from api.get_rtp import get_rtp
 from api.send_rtp import send_rtp
 from config.configuration import secrets
 from utils.dataset import generate_rtp_data
+
 
 
 @allure.feature('RTP Get')
@@ -51,15 +54,6 @@ def test_get_rtp_success():
     assert get_response.status_code == 200
     body = get_response.json()
     assert body['resourceID'] == resource_id
-
-
-import uuid
-import pytest
-import allure
-
-from api.auth import get_access_token, get_valid_access_token
-from api.get_rtp import get_rtp
-from config.configuration import secrets
 
 
 @allure.feature('RTP Get')
