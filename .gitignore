@@ -168,3 +168,5 @@ cython_debug/
 config/.secrets.yaml
 
 *.pem
+
+.DS_Store
