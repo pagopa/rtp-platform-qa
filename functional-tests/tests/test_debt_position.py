@@ -12,6 +12,8 @@ from api.debt_position import create_debt_position_dev
 from config.configuration import secrets
 from utils.dataset import create_debt_position_payload
 from utils.dataset import fake_fc
+from utils.dataset import generate_iupd
+from utils.dataset import generate_iuv
 
 
 @allure.feature('Debt Positions')
@@ -38,8 +40,8 @@ def test_create_debt_position_happy_path():
     subscription_key = secrets.debt_positions.subscription_key
     organization_id = secrets.debt_positions.organization_id
 
-    iupd = uuid.uuid4().hex
-    iuv = ''.join(random.choices('0123456789', k=17))
+    iupd = generate_iupd()
+    iuv = generate_iuv()
 
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
 
@@ -73,8 +75,8 @@ def test_create_debt_position_dev_happy_path():
     subscription_key = secrets.debt_positions_dev.subscription_key
     organization_id = secrets.debt_positions_dev.organization_id
 
-    iupd = uuid.uuid4().hex
-    iuv = ''.join(random.choices('0123456789', k=17))
+    iupd = generate_iupd()
+    iuv = generate_iuv()
 
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
 

@@ -356,6 +356,25 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
         },
     }
 
+
+def generate_iupd():
+    """
+    Generate a unique IUPD (Identificativo Univoco Posizione Debitoria).
+    
+    Returns:
+        str: A unique identifier using UUID4 in hexadecimal format
+    """
+    return uuid.uuid4().hex
+
+def generate_iuv():
+    """
+    Generate a unique IUV (Identificativo Univoco Versamento).
+    
+    Returns:
+        str: A random 17-digit number as string
+    """
+    return ''.join(random.choices('0123456789', k=17))
+
 def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
     """
     Generate a payload for debt position creation.
