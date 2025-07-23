@@ -23,7 +23,6 @@ from .text_utils import generate_random_description
 from .text_utils import generate_transaction_id
 from config.configuration import config
 from config.configuration import secrets
-from datetime import datetime, timedelta, timezone
 
 fake = Faker('it_IT')
 
@@ -361,7 +360,7 @@ def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
 def generate_iupd():
     """
     Generate a unique IUPD (Identificativo Univoco Posizione Debitoria).
-    
+
     Returns:
         str: A unique identifier using UUID4 in hexadecimal format
     """
@@ -370,7 +369,7 @@ def generate_iupd():
 def generate_iuv():
     """
     Generate a unique IUV (Identificativo Univoco Versamento).
-    
+
     Returns:
         str: A random 17-digit number as string
     """
@@ -398,8 +397,8 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
         iuv = ''.join(random.choices('0123456789', k=17))
 
     now_utc = datetime.now(timezone.utc)
-    due_date = (now_utc + timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
-    retention_date = (now_utc + timedelta(days=60)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    due_date = (now_utc + timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    retention_date = (now_utc + timedelta(days=60)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
     org_fc = secrets.debt_positions.organization_id
     payload = {
         'iupd': iupd,
