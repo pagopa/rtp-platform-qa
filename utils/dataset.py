@@ -45,6 +45,7 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amo
         Dictionary containing payee, payer, and payment notice data
     """
     notice_number = generate_notice_number()
+
     if amount is None:
         amount = random.randint(0, 999999999)
 
@@ -371,9 +372,9 @@ def generate_iuv():
     Generate a unique IUV (Identificativo Univoco Versamento).
 
     Returns:
-        str: A random 17-digit number as string
+        str: A random 18-digit number as string
     """
-    return ''.join(random.choices('0123456789', k=17))
+    return ''.join(random.choices('0123456789', k=18))
 
 def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
     """
@@ -394,7 +395,7 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
         iupd = uuid.uuid4().hex
 
     if iuv is None:
-        iuv = ''.join(random.choices('0123456789', k=17))
+        iuv = generate_notice_number()
 
     now_utc = datetime.now(timezone.utc)
     due_date = (now_utc + timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
