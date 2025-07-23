@@ -115,11 +115,10 @@ def test_create_and_verify_debt_position_by_notice_number():
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
     res = create_debt_position(subscription_key, organization_id, payload, to_publish=True)
     assert res.status_code == 201
+    print(f'print body: {res.json()}')
 
-
-    full_name = payload['fullName']
-    description = payload['paymentOption'][0]['description']
-    expected_hash = hashlib.sha256(f"{full_name}{description}".encode()).hexdigest()
+    expected_full_name = payload['fullName']
+    expected_description = payload['paymentOption'][0]['description']
 
     access_token_for_get = get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
@@ -135,13 +134,13 @@ def test_create_and_verify_debt_position_by_notice_number():
     positions = get_res.json()
     print(f'print body: {positions}')
 
-
     # found = False
     # for pos in positions:
-    #     fn = pos.get('fullName')
-    #     desc = pos.get('paymentOption', [{}])[0].get('description')
-    #     h = hashlib.sha256(f"{fn}{desc}".encode()).hexdigest()
-    #     if h == expected_hash:
+    #     actual_full_name = pos.get('fullName')
+    #     actual_description = pos.get('paymentOption', [{}])[0].get('description')
+        
+    #     if actual_full_name == expected_full_name and actual_description == expected_description:
     #         found = True
     #         break
-    # assert found, 'Created debt position not found in GET by noticeNumber response'
+            
+    # assert found, 'Created debt position with matching fullName and description not found in response'
