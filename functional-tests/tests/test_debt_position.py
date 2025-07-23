@@ -5,7 +5,9 @@ from api.activation import activate
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from api.debt_position import create_debt_position
-from api.debt_position import create_debt_position_dev, delete_debt_position, delete_debt_position_dev
+from api.debt_position import create_debt_position_dev
+from api.debt_position import delete_debt_position
+from api.debt_position import delete_debt_position_dev
 from api.debt_position import get_debt_positions_by_notice_number
 from config.configuration import secrets
 from utils.dataset import create_debt_position_payload
@@ -153,9 +155,9 @@ def test_delete_debt_position_happy_path():
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token
     )
-    
+
     debtor_fc = fake_fc()
-    
+
     activation_response = activate(
         access_token,
         debtor_fc,
@@ -176,7 +178,7 @@ def test_delete_debt_position_happy_path():
 
     import time
     time.sleep(1)
-    
+
     delete_response = delete_debt_position(subscription_key, organization_id, iupd)
     assert delete_response.status_code == 200, f'Expected 200 but got {delete_response.status_code}'
 
@@ -191,9 +193,9 @@ def test_delete_debt_position_dev_happy_path():
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token
     )
-    
+
     debtor_fc = fake_fc()
-    
+
     activation_response = activate(
         access_token,
         debtor_fc,
@@ -214,7 +216,6 @@ def test_delete_debt_position_dev_happy_path():
 
     import time
     time.sleep(1)
-    
+
     delete_response = delete_debt_position_dev(subscription_key, organization_id, iupd)
     assert delete_response.status_code == 200, f'Expected 200 but got {delete_response.status_code}'
-
