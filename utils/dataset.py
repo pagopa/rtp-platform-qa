@@ -23,6 +23,7 @@ from .text_utils import generate_random_description
 from .text_utils import generate_transaction_id
 from config.configuration import config
 from config.configuration import secrets
+from datetime import datetime, timedelta, timezone
 
 fake = Faker('it_IT')
 
@@ -364,7 +365,7 @@ def generate_iupd():
     Returns:
         str: A unique identifier using UUID4 in hexadecimal format
     """
-    return uuid.uuid4().hex
+    return uuid.uuid4().hex[:17]
 
 def generate_iuv():
     """
@@ -396,7 +397,11 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
     if iuv is None:
         iuv = ''.join(random.choices('0123456789', k=17))
 
-    return {
+    now_utc = datetime.now(timezone.utc)
+    due_date = (now_utc + timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    retention_date = (now_utc + timedelta(days=60)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    org_fc = secrets.debt_positions.organization_id
+    payload = {
         'iupd': iupd,
         'type': 'F',
         'fiscalCode': debtor_fc,
@@ -413,31 +418,28 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
         'companyName': 'companyName',
         'officeName': 'officeName',
         'switchToExpired': False,
+        'pspCode': 'MOCKSP04',
         'paymentOption': [
             {
                 'iuv': iuv,
                 'amount': 10000,
                 'description': 'Canone Unico Patrimoniale - CORPORATE',
                 'isPartialPayment': False,
-                'dueDate': '2025-07-21T12:42:40.625Z',
-                'retentionDate': '2025-09-24T12:42:40.625Z',
+                'dueDate': due_date,
+                'retentionDate': retention_date,
                 'fee': 0,
+                'organizationFiscalCode': org_fc,
                 'transfer': [
                     {
                         'idTransfer': '1',
-                        'amount': 8000,
+                        'amount': 10000,
                         'remittanceInformation': 'remittanceInformation 1',
                         'category': '9/0201102IM/',
-                        'iban': 'IT0000000000000000000000000000'
-                    },
-                    {
-                        'idTransfer': '2',
-                        'amount': 2000,
-                        'remittanceInformation': 'remittanceInformation 2',
-                        'category': '9/0201102IM/',
+                        'organizationFiscalCode': org_fc,
                         'iban': 'IT0000000000000000000000000000'
                     }
                 ]
             }
         ]
     }
+    return payload

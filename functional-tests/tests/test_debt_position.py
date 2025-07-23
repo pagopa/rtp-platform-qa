@@ -1,6 +1,3 @@
-import random
-import uuid
-
 import allure
 import pytest
 
@@ -46,10 +43,11 @@ def test_create_debt_position_happy_path():
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
 
     res = create_debt_position(subscription_key, organization_id, payload, to_publish=True)
+
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
 
-    body = res.json()
-    print(body)
+    print(f'print body: {res.json()}')
+
 
 @allure.feature('Debt Positions')
 @allure.story('Create Debt Position in DEV')
@@ -83,5 +81,3 @@ def test_create_debt_position_dev_happy_path():
     res = create_debt_position_dev(subscription_key, organization_id, payload, to_publish=True)
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
 
-    body = res.json()
-    print(f"Response body: {body}")
