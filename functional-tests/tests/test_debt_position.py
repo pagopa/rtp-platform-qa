@@ -1,5 +1,3 @@
-import hashlib
-
 import allure
 import pytest
 
@@ -49,7 +47,6 @@ def test_create_debt_position_happy_path():
 
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
 
-    print(f'print body: {res.json()}')
 
 
 @allure.feature('Debt Positions')
@@ -83,12 +80,11 @@ def test_create_debt_position_dev_happy_path():
 
     res = create_debt_position_dev(subscription_key, organization_id, payload, to_publish=True)
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
-    print(f'print body: {res.json()}')
 
 
 @allure.feature('Debt Positions')
 @allure.story('Create & Verify Debt Position')
-@allure.title('Verifica che la debt position creata sia recuperabile via noticeNumber')
+@allure.title('Get debt position by notice number and verify its details')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_create_and_verify_debt_position_by_notice_number():
@@ -108,16 +104,15 @@ def test_create_and_verify_debt_position_by_notice_number():
 
     subscription_key = secrets.debt_positions.subscription_key
     organization_id = secrets.debt_positions.organization_id
-    
+
     iupd = generate_iupd()
     iuv = generate_iuv()
-    
+
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
     res = create_debt_position(subscription_key, organization_id, payload, to_publish=True)
     assert res.status_code == 201
-    print(f'print body: {res.json()}')
 
-    expected_full_name = payload['fullName']
+    expected_notice_number = payload['paymentOption'][0]['iuv']
     expected_description = payload['paymentOption'][0]['description']
 
     access_token_for_get = get_valid_access_token(
@@ -127,20 +122,22 @@ def test_create_and_verify_debt_position_by_notice_number():
     )
 
     get_res = get_debt_positions_by_notice_number(
-        notice_number=payload['paymentOption'][0]['iuv'],
+        notice_number=expected_notice_number,
         access_token=access_token_for_get
     )
     assert get_res.status_code == 200, f'Expected 200 but got {get_res.status_code}'
     positions = get_res.json()
-    print(f'print body: {positions}')
 
-    # found = False
-    # for pos in positions:
-    #     actual_full_name = pos.get('fullName')
-    #     actual_description = pos.get('paymentOption', [{}])[0].get('description')
-        
-    #     if actual_full_name == expected_full_name and actual_description == expected_description:
-    #         found = True
-    #         break
-            
-    # assert found, 'Created debt position with matching fullName and description not found in response'
+    found = False
+    for pos in positions:
+        for payment_option in pos.get('paymentOption', []):
+            actual_notice_number = payment_option.get('iuv')
+            actual_description = payment_option.get('description')
+
+            if actual_notice_number == expected_notice_number and actual_description == expected_description:
+                found = True
+                break
+        if found:
+            break
+
+    assert found, 'Created debt position with matching noticeNumber and description not found in response'
