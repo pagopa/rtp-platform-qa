@@ -11,8 +11,8 @@ DEBT_POSITIONS_DEV_URL = (
 )
 GET_BY_NOTICE_NUMBER_URL = (
     config.rtp_creation_base_url_path.rstrip('/')
-    + '/'
     + config.send_rtp_path.lstrip('/')
+    + config.debt_positions_get_by_notice_number_path
 )
 
 DEBT_POSITIONS_DELETE_URL = config.debt_positions_base_url_path + config.debt_positions_delete_path
@@ -85,12 +85,10 @@ def get_debt_positions_by_notice_number(
     notice_number: str, access_token: str
 ) -> requests.Response:
     """
-    Retrieve RTPs via noticeNumber (iuv), chiamando esattamente:
-      GET https://api-rtp.uat.cstar.pagopa.it/rtp/rtps?noticeNumber=…
+    Retrieve RTPs via noticeNumber (iuv)
     """
-    base = config.rtp_creation_base_url_path.rstrip('/')
-    path = config.send_rtp_path.lstrip('/')
-    url = f"{base}/{path}?noticeNumber={notice_number}"
+
+    url = GET_BY_NOTICE_NUMBER_URL
 
     auth_header = (
         access_token if access_token.startswith('Bearer ') else f"Bearer {access_token}"
