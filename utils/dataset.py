@@ -606,6 +606,3 @@ def generate_callback_data_DS_05_ACTC_compliant(BIC: str = 'MOCKSP04') -> dict:
             },
         },
     }
-
-
-        
