@@ -43,3 +43,30 @@ def create_debt_position_dev(
         timeout=config.default_timeout,
     )
 
+def get_debt_position(
+    subscription_key: str, organization_id: str, iupd: str
+) -> requests.Response:
+    """API to get a debt position by IUPD."""
+    url = DEBT_POSITIONS_URL.format(organizationId=organization_id) + f"/{iupd}"
+    return requests.get(
+        url=url,
+        headers={
+            'ocp-apim-subscription-key': subscription_key,
+            'Content-Type': 'application/json',
+        },
+        timeout=config.default_timeout,
+    )
+
+def get_debt_position_dev(
+    subscription_key: str, organization_id: str, iupd: str
+) -> requests.Response:
+    """API to get a debt position by IUPD in DEV environment."""
+    url = DEBT_POSITIONS_DEV_URL.format(organizationId=organization_id) + f"/{iupd}"
+    return requests.get(
+        url=url,
+        headers={
+            'ocp-apim-subscription-key': subscription_key,
+            'Content-Type': 'application/json',
+        },
+        timeout=config.default_timeout,
+    )

@@ -37,4 +37,3 @@ debt_positions_base_url_path: "https://api.uat.platform.pagopa.it"
 debt_positions_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
 debt_positions_dev_base_url_path: "https://api.dev.platform.pagopa.it"
 debt_positions_dev_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
-
