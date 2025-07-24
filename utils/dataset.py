@@ -45,6 +45,7 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amo
         Dictionary containing payee, payer, and payment notice data
     """
     notice_number = generate_notice_number()
+
     if amount is None:
         amount = random.randint(0, 999999999)
 
@@ -356,6 +357,92 @@ def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
         },
     }
 
+
+def generate_iupd():
+    """
+    Generate a unique IUPD (Identificativo Univoco Posizione Debitoria).
+
+    Returns:
+        str: A unique identifier using UUID4 in hexadecimal format
+    """
+    return uuid.uuid4().hex[:17]
+
+def generate_iuv():
+    """
+    Generate a unique IUV (Identificativo Univoco Versamento).
+
+    Returns:
+        str: A random 18-digit number as string
+    """
+    return ''.join(random.choices('0123456789', k=18))
+
+def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
+    """
+    Generate a payload for debt position creation.
+
+    Args:
+        debtor_fc (str, optional): Fiscal code of the debtor. If None, a new one is generated.
+        iupd (str, optional): IUPD. If None, a new UUID is generated.
+        iuv (str, optional): IUV. If None, a random 17-digit number is generated.
+
+    Returns:
+        dict: Debt position payload
+    """
+    if debtor_fc is None:
+        debtor_fc = fake_fc()
+
+    if iupd is None:
+        iupd = uuid.uuid4().hex
+
+    if iuv is None:
+        iuv = generate_notice_number()
+
+    now_utc = datetime.now(timezone.utc)
+    due_date = (now_utc + timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    retention_date = (now_utc + timedelta(days=60)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
+    org_fc = secrets.debt_positions.organization_id
+    payload = {
+        'iupd': iupd,
+        'type': 'F',
+        'fiscalCode': debtor_fc,
+        'fullName': 'John Doe',
+        'streetName': 'streetName',
+        'civicNumber': '11',
+        'postalCode': '00100',
+        'city': 'city',
+        'province': 'RM',
+        'region': 'RM',
+        'country': 'IT',
+        'email': 'lorem@lorem.com',
+        'phone': '333-123456789',
+        'companyName': 'companyName',
+        'officeName': 'officeName',
+        'switchToExpired': False,
+        'pspCode': 'MOCKSP04',
+        'paymentOption': [
+            {
+                'iuv': iuv,
+                'amount': 10000,
+                'description': 'Canone Unico Patrimoniale - CORPORATE',
+                'isPartialPayment': False,
+                'dueDate': due_date,
+                'retentionDate': retention_date,
+                'fee': 0,
+                'organizationFiscalCode': org_fc,
+                'transfer': [
+                    {
+                        'idTransfer': '1',
+                        'amount': 10000,
+                        'remittanceInformation': 'remittanceInformation 1',
+                        'category': '9/0201102IM/',
+                        'organizationFiscalCode': org_fc,
+                        'iban': 'IT0000000000000000000000000000'
+                    }
+                ]
+            }
+        ]
+    }
+    return payload
 def generate_callback_data_DS_05_ACTC_compliant(BIC: str = 'MOCKSP04') -> dict:
     """Generate DS-05 compliant callback data.
 
@@ -446,5 +533,3 @@ def generate_callback_data_DS_05_ACTC_compliant(BIC: str = 'MOCKSP04') -> dict:
             },
         },
     }
-
-

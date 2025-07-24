@@ -225,6 +225,11 @@ This secret must be updated manually by admins when needed.
 ### Iccrea Configuration
 `ICCREA_ACTIVATED_FISCAL_CODE` - Fiscal code for activated ICCREA services
 
+### DEBT POSITION
+`DEBT_POSITIONS_SUBSCRIPTION_KEY` - GPD subscription key
+`DEBT_POSITIONS_ORGANIZATION_ID`  - GPD organization ID
+`DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY` - GPD subscription key in DEV environment
+`DEBT_POSITIONS_DEV_ORGANIZATION_ID` - GPD organization ID in DEV environment
 
 # Run it locally
 
