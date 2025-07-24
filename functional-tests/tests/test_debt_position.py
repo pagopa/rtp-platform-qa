@@ -124,8 +124,8 @@ def test_delete_debt_position_happy_path():
     delete_response = delete_debt_position(subscription_key, organization_id, iupd)
     assert delete_response.status_code == 200, f'Expected 200 but got {delete_response.status_code}'
 
-    # get_response = get_debt_position(subscription_key, organization_id, iupd)
-    # assert get_response.status_code == 200, f'Expected 200 but got {get_response.status_code}'
+    get_response = get_debt_position(subscription_key, organization_id, iupd)
+    assert get_response.status_code == 404, f'Expected 404 but got {get_response.status_code}'
 
 @allure.feature('Debt Positions')
 @allure.story('Delete Debt Position')
@@ -165,5 +165,5 @@ def test_delete_debt_position_dev_happy_path():
     delete_response = delete_debt_position_dev(subscription_key, organization_id, iupd)
     assert delete_response.status_code == 200, f'Expected 200 but got {delete_response.status_code}'
 
-    # get_response = get_debt_position(subscription_key, organization_id, iupd)
-    # assert get_response.status_code == 200, f'Expected 200 but got {get_response.status_code}'
+    get_response = get_debt_position(subscription_key, organization_id, iupd)
+    assert get_response.status_code == 404, f'Expected 404 but got {get_response.status_code}'
