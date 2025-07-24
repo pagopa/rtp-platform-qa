@@ -9,11 +9,7 @@ DEBT_POSITIONS_URL = config.debt_positions_base_url_path + config.debt_positions
 DEBT_POSITIONS_DEV_URL = (
     config.debt_positions_dev_base_url_path + config.debt_positions_dev_path
 )
-GET_BY_NOTICE_NUMBER_URL = (
-    config.rtp_creation_base_url_path.rstrip('/')
-    + config.send_rtp_path.lstrip('/')
-    + config.debt_positions_get_by_notice_number_path
-)
+
 
 DEBT_POSITIONS_DELETE_URL = config.debt_positions_base_url_path + config.debt_positions_delete_path
 DEBT_POSITIONS_DELETE_DEV_URL = config.debt_positions_dev_base_url_path + config.debt_positions_dev_delete_path
@@ -80,25 +76,30 @@ def delete_debt_position_dev(subscription_key, organization_id, iupd):
     return response
 
 
-
-def get_debt_positions_by_notice_number(
-    notice_number: str, access_token: str
+def get_debt_position(
+    subscription_key: str, organization_id: str, iupd: str
 ) -> requests.Response:
-    """
-    Retrieve RTPs via noticeNumber (iuv)
-    """
-
-    url = GET_BY_NOTICE_NUMBER_URL
-
-    auth_header = (
-        access_token if access_token.startswith('Bearer ') else f"Bearer {access_token}"
+    """API to get a debt position by IUPD."""
+    url = DEBT_POSITIONS_URL.format(organizationId=organization_id) + f"/{iupd}"
+    return requests.get(
+        url=url,
+        headers={
+            'ocp-apim-subscription-key': subscription_key,
+            'Content-Type': 'application/json',
+        },
+        timeout=config.default_timeout,
     )
-    headers = {
-        'Version': 'v1',
-        'RequestId': str(uuid.uuid4()),
-        'Authorization': auth_header,
-    }
 
-    response = requests.get(url, headers=headers, timeout=config.default_timeout)
-
-    return response
+def get_debt_position_dev(
+    subscription_key: str, organization_id: str, iupd: str
+) -> requests.Response:
+    """API to get a debt position by IUPD in DEV environment."""
+    url = DEBT_POSITIONS_DEV_URL.format(organizationId=organization_id) + f"/{iupd}"
+    return requests.get(
+        url=url,
+        headers={
+            'ocp-apim-subscription-key': subscription_key,
+            'Content-Type': 'application/json',
+        },
+        timeout=config.default_timeout,
+    )
