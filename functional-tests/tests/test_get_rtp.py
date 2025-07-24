@@ -75,7 +75,7 @@ def test_get_rtp_not_found():
     assert resp.status_code in (
         404,
         204,
-    ), f"Status code inatteso: {resp.status_code}, body: {resp.text}"
+    ), f"Status code: {resp.status_code}, body: {resp.text}"
 
     if resp.status_code == 204:
         assert resp.text == ''
