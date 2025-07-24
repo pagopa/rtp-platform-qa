@@ -1,5 +1,8 @@
 name: Manual Debt Position Tests (DEV)
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
     inputs:
