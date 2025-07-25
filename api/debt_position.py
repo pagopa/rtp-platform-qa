@@ -76,6 +76,59 @@ def delete_debt_position_dev(subscription_key, organization_id, iupd):
     return response
 
 
+def update_debt_position(subscription_key: str,
+                         organization_id: str,
+                         iupd: str,
+                         payload: dict) -> requests.Response:
+    """
+    API to update an existing debt position.
+
+    Args:
+        subscription_key (str): API subscription key
+        organization_id (str): Organization ID
+        iupd (str): Unique Debt Position Identifier
+        payload (dict): The updated debt position data
+
+    Returns:
+        Response: HTTP response from the API call
+    """
+    url = (config.debt_positions_base_url_path +
+           config.debt_positions_update_path.format(organizationId=organization_id, iupd=iupd))
+
+    headers = {
+        'ocp-apim-subscription-key': subscription_key,
+        'Content-Type': 'application/json'
+    }
+
+    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout)
+
+def update_debt_position_dev(subscription_key: str,
+                            organization_id: str,
+                            iupd: str,
+                            payload: dict) -> requests.Response:
+    """
+    API to update an existing debt position in DEV environment.
+
+    Args:
+        subscription_key (str): API subscription key
+        organization_id (str): Organization ID
+        iupd (str): Unique Debt Position Identifier
+        payload (dict): The updated debt position data
+
+    Returns:
+        Response: HTTP response from the API call
+    """
+    url = (config.debt_positions_dev_base_url_path +
+           config.debt_positions_dev_update_path.format(organizationId=organization_id, iupd=iupd))
+
+    headers = {
+        'ocp-apim-subscription-key': subscription_key,
+        'Content-Type': 'application/json'
+    }
+
+    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout)
+
+
 def get_debt_position(
     subscription_key: str, organization_id: str, iupd: str
 ) -> requests.Response:
