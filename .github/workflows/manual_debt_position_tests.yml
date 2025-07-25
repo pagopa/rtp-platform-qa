@@ -8,7 +8,7 @@ on:
     inputs:
       operation:
         type: choice
-        description: 'Operazione da testare'
+        description: 'Operation to be tested'
         required: true
         default: 'create'
         options:
