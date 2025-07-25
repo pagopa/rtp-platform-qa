@@ -48,7 +48,7 @@ jobs:
           DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
           DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
-          python -m pytest functional-tests/tests/test_debt_position.py::test_create_debt_position_happy_path -v
+          python -m pytest "functional-tests/tests/test_debt_position.py::test_create_debt_position[environment_uat]" -v
 
       - name: Delete debt position
         if: ${{ github.event.inputs.operation == 'delete' || github.event.inputs.operation == 'all' }}
@@ -59,7 +59,7 @@ jobs:
           DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
           DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
-          python -m pytest functional-tests/tests/test_debt_position.py::test_delete_debt_position_happy_path -v
+          python -m pytest "functional-tests/tests/test_debt_position.py::test_delete_debt_position[environment_uat]" -v
 
       - name: Update debt position
         if: ${{ github.event.inputs.operation == 'update' || github.event.inputs.operation == 'all' }}
@@ -70,4 +70,4 @@ jobs:
           DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
           DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
         run: |
-          python -m pytest functional-tests/tests/test_debt_position.py::test_update_debt_position_happy_path -v
+          python -m pytest "functional-tests/tests/test_debt_position.py::test_update_debt_position[environment_uat]" -v
