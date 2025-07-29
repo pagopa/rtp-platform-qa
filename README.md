@@ -23,12 +23,12 @@ git clone https://github.com/your-repo/platform-testing-repo.git
 cd platform-testing-repo
 ```
 
-### 2. Get secrets
-
-Obtain `secrets.yaml` file (based on `config/secrets_template.yaml`) from admins and place it under `config/`.
-
-
-### 3. Create a virtual environment
+- `stress_test`
+- `soak_test`
+- `spike_test`
+- `stress_test_fixed_user`
+- `soak_test_fixed_user`
+- `spike_test_fixed_user`
 
 It's recommended to use a virtual environment to manage dependencies.
 
@@ -143,16 +143,37 @@ pytest ux-tests/tests/
 
 ### Performance Tests
 
-Performance tests help evaluate how the platform performs under heavy performance or high traffic using Locust.
+Performance tests help evaluate how the platform performs under load using k6.
 
 - Location: performance-tests/
-- Tool: Locust
-- Configuration: locustfile.py
-- Command to run:
+- Tool: k6
+- Runner script: `run-tests.sh`
+- Test scripts: `performance-tests/tests/`
+- Dependencies: k6, Node.js (npm), `k6-html-reporter` (via npm)
+- Output formats:
+  - console: Terminal output (default)
+  - dashboard: Interactive web dashboard at <http://127.0.0.1:5665>
+  - json: JSON results file
+  - html: HTML report (requires `k6-html-reporter`)
+  - prometheus: Send metrics to Prometheus server
+
+Command to run:
 
 ```bash
-locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
+# Example: run soak test and generate HTML report
+./performance-tests/run-tests.sh tests/rtp-activator/activation.js html soak_test
 ```
+
+  
+Select scenario with the optional `[scenario]` argument (default is `stress_test`):
+  
+  - `stress_test`
+  - `soak_test`
+  - `spike_test`
+  - `stress_test_fixed_user`
+  - `soak_test_fixed_user`
+  - `spike_test_fixed_user`
+  
 
 ### Contract Tests
 
