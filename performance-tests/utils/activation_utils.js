@@ -1,5 +1,5 @@
 import { getValidAccessToken } from './utility.js';
-import { activationConfig } from '../config/activation_config.js';
+import { activationConfig } from '../config/config.js';
 
 export const config = activationConfig;
 
