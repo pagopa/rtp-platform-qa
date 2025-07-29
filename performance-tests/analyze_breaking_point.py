@@ -19,7 +19,7 @@ def analyze_k6_json(filename):
                 break
 
     if not summary:
-        print("❌ Summary non trovato nel file.")
+        print("❌ Summary not found in the file.")
         sys.exit(1)
 
     metrics = summary.get("metrics", {})
@@ -44,14 +44,14 @@ def analyze_k6_json(filename):
     plt.ylim(0, 100)
     plt.title('Success vs Failure Rate')
     plt.savefig('success_failure_rate.png')
-    print("✔️ Chart salvato: success_failure_rate.png")
+    print("✔️ Chart saved: success_failure_rate.png")
 
     plt.figure()
     plt.bar(['Average', 'P95'], [avg_duration, p95_duration])
     plt.ylabel('Duration (ms)')
     plt.title('Response Time Metrics')
     plt.savefig('response_time_metrics.png')
-    print("✔️ Chart salvato: response_time_metrics.png")
+    print("✔️ Chart saved: response_time_metrics.png")
 
 
 if __name__ == "__main__":
