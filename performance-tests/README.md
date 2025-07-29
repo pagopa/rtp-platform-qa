@@ -66,117 +66,93 @@ Use the Python script to analyze a k6 JSON results file:
 python3 analyze_breaking_point.py results_stress_test_<timestamp>.json
 ```
 This will print summary metrics and generate charts:
-* `success_failure_rate.png`
-* `response_time_metrics.png`
+ # RTP Platform QA - Performance Tests
 
-## Adding New Tests
-1. Create a new script in `tests/<service>/`.
-2. Import shared logic from `utils/activation_utils.js`:
+ This directory contains k6-based performance tests and utilities for the RTP Platform.
 
-```javascript
-import { setupAuth, randomFiscalCode, config, progressiveOptions } from '../../utils/activation_utils.js';
-export let options = progressiveOptions;
-export function setup() { return setupAuth(); }
-# RTP Platform QA - Performance Tests
-
-This directory contains k6 performance tests and utilities for the RTP Platform.
-
-## Prerequisites
-- Node.js and npm (for k6-reporter if generating HTML reports)
-- k6 installed (https://k6.io/docs/getting-started/installation)
-- Bash shell (zsh on macOS)
-- A `.env` file at project root with the following variables:
-  ```ini
-  DEBTOR_SERVICE_PROVIDER_CLIENT_ID=...
-  DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET=...
-  DEBTOR_SERVICE_PROVIDER_ID=...
-  ```
-- (Optional) `PROM_HOST` and `PROM_PORT` for Prometheus output
-
-## Directory Structure
-export function activate(data) { /* ... */ }
-```
-3. Run with `run-tests.sh`.
-
-## Contributing
-```
-performance-tests/
-├── config/
-│   └── config.js         # Central URL configuration
-├── utils/
-│   ├── utility.js        # Generic helpers (auth, payloads)
-│   └── activation_utils.js # Auth, option factories, common logic
-├── tests/
-│   └── rtp-activator/
-│       ├── activation-finder.js
-│       ├── activation.js
-│       └── activation_flow.js
-├── run-tests.sh          # Test runner script
-└── analyze_breaking_point.py # Post-test analysis tool
-```
-
-## Configuration
-All service URLs are centralized in `config/config.js`. Secrets and environment-specific values are read from `.env` in the parent folder.
-
-## Utilities
-- `utils/utility.js`: Generic functions (e.g. `getValidAccessToken`, common payload generators)
-- `utils/activation_utils.js`: Defines:
-  - `setupAuth()` for OAuth token retrieval
-  - `randomFiscalCode()` for payload generation
-  - `commonOptions` and `progressiveOptions` for k6 script options
-
-## Running Tests
-Use `run-tests.sh` to execute performance scripts:
-
-```bash
-# Basic usage: folder + script + output-format + [scenario]
-./run-tests.sh <test-folder> <script.js> <output-format> [scenario]
-# Or use direct script path:
-./run-tests.sh <folder/script.js> <output-format> [scenario]
-```
-
-### Parameters
-- `<test-folder>`: e.g. `tests/rtp-activator`
-- `<script.js>`: script filename in that folder
-- `<output-format>` (required): `console`, `dashboard`, `json`, `html`, `prometheus`
-- `[scenario]` (optional): `stress_test`, `soak_test`, `spike_test`
-
-### Examples
-```bash
-# Console output, stress test
-./run-tests.sh tests/rtp-activator activation-finder.js console
-
-# Launch web dashboard, spike test
-./run-tests.sh rtp-activator/activation.js dashboard spike_test
-
-# Generate JSON results for soak test
-./run-tests.sh tests/rtp-activator activation-finder.js json soak_test
-
-# Generate HTML report
-./run-tests.sh tests/rtp-activator activation-finder.js html stress_test
-```
-
-## Post-Test Analysis
-Use the Python script to analyze a k6 JSON results file:
-
-```bash
-python3 analyze_breaking_point.py results_stress_test_<timestamp>.json
-```
-
-This will print summary metrics and generate charts:
-- `success_failure_rate.png`
-- `response_time_metrics.png`
-
-## Adding New Tests
-1. Create a new script in `tests/<service>/`.
-2. Import shared logic from `utils/activation_utils.js`:
-   ```js
-   import { setupAuth, randomFiscalCode, config, progressiveOptions } from '../../utils/activation_utils.js';
-   export let options = progressiveOptions;
-   export function setup() { return setupAuth(); }
-   export function activate(data) { /* ... */ }
+ ## Prerequisites
+ - Node.js and npm (for `k6-html-reporter`)
+ - k6 installed (https://k6.io/docs/getting-started/installation)
+ - Bash shell (zsh on macOS)
+ - A `.env` file at project root with the following variables:
+   ```ini
+   DEBTOR_SERVICE_PROVIDER_CLIENT_ID=...
+   DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET=...
+   DEBTOR_SERVICE_PROVIDER_ID=...
    ```
-3. Run with `run-tests.sh`.
+ - (Optional) `PROM_HOST` and `PROM_PORT` for Prometheus output
+ - Python 3 and pip (for post-test analysis):
+   ```bash
+   pip3 install -r requirements.txt
+   ```
 
-## Contributing
-Feel free to extend `config/config.js` for new services, add new payload helpers in `utility.js`, or create additional option factories in `activation_utils.js`. Always update this README with new instructions.
+ ## Directory Structure
+ ```
+ performance-tests/
+ ├── config/
+ ├── utils/
+ ├── tests/
+ ├── run-tests.sh             # k6 test runner script
+ └── analyze_breaking_point.py # Post-test analysis tool
+ ```
+
+ ## Configuration
+ All service URLs are centralized in `config/config.js`. Environment-specific values are read from `.env` in the parent folder.
+
+ ## Utilities
+ - `utils/utility.js`: Auth, token retrieval, payload generators
+ - `utils/activation_utils.js`: `setupAuth()`, payload helpers, `commonOptions`, `progressiveOptions`
+
+ ## Running Tests
+ Use `run-tests.sh` to execute performance scripts:
+ ```bash
+ ./run-tests.sh <test-folder> <script.js> <output-format> [scenario]
+ ```
+
+ ### Output Formats
+ - `console`: Terminal output (default)
+ - `dashboard`: Interactive web dashboard at <http://127.0.0.1:5665>
+ - `json`: JSON results file
+ - `html`: HTML report (requires `k6-html-reporter` via npm)
+ - `prometheus`: Send metrics to Prometheus server
+
+ ### Scenarios (default: `stress_test`)
+ - `stress_test`
+ - `soak_test`
+ - `spike_test`
+ - `stress_test_fixed_user`
+ - `soak_test_fixed_user`
+ - `spike_test_fixed_user`
+
+ ### Examples
+ ```bash
+ # Console output, stress test
+ ./run-tests.sh tests/rtp-activator activation-finder.js console stress_test
+
+ # Launch web dashboard, spike test
+ ./run-tests.sh tests/rtp-activator activation.js dashboard spike_test
+
+ # Generate HTML report
+ ./run-tests.sh tests/rtp-activator activation-finder.js html soak_test
+ ```
+
+ ## Post-Test Analysis
+ ```bash
+ python3 analyze_breaking_point.py results_<scenario>_<timestamp>.json
+ ```
+
+ Generates: `success_failure_rate.png`, `response_time_metrics.png`
+
+ ## Adding New Tests
+ 1. Create a script in `tests/<service>/`.
+ 2. Import shared logic:
+    ```js
+    import { setupAuth, randomFiscalCode, progressiveOptions } from '../utils/activation_utils.js';
+    export let options = progressiveOptions;
+    export function setup() { return setupAuth(); }
+    ```
+ 3. Run with `run-tests.sh`
+
+ ## Contributing
+ Extend `config/config.js`, add helpers in `utility.js`, or add option factories in `activation_utils.js`. Update this README when adding new features.
+
