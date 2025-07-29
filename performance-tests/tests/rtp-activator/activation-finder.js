@@ -1,7 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, randomFiscalCode, config as activationConfig, progressiveOptions,
-         buildHeaders, endpoints, determineStage, stages } from '../../utils/activation_utils.js';
+import { setupAuth, randomFiscalCode, progressiveOptions, buildHeaders, endpoints, determineStage, stages } from '../../utils/activation_utils.js';
 import { Counter, Trend } from 'k6/metrics';
 
 const START_TIME = Date.now();

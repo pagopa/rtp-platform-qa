@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { setupAuth, randomFiscalCode, config as activationConfig, commonOptions } from '../../utils/activation_utils.js';
+import { setupAuth, randomFiscalCode, activationConfig, commonOptions, buildHeaders, endpoints } from '../../utils/activation_utils.js';
 
 const {
   DEBTOR_SERVICE_PROVIDER_ID
@@ -27,11 +27,11 @@ export let options = {
 export function setup() {
   const { access_token } = setupAuth();
   const activationIds = [];
-  const headers = { Authorization: `Bearer ${access_token}`, 'Content-Type': 'application/json', Version: 'v1', RequestId: uuidv4() };
+  const headers = buildHeaders(access_token);
   for (let i = 0; i < 20; i++) {
     const fc = randomFiscalCode();
     const res = http.post(
-      `${activationConfig.activation_base}/activations?toPublish=true`,
+      endpoints.activations,
       JSON.stringify({ payer: { fiscalCode: fc, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID } }),
       { headers }
     );
