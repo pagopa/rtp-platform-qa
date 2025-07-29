@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "k6-html-reporter": "^1.0.5"
-  }
-}

@@ -178,3 +178,4 @@ config/.secrets.yaml
 
 # k6 output files
 **/results_*.json
+**/report_*/

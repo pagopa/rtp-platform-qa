@@ -2,7 +2,7 @@
 
 This directory contains k6 performance tests and utilities for the RTP Platform.
 ## Prerequisites
-1. Node.js and npm (for k6-reporter if generating HTML reports)
+1. Node.js and npm (for optional dependencies)
 2. k6 installed ([installation guide](https://k6.io/docs/getting-started/installation))
 3. Bash shell (zsh on macOS)
 4. A `.env` file at project root with the following variables:
@@ -48,8 +48,8 @@ Use `run-tests.sh` to execute performance scripts:
 ### Parameters
 * `<test-folder>`: e.g. `tests/rtp-activator`
 * `<script.js>`: script filename in that folder
-* `<output-format>`: `console`, `dashboard`, `json`, `html`, `prometheus`
-* `[scenario]`: `stress_test`, `soak_test`, `spike_test`
+* `<output-format>`: `console`, `dashboard`, `json`, `prometheus`
+* `[scenario]`: `stress_test`, `soak_test`, `spike_test`, `stress_test_fixed_user`, `soak_test_fixed_user`, `spike_test_fixed_user`
 
 ### Examples
 ```bash
@@ -71,20 +71,7 @@ This will print summary metrics and generate charts:
  This directory contains k6-based performance tests and utilities for the RTP Platform.
 
  ## Prerequisites
- - Node.js and npm (for `k6-html-reporter`)
- - k6 installed (https://k6.io/docs/getting-started/installation)
- - Bash shell (zsh on macOS)
- - A `.env` file at project root with the following variables:
-   ```ini
-   DEBTOR_SERVICE_PROVIDER_CLIENT_ID=...
-   DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET=...
-   DEBTOR_SERVICE_PROVIDER_ID=...
-   ```
- - (Optional) `PROM_HOST` and `PROM_PORT` for Prometheus output
- - Python 3 and pip (for post-test analysis):
-   ```bash
-   pip3 install -r requirements.txt
-   ```
+
 
  ## Directory Structure
  ```
@@ -113,7 +100,6 @@ This will print summary metrics and generate charts:
  - `console`: Terminal output (default)
  - `dashboard`: Interactive web dashboard at <http://127.0.0.1:5665>
  - `json`: JSON results file
- - `html`: HTML report (requires `k6-html-reporter` via npm)
  - `prometheus`: Send metrics to Prometheus server
 
  ### Scenarios (default: `stress_test`)
@@ -132,8 +118,8 @@ This will print summary metrics and generate charts:
  # Launch web dashboard, spike test
  ./run-tests.sh tests/rtp-activator activation.js dashboard spike_test
 
- # Generate HTML report
- ./run-tests.sh tests/rtp-activator activation-finder.js html soak_test
+ # Generate JSON output
+ ./run-tests.sh tests/rtp-activator activation-finder.js json soak_test
  ```
 
  ## Post-Test Analysis

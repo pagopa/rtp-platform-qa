@@ -19,7 +19,6 @@ PARAMETERS:
                        - console:     Terminal output (default)
                        - dashboard:   Interactive web dashboard at http://127.0.0.1:5665
                        - json:        Detailed JSON results file
-                       - html:        HTML report (requires k6-reporter)
                        - prometheus:  Send metrics to Prometheus server
 
   [scenario]           Test scenario to run (optional):
@@ -32,7 +31,6 @@ PARAMETERS:
     console   | Terminal output (default)
     dashboard | Interactive web dashboard at http://127.0.0.1:5665
     json      | Detailed JSON results file
-    html      | HTML report (requires k6-reporter)
     prometheus| Send metrics to Prometheus server
 
 EXAMPLES:
@@ -45,8 +43,8 @@ EXAMPLES:
   # Run stress test for activation-finder.js in rtp-activator folder
   ./run-tests.sh tests/rtp-activator activation-finder.js
 
-  # Generate HTML report for soak test of activation-finder.js
-  ./run-tests.sh tests/rtp-activator activation-finder.js html soak_test
+  # Generate JSON for soak test of activation-finder.js
+  ./run-tests.sh tests/rtp-activator activation-finder.js json soak_test
 
 ENVIRONMENT:
   The ../.env file is loaded if present.
@@ -129,20 +127,6 @@ case "$FORMAT" in
     echo "Saving JSON output to $RESULT_FILE"
     k6 run --out json="$RESULT_FILE" "$SCRIPT"
     echo "JSON created: $RESULT_FILE"
-    ;;
-
-  "html")
-    JSON_FILE="results_${SCENARIO}_${TIMESTAMP}.json"
-    HTML_FILE="report_${SCENARIO}_${TIMESTAMP}.html"
-    echo "Generating temporary JSON: $JSON_FILE"
-    k6 run --out json="$JSON_FILE" "$SCRIPT"
-    echo "Converting JSON to HTML: $HTML_FILE"
-    if ! command -v k6-html-reporter >/dev/null; then
-      echo "ERROR: k6-html-reporter not installed. Run: npm install -g k6-html-reporter"
-      exit 1
-    fi
-    k6-html-reporter --out html="$HTML_FILE" "$JSON_FILE"
-    echo "HTML Report created: $HTML_FILE"
     ;;
 
   "prometheus")
