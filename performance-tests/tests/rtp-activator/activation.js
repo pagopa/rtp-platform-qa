@@ -1,18 +1,12 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { getValidAccessToken } from '../../utils/utility.js';
+import { setupAuth, randomFiscalCode, config as activationConfig } from '../../utils/activation_utils.js';
 
 const {
-  DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-  DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
   DEBTOR_SERVICE_PROVIDER_ID
 } = __ENV;
 
-const config = {
-  access_token_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token',
-  activation_base: 'https://api-rtp.uat.cstar.pagopa.it/rtp/activation'
-};
 
 export let options = {
   scenarios: {
@@ -32,16 +26,7 @@ export let options = {
 };
 
 export function setup() {
-  if (!DEBTOR_SERVICE_PROVIDER_CLIENT_ID || !DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET) {
-    console.error(`⚠️ Missing env DEBTOR_SERVICE_PROVIDER_CLIENT_ID or _SECRET`);
-    throw new Error('Client credentials are not set');
-  }
-  const token = getValidAccessToken(
-    config.access_token_url,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET
-  );
-  return { access_token: token };
+  return setupAuth();
 }
 
 export function activate(data) {
@@ -52,7 +37,7 @@ export function activate(data) {
     'RequestId':     uuidv4()
   };
 
-  const debtor_fc = Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
+  const debtor_fc = randomFiscalCode();
   const payload = {
     payer: {
       fiscalCode: debtor_fc,
@@ -60,7 +45,7 @@ export function activate(data) {
     }
   };
 
-  const url = `${config.activation_base}/activations?toPublish=true`;
+  const url = `${activationConfig.activation_base}/activations?toPublish=true`;
   const res = http.post(url, JSON.stringify(payload), { headers });
   check(res, { 'activation 201': r => r.status === 201 });
   

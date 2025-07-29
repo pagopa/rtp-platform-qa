@@ -1,20 +1,15 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { getValidAccessToken } from '../../utils/utility.js';
+import { setupAuth, randomFiscalCode, config as activationConfig, commonOptions } from '../../utils/activation_utils.js';
 
 const {
-  DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-  DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
   DEBTOR_SERVICE_PROVIDER_ID
 } = __ENV;
 
-const config = {
-  access_token_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token',
-  activation_base:  'https://api-rtp.uat.cstar.pagopa.it/rtp/activation',
-};
 
 export let options = {
+  ...commonOptions,
   scenarios: {
     activate: {
       executor: 'constant-arrival-rate',
@@ -30,18 +25,13 @@ export let options = {
 };
 
 export function setup() {
-  const token = getValidAccessToken(
-    config.access_token_url,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET
-  );
-  
+  const { access_token } = setupAuth();
   const activationIds = [];
-  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Version: 'v1', RequestId: uuidv4() };
+  const headers = { Authorization: `Bearer ${access_token}`, 'Content-Type': 'application/json', Version: 'v1', RequestId: uuidv4() };
   for (let i = 0; i < 20; i++) {
-    const fc = Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
+    const fc = randomFiscalCode();
     const res = http.post(
-      `${config.activation_base}/activations?toPublish=true`,
+      `${activationConfig.activation_base}/activations?toPublish=true`,
       JSON.stringify({ payer: { fiscalCode: fc, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID } }),
       { headers }
     );
@@ -49,7 +39,7 @@ export function setup() {
       activationIds.push(res.headers['Location'].split('/').pop());
     }
   }
-  return { access_token: token, activationIds };
+  return { access_token, activationIds };
 }
 
 export function activate(data) {
@@ -70,7 +60,7 @@ export function activate(data) {
 
   console.log('> payload for activation:', JSON.stringify(activationPayload));
   const actRes = http.post(
-    `${config.activation_base}/activations?toPublish=true`,
+    `${activationConfig.activation_base}/activations?toPublish=true`,
     JSON.stringify(activationPayload),
     { headers }
   );
@@ -81,14 +71,14 @@ export function activate(data) {
     const activationId = actRes.headers['Location'].split('/').pop();
 
     const getByIdRes = http.get(
-      `${config.activation_base}/activations/${activationId}`,
+    `${activationConfig.activation_base}/activations/${activationId}`,
       { headers }
     );
     console.log(`> GET /activations/${activationId} → status=${getByIdRes.status}`);
     check(getByIdRes, { 'get by id 200': r => r.status === 200 });
 
     const deactRes = http.del(
-      `${config.activation_base}/activations/${activationId}`,
+    `${activationConfig.activation_base}/activations/${activationId}`,
       null,
       { headers }
     );

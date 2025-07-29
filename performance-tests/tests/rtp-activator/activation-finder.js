@@ -1,109 +1,26 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { getValidAccessToken } from '../../utils/utility.js';
+import { setupAuth, randomFiscalCode, config as activationConfig, progressiveOptions } from '../../utils/activation_utils.js';
 import { Counter, Trend } from 'k6/metrics';
 
 const START_TIME = Date.now();
 
 const {
-  DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-  DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
   DEBTOR_SERVICE_PROVIDER_ID
 } = __ENV;
 
-const config = {
-  access_token_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token',
-  activation_base: 'https://api-rtp.uat.cstar.pagopa.it/rtp/activation'
-};
 
 const currentRPS = new Counter('current_rps');
 const failureCounter = new Counter('failures');
 const successCounter = new Counter('successes');
 const responseTimeTrend = new Trend('response_time');
 
-export let options = {
-  scenarios: {
-    stress_test: {
-      executor: 'ramping-arrival-rate',
-      startRate: 10,
-      timeUnit: '1s',
-      preAllocatedVUs: 200,
-      maxVUs: 6000,
-      exec: 'activate',
-      stages: [
-        { target: 50, duration: '30s' },
-        { target: 50, duration: '30s' },
 
-        { target: 100, duration: '30s' },
-        { target: 100, duration: '30s' },
-        
-        { target: 250, duration: '30s' },
-        { target: 250, duration: '30s' },
-        
-        { target: 500, duration: '30s' },
-        { target: 500, duration: '30s' },
-        
-        { target: 1000, duration: '30s' },
-        { target: 1000, duration: '30s' },
-        
-        { target: 2500, duration: '30s' },
-        { target: 2500, duration: '30s' },
-        
-        { target: 5000, duration: '30s' },
-        { target: 5000, duration: '60s' },
-        
-        { target: 1000, duration: '30s' },
-        { target: 250, duration: '30s' },
-        { target: 50, duration: '30s' }
-      ]
-    },
-    soak_test: {
-      executor: 'constant-arrival-rate',
-      rate: 20,
-      timeUnit: '1s',
-      duration: '5m',
-      preAllocatedVUs: 50,
-      maxVUs: 200,
-      exec: 'activate'
-    },
-    spike_test: {
-      executor: 'ramping-arrival-rate',
-      startRate: 10,
-      timeUnit: '1s',
-      preAllocatedVUs: 20,
-      maxVUs: 500,
-      exec: 'activate',
-      stages: [
-        { target: 10, duration: '10s' },
-        { target: 300, duration: '10s' },
-        { target: 300, duration: '30s' },
-        { target: 10, duration: '10s' }
-      ]
-    }
-  },
-  thresholds: {
-    'http_req_duration': ['p(95)<5000'],
-    'failures': [],
-    'successes': [],
-    'current_rps': ['rate>0'],
-    'checks': []
-  },
-  summaryTrendStats: ['avg','min','med','max','p(90)','p(95)','p(99)'],
-  systemTags: ['status','method','url','name','group','check','error','scenario']
-};
+export let options = progressiveOptions;
 
 export function setup() {
-  if (!DEBTOR_SERVICE_PROVIDER_CLIENT_ID || !DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET) {
-    console.error('⚠️ Missing env DEBTOR_SERVICE_PROVIDER_CLIENT_ID or _SECRET');
-    throw new Error('Client credentials are not set');
-  }
-  const token = getValidAccessToken(
-    config.access_token_url,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET
-  );
-  return { access_token: token };
+  return setupAuth();
 }
 
 export function activate(data) {
@@ -122,9 +39,9 @@ export function activate(data) {
     'RequestId': uuidv4()
   };
 
-  const debtor_fc = Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
+  const debtor_fc = randomFiscalCode();
   const payload = { payer: { fiscalCode: debtor_fc, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID } };
-  const url = `${config.activation_base}/activations?toPublish=true`;
+  const url = `${activationConfig.activation_base}/activations?toPublish=true`;
 
   const start = Date.now();
   const res = http.post(url, JSON.stringify(payload), { headers });
