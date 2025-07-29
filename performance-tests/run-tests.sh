@@ -118,7 +118,7 @@ echo "Running performance test: $SCRIPT with output format: $FORMAT (Scenario: $
 case "$FORMAT" in
   "dashboard" | "web-dashboard" | "web_dashboard")
     echo "Starting k6 with web dashboard..."
-    k6 run --out web-dashboard $SCENARIO_OPT "$SCRIPT" &
+    k6 run --out web-dashboard "$SCRIPT" &
     sleep 2
     open http://127.0.0.1:5665
     wait
@@ -127,7 +127,7 @@ case "$FORMAT" in
   "json")
     RESULT_FILE="results_${SCENARIO}_${TIMESTAMP}.json"
     echo "Saving JSON output to $RESULT_FILE"
-    k6 run --out json="$RESULT_FILE" $SCENARIO_OPT "$SCRIPT"
+    k6 run --out json="$RESULT_FILE" "$SCRIPT"
     echo "JSON created: $RESULT_FILE"
     ;;
 
@@ -135,7 +135,7 @@ case "$FORMAT" in
     JSON_FILE="results_${SCENARIO}_${TIMESTAMP}.json"
     HTML_FILE="report_${SCENARIO}_${TIMESTAMP}.html"
     echo "Generating temporary JSON: $JSON_FILE"
-    k6 run --out json="$JSON_FILE" $SCENARIO_OPT "$SCRIPT"
+    k6 run --out json="$JSON_FILE" "$SCRIPT"
     echo "Converting JSON to HTML: $HTML_FILE"
     if ! command -v k6-html-reporter >/dev/null; then
       echo "ERROR: k6-html-reporter not installed. Run: npm install -g k6-html-reporter"
@@ -151,12 +151,12 @@ case "$FORMAT" in
       exit 1
     fi
     echo "Sending metrics to Prometheus: $PROM_HOST:$PROM_PORT"
-    k6 run --out prometheus-remotely="$PROM_HOST:$PROM_PORT" $SCENARIO_OPT "$SCRIPT"
+    k6 run --out prometheus-remotely="$PROM_HOST:$PROM_PORT" "$SCRIPT"
     ;;
 
   *)
     echo "Running with console output"
-    k6 run $SCENARIO_OPT "$SCRIPT"
+    k6 run "$SCRIPT"
     ;;
 esac
 
