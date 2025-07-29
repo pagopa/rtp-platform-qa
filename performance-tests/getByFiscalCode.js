@@ -31,7 +31,7 @@ export function setup() {
     };
 
     console.log('🚀 Avvio attivazione utenti...');
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 100; i++) {
         const fiscalCode = Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
         const payload = {
             payer: {
@@ -57,13 +57,13 @@ export function setup() {
 
     console.log(`✅ Attivazioni completate: ${fiscalCodes.length}`);
     console.log('⏳ In attesa di 1 minuto per freddamento...');
-    sleep(60);
+    sleep(90);
 
     return { fiscalCodes, token };
 }
 
 export let options = {
-    setupTimeout: '180s',
+    setupTimeout: '10m',
 
     scenarios: {
         /*
@@ -84,8 +84,9 @@ export let options = {
             timeUnit: '1s',
             duration: '30s',
             preAllocatedVUs: 200,
+            maxVUs: 400,
             exec: 'getByFiscalCode',
-            startTime: '40s'
+            startTime: '70s'
         },
         */
         /*
@@ -94,21 +95,12 @@ export let options = {
             rate: 500,
             timeUnit: '1s',
             duration: '30s',
-            preAllocatedVUs: 400,
+            preAllocatedVUs: 1000,
+            maxVUs: 1500,
             exec: 'getByFiscalCode',
             startTime: '80s'
-        },*/
-        /*
-        get1000: {
-            executor: 'constant-arrival-rate',
-            rate: 1000,
-            timeUnit: '1s',
-            duration: '30s',
-            preAllocatedVUs: 600,
-            exec: 'getByFiscalCode',
-            startTime: '120s'
-        }
-         */
+        },
+        */
     },
     summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
