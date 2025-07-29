@@ -2,6 +2,7 @@ import { getValidAccessToken } from './utility.js';
 import { activationConfig } from '../config/config.js';
 
 export const config = activationConfig;
+import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 export function setupAuth() {
     const { DEBTOR_SERVICE_PROVIDER_CLIENT_ID, DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET } = __ENV;
@@ -86,4 +87,43 @@ export const progressiveOptions = {
     current_rps: ['rate>0'],
     checks: []
   }
+};
+
+export function buildHeaders(token) {
+  return {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    'Version': 'v1',
+    'RequestId': uuidv4()
+  };
+}
+
+export function determineStage(sec) {
+  if (sec <= 30) return 'ramp-50';
+  if (sec <= 60) return 'stable-50';
+  if (sec <= 90) return 'ramp-100';
+  if (sec <= 120) return 'stable-100';
+  if (sec <= 150) return 'ramp-250';
+  if (sec <= 180) return 'stable-250';
+  if (sec <= 210) return 'ramp-500';
+  if (sec <= 240) return 'stable-500';
+  if (sec <= 270) return 'ramp-1000';
+  if (sec <= 300) return 'stable-1000';
+  if (sec <= 330) return 'ramp-2500';
+  if (sec <= 360) return 'stable-2500';
+  if (sec <= 390) return 'ramp-5000';
+  if (sec <= 450) return 'stable-5000';
+  if (sec <= 480) return 'recovery-1000';
+  if (sec <= 510) return 'recovery-250';
+  return 'recovery-50';
+}
+
+export const stages = [
+  'ramp-50', 'stable-50', 'ramp-100', 'stable-100', 'ramp-250', 'stable-250',
+  'ramp-500', 'stable-500', 'ramp-1000', 'stable-1000', 'ramp-2500', 'stable-2500',
+  'ramp-5000', 'stable-5000', 'recovery-1000', 'recovery-250', 'recovery-50'
+];
+
+export const endpoints = {
+  activations: `${activationConfig.activation_base}/activations?toPublish=true`
 };

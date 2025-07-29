@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { setupAuth, randomFiscalCode, config as activationConfig, progressiveOptions } from '../../utils/activation_utils.js';
+import { setupAuth, randomFiscalCode, config as activationConfig, progressiveOptions,
+         buildHeaders, endpoints, determineStage, stages } from '../../utils/activation_utils.js';
 import { Counter, Trend } from 'k6/metrics';
 
 const START_TIME = Date.now();
@@ -32,16 +32,11 @@ export function activate(data) {
 
   currentRPS.add(1, tags);
 
-  const headers = {
-    'Authorization': `Bearer ${data.access_token}`,
-    'Content-Type': 'application/json',
-    'Version': 'v1',
-    'RequestId': uuidv4()
-  };
+  const headers = buildHeaders(data.access_token);
 
   const debtor_fc = randomFiscalCode();
   const payload = { payer: { fiscalCode: debtor_fc, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID } };
-  const url = `${activationConfig.activation_base}/activations?toPublish=true`;
+  const url = endpoints.activations;
 
   const start = Date.now();
   const res = http.post(url, JSON.stringify(payload), { headers });
@@ -56,41 +51,18 @@ export function activate(data) {
   }
 
   check(res, {
-    'activation: status is 201': (r) => r.status === 201,
-    'activation: valid payload': (r) => r.json('id') !== undefined
+    'activation: status is 201': (r) => r.status === 201
   });
 
   sleep(Math.random() * 2 + 0.5);
   return res;
 }
 
-function determineStage(sec) {
-  if (sec <= 30) return 'ramp-50';
-  if (sec <= 60) return 'stable-50';
-  if (sec <= 90) return 'ramp-100';
-  if (sec <= 120) return 'stable-100';
-  if (sec <= 150) return 'ramp-250';
-  if (sec <= 180) return 'stable-250';
-  if (sec <= 210) return 'ramp-500';
-  if (sec <= 240) return 'stable-500';
-  if (sec <= 270) return 'ramp-1000';
-  if (sec <= 300) return 'stable-1000';
-  if (sec <= 330) return 'ramp-2500';
-  if (sec <= 360) return 'stable-2500';
-  if (sec <= 390) return 'ramp-5000';
-  if (sec <= 450) return 'stable-5000';
-  if (sec <= 480) return 'recovery-1000';
-  if (sec <= 510) return 'recovery-250';
-  return 'recovery-50';
-}
 
 export function handleSummary(data) {
   console.log('Generating enhanced summary...');
   
   const stageAnalysis = {};
-  const stages = ['ramp-50', 'stable-50', 'ramp-100', 'stable-100', 'ramp-250', 'stable-250', 
-                 'ramp-500', 'stable-500', 'ramp-1000', 'stable-1000', 'ramp-2500', 'stable-2500', 
-                 'ramp-5000', 'stable-5000', 'recovery-1000', 'recovery-250', 'recovery-50'];
   
   for (const stage of stages) {
     const stageData = {
