@@ -1,1 +1,4 @@
-locust==2.31.8
+locust>=2.31.8
+matplotlib>=3.7.2
+pandas>=2.0.3
+numpy>=1.24.3
