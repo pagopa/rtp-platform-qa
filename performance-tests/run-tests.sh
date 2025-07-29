@@ -139,11 +139,11 @@ case "$FORMAT" in
     echo "Generating temporary JSON: $JSON_FILE"
     k6 run --out json="$JSON_FILE" $SCENARIO_OPT "$SCRIPT"
     echo "Converting JSON to HTML: $HTML_FILE"
-    if ! command -v k6-reporter >/dev/null; then
-      echo "ERROR: k6-reporter not installed. Run: npm install -g k6-reporter"
+    if ! command -v k6-html-reporter >/dev/null; then
+      echo "ERROR: k6-html-reporter not installed. Run: npm install -g k6-html-reporter"
       exit 1
     fi
-    k6-reporter --out html="$HTML_FILE" "$JSON_FILE"
+    k6-html-reporter --out html="$HTML_FILE" "$JSON_FILE"
     echo "HTML Report created: $HTML_FILE"
     ;;
 
