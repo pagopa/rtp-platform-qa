@@ -127,3 +127,17 @@ export const stages = [
 export const endpoints = {
   activations: `${activationConfig.activation_base}/activations?toPublish=true`
 };
+
+export function getOptions(scenarioName) {
+  const scenarioKey = scenarioName in progressiveOptions.scenarios
+    ? scenarioName
+    : 'stress_test';
+  return {
+    summaryTrendStats: progressiveOptions.summaryTrendStats,
+    systemTags: progressiveOptions.systemTags,
+    scenarios: {
+      [scenarioKey]: progressiveOptions.scenarios[scenarioKey]
+    },
+    thresholds: progressiveOptions.thresholds
+  };
+}

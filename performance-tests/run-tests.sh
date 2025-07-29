@@ -108,14 +108,12 @@ if [ -z "$1" ]; then
   exit 1
 fi
 FORMAT="$1"; shift
+
 SCENARIO="${1:-stress_test}"
+export SCENARIO
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 echo "Running performance test: $SCRIPT with output format: $FORMAT (Scenario: $SCENARIO)"
 
-SCENARIO_OPT=""
-if [ "$SCENARIO" != "stress_test" ]; then
-  SCENARIO_OPT="--scenario $SCENARIO"
-fi
 
 case "$FORMAT" in
   "dashboard" | "web-dashboard")

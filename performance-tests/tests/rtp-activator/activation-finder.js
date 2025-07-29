@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, randomFiscalCode, progressiveOptions, buildHeaders, endpoints, determineStage, stages } from '../../utils/activation_utils.js';
+import { setupAuth, randomFiscalCode, buildHeaders, endpoints, determineStage, stages, getOptions } from '../../utils/activation_utils.js';
 import { Counter, Trend } from 'k6/metrics';
 
 const START_TIME = Date.now();
@@ -16,7 +16,7 @@ const successCounter = new Counter('successes');
 const responseTimeTrend = new Trend('response_time');
 
 
-export let options = progressiveOptions;
+export let options = getOptions(__ENV.SCENARIO);
 
 export function setup() {
   return setupAuth();
@@ -109,7 +109,7 @@ export function handleSummary(data) {
       break;
     }
   }
-  
+
   let firstFailureRPS = null;
   if (data.metrics.failures && data.metrics.failures.values) {
     const failuresByWindow = data.metrics.failures.values
