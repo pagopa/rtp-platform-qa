@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { getValidAccessToken } from './utility.js';
+import { getValidAccessToken } from '../../utils/utility.js';
 
 const {
   DEBTOR_SERVICE_PROVIDER_CLIENT_ID,

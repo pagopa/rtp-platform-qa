@@ -7,12 +7,15 @@ show_help() {
 Script to run performance tests with k6 on Azure Container Apps
 
 USAGE:
-  ./run-tests.sh <test-script.js> <output-format> [scenario]
+  ./run-tests.sh <test-folder> <test-script.js> <output-format> [scenario]
+  ./run-tests.sh <path/to/script.js> <output-format> [scenario]
   ./run-tests.sh --help
 
 PARAMETERS:
-  <test-script.js>     k6 script to run (e.g., activation-finder.js)
-  <output-format>      Desired output format:
+  <test-folder>        Folder containing k6 scripts (e.g., tests/rtp-activator)
+  <test-script.js>     Script filename within folder (e.g., activation-finder.js)
+  <path/to/script.js>  Or full relative path to script file (e.g., tests/rtp-activator/activation.js)
+  <output-format>      Desired output format (required):
                        - console:     Terminal output (default)
                        - dashboard:   Interactive web dashboard at http://127.0.0.1:5665
                        - json:        Detailed JSON results file
@@ -24,15 +27,26 @@ PARAMETERS:
                        - soak_test:   Long-term endurance test
                        - spike_test:  Test with sudden load spikes
 
+  
+  OUTPUT FORMATS:
+    console   | Terminal output (default)
+    dashboard | Interactive web dashboard at http://127.0.0.1:5665
+    json      | Detailed JSON results file
+    html      | HTML report (requires k6-reporter)
+    prometheus| Send metrics to Prometheus server
+
 EXAMPLES:
-  # Run stress test with console output
-  ./run-tests.sh activation-finder.js console
+  # Run stress test for activation.js using script path with console output
+  ./run-tests.sh rtp-activator/activation.js console
 
-  # Run spike test with web dashboard
-  ./run-tests.sh activation-finder.js dashboard spike_test
+  # Run spike test with web dashboard using direct script path
+  ./run-tests.sh rtp-activator/activation.js dashboard spike_test
 
-  # Generate HTML report for soak test
-  ./run-tests.sh activation-finder.js html soak_test
+  # Run stress test for activation-finder.js in rtp-activator folder
+  ./run-tests.sh tests/rtp-activator activation-finder.js
+
+  # Generate HTML report for soak test of activation-finder.js
+  ./run-tests.sh tests/rtp-activator activation-finder.js html soak_test
 
 ENVIRONMENT:
   The ../.env file is loaded if present.
@@ -55,19 +69,43 @@ if [ -f ../.env ]; then
   set +a
 fi
 
-if [ -z "$1" ]; then
-  echo "Usage: $0 <test-script.js> <output-format> [scenario]"
-  echo "Formats: console, dashboard, json, html, prometheus"
-  echo "Scenarios: stress_test, soak_test, spike_test"
-  echo "Run '$0 --help' for more information"
-  exit 1
+if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+  show_help
 fi
 
-SCRIPT="$1"
-FORMAT="${2:-console}"
-SCENARIO="${3:-stress_test}"
+INPUT="$1"; shift
+if [[ "$INPUT" == *.js ]]; then
+  if [ -f "$INPUT" ]; then
+    SCRIPT="$INPUT"
+  elif [ -f "tests/$INPUT" ]; then
+    SCRIPT="tests/$INPUT"
+  else
+    echo "Error: Script '$INPUT' not found"; exit 1
+  fi
+else
+  DIR="$INPUT"
+  if [ ! -d "$DIR" ] && [ -d "tests/$DIR" ]; then
+    DIR="tests/$DIR"
+  fi
+  if [ ! -d "$DIR" ]; then
+    echo "Error: Directory '$INPUT' not found"; exit 1
+  fi
+  FILE="$1"; shift
+  if [ -z "$FILE" ]; then
+    echo "Error: Please specify a script filename within '$DIR'"; exit 1
+  fi
+  SCRIPT="$DIR/$FILE"
+  if [ ! -f "$SCRIPT" ]; then
+    echo "Error: Script '$SCRIPT' not found in '$DIR'"; exit 1
+  fi
+fi
+if [ -z "$1" ]; then
+  echo "Error: Please specify an output format"
+  exit 1
+fi
+FORMAT="$1"; shift
+SCENARIO="${1:-stress_test}"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-
 echo "Running performance test: $SCRIPT with output format: $FORMAT (Scenario: $SCENARIO)"
 
 SCENARIO_OPT=""
