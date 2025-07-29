@@ -59,6 +59,10 @@ EOF
   exit 0
 }
 
+if [ "$#" -eq 0 ]; then
+  show_help
+fi
+
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   show_help
 fi
