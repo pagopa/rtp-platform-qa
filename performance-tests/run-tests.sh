@@ -116,7 +116,7 @@ echo "Running performance test: $SCRIPT with output format: $FORMAT (Scenario: $
 
 
 case "$FORMAT" in
-  "dashboard" | "web-dashboard")
+  "dashboard" | "web-dashboard" | "web_dashboard")
     echo "Starting k6 with web dashboard..."
     k6 run --out web-dashboard $SCENARIO_OPT "$SCRIPT" &
     sleep 2

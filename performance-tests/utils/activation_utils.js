@@ -89,6 +89,25 @@ export const progressiveOptions = {
   }
 };
 
+progressiveOptions.scenarios.stress_test_fixed_user = {
+  executor: 'constant-vus',
+  vus: progressiveOptions.scenarios.stress_test.maxVUs,
+  duration: '9m',
+  exec: 'activate'
+};
+progressiveOptions.scenarios.soak_test_fixed_user = {
+  executor: 'constant-vus',
+  vus: progressiveOptions.scenarios.soak_test.maxVUs,
+  duration: progressiveOptions.scenarios.soak_test.duration,
+  exec: 'activate'
+};
+progressiveOptions.scenarios.spike_test_fixed_user = {
+  executor: 'constant-vus',
+  vus: progressiveOptions.scenarios.spike_test.maxVUs,
+  duration: '1m',
+  exec: 'activate'
+};
+
 export function buildHeaders(token) {
   return {
     'Authorization': `Bearer ${token}`,
