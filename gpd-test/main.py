@@ -35,6 +35,11 @@ async def app_lifespan(fastapi_app: FastAPI):
 
 app = FastAPI(lifespan=app_lifespan)
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Kubernetes probes"""
+    return {"status": "healthy", "service": "gpd-producer"}
+
 @app.post("/send/gpd/message")
 async def send_msg(message: RTPMessage, request: Request):
     try:
