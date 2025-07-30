@@ -26,7 +26,6 @@ performance-tests/
     utils/
     tests/
     run-tests.sh          # Test runner script
-    analyze_breaking_point.py # Post-test analysis tool
 
 ## Configuration
 All service URLs are centralized in `config/config.js`. Secrets and environment-specific values are read from `.env` in the parent folder.
@@ -59,13 +58,6 @@ Use `run-tests.sh` to execute performance scripts:
 # Launch web dashboard, spike test
 ./run-tests.sh rtp-activator/activation.js dashboard spike_test
 
-## Post-Test Analysis
-Use the Python script to analyze a k6 JSON results file:
-
-```bash
-python3 analyze_breaking_point.py results_stress_test_<timestamp>.json
-```
-This will print summary metrics and generate charts:
  # RTP Platform QA - Performance Tests
 
  This directory contains k6-based performance tests and utilities for the RTP Platform.
@@ -79,8 +71,7 @@ This will print summary metrics and generate charts:
  ├── config/
  ├── utils/
  ├── tests/
- ├── run-tests.sh             # k6 test runner script
- └── analyze_breaking_point.py # Post-test analysis tool
+ └──  run-tests.sh             # k6 test runner script
  ```
 
  ## Configuration
@@ -120,11 +111,6 @@ This will print summary metrics and generate charts:
 
  # Generate JSON output
  ./run-tests.sh tests/rtp-activator activation-finder.js json soak_test
- ```
-
- ## Post-Test Analysis
- ```bash
- python3 analyze_breaking_point.py results_<scenario>_<timestamp>.json
  ```
 
  Generates: `success_failure_rate.png`, `response_time_metrics.png`

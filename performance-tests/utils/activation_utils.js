@@ -144,18 +144,25 @@ export const stages = [
 ];
 
 export const endpoints = {
-  activations: `${activationConfig.activation_base}/activations?toPublish=true`
+  activations: `${activationConfig.activation_base}/activations?toPublish=true`,
+  deactivations: `${activationConfig.activation_base}/activations`
 };
 
-export function getOptions(scenarioName) {
+export function getOptions(scenarioName, execFunction) {
   const scenarioKey = scenarioName in progressiveOptions.scenarios
     ? scenarioName
     : 'stress_test';
+    
+  const scenario = JSON.parse(JSON.stringify(progressiveOptions.scenarios[scenarioKey]));
+  if (execFunction) {
+    scenario.exec = execFunction;
+  }
+  
   return {
     summaryTrendStats: progressiveOptions.summaryTrendStats,
     systemTags: progressiveOptions.systemTags,
     scenarios: {
-      [scenarioKey]: progressiveOptions.scenarios[scenarioKey]
+      [scenarioKey]: scenario
     },
     thresholds: progressiveOptions.thresholds
   };
