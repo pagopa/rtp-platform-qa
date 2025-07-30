@@ -7,3 +7,11 @@ faker==22.5.1
 requests==2.32.4
 schwifty==2025.1.0
 urllib3==2.5.0
+
+python-dotenv~=1.1.1
+pydantic~=2.11.7
+pytest~=8.4.1
+fastapi~=0.116.1
+aiokafka~=0.12.0
+keyvault~=0.2.1
+azure-core~=1.35.0
