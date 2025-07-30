@@ -169,4 +169,13 @@ config/.secrets.yaml
 
 *.pem
 
+# MacOS
 .DS_Store
+
+# Node.js
+**/node_modules/
+**/package-lock.json
+
+# k6 output files
+**/results_*.json
+**/report_*/
