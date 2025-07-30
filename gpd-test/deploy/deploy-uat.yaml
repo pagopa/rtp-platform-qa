@@ -12,11 +12,12 @@ spec:
     metadata:
       labels:
         app: srtp-itn-u-gpd
+        azure.workload.identity/use: "true"
     spec:
       serviceAccountName: srtp-itn-workload-identity
       containers:
         - name: gpd-producer
-          image: ghcr.io/__OWNER__/gpd-test:latest
+          image: ghcr.io/pagopa/gpd-test:latest
           ports:
             - containerPort: 8000
           env:
