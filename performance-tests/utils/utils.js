@@ -1,8 +1,23 @@
-import { getValidAccessToken } from './utility.js';
 import { activationConfig } from '../config/config.js';
 
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+
+export function getValidAccessToken(access_token_url, client_id, client_secret) {
+    const payload = {
+        client_id: client_id,
+        client_secret: client_secret,
+        grant_type: 'client_credentials',
+    };
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    const res = http.post(access_token_url, payload, { headers: headers, responseType: "text", discardResponseBodies: false });
+
+    if (res.status !== 200) {
+        throw new Error(`Failed to get access token. Status code: ${res.status}`);
+    }
+
+    return res.json().access_token;
+}
 
 export function setupAuth() {
     const { DEBTOR_SERVICE_PROVIDER_CLIENT_ID, DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET } = __ENV;
