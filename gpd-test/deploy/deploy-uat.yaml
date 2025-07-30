@@ -19,7 +19,19 @@ spec:
         - name: gpd-producer
           image: ghcr.io/pagopa/gpd-test:latest
           ports:
-            - containerPort: 8000
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
           env:
             - name: KEYVAULT_NAME
               value: cstar-u-itn-srtp-kv
@@ -29,3 +41,36 @@ spec:
               value: pagopa-u-itn-gps-rtp-integration-evh
             - name: EVENTHUB_TOPIC
               value: rtp-events
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: srtp-itn-u-gpd-service
+  namespace: srtp
+spec:
+  selector:
+    app: srtp-itn-u-gpd
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: srtp-itn-u-gpd-ingress
+  namespace: srtp
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+    - host: gpd-uat.srtp.dev.pagopa.it
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: srtp-itn-u-gpd-service
+                port:
+                  number: 80

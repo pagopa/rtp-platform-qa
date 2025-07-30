@@ -29,3 +29,51 @@ jobs:
         file: gpd-test/Dockerfile
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/gpd-test:latest
+
+
+
+
+#jobs:
+#  build-and-push:
+#    runs-on: ubuntu-latest
+#    permissions:
+#      id-token: write
+#      contents: read
+#      packages: write
+#
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v4
+#
+#    - name: Log in to GitHub Container Registry
+#      uses: docker/login-action@v3
+#      with:
+#        registry: ghcr.io
+#        username: ${{ github.actor }}
+#        password: ${{ secrets.GITHUB_TOKEN }}
+#
+#    - name: Build and push Docker image
+#      uses: docker/build-push-action@v5
+#      with:
+#        context: .
+#        file: gpd-test/Dockerfile
+#        push: true
+#        tags: ghcr.io/${{ github.repository_owner }}/gpd-test:latest
+#
+#    - name: Azure login via OIDC
+#      uses: azure/login@v1
+#      with:
+#        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+#        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+#        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#
+#    - name: Set AKS context
+#      uses: azure/aks-set-context@v3
+#      with:
+#        resource-group: your-rg
+#        cluster-name: your-cluster
+#        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+#
+#    - name: Restart deployment
+#      run: kubectl rollout restart deployment srtp-itn-d-gpd -n srtp
+

@@ -35,19 +35,6 @@ async def app_lifespan(fastapi_app: FastAPI):
 
 app = FastAPI(lifespan=app_lifespan)
 
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for Kubernetes probes"""
-    return {"status": "healthy", "service": "gpd-producer"}
-
-
-@app.get("/")
-async def root():
-    """Root endpoint"""
-    return {"message": "GPD Service is running", "status": "ok"}
-
-
 @app.post("/send/gpd/message")
 async def send_msg(message: RTPMessage, request: Request):
     try:
@@ -63,9 +50,3 @@ async def send_msg(message: RTPMessage, request: Request):
     except Exception as e:
         logger.error(f"Error sending message: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
