@@ -161,7 +161,8 @@ export const stages = [
 
 export const endpoints = {
   activations: `${activationConfig.activation_base}/activations`,
-  deactivations: `${activationConfig.activation_base}/activations`
+  deactivations: `${activationConfig.activation_base}/activations`,
+  getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
 };
 
 export function getOptions(scenarioName, execFunction) {

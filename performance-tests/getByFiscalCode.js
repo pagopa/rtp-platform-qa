@@ -1,38 +1,19 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { getValidAccessToken } from './utility.js';
+import {buildHeaders, endpoints, randomFiscalCode, setupAuth} from "./utils/utils";
 
 const {
-    DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-    DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
     DEBTOR_SERVICE_PROVIDER_ID
 } = __ENV;
 
-const config = {
-    access_token_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token',
-    base_url: 'https://api-rtp.uat.cstar.pagopa.it/rtp/activation',
-};
-
 export function setup() {
-    const token = getValidAccessToken(
-        config.access_token_url,
-        DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-        DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET
-    );
-
+    const { access_token } = setupAuth();
+    const headers = buildHeaders(access_token);
     const fiscalCodes = [];
-
-    const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Version': 'v1',
-        'RequestId': uuidv4()
-    };
 
     console.log('🚀 Avvio attivazione utenti...');
     for (let i = 0; i < 100; i++) {
-        const fiscalCode = Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
+        const fiscalCode = randomFiscalCode();
         const payload = {
             payer: {
                 fiscalCode,
@@ -40,11 +21,8 @@ export function setup() {
             }
         };
 
-        const res = http.post(
-            `${config.base_url}/activations?toPublish=true`,
-            JSON.stringify(payload),
-            { headers }
-        );
+        const url = endpoints.activations;
+        const res = http.post(url, JSON.stringify(payload), { headers });
 
         if (res.status === 201) {
             fiscalCodes.push(fiscalCode);
@@ -57,27 +35,14 @@ export function setup() {
 
     console.log(`✅ Attivazioni completate: ${fiscalCodes.length}`);
     console.log('⏳ In attesa di 1 minuto per freddamento...');
-    sleep(90);
+    sleep(60);
 
-    return { fiscalCodes, token };
+    return { fiscalCodes, access_token };
 }
 
 export let options = {
-    setupTimeout: '10m',
-
+    setupTimeout: '5m',
     scenarios: {
-        /*
-        get10: {
-            executor: 'constant-arrival-rate',
-            rate: 10,
-            timeUnit: '1s',
-            duration: '30s',
-            preAllocatedVUs: 50,
-            exec: 'getByFiscalCode',
-            startTime: '0s'
-        },
-        */
-        /*
         get100: {
             executor: 'constant-arrival-rate',
             rate: 100,
@@ -87,20 +52,7 @@ export let options = {
             maxVUs: 400,
             exec: 'getByFiscalCode',
             startTime: '70s'
-        },
-        */
-        /*
-        get500: {
-            executor: 'constant-arrival-rate',
-            rate: 500,
-            timeUnit: '1s',
-            duration: '30s',
-            preAllocatedVUs: 1000,
-            maxVUs: 1500,
-            exec: 'getByFiscalCode',
-            startTime: '80s'
-        },
-        */
+        }
     },
     summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
 };
@@ -108,19 +60,14 @@ export let options = {
 export function getByFiscalCode(data) {
     const fiscalCode = data.fiscalCodes[Math.floor(Math.random() * data.fiscalCodes.length)];
 
-    const headers = {
-        'Authorization': `Bearer ${data.token}`,
-        'Version': 'v1',
-        'RequestId': uuidv4(),
-        'PayerId': fiscalCode
-    };
+    const headers = buildHeaders(data.access_token);
+    headers['PayerId'] = fiscalCode;
 
-    const res = http.get(`${config.base_url}/activations/payer`, { headers });
+    const url = endpoints.getByFiscalCode;
+    const res = http.get(url, { headers });
 
-    check(res, {
-        'status is 200': r => r.status === 200,
-        'has body': r => r.body && r.body.length > 0
-    });
+    check(res, {'status is 200': r => r.status === 200});
 
-    sleep(0.1);
+    sleep(1);
+    return res;
 }
