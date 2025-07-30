@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { setupAuth, randomFiscalCode, activationConfig, commonOptions, buildHeaders, endpoints } from '../../utils/activation_utils.js';
+import { setupAuth, randomFiscalCode, activationConfig, commonOptions, buildHeaders, endpoints } from '../../utils/utils.js';
 
 const {
   DEBTOR_SERVICE_PROVIDER_ID
