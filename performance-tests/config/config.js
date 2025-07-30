@@ -4,3 +4,8 @@ export const activationConfig = {
   access_token_url: ACCESS_TOKEN_URL,
   activation_base: 'https://api-rtp.uat.cstar.pagopa.it/rtp/activation'
 };
+
+export const serviceRegistryConfig = {
+  accessTokenUrl: ACCESS_TOKEN_URL,
+  baseUrl: 'https://api.uat.cstar.pagopa.it/rtp/service_providers'
+};
