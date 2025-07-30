@@ -4,6 +4,14 @@ import { activationConfig } from '../config/config.js';
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
+
+export const ActorCredentials = {
+  DEBTOR_SERVICE_PROVIDER: 'DEBTOR_SERVICE_PROVIDER',
+  CREDITOR_SERVICE_PROVIDER: 'CREDITOR_SERVICE_PROVIDER',
+  SERVICE_REGISTRY_READER: 'SERVICE_REGISTRY_READER'
+};
+
+
 /**
  * Gets a valid access token using client credentials authentication.
  * 
