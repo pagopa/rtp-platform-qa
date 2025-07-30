@@ -12,6 +12,22 @@ export const ActorCredentials = {
 };
 
 
+const ACTOR_CREDENTIALS_MAP = {
+	[ActorCredentials.DEBTOR_SERVICE_PROVIDER]: {
+		clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
+		clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
+	},
+	[ActorCredentials.CREDITOR_SERVICE_PROVIDER]: {
+		clientId: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_ID,
+		clientSecret: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET,
+	},
+	[ActorCredentials.SERVICE_REGISTRY_READER]: {
+		clientId: __ENV.SERVICE_REGISTRY_READER_CLIENT_ID,
+		clientSecret: __ENV.SERVICE_REGISTRY_READER_CLIENT_SECRET,
+	},
+};
+
+
 /**
  * Gets a valid access token using client credentials authentication.
  * 
@@ -37,24 +53,37 @@ export function getValidAccessToken(access_token_url, client_id, client_secret) 
     return res.json().access_token;
 }
 
+
+function retrieveActorClientCredentials(actor) {
+	const credentials = ACTOR_CREDENTIALS_MAP[actor];
+	if (!credentials) {
+		console.debug("Unrecognized ActorCredentials: " + actor);
+		return { clientId: null, clientSecret: null };
+	}
+	return credentials;
+}
+
+
 /**
- * Sets up authentication for API requests using environment variables.
- * Uses DEBTOR_SERVICE_PROVIDER credentials from environment variables.
+ * Sets up authentication for API requests using environment variables related to given actor.
  * 
+ * @param {ActorCredentials} actor - The actor to fetch credentials for
  * @returns {Object} Object containing the access_token
  * @throws {Error} If required environment variables are missing
  */
-export function setupAuth() {
-    const { DEBTOR_SERVICE_PROVIDER_CLIENT_ID, DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET } = __ENV;
-    if (!DEBTOR_SERVICE_PROVIDER_CLIENT_ID || !DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET) {
-        console.error('⚠️ Missing env DEBTOR_SERVICE_PROVIDER_CLIENT_ID or _SECRET');
+export function setupAuth(actor = ActorCredentials.DEBTOR_SERVICE_PROVIDER) {
+	let {clientId, clientSecret} = retrieveActorClientCredentials(actor);
+	
+    if (!clientId || !clientSecret) {
+        console.error('⚠️ Missing client credentials');
         throw new Error('Client credentials are not set');
     }
     const token = getValidAccessToken(
         config.access_token_url,
-        DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-        DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET
+        clientId,
+        clientSecret
     );
+
     return { access_token: token };
 }
 
