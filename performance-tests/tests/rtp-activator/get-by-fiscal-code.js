@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import {buildHeaders, endpoints, randomFiscalCode, setupAuth} from "./utils/utils";
+import {buildHeaders, endpoints, randomFiscalCode, setupAuth} from "../../utils/utils";
 
 const {
     DEBTOR_SERVICE_PROVIDER_ID
