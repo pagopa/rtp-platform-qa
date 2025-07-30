@@ -11,7 +11,7 @@ export function setup() {
     const headers = buildHeaders(access_token);
     const fiscalCodes = [];
 
-    console.log('🚀 Avvio attivazione utenti...');
+    console.log('Starting user activation...');
     for (let i = 0; i < 100; i++) {
         const fiscalCode = randomFiscalCode();
         const payload = {
@@ -27,14 +27,14 @@ export function setup() {
         if (res.status === 201) {
             fiscalCodes.push(fiscalCode);
         } else {
-            console.warn(`❌ Errore attivazione: ${res.status}`);
+            console.warn(`Activation Error: ${res.status}`);
         }
 
         sleep(0.1);
     }
 
-    console.log(`✅ Attivazioni completate: ${fiscalCodes.length}`);
-    console.log('⏳ In attesa di 1 minuto per freddamento...');
+    console.log(`Activations completed: ${fiscalCodes.length}`);
+    console.log('Waiting 1 minute for it to cool down...');
     sleep(60);
 
     return { fiscalCodes, access_token };
