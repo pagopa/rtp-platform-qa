@@ -13,12 +13,6 @@ DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET=...
 DEBTOR_SERVICE_PROVIDER_ID=...
 For Prometheus output, define `PROM_HOST` and `PROM_PORT`.
 
-5. Python 3 and pip (for post-test analysis):
-
-```bash
-pip3 install -r requirements.txt
-```
-
 ## Directory Structure
 ```
 performance-tests/
