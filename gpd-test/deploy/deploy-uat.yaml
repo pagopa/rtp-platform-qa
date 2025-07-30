@@ -64,7 +64,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: gpd-uat.srtp.dev.pagopa.it
+    - host: gpd-test.srtp.uat.pagopa.it
       http:
         paths:
           - path: /
