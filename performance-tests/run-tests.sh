@@ -57,11 +57,7 @@ EOF
   exit 0
 }
 
-if [ "$#" -eq 0 ]; then
-  show_help
-fi
-
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+if [ "$#" -eq 0 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
   show_help
 fi
 
@@ -69,10 +65,6 @@ if [ -f ../.env ]; then
   set -a
   source ../.env
   set +a
-fi
-
-if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-  show_help
 fi
 
 INPUT="$1"; shift

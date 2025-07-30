@@ -1,3 +1,4 @@
+import http from 'k6/http';
 import { activationConfig } from '../config/config.js';
 
 export const config = activationConfig;
