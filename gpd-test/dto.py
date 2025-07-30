@@ -7,9 +7,13 @@ class RTPOperationCode(str, Enum):
   DELETE = "DELETE"
 
 class PaymentPositionStatus(str, Enum):
-  CREATED = "CREATED"
-  SENT = "SENT"
-  ACCEPTED = "ACCEPTED"
+  VALID = "VALID"
+  PARTIALLY_VALID = "PARTIALLY_VALID"
+  PAID = "PAID"
+  EXPIRED = "EXPIRED"
+  INVALID = "INVALID"
+  DRAFT = "DRAFT"
+  PUBLISHED = "PUBLISHED"
 
 class RTPMessage(BaseModel):
   id: int
