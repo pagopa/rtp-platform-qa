@@ -1,10 +1,19 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import {buildHeaders, endpoints, randomFiscalCode, setupAuth} from "../../utils/utils";
+import {setupAuth, buildHeaders, endpoints, determineStage, stages, getOptions, randomFiscalCode} from '../../utils/utils.js';
+import { Counter, Trend } from 'k6/metrics';
 
+const START_TIME = Date.now();
 const {
     DEBTOR_SERVICE_PROVIDER_ID
 } = __ENV;
+
+const currentRPS = new Counter('current_rps');
+const failureCounter = new Counter('failures');
+const successCounter = new Counter('successes');
+const responseTimeTrend = new Trend('response_time');
+
+export let options = getOptions(__ENV.SCENARIO, 'getByFiscalCode');
 
 export function setup() {
     const { access_token } = setupAuth();
@@ -21,8 +30,7 @@ export function setup() {
             }
         };
 
-        const url = endpoints.activations;
-        const res = http.post(url, JSON.stringify(payload), { headers });
+        const res = http.post(endpoints.activations, JSON.stringify(payload), { headers });
 
         if (res.status === 201) {
             fiscalCodes.push(fiscalCode);
@@ -37,37 +45,126 @@ export function setup() {
     console.log('Waiting 1 minute for it to cool down...');
     sleep(60);
 
-    return { fiscalCodes, access_token };
+    return { access_token, fiscalCodes };
 }
 
-export let options = {
-    setupTimeout: '5m',
-    scenarios: {
-        get100: {
-            executor: 'constant-arrival-rate',
-            rate: 100,
-            timeUnit: '1s',
-            duration: '30s',
-            preAllocatedVUs: 200,
-            maxVUs: 400,
-            exec: 'getByFiscalCode',
-            startTime: '70s'
-        }
-    },
-    summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
-};
-
 export function getByFiscalCode(data) {
-    const fiscalCode = data.fiscalCodes[Math.floor(Math.random() * data.fiscalCodes.length)];
+    const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+    const tags = {
+        timeWindow: Math.floor(elapsedSeconds / 10) * 10,
+        stage: determineStage(elapsedSeconds)
+    };
 
+    currentRPS.add(1, tags);
+
+    const fiscalCode = data.fiscalCodes[Math.floor(Math.random() * data.fiscalCodes.length)];
     const headers = buildHeaders(data.access_token);
     headers['PayerId'] = fiscalCode;
 
     const url = endpoints.getByFiscalCode;
+
+    const start = Date.now();
     const res = http.get(url, { headers });
+    const duration = Date.now() - start;
 
-    check(res, {'status is 200': r => r.status === 200});
+    responseTimeTrend.add(duration, tags);
 
-    sleep(1);
+    if (res.status === 200) {
+        successCounter.add(1, tags);
+    } else {
+        failureCounter.add(1, tags);
+    }
+
+    check(res, {
+        'get: status is 200': (r) => r.status === 200
+    });
+
+    sleep(Math.random() * 2 + 0.5);
     return res;
+}
+
+export function handleSummary(data) {
+    console.log('Generating enhanced summary...');
+
+    const stageAnalysis = {};
+
+    for (const stage of stages) {
+        const stageData = {
+            requests: 0,
+            successes: 0,
+            failures: 0,
+            responseTime: {}
+        };
+
+        if (data.metrics.successes?.values) {
+            for (const value of data.metrics.successes.values) {
+                if (value.tags?.stage === stage) {
+                    stageData.successes += value.count;
+                    stageData.requests += value.count;
+                }
+            }
+        }
+
+        if (data.metrics.failures?.values) {
+            for (const value of data.metrics.failures.values) {
+                if (value.tags?.stage === stage) {
+                    stageData.failures += value.count;
+                    stageData.requests += value.count;
+                }
+            }
+        }
+
+        if (stageData.requests > 0) {
+            stageData.successRate = (stageData.successes / stageData.requests) * 100;
+            stageData.failureRate = (stageData.failures / stageData.requests) * 100;
+        }
+
+        stageAnalysis[stage] = stageData;
+    }
+
+    let breakingPoint = null;
+    for (const stage of stages) {
+        const stageData = stageAnalysis[stage];
+        if (stageData?.failureRate > 10) {
+            breakingPoint = {
+                stage: stage,
+                failureRate: stageData.failureRate,
+                requests: stageData.requests
+            };
+            break;
+        }
+    }
+
+    let firstFailureRPS = null;
+    if (data.metrics.failures?.values?.length) {
+        const failuresByWindow = data.metrics.failures.values
+            .filter(v => v.tags && v.count > 0)
+            .sort((a, b) => a.tags.timeWindow - b.tags.timeWindow);
+
+        if (failuresByWindow.length) {
+            const first = failuresByWindow[0];
+            firstFailureRPS = (first.count / 10) * 60;
+        }
+    }
+
+    return {
+        'stdout': JSON.stringify(data, null, 2),
+        'breaking-point-analysis.json': JSON.stringify({
+            summary: {
+                totalRequests: data.metrics.iterations?.count,
+                successRate: data.metrics.checks?.passes / data.metrics.checks?.count,
+                failureRate: data.metrics.checks?.fails / data.metrics.checks?.count,
+                firstFailureRPS
+            },
+            breakingPoint,
+            stageAnalysis,
+            metrics: Object.fromEntries(
+                Object.entries(data.metrics).map(([k, v]) => [k, {
+                    avg: v.values?.avg,
+                    p95: v.values?.['p(95)'],
+                    count: v.values?.count
+                }])
+            )
+        }, null, 2)
+    };
 }
