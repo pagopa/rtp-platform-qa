@@ -15,3 +15,4 @@ fastapi~=0.116.1
 aiokafka~=0.12.0
 keyvault~=0.2.1
 azure-core~=1.35.0
+certifi~=2025.7.14

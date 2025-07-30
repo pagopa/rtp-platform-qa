@@ -1,12 +1,14 @@
 from aiokafka import AIOKafkaProducer
-import os, ssl
+import os
+import ssl
+import certifi
 from keyvault import get_eventhub_connection_string
 
 async def setup_producer():
     connection_string = get_eventhub_connection_string()
     namespace = os.environ["EVENTHUB_NAMESPACE"]
 
-    ssl_context = ssl.create_default_context()
+    ssl_context = ssl.create_default_context(cafile=certifi.where())
     ssl_context.check_hostname = True
     ssl_context.verify_mode = ssl.CERT_REQUIRED
 

@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gpd-producer-sa
+  namespace: srtp
+  annotations:
+    azure.workload.identity/client-id: <CLIENT_ID_WORKLOAD_IDENTITY>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpd-producer-uat
+  namespace: srtp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gpd-producer-uat
+  template:
+    metadata:
+      labels:
+        app: gpd-producer-uat
+    spec:
+      serviceAccountName: gpd-producer-sa
+      containers:
+      - name: gpd-producer
+        image: ghcr.io/__OWNER__/gpd-test:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: KEYVAULT_NAME
+          value: cstar-u-itn-srtp-kv
+        - name: EVENTHUB_SECRET_NAME
+          value: gdp-eventhub-connection-string
+        - name: EVENTHUB_NAMESPACE
+          value: pagopa-u-itn-gps-rtp-integration-evh
+        - name: EVENTHUB_TOPIC
+          value: rtp-events
