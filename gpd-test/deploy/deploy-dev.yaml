@@ -64,7 +64,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: <external-ip>.nip.io
+    - host: gpd-test.srtp.dev.pagopa.it
       http:
         paths:
           - path: /
