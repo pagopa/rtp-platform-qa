@@ -16,7 +16,7 @@ const successCounter = new Counter('successes');
 const responseTimeTrend = new Trend('response_time');
 
 
-export let options = getOptions(__ENV.SCENARIO);
+export let options = getOptions(__ENV.SCENARIO, 'activate');
 
 export function setup() {
   return setupAuth();

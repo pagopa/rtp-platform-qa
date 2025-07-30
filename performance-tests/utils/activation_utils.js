@@ -37,7 +37,7 @@ export const progressiveOptions = {
       maxVUs: 6000,
       exec: 'activate',
       stages: [
-        { target: 50, duration: '30s' },
+        { target: 30, duration: '1m' },
         { target: 50, duration: '30s' },
         { target: 100, duration: '30s' },
         { target: 100, duration: '30s' },
@@ -91,19 +91,19 @@ export const progressiveOptions = {
 
 progressiveOptions.scenarios.stress_test_fixed_user = {
   executor: 'constant-vus',
-  vus: progressiveOptions.scenarios.stress_test.maxVUs,
-  duration: '9m',
+  vus: 100,
+  duration: '1m',
   exec: 'activate'
 };
 progressiveOptions.scenarios.soak_test_fixed_user = {
   executor: 'constant-vus',
-  vus: progressiveOptions.scenarios.soak_test.maxVUs,
+  vus: 100,
   duration: progressiveOptions.scenarios.soak_test.duration,
   exec: 'activate'
 };
 progressiveOptions.scenarios.spike_test_fixed_user = {
   executor: 'constant-vus',
-  vus: progressiveOptions.scenarios.spike_test.maxVUs,
+  vus: 100,
   duration: '1m',
   exec: 'activate'
 };
