@@ -9,11 +9,11 @@ on:
       environment:
         description: "Environment to deploy to"
         required: true
-        default: dev
+        default: itn-dev
         type: choice
         options:
-          - dev
-          - uat
+          - itn-dev
+          - itn-uat
 
 jobs:
   build-and-deploy:
