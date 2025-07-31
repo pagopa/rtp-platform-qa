@@ -20,7 +20,7 @@ export let options = {
       vus: VU_COUNT_SET,
       iterations: 500,
       maxDuration: '30m',
-      gracefulStop: '10m',
+      gracefulStop: '30m',
       exec: 'deactivate'
     }
   }
@@ -70,7 +70,7 @@ export function deactivate(data) {
 
   if (testCompleted) {
     console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
-    sleep(5);
+    sleep(30);
     return {
       status: 200,
       message: 'Test already completed, waiting for dashboard viewing',
@@ -196,8 +196,13 @@ export function teardown(data) {
     }
   }
 
+  if (data && data.allCompleted) {
+    testCompleted = true;
+  }
+  
   const finalState = {
     testCompleted: testCompleted,
+    allCompleted: testCompleted,
     totalActivations: totalActivations,
     deactivatedCount: actualDeactivatedCount,
     expectedDeactivations: data ? data.deactivatedCount : 0,
