@@ -110,11 +110,11 @@ export function createHandleSummary({ START_TIME, testName, countTag, reportPref
             const failures = data.metrics.failures.values ? data.metrics.failures.values.count : 0;
             const successes = data.metrics.successes.values ? data.metrics.successes.values.count : 0;
             testCompleted = successes > 0 && (successes > failures * 2);
-            console.log(`📊 Inferred completion from metrics - successes: ${successes}, failures: ${failures}, testCompleted: ${testCompleted}`);
+            console.log(`Inferred completion from metrics - successes: ${successes}, failures: ${failures}, testCompleted: ${testCompleted}`);
         }
-        
-        console.log(`📊 Report generation - Test completed status: ${testCompleted}`);
-        
+
+        console.log(`Report generation - Test completed status: ${testCompleted}`);
+
         return createTestSummary({
             data,
             startTime: START_TIME,
