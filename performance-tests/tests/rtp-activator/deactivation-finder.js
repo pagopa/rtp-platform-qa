@@ -12,7 +12,7 @@ const failureCounter = new Counter('failures');
 const successCounter = new Counter('successes');
 const responseTimeTrend = new Trend('response_time');
 
-const VU_COUNT_SET = 10;
+const VU_COUNT_SET = 50;
 
 export let options = {
   ...getOptions('stress_test_fixed_user', 'deactivate'),
@@ -22,6 +22,7 @@ export let options = {
       vus: VU_COUNT_SET,
       iterations: 500,
       maxDuration: '30m',
+      gracefulStop: '10m',
       exec: 'deactivate'
     }
   }
@@ -153,12 +154,12 @@ export function deactivate(data) {
   currentRPS.add(1, tags);
 
   if (testCompleted) {
-    console.log(`⏹️ Test already completed. VU #${__VU} in termination...`);
+    console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
+    sleep(5);
     return {
       status: 200,
-      message: 'Test already completed',
-      noMetrics: true,
-      __TEARDOWN: true
+      message: 'Test already completed, waiting for dashboard viewing',
+      noMetrics: true
     };
   }
 
@@ -187,11 +188,11 @@ export function deactivate(data) {
 
   if (data.vuDeactivatedCount[vuIndex] >= myActivations.length) {
     console.log(`✓ VU #${__VU}: Completed all ${myActivations.length} deactivations assigned.`);
+    sleep(5);
     return {
       status: 200,
-      message: `VU #${__VU} completed all deactivations`,
-      noMetrics: true,
-      __TEARDOWN: true
+      message: `VU #${__VU} completed all deactivations, idle for dashboard`,
+      noMetrics: true
     };
   }
 
@@ -228,11 +229,11 @@ export function deactivate(data) {
       testCompleted = true;
       console.log(`✅ TEST COMPLETED: All ${data.totalActivations} activations have been deactivated!`);
       console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
+      console.log(`Dashboard will remain active for viewing results.`);
       return {
         status: 204,
-        message: 'Test completed successfully',
-        noMetrics: false,
-        __TEARDOWN: true
+        message: 'Test completed successfully, dashboard still active',
+        noMetrics: false
       };
     }
   } else {
