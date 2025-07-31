@@ -79,7 +79,7 @@ export function generateVuStatsText(vuStats, processedKey = 'deactivated') {
  * 
  * @param {Object} finalState - Final state of the test
  * @param {string} vuStatsText - Text with the statistics for VU
- * @param {string} testType - Type of test (e.g., 'activat', 'deactivat')
+ * @param {string} testType - Type of test (e.g., 'activate', 'deactivate')
  * @returns {string} Formatted text with the additional information
  */
 export function generateTeardownInfo(finalState, vuStatsText, testType) {
