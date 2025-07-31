@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: srtp-itn-u-gpd
+  name: rtp-platform-qua
   namespace: srtp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: srtp-itn-u-gpd
+      app: rtp-platform-qua
   template:
     metadata:
       labels:
-        app: srtp-itn-u-gpd
+        app: rtp-platform-qua
         azure.workload.identity/use: "true"
     spec:
       serviceAccountName: srtp-itn-workload-identity
@@ -45,11 +45,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: srtp-itn-u-gpd-service
+  name: rtp-platform-qua-service
   namespace: srtp
 spec:
   selector:
-    app: srtp-itn-u-gpd
+    app: rtp-platform-qua
   ports:
     - protocol: TCP
       port: 80
@@ -58,19 +58,19 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: srtp-itn-u-gpd-ingress
+  name: rtp-platform-qua-ingress
   namespace: srtp
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-    - host: gpd-test.srtp.uat.pagopa.it
+    - host: qa.internal.uat.cstar.pagopa.it
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: srtp-itn-u-gpd-service
+                name: rtp-platform-qua-service
                 port:
                   number: 80
