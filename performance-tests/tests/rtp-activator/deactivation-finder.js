@@ -3,8 +3,8 @@ import { check, sleep } from 'k6';
 import { setupAuth, buildHeaders, endpoints, determineStage, getOptions } from '../../utils/utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createActivationsInBatch, shuffleArray, distributeItemsAmongGroups } from '../../utils/batch-utils.js';
-import { generateVuStatsText, generateTeardownInfo } from '../../utils/reporting-utils.js';
 import { createHandleSummary } from '../../utils/summary-utils.js';
+import { createDeactivationTeardown } from '../../utils/teardown-utils.js';
 
 const START_TIME = Date.now();
 const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
@@ -167,73 +167,18 @@ export function deactivate(data) {
   return res;
 }
 
-export function teardown(data) {
-  const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+const testCompletedRef = { value: false };
 
-  let actualDeactivatedCount = 0;
-  let totalActivations = 0;
+export const teardown = createDeactivationTeardown({
+  START_TIME,
+  VU_COUNT: VU_COUNT_SET,
+  testCompletedRef
+});
 
-  if (data && data.activationChunks) {
-    data.activationChunks.forEach(chunk => {
-      if (chunk) {
-        totalActivations += chunk.length;
-        actualDeactivatedCount += chunk.filter(item => item.deactivated).length;
-      }
-    });
-  }
-
-  let vuStats = [];
-  if (data && data.vuDeactivatedCount) {
-    for (let i = 0; i < VU_COUNT_SET; i++) {
-      const vuDeactivated = data.vuDeactivatedCount[i] || 0;
-      const vuTotal = data.activationChunks && data.activationChunks[i] ? data.activationChunks[i].length : 0;
-      vuStats.push({
-        vu: i + 1,
-        deactivated: vuDeactivated,
-        total: vuTotal,
-        percentage: vuTotal > 0 ? (vuDeactivated / vuTotal * 100).toFixed(1) : 0
-      });
-    }
-  }
-
-  if (data && data.allCompleted) {
-    testCompleted = true;
-  }
-  
-  const finalState = {
-    testCompleted: testCompleted,
-    allCompleted: testCompleted,
-    totalActivations: totalActivations,
-    deactivatedCount: actualDeactivatedCount,
-    expectedDeactivations: data ? data.deactivatedCount : 0,
-    testDuration: Math.round(elapsedSeconds),
-    vuStats: vuStats
-  };
-
-  if (testCompleted) {
-    console.log('====================================');
-    console.log(`TEST COMPLETED SUCCESSFULLY!`);
-    console.log(`All ${finalState.totalActivations} activations have been deactivated.`);
-    console.log(`Total execution time: ${finalState.testDuration} seconds`);
-    console.log('====================================');
-  } else {
-    console.log('====================================');
-    console.log('TEST TERMINATED BEFORE COMPLETION');
-    console.log(`Deactivated ${finalState.deactivatedCount} activations out of ${finalState.totalActivations} (${(finalState.deactivatedCount / finalState.totalActivations * 100).toFixed(1)}%).`);
-    console.log(`Total execution time: ${finalState.testDuration} seconds`);
-    console.log('====================================');
-  }
-
-  console.log('STATISTICS FOR VIRTUAL USER:');
-  vuStats.forEach(stat => {
-    console.log(`- VU #${stat.vu}: ${stat.deactivated}/${stat.total} (${stat.percentage}%)`);
-  });
-
-  const vuStatsText = generateVuStatsText(vuStats);
-  finalState.additionalReportContent = generateTeardownInfo(finalState, vuStatsText);
-
-  return finalState;
-}
+Object.defineProperty(testCompletedRef, 'value', {
+  get: () => testCompleted,
+  set: (newValue) => { testCompleted = newValue; }
+});
 
 export const handleSummary = createHandleSummary({
   START_TIME,

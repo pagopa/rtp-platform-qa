@@ -28,18 +28,18 @@ VIRTUAL USERS: ${vuCount}
 
 Overall Statistics:
 - Total requests: ${overallStats.totalRequests}
-- Successful operations: ${overallStats.successfulDeactivations}
-- Failed operations: ${overallStats.failedDeactivations}
+- Successful operations: ${overallStats.successfulOperations || overallStats.successfulDeactivations || overallStats.successfulActivations || 0}
+- Failed operations: ${overallStats.failedOperations || overallStats.failedDeactivations || overallStats.failedActivations || 0}
 - Success rate: ${overallStats.successRate.toFixed(2)}%
 - Failure rate: ${overallStats.failureRate.toFixed(2)}%
 - Average response time: ${overallStats.avgResponseTime.toFixed(2)} ms
 - P95 response time: ${overallStats.p95ResponseTime.toFixed(2)} ms
 - Total test duration: ${overallStats.testDuration} seconds
-- Total operations: ${overallStats.totalDeactivations}
+- Total operations: ${overallStats.totalOperations || overallStats.totalDeactivations || overallStats.totalActivations || 0}
 
 ${breakingPoint ? `
 BREAKING POINT IDENTIFIED:
-- After ${breakingPoint.deactivatedCount} operations
+- After ${breakingPoint.operationCount || breakingPoint.deactivatedCount || breakingPoint.activatedCount || 0} operations
 - At ${breakingPoint.secondsFromStart} seconds from test start
 - With failure rate: ${breakingPoint.failureRate.toFixed(2)}%
 - Average response time: ${breakingPoint.avgResponseTime.toFixed(2)} ms` : 
@@ -47,7 +47,7 @@ BREAKING POINT IDENTIFIED:
 
 ${firstFailure ? `
 FIRST FAILURE:
-- After ${firstFailure.deactivatedCount} operations
+- After ${firstFailure.operationCount || firstFailure.deactivatedCount || firstFailure.activatedCount || 0} operations
 - At ${firstFailure.secondsFromStart} seconds from test start
 - Number of failures: ${firstFailure.failures}` : 
 'NO FAILURE occurred during the test'}
@@ -61,12 +61,15 @@ ${additionalContent}
  * Generates a report for virtual user statistics
  * 
  * @param {Array} vuStats - Array of statistics for each virtual user
+ * @param {string} processedKey - Key to use for processed items count (default: 'deactivated')
  * @returns {string} Formatted text with VU statistics
  */
-export function generateVuStatsText(vuStats) {
+export function generateVuStatsText(vuStats, processedKey = 'deactivated') {
   let vuStatsText = 'STATISTICS FOR VIRTUAL USER:\n';
   vuStats.forEach(stat => {
-    vuStatsText += `- VU #${stat.vu}: ${stat.deactivated}/${stat.total} (${stat.percentage}%)\n`;
+    // Use the specified key or fall back to alternatives
+    const processedCount = stat[processedKey] || stat.processed || stat.deactivated || stat.activated || 0;
+    vuStatsText += `- VU #${stat.vu}: ${processedCount}/${stat.total} (${stat.percentage}%)\n`;
   });
   return vuStatsText;
 }
@@ -76,14 +79,27 @@ export function generateVuStatsText(vuStats) {
  * 
  * @param {Object} finalState - Final state of the test
  * @param {string} vuStatsText - Text with the statistics for VU
+ * @param {string} testType - Type of test (e.g., 'activat', 'deactivat')
  * @returns {string} Formatted text with the additional information
  */
-export function generateTeardownInfo(finalState, vuStatsText) {
+export function generateTeardownInfo(finalState, vuStatsText, testType) {
+  const totalKey = finalState.totalItems ? 'totalItems' : 
+                  (finalState.totalActivations ? 'totalActivations' : 'totalOperations');
+  
+  const completedKey = finalState.processedCount ? 'processedCount' : 
+                      (finalState.deactivatedCount ? 'deactivatedCount' : 
+                      (finalState.activatedCount ? 'activatedCount' : 'completedOperations'));
+  
+  const totalOperations = finalState[totalKey] || 0;
+  const completedOperations = finalState[completedKey] || 0;
+  const completionPercentage = totalOperations > 0 ? 
+                              (completedOperations / totalOperations * 100).toFixed(1) : 0;
+  
   return `
 ADDITIONAL INFORMATION FROM TEARDOWN:
 - Test completed: ${finalState.testCompleted ? "Yes" : "No"}
-- Total operations: ${finalState.totalActivations}
-- Completed operations: ${finalState.deactivatedCount} (${(finalState.deactivatedCount / finalState.totalActivations * 100).toFixed(1)}%)
+- Total operations: ${totalOperations}
+- Completed operations: ${completedOperations} (${completionPercentage}%)
 - Duration (seconds): ${finalState.testDuration}
 
 ${vuStatsText}
