@@ -18,7 +18,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'dev' }}
+    environment: ${{ github.event.inputs.environment || 'itn-dev' }}
 
     permissions:
       contents: read
@@ -44,22 +44,26 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/gpd-test:latest
 
-#      - name: Set up kubectl
-#        uses: azure/setup-kubectl@v3
-#
-#      - name: Azure Login with OIDC
-#        uses: azure/login@v2
-#        with:
-#          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-#          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-#          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-#
-#      - name: Set AKS context
-#        uses: azure/aks-set-context@v3
-#        with:
-#          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
-#          cluster-name: ${{ vars.AZURE_AKS_CLUSTER_NAME }}
-#
-#      - name: Deploy to AKS
-#        run: |
-#          kubectl apply -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'dev' }}.yaml
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Azure Login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.AZURE_AKS_CLUSTER_NAME }}
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
+
+      - name: Restart deployment to pull latest image
+        run: |
+          kubectl rollout restart deployment rtp-platform-qua -n srtp

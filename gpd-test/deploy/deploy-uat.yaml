@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rtp-platform-qua
+  name: rtp-platform-qa
   namespace: srtp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: rtp-platform-qua
+      app: rtp-platform-qa
   template:
     metadata:
       labels:
-        app: rtp-platform-qua
+        app: rtp-platform-qa
         azure.workload.identity/use: "true"
     spec:
       serviceAccountName: srtp-itn-workload-identity
@@ -45,11 +45,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: rtp-platform-qua-service
+  name: rtp-platform-qa-service
   namespace: srtp
 spec:
   selector:
-    app: rtp-platform-qua
+    app: rtp-platform-qa
   ports:
     - protocol: TCP
       port: 80
@@ -58,7 +58,7 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: rtp-platform-qua-ingress
+  name: rtp-platform-qa-ingress
   namespace: srtp
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
@@ -71,6 +71,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: rtp-platform-qua-service
+                name: rtp-platform-qa-service
                 port:
                   number: 80
