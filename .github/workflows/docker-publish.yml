@@ -66,4 +66,4 @@ jobs:
 
       - name: Restart deployment to pull latest image
         run: |
-          kubectl rollout restart deployment rtp-platform-qua -n srtp
+          kubectl rollout restart deployment rtp-platform-qa -n srtp
