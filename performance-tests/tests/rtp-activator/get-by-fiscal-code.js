@@ -13,7 +13,10 @@ const failureCounter = new Counter('failures');
 const successCounter = new Counter('successes');
 const responseTimeTrend = new Trend('response_time');
 
-export let options = getOptions(__ENV.SCENARIO, 'getByFiscalCode');
+export let options = {
+    ...getOptions(__ENV.SCENARIO, 'getByFiscalCode'),
+    setupTimeout: '120s'
+};
 
 export function setup() {
     const { access_token } = setupAuth();
@@ -96,8 +99,9 @@ export function handleSummary(data) {
             responseTime: {}
         };
 
+        const successValues = Object.values(data.metrics.successes?.values || {});
         if (data.metrics.successes?.values) {
-            for (const value of data.metrics.successes.values) {
+            for (const value of successValues) {
                 if (value.tags?.stage === stage) {
                     stageData.successes += value.count;
                     stageData.requests += value.count;
@@ -105,8 +109,9 @@ export function handleSummary(data) {
             }
         }
 
+        const failureValues = Object.values(data.metrics.failures?.values || {});
         if (data.metrics.failures?.values) {
-            for (const value of data.metrics.failures.values) {
+            for (const value of failureValues) {
                 if (value.tags?.stage === stage) {
                     stageData.failures += value.count;
                     stageData.requests += value.count;
