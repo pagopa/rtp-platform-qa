@@ -4,19 +4,15 @@ import { setupAuth, randomFiscalCode, buildHeaders, endpoints, determineStage, s
 import { Counter, Trend } from 'k6/metrics';
 
 const START_TIME = Date.now();
-
-const {
-  DEBTOR_SERVICE_PROVIDER_ID
-} = __ENV;
-
+const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
 
 const currentRPS = new Counter('current_rps');
 const failureCounter = new Counter('failures');
 const successCounter = new Counter('successes');
 const responseTimeTrend = new Trend('response_time');
 
-
 export let options = getOptions(__ENV.SCENARIO, 'activate');
+
 
 export function setup() {
   return setupAuth();
@@ -24,6 +20,7 @@ export function setup() {
 
 export function activate(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
     stage: determineStage(elapsedSeconds)
@@ -54,23 +51,25 @@ export function activate(data) {
   });
 
   sleep(Math.random() * 2 + 0.5);
+
   return res;
 }
 
 
+
 export function handleSummary(data) {
   console.log('Generating enhanced summary...');
-  
+
   const stageAnalysis = {};
-  
+
   for (const stage of stages) {
     const stageData = {
       requests: 0,
-      successes: 0, 
+      successes: 0,
       failures: 0,
       responseTime: {}
     };
-    
+
     if (data.metrics.successes && data.metrics.successes.values) {
       for (const value of data.metrics.successes.values) {
         if (value.tags && value.tags.stage === stage) {
@@ -79,7 +78,7 @@ export function handleSummary(data) {
         }
       }
     }
-    
+
     if (data.metrics.failures && data.metrics.failures.values) {
       for (const value of data.metrics.failures.values) {
         if (value.tags && value.tags.stage === stage) {
@@ -88,15 +87,15 @@ export function handleSummary(data) {
         }
       }
     }
-    
+
     if (stageData.requests > 0) {
       stageData.successRate = (stageData.successes / stageData.requests) * 100;
       stageData.failureRate = (stageData.failures / stageData.requests) * 100;
     }
-    
+
     stageAnalysis[stage] = stageData;
   }
-  
+
   let breakingPoint = null;
   for (const stage of stages) {
     const stageData = stageAnalysis[stage];
@@ -120,7 +119,7 @@ export function handleSummary(data) {
       firstFailureRPS = (first.count / 10) * 60;
     }
   }
-  
+
   return {
     'stdout': JSON.stringify(data, null, 2),
     'breaking-point-analysis.json': JSON.stringify({
