@@ -4,6 +4,15 @@ import { activationConfig } from '../config/config.js';
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
+/**
+ * Gets a valid access token using client credentials authentication.
+ * 
+ * @param {string} access_token_url - OAuth token endpoint URL
+ * @param {string} client_id - Client ID for authentication
+ * @param {string} client_secret - Client secret for authentication
+ * @returns {string} Access token for API authorization
+ * @throws {Error} If authentication fails
+ */
 export function getValidAccessToken(access_token_url, client_id, client_secret) {
     const payload = {
         client_id: client_id,
@@ -20,6 +29,13 @@ export function getValidAccessToken(access_token_url, client_id, client_secret) 
     return res.json().access_token;
 }
 
+/**
+ * Sets up authentication for API requests using environment variables.
+ * Uses DEBTOR_SERVICE_PROVIDER credentials from environment variables.
+ * 
+ * @returns {Object} Object containing the access_token
+ * @throws {Error} If required environment variables are missing
+ */
 export function setupAuth() {
     const { DEBTOR_SERVICE_PROVIDER_CLIENT_ID, DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET } = __ENV;
     if (!DEBTOR_SERVICE_PROVIDER_CLIENT_ID || !DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET) {
@@ -34,14 +50,31 @@ export function setupAuth() {
     return { access_token: token };
 }
 
+/**
+ * Generates a random fiscal code for testing purposes.
+ * Creates a basic numeric fiscal code with 11 digits.
+ * 
+ * @returns {string} Random fiscal code as a zero-padded string
+ */
 export function randomFiscalCode() {
     return Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
 }
+/**
+ * Common options used across all test types.
+ * These settings configure the metrics collection and tagging behavior.
+ */
 export const commonOptions = {
   summaryTrendStats: ['avg','min','med','max','p(90)','p(95)','p(99)'],
   systemTags: ['status','method','url','name','group','check','error','scenario'],
 };
 
+/**
+ * Progressive test options with different test scenarios.
+ * Contains predefined scenarios for different load testing strategies:
+ * - stress_test: Gradually increases load to find system breaking points
+ * - soak_test: Maintains constant moderate load for extended periods
+ * - spike_test: Creates sudden burst of traffic to test recovery
+ */
 export const progressiveOptions = {
   ...commonOptions,
   scenarios: {
@@ -105,6 +138,10 @@ export const progressiveOptions = {
   }
 };
 
+/**
+ * Fixed virtual user count scenario variants.
+ * These scenarios use constant number of VUs rather than arrival rate.
+ */
 progressiveOptions.scenarios.stress_test_fixed_user = {
   executor: 'constant-vus',
   vus: 100,
@@ -124,6 +161,13 @@ progressiveOptions.scenarios.spike_test_fixed_user = {
   exec: 'activate'
 };
 
+/**
+ * Builds standard headers for API requests.
+ * Includes authorization, content type, version, and request ID.
+ * 
+ * @param {string} token - Access token for Bearer authentication
+ * @returns {Object} Headers object for HTTP requests
+ */
 export function buildHeaders(token) {
   return {
     'Authorization': `Bearer ${token}`,
@@ -133,6 +177,13 @@ export function buildHeaders(token) {
   };
 }
 
+/**
+ * Determines the current test stage based on elapsed time.
+ * Maps time windows to named stages that correspond with the stress test profile.
+ * 
+ * @param {number} sec - Elapsed seconds since test start
+ * @returns {string} Current stage name
+ */
 export function determineStage(sec) {
   if (sec <= 30) return 'ramp-50';
   if (sec <= 60) return 'stable-50';
@@ -153,17 +204,33 @@ export function determineStage(sec) {
   return 'recovery-50';
 }
 
+/**
+ * List of all possible test stages in order.
+ * Used for reporting and analysis of test results.
+ */
 export const stages = [
   'ramp-50', 'stable-50', 'ramp-100', 'stable-100', 'ramp-250', 'stable-250',
   'ramp-500', 'stable-500', 'ramp-1000', 'stable-1000', 'ramp-2500', 'stable-2500',
   'ramp-5000', 'stable-5000', 'recovery-1000', 'recovery-250', 'recovery-50'
 ];
 
+/**
+ * API endpoints used in the tests.
+ * Centralized configuration of URLs to avoid duplication across test scripts.
+ */
 export const endpoints = {
   activations: `${activationConfig.activation_base}/activations`,
   deactivations: `${activationConfig.activation_base}/activations`
 };
 
+/**
+ * Builds test options based on scenario name and execution function.
+ * Creates a deep copy of the selected scenario to avoid reference issues.
+ * 
+ * @param {string} scenarioName - Name of the scenario to use (must exist in progressiveOptions.scenarios)
+ * @param {string} execFunction - Name of the function to execute for this scenario
+ * @returns {Object} Complete k6 options object with the selected scenario
+ */
 export function getOptions(scenarioName, execFunction) {
   const scenarioKey = scenarioName in progressiveOptions.scenarios
     ? scenarioName

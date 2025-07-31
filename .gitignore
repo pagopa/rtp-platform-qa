@@ -179,3 +179,5 @@ config/.secrets.yaml
 # k6 output files
 **/results_*.json
 **/report_*/
+**/deactivation-stress-analysis.json
+**/deactivation-report.txt
