@@ -2,6 +2,7 @@ import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { setupAuth, randomFiscalCode, buildHeaders, endpoints, determineStage, stages, getOptions } from '../../utils/utils.js';
 import { Counter, Trend } from 'k6/metrics';
+import { createHandleSummary } from '../../utils/summary-utils.js';
 
 const START_TIME = Date.now();
 const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
@@ -56,88 +57,11 @@ export function activate(data) {
 }
 
 
+export const handleSummary = createHandleSummary({
+  START_TIME,
+  testName: 'ACTIVATION STRESS TEST',
+  countTag: 'activatedCount',
+  reportPrefix: 'activation',
+  VU_COUNT: 50
+});
 
-export function handleSummary(data) {
-  console.log('Generating enhanced summary...');
-
-  const stageAnalysis = {};
-
-  for (const stage of stages) {
-    const stageData = {
-      requests: 0,
-      successes: 0,
-      failures: 0,
-      responseTime: {}
-    };
-
-    if (data.metrics.successes && data.metrics.successes.values) {
-      for (const value of data.metrics.successes.values) {
-        if (value.tags && value.tags.stage === stage) {
-          stageData.successes += value.count;
-          stageData.requests += value.count;
-        }
-      }
-    }
-
-    if (data.metrics.failures && data.metrics.failures.values) {
-      for (const value of data.metrics.failures.values) {
-        if (value.tags && value.tags.stage === stage) {
-          stageData.failures += value.count;
-          stageData.requests += value.count;
-        }
-      }
-    }
-
-    if (stageData.requests > 0) {
-      stageData.successRate = (stageData.successes / stageData.requests) * 100;
-      stageData.failureRate = (stageData.failures / stageData.requests) * 100;
-    }
-
-    stageAnalysis[stage] = stageData;
-  }
-
-  let breakingPoint = null;
-  for (const stage of stages) {
-    const stageData = stageAnalysis[stage];
-    if (stageData && stageData.requests > 0 && stageData.failureRate > 10) {
-      breakingPoint = {
-        stage: stage,
-        failureRate: stageData.failureRate,
-        requests: stageData.requests
-      };
-      break;
-    }
-  }
-
-  let firstFailureRPS = null;
-  if (data.metrics.failures && data.metrics.failures.values) {
-    const failuresByWindow = data.metrics.failures.values
-      .filter(v => v.tags && v.count > 0)
-      .sort((a, b) => a.tags.timeWindow - b.tags.timeWindow);
-    if (failuresByWindow.length) {
-      const first = failuresByWindow[0];
-      firstFailureRPS = (first.count / 10) * 60;
-    }
-  }
-
-  return {
-    'stdout': JSON.stringify(data, null, 2),
-    'breaking-point-analysis.json': JSON.stringify({
-      summary: {
-        totalRequests: data.metrics.iterations.count,
-        successRate: data.metrics.checks.passes / data.metrics.checks.count,
-        failureRate: data.metrics.checks.fails / data.metrics.checks.count,
-        firstFailureRPS: firstFailureRPS
-      },
-      breakingPoint: breakingPoint,
-      stageAnalysis: stageAnalysis,
-      metrics: Object.fromEntries(
-        Object.entries(data.metrics).map(([k, v]) => [k, {
-          avg: v.values?.avg,
-          p95: v.values?.['p(95)'],
-          count: v.values?.count
-        }])
-      )
-    }, null, 2)
-  };
-}

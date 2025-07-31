@@ -1,10 +1,10 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { setupAuth, buildHeaders, endpoints, determineStage, getOptions } from '../../utils/utils.js';
-import { createStandardMetrics, analyzeTimeWindowsData, findBreakingPoint, findFirstFailure, getMaxTagCount, calculateOverallStats } from '../../utils/metrics-utils.js';
+import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createActivationsInBatch, shuffleArray, distributeItemsAmongGroups } from '../../utils/batch-utils.js';
-import { generateTextReport, generateVuStatsText, generateTeardownInfo } from '../../utils/reporting-utils.js';
-import { textSummary } from 'https://jslib.k6.io/k6-summary/0.0.1/index.js';
+import { generateVuStatsText, generateTeardownInfo } from '../../utils/reporting-utils.js';
+import { createHandleSummary } from '../../utils/summary-utils.js';
 
 const START_TIME = Date.now();
 const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
@@ -230,52 +230,10 @@ export function teardown(data) {
   return finalState;
 }
 
-export function handleSummary(data) {
-  console.log('Generating enhanced summary for deactivation stress test...');
-
-  const timeWindowsAnalysis = analyzeTimeWindowsData(data);
-
-  const breakingPoint = findBreakingPoint(timeWindowsAnalysis);
-  const firstFailure = findFirstFailure(timeWindowsAnalysis);
-  const maxDeactivatedCount = getMaxTagCount(data, 'deactivatedCount');
-
-  if (breakingPoint) {
-    breakingPoint.deactivatedCount = maxDeactivatedCount;
-  }
-  if (firstFailure) {
-    firstFailure.deactivatedCount = maxDeactivatedCount;
-  }
-
-  const overallStats = calculateOverallStats(data, {
-    startTime: START_TIME,
-    breakingPoint: breakingPoint,
-    firstFailure: firstFailure,
-    maxDeactivatedCount: maxDeactivatedCount
-  });
-
-  const reportText = generateTextReport({
-    testName: 'MULTI-VU DEACTIVATION STRESS TEST',
-    testStatus: testCompleted ? "COMPLETED" : "INTERRUPTED",
-    vuCount: VU_COUNT_SET,
-    overallStats: overallStats,
-    breakingPoint: breakingPoint,
-    firstFailure: firstFailure,
-    additionalContent: data.setupData && data.setupData.additionalReportContent ? data.setupData.additionalReportContent : ''
-  });
-
-  return {
-    'stdout': textSummary(data, { indent: '  ', enableColors: true }),
-    'deactivation-stress-analysis.json': JSON.stringify({
-      summary: overallStats,
-      timeWindowsAnalysis: timeWindowsAnalysis,
-      metrics: Object.fromEntries(
-        Object.entries(data.metrics).map(([k, v]) => [k, {
-          avg: v.values ? v.values.avg : null,
-          p95: v.values ? v.values['p(95)'] : null,
-          count: v.values ? v.values.count : null
-        }])
-      )
-    }, null, 2),
-    'deactivation-report.txt': reportText
-  };
-}
+export const handleSummary = createHandleSummary({
+  START_TIME,
+  testName: 'MULTI-VU DEACTIVATION STRESS TEST',
+  countTag: 'deactivatedCount',
+  reportPrefix: 'deactivation',
+  VU_COUNT: VU_COUNT_SET
+});
