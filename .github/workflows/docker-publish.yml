@@ -42,7 +42,7 @@ jobs:
           context: .
           file: gpd-test/docker/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/gpd-test:latest
+          tags: ghcr.io/${{ github.repository_owner }}/rtp-platform-qa:latest
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede
@@ -73,7 +73,7 @@ jobs:
 
       - name: Deploy to AKS
         run: |
-          kubectl apply --validate=false -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
+          kubectl apply -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
 
       - name: Restart deployment to pull latest image
         run: |

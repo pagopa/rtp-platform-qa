@@ -17,7 +17,7 @@ spec:
       serviceAccountName: srtp-itn-workload-identity
       containers:
         - name: gpd-producer
-          image: ghcr.io/pagopa/gpd-test:latest
+          image: ghcr.io/pagopa/rtp-platform-qa:latest
           ports:
             - containerPort: 8080
           readinessProbe:

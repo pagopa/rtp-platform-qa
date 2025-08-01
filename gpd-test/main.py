@@ -40,18 +40,33 @@ async def health_check():
     """Health check endpoint for Kubernetes probes"""
     return {"status": "healthy", "service": "gpd-producer"}
 
+
+
 @app.post("/send/gpd/message")
 async def send_msg(message: RTPMessage, request: Request):
+    logger.info(f"Received message - id={message.id}, operation={message.operation}, status={message.status}")
+
     try:
         producer = request.app.state.producer
         if producer is None:
-            raise HTTPException(status_code=503, detail="Producer not available")
+            raise RuntimeError("Kafka producer is not available")
 
         await producer.send_and_wait(
             EVENTHUB_TOPIC,
             json.dumps(message.model_dump(by_alias=True)).encode("utf-8")
         )
-        return {"status": "ok"}
+
+        logger.info(f"Message sent successfully to topic '{EVENTHUB_TOPIC}'")
+        return {
+            "status": "success"
+        }
+
     except Exception as e:
-        logger.error(f"Error sending message: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Error sending message: %s", e)
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "status": "error",
+                "message": str(e)
+            }
+        )

@@ -11,5 +11,4 @@ def get_eventhub_connection_string():
     client = SecretClient(vault_url=keyvault_url, credential=credential)
 
     secret = client.get_secret(secret_name)
-    print(f"[KeyVault] Retrieved secret '{secret_name}' from '{keyvault_name}'")
     return secret.value
