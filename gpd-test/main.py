@@ -35,6 +35,11 @@ async def app_lifespan(fastapi_app: FastAPI):
 
 app = FastAPI(lifespan=app_lifespan)
 
+def sanitize_log_value(value) -> str:
+    """Sanitize a log field by removing newlines and carriage returns."""
+    return str(value).replace("\n", "").replace("\r", "")
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for Kubernetes probes"""
@@ -44,12 +49,17 @@ async def health_check():
 
 @app.post("/send/gpd/message")
 async def send_msg(message: RTPMessage, request: Request):
-    logger.info(f"Received message - id={message.id}, operation={message.operation}, status={message.status}")
+    logger.info(
+        "Received message with id=%s, operation=%s, status=%s",
+        sanitize_log_value(message.id),
+        sanitize_log_value(message.operation),
+        sanitize_log_value(message.status),
+    )
 
     try:
         producer = request.app.state.producer
         if producer is None:
-            raise RuntimeError("Kafka producer is not available")
+            raise ConnectionError("Kafka producer is not available")
 
         await producer.send_and_wait(
             EVENTHUB_TOPIC,
