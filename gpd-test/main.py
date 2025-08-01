@@ -66,7 +66,7 @@ async def send_msg(message: RTPMessage, request: Request):
             json.dumps(message.model_dump(by_alias=True)).encode("utf-8")
         )
 
-        logger.info(f"Message sent successfully to topic '{EVENTHUB_TOPIC}'")
+        logger.info(f"Message sent successfully")
         return {
             "status": "success"
         }
