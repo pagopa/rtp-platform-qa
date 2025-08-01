@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, buildHeaders, endpoints, determineStage, getOptions } from '../../utils/utils.js';
+import { setupAuth, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createActivationsInBatch, shuffleArray, distributeItemsAmongGroups } from '../../utils/batch-utils.js';
 import { createHandleSummary } from '../../utils/summary-utils.js';
@@ -29,7 +29,7 @@ export let options = {
 let testCompleted = false;
 
 export function setup() {
-  const auth = setupAuth();
+  const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
   
   const activationIds = createActivationsInBatch({
     accessToken: auth.access_token,
