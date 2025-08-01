@@ -65,7 +65,9 @@ jobs:
         run: |
           curl -L -o kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v0.2.10/kubelogin-linux-amd64.zip
           unzip kubelogin.zip
-          sudo mv bin/linux_amd64/kubelogin /usr/local/bin/
+          mkdir -p $HOME/.local/bin
+          mv bin/linux_amd64/kubelogin $HOME/.local/bin/
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
           kubelogin --version
 
       - name: Set AKS context
