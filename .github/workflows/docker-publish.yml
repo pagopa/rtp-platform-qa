@@ -16,14 +16,8 @@ on:
           - itn-uat
 
 jobs:
-  build-and-deploy:
-    runs-on: [ self-hosted-job, "${{ github.event.inputs.environment || 'itn-dev' }}" ]
-    environment: ${{ github.event.inputs.environment || 'itn-dev' }}
-
-    permissions:
-      contents: read
-      packages: write
-      id-token: write
+  build:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -43,6 +37,19 @@ jobs:
           file: gpd-test/docker/Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository_owner }}/rtp-platform-qa:latest
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted-job, "${{ github.event.inputs.environment || 'itn-dev' }}"]
+    environment: ${{ github.event.inputs.environment || 'itn-dev' }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede
