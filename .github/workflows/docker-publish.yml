@@ -67,6 +67,10 @@ jobs:
           resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
           cluster-name: ${{ vars.AZURE_AKS_CLUSTER_NAME }}
 
+      - name: Convert kubeconfig for OIDC
+        run: |
+          kubelogin convert-kubeconfig -l azurecli
+
       - name: Deploy to AKS
         run: |
           kubectl apply -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
