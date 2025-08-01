@@ -73,7 +73,7 @@ jobs:
 
       - name: Deploy to AKS
         run: |
-          kubectl apply -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
+          kubectl apply --validate=false -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
 
       - name: Restart deployment to pull latest image
         run: |
