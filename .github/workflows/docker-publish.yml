@@ -61,15 +61,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Install kubelogin
-        run: |
-          curl -L -o kubelogin.zip https://github.com/Azure/kubelogin/releases/download/v0.2.10/kubelogin-linux-amd64.zip
-          unzip kubelogin.zip
-          mkdir -p $HOME/.local/bin
-          mv bin/linux_amd64/kubelogin $HOME/.local/bin/
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          kubelogin --version
-
       - name: Set AKS context
         uses: azure/aks-set-context@c7eb093e5a5d47caa333f64974d5fd1cd4bf069d
         with:
