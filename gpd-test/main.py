@@ -47,14 +47,60 @@ async def health_check():
 
 
 
+# @app.post("/send/gpd/message")
+# async def send_msg(message: RTPMessage, request: Request):
+#     logger.info(
+#         "Received message with id=%s, operation=%s, status=%s",
+#         sanitize_log_value(message.id),
+#         sanitize_log_value(message.operation),
+#         sanitize_log_value(message.status),
+#     )
+#
+#     try:
+#         producer = request.app.state.producer
+#         if producer is None:
+#             raise ConnectionError("Kafka producer is not available")
+#
+#         await producer.send_and_wait(
+#             EVENTHUB_TOPIC,
+#             json.dumps(message.model_dump(by_alias=True)).encode("utf-8")
+#         )
+#
+#         logger.info(f"Message sent successfully")
+#         return {
+#             "status": "success"
+#         }
+#
+#     except Exception as e:
+#         logger.exception("Error sending message: %s", e)
+#         raise HTTPException(
+#             status_code=500,
+#             detail={
+#                 "status": "error",
+#                 "message": str(e)
+#             }
+#         )
+
+from fastapi import Request, Query
+
 @app.post("/send/gpd/message")
-async def send_msg(message: RTPMessage, request: Request):
-    logger.info(
-        "Received message with id=%s, operation=%s, status=%s",
-        sanitize_log_value(message.id),
-        sanitize_log_value(message.operation),
-        sanitize_log_value(message.status),
-    )
+async def send_msg(request: Request, validate: bool = Query(default=True)):
+    payload = await request.json()
+
+    logger.info("Received message: %s", sanitize_log_value(payload))
+
+    if validate:
+        try:
+            _ = RTPMessage(**payload)  # just to validate
+        except Exception as e:
+            logger.warning("Validation failed: %s", e)
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "status": "error",
+                    "message": f"Payload validation failed: {e}"
+                }
+            )
 
     try:
         producer = request.app.state.producer
@@ -63,13 +109,11 @@ async def send_msg(message: RTPMessage, request: Request):
 
         await producer.send_and_wait(
             EVENTHUB_TOPIC,
-            json.dumps(message.model_dump(by_alias=True)).encode("utf-8")
+            json.dumps(payload).encode("utf-8")
         )
 
-        logger.info(f"Message sent successfully")
-        return {
-            "status": "success"
-        }
+        logger.info("Message sent successfully")
+        return { "status": "success" }
 
     except Exception as e:
         logger.exception("Error sending message: %s", e)
