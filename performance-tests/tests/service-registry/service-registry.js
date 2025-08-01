@@ -1,15 +1,13 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, buildHeaders, determineStage, doHandleSummary, getOptions, ActorCredentials } from '../../utils/utils.js';
+import { setupAuth, buildHeaders, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
 import { serviceRegistryConfig } from '../../config/config.js';
-import { Counter, Trend } from 'k6/metrics';
+import { createHandleSummary } from '../../utils/summary-utils.js';
+import { createStandardMetrics } from '../../utils/metrics-utils.js';
 
 const START_TIME = Date.now();
 
-const currentRPS = new Counter('current_rps');
-const failureCounter = new Counter('failures');
-const successCounter = new Counter('successes');
-const responseTimeTrend = new Trend('response_time');
+const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
 
 export let options = getOptions(__ENV.SCENARIO, 'testServiceRegistry');
@@ -53,6 +51,10 @@ export function testServiceRegistry(data) {
 }
 
 
-export function handleSummary(data) {
-  return doHandleSummary(data);
-}
+export const handleSummary = createHandleSummary({
+  START_TIME,
+  testName: 'SERVICE REGISTRY STRESS TEST',
+  countTag: 'fetchedServiceProvidersCount',
+  reportPrefix: 'service-registry',
+  VU_COUNT: 1000
+});
