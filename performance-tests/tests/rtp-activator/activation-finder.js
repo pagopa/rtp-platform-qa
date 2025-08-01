@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, randomFiscalCode, buildHeaders, endpoints, determineStage, stages, getOptions } from '../../utils/utils.js';
+import { setupAuth, randomFiscalCode, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
 import { Counter, Trend } from 'k6/metrics';
 import { createHandleSummary } from '../../utils/summary-utils.js';
 
@@ -16,7 +16,7 @@ export let options = getOptions(__ENV.SCENARIO, 'activate');
 
 
 export function setup() {
-  return setupAuth();
+  return setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
 }
 
 export function activate(data) {
