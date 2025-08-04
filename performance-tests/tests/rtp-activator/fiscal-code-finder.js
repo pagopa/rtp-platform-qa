@@ -14,6 +14,7 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
 
 export let options = {
     ...getOptions('stress_test_fixed_user', 'findByFiscalCode'),
+    setupTimeout: '120s',
     scenarios: {
         stress_test_fixed_user: {
             executor: 'shared-iterations',
@@ -122,10 +123,10 @@ export function findByFiscalCode(data) {
     responseTimeTrend.add(duration, tags);
 
     check(res, {
-        'find: status is 204': (r) => r.status === 204
+        'find: status is 200': (r) => r.status === 200
     });
 
-    if (res.status === 204) {
+    if (res.status === 200) {
         successCounter.add(1, tags);
         activationItem.finded = true;
         data.vuRequestCount[vuIndex]++;
@@ -145,7 +146,7 @@ export function findByFiscalCode(data) {
             console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
             console.log(`Dashboard will remain active for viewing results.`);
             return {
-                status: 204,
+                status: 200,
                 message: 'Test completed successfully, dashboard still active',
                 noMetrics: false
             };
@@ -178,5 +179,6 @@ export const handleSummary = createHandleSummary({
     testName: 'MULTI-VU GETBYFISCALCODE STRESS TEST',
     countTag: 'requestCount',
     reportPrefix: 'fiscalcode',
-    VU_COUNT: VU_COUNT_SET
+    VU_COUNT: VU_COUNT_SET,
+    testCompletedRef
 });
