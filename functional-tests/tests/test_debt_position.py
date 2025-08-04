@@ -103,7 +103,6 @@ def test_create_debt_position(setup_data, environment):
     iuv = setup_data['iuv']
 
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
-    print(f'Payload for creating debt position: {payload}')
 
     create_function = environment['create_function']
     get_function = environment['get_function']
@@ -163,7 +162,6 @@ def test_update_debt_position(setup_data, environment):
     get_function = environment['get_function']
 
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
-    print(f'Payload for creating debt position: {payload}')
     create_response = create_function(subscription_key, organization_id, payload, to_publish=True)
     assert create_response.status_code == 201, f'Expected 201 but got {create_response.status_code}'
 
@@ -176,7 +174,6 @@ def test_update_debt_position(setup_data, environment):
     time.sleep(5)
 
     update_payload = create_debt_position_update_payload(iupd=iupd, debtor_fc=debtor_fc, iuv=iuv)
-    print(f'Payload for updating debt position: {update_payload}')
     update_response = update_function(subscription_key, organization_id, iupd, update_payload)
     assert update_response.status_code == 200, f'Expected 200 but got {update_response.status_code}'
 

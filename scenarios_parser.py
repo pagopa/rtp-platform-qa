@@ -37,7 +37,6 @@ args = CLI.parse_args()
 excluded_tags = args.exclude_tags
 print(f"Excluded tags: {excluded_tags}")
 
-
 def parse_feature_files(feat_files):
     feature_scenarios = {}
     parser = Parser()
