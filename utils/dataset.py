@@ -495,21 +495,21 @@ def create_debt_position_update_payload(iupd, debtor_fc=None, iuv=None):
                         'idTransfer': '1',
                         'amount': 8000,
                         'remittanceInformation': 'remittanceInformation 1',
-                        'category': '9/0101108TS/',
+                        'category': '9/0301105TS/',
                         'iban': 'IT0000000000000000000000000'
                     },
                     {
                         'idTransfer': '2',
                         'amount': 1000,
                         'remittanceInformation': 'remittanceInformation 2',
-                        'category': '9/0101108TS/',
+                        'category': '9/0301105TS/',
                         'iban': 'IT0000000000000000000000000'
                     },
                     {
                         'idTransfer': '3',
                         'amount': 500,
                         'remittanceInformation': 'remittanceInformation 3',
-                        'category': '9/0101108TS/',
+                        'category': '9/0301105TS/',
                         'iban': 'IT0000000000000000000000000'
                     }
                 ]
