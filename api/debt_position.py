@@ -1,5 +1,3 @@
-import uuid
-
 import requests
 
 from config.configuration import config
@@ -79,7 +77,9 @@ def delete_debt_position_dev(subscription_key, organization_id, iupd):
 def update_debt_position(subscription_key: str,
                          organization_id: str,
                          iupd: str,
-                         payload: dict) -> requests.Response:
+                         payload: dict,
+                         to_publish: bool = True
+                         ) -> requests.Response:
     """
     API to update an existing debt position.
 
@@ -100,12 +100,14 @@ def update_debt_position(subscription_key: str,
         'Content-Type': 'application/json'
     }
 
-    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout)
+    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout, params={'toPublish': to_publish})
 
 def update_debt_position_dev(subscription_key: str,
-                            organization_id: str,
-                            iupd: str,
-                            payload: dict) -> requests.Response:
+                              organization_id: str,
+                              iupd: str,
+                              payload: dict,
+                              to_publish: bool = True
+                              ) -> requests.Response:
     """
     API to update an existing debt position in DEV environment.
 
@@ -126,7 +128,7 @@ def update_debt_position_dev(subscription_key: str,
         'Content-Type': 'application/json'
     }
 
-    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout)
+    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout, params={'toPublish': to_publish})
 
 
 def get_debt_position(

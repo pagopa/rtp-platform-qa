@@ -2,7 +2,6 @@ import time
 
 import allure
 import pytest
-import time
 
 from api.activation import activate
 from api.activation import activate_dev
@@ -59,15 +58,19 @@ def environment(request):
 
 @pytest.fixture
 def setup_data(environment):
+    access_token_function = get_access_token_dev if environment['is_dev'] else get_access_token
+
     access_token = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
+        access_token_function=access_token_function
     )
 
     debtor_fc = fake_fc()
 
-    activation_response = activate(
+    activation_function = activate_dev if environment['is_dev'] else activate
+
+    activation_response = activation_function(
         access_token,
         debtor_fc,
         secrets.debtor_service_provider.service_provider_id
@@ -111,42 +114,6 @@ def test_create_debt_position(setup_data, environment):
     get_response = get_function(subscription_key, organization_id, iupd)
     assert get_response.status_code == 200, f'Expected 200 but got {get_response.status_code}'
 
-@allure.feature('Debt Positions')
-@allure.story('Create Debt Position in DEV')
-@allure.title('Happy path: a debt position is created and published in DEV environment')
-@pytest.mark.debt_positions
-@pytest.mark.happy_path
-def test_create_debt_position_dev_happy_path():
-
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token_dev
-    )
-
-    debtor_fc = fake_fc()
-
-    activation_response = activate_dev(
-        access_token,
-        debtor_fc,
-        secrets.debtor_service_provider.service_provider_id
-    )
-    assert activation_response.status_code == 201, 'Error activating debtor before creating debt position'
-
-    subscription_key = secrets.debt_positions_dev.subscription_key
-    organization_id = secrets.debt_positions_dev.organization_id
-
-    iupd = generate_iupd()
-    iuv = generate_iuv()
-
-    payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
-    print(f'Payload for creating debt position: {payload}')
-
-    res = create_debt_position_dev(subscription_key, organization_id, payload, to_publish=True)
-    assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
-
-    get_response = get_debt_position_dev(subscription_key, organization_id, iupd)
-    assert get_response.status_code == 200, f'Expected 200 but got {get_response.status_code}'
 
 @allure.feature('Debt Positions')
 @allure.story('Delete Debt Position')
@@ -196,6 +163,7 @@ def test_update_debt_position(setup_data, environment):
     get_function = environment['get_function']
 
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
+    print(f'Payload for creating debt position: {payload}')
     create_response = create_function(subscription_key, organization_id, payload, to_publish=True)
     assert create_response.status_code == 201, f'Expected 201 but got {create_response.status_code}'
 
@@ -205,9 +173,10 @@ def test_update_debt_position(setup_data, environment):
     initial_description = initial_data['paymentOption'][0]['description']
     initial_amount = initial_data['paymentOption'][0]['amount']
 
-    time.sleep(1)
+    time.sleep(20)
 
     update_payload = create_debt_position_update_payload(iupd=iupd, debtor_fc=debtor_fc, iuv=iuv)
+    print(f'Payload for updating debt position: {update_payload}')
     update_response = update_function(subscription_key, organization_id, iupd, update_payload)
     assert update_response.status_code == 200, f'Expected 200 but got {update_response.status_code}'
 

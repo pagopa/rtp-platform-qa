@@ -476,7 +476,7 @@ def create_debt_position_update_payload(iupd, debtor_fc=None, iuv=None):
         'region': 'RM',
         'country': 'IT',
         'email': 'lorem@lorem.com',
-        'phone': '333-987654321',
+        'phone': '333-123456789',
         'companyName': 'companyName',
         'officeName': 'officeName',
         'switchToExpired': False,
@@ -516,6 +516,7 @@ def create_debt_position_update_payload(iupd, debtor_fc=None, iuv=None):
             }
         ]
     }
+
 def generate_callback_data_DS_05_ACTC_compliant(BIC: str = 'MOCKSP04') -> dict:
     """Generate DS-05 compliant callback data.
 
