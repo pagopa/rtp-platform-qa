@@ -12,7 +12,13 @@ def sanitize_log_value(value) -> str:
 @gpd_router.post("/send/gpd/message")
 async def send_msg(request: Request, validate: bool = Query(default=True)):
     payload = await request.json()
-    logger.info("Received message: %s", sanitize_log_value(payload))
+    logger.info(
+        "Received message - id: %s, operation: %s, iuv: %s, status: %s",
+        sanitize_log_value(payload.get("id")),
+        sanitize_log_value(payload.get("operation")),
+        sanitize_log_value(payload.get("iuv")),
+        sanitize_log_value(payload.get("status")),
+    )
 
     if validate:
         try:
