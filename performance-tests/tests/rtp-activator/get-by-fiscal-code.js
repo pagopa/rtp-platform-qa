@@ -1,175 +1,182 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import {setupAuth, buildHeaders, endpoints, determineStage, stages, getOptions, randomFiscalCode} from '../../utils/utils.js';
-import { Counter, Trend } from 'k6/metrics';
+import { setupAuth, buildHeaders, endpoints, determineStage, getOptions } from '../../utils/utils.js';
+import { createStandardMetrics } from '../../utils/metrics-utils.js';
+import { createActivationsInBatch, shuffleArray, distributeItemsAmongGroups } from '../../utils/batch-utils.js';
+import { createHandleSummary } from '../../utils/summary-utils.js';
+import { createFinderTeardown } from '../../utils/teardown-utils.js';
 
 const START_TIME = Date.now();
-const {
-    DEBTOR_SERVICE_PROVIDER_ID
-} = __ENV;
+const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
+const VU_COUNT_SET = 50;
 
-const currentRPS = new Counter('current_rps');
-const failureCounter = new Counter('failures');
-const successCounter = new Counter('successes');
-const responseTimeTrend = new Trend('response_time');
+const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
 export let options = {
-    ...getOptions(__ENV.SCENARIO, 'getByFiscalCode'),
-    setupTimeout: '120s'
+    ...getOptions('stress_test_fixed_user', 'findByFiscalCode'),
+    scenarios: {
+        stress_test_fixed_user: {
+            executor: 'shared-iterations',
+            vus: VU_COUNT_SET,
+            iterations: 500,
+            maxDuration: '30m',
+            gracefulStop: '30m',
+            exec: 'findByFiscalCode'
+        }
+    }
 };
 
+let testCompleted = false;
+
 export function setup() {
-    const { access_token } = setupAuth();
-    const headers = buildHeaders(access_token);
-    const fiscalCodes = [];
+    const auth = setupAuth();
 
-    console.log('Starting user activation...');
-    for (let i = 0; i < 100; i++) {
-        const fiscalCode = randomFiscalCode();
-        const payload = {
-            payer: {
-                fiscalCode,
-                rtpSpId: DEBTOR_SERVICE_PROVIDER_ID
-            }
-        };
+    const activationFiscalCodes = createActivationsInBatch({
+        accessToken: auth.access_token,
+        targetActivations: 500,
+        batchSize: 50,
+        delayBetweenBatches: 2,
+        serviceProviderId: DEBTOR_SERVICE_PROVIDER_ID
+    });
 
-        const res = http.post(endpoints.activations, JSON.stringify(payload), { headers });
+    shuffleArray(activationFiscalCodes);
+    const activationChunks = distributeItemsAmongGroups(activationFiscalCodes, VU_COUNT_SET);
 
-        if (res.status === 201) {
-            fiscalCodes.push(fiscalCode);
-        } else {
-            console.warn(`Activation Error: ${res.status}`);
-        }
-
-        sleep(0.1);
+    console.log(`Activations distributed among ${VU_COUNT_SET} virtual users:`);
+    for (let i = 0; i < VU_COUNT_SET; i++) {
+        console.log(`- VU #${i + 1}: ${activationChunks[i].length} activations`);
     }
 
-    console.log(`Activations completed: ${fiscalCodes.length}`);
-    console.log('Waiting 1 minute for it to cool down...');
     sleep(60);
 
-    return { access_token, fiscalCodes };
+    return {
+        access_token: auth.access_token,
+        activationChunks,
+        totalActivations: activationFiscalCodes.length,
+        requestCount: 0,
+        allCompleted: false
+    };
 }
 
-export function getByFiscalCode(data) {
+export function findByFiscalCode(data) {
     const elapsedSeconds = (Date.now() - START_TIME) / 1000;
     const tags = {
         timeWindow: Math.floor(elapsedSeconds / 10) * 10,
-        stage: determineStage(elapsedSeconds)
+        stage: determineStage(elapsedSeconds),
+        requestCount: data.requestCount,
+        vu: __VU
     };
 
     currentRPS.add(1, tags);
 
-    const fiscalCode = data.fiscalCodes[Math.floor(Math.random() * data.fiscalCodes.length)];
+    if (testCompleted) {
+        console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
+        sleep(30);
+        return {
+            status: 200,
+            message: 'Test already completed, waiting for dashboard viewing',
+            noMetrics: true
+        };
+    }
+
+    const vuIndex = __VU - 1;
+    const myActivations = data.activationChunks[vuIndex];
+
+    if (!myActivations) {
+        console.log(`⚠️ VU #${__VU}: No activation chunk assigned. Termination.`);
+        return { status: 400, message: 'No activation chunk assigned', noMetrics: true };
+    }
+
+    data.currentIndices = data.currentIndices || {};
+    data.vuRequestCount = data.vuRequestCount || {};
+
+    data.currentIndices[vuIndex] = data.currentIndices[vuIndex] || 0;
+    data.vuRequestCount[vuIndex] = data.vuRequestCount[vuIndex] || 0;
+
+    if (data.vuRequestCount[vuIndex] >= myActivations.length) {
+        console.log(`✓ VU #${__VU}: Completed all ${myActivations.length} GETs assigned.`);
+        sleep(5);
+        return {
+            status: 200,
+            message: `VU #${__VU} completed all GETs, idle for dashboard`,
+            noMetrics: true
+        };
+    }
+
+    const currentIndex = data.currentIndices[vuIndex];
+    const activationItem = myActivations[currentIndex];
+
+    if (activationItem.finded) {
+        data.currentIndices[vuIndex] = (currentIndex + 1) % myActivations.length;
+        return findByFiscalCode(data);
+    }
+
     const headers = buildHeaders(data.access_token);
-    headers['PayerId'] = fiscalCode;
+    headers['PayerId'] = activationItem.fiscalCode;
 
     const url = endpoints.getByFiscalCode;
-
     const start = Date.now();
-    const res = http.get(url, { headers });
+    const res = http.get(url, null, { headers });
     const duration = Date.now() - start;
 
     responseTimeTrend.add(duration, tags);
 
-    if (res.status === 200) {
-        successCounter.add(1, tags);
-    } else {
-        failureCounter.add(1, tags);
-    }
-
     check(res, {
-        'get: status is 200': (r) => r.status === 200
+        'find: status is 204': (r) => r.status === 204
     });
 
-    sleep(Math.random() * 2 + 0.5);
+    if (res.status === 204) {
+        successCounter.add(1, tags);
+        activationItem.finded = true;
+        data.vuRequestCount[vuIndex]++;
+        data.requestCount++;
+
+        if (
+            data.requestCount % 50 === 0 ||
+            data.vuRequestCount[vuIndex] === myActivations.length
+        ) {
+            console.log(`✓ VU #${__VU}: ${data.vuRequestCount[vuIndex]}/${myActivations.length} GETs completed (Total: ${data.requestCount}/${data.totalActivations})`);
+        }
+
+        if (data.requestCount >= data.totalActivations && !data.allCompleted) {
+            data.allCompleted = true;
+            testCompleted = true;
+            console.log(`✅ TEST COMPLETED: All ${data.totalActivations} GETs have been performed!`);
+            console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
+            console.log(`Dashboard will remain active for viewing results.`);
+            return {
+                status: 204,
+                message: 'Test completed successfully, dashboard still active',
+                noMetrics: false
+            };
+        }
+    } else {
+        failureCounter.add(1, tags);
+        console.error(`❌ VU #${__VU}: Failed GET for fiscalCode ${activationItem.fiscalCode}: Status ${res.status}`);
+    }
+
+    data.currentIndices[vuIndex] = (currentIndex + 1) % myActivations.length;
+    sleep(1);
     return res;
 }
 
-export function handleSummary(data) {
-    console.log('Generating enhanced summary...');
+const testCompletedRef = { value: false };
 
-    const stageAnalysis = {};
+export const teardown = createFinderTeardown({
+    START_TIME,
+    VU_COUNT: VU_COUNT_SET,
+    testCompletedRef
+});
 
-    for (const stage of stages) {
-        const stageData = {
-            requests: 0,
-            successes: 0,
-            failures: 0,
-            responseTime: {}
-        };
+Object.defineProperty(testCompletedRef, 'value', {
+    get: () => testCompleted,
+    set: (newValue) => { testCompleted = newValue; }
+});
 
-        const successValues = Object.values(data.metrics.successes?.values || {});
-        if (data.metrics.successes?.values) {
-            for (const value of successValues) {
-                if (value.tags?.stage === stage) {
-                    stageData.successes += value.count;
-                    stageData.requests += value.count;
-                }
-            }
-        }
-
-        const failureValues = Object.values(data.metrics.failures?.values || {});
-        if (data.metrics.failures?.values) {
-            for (const value of failureValues) {
-                if (value.tags?.stage === stage) {
-                    stageData.failures += value.count;
-                    stageData.requests += value.count;
-                }
-            }
-        }
-
-        if (stageData.requests > 0) {
-            stageData.successRate = (stageData.successes / stageData.requests) * 100;
-            stageData.failureRate = (stageData.failures / stageData.requests) * 100;
-        }
-
-        stageAnalysis[stage] = stageData;
-    }
-
-    let breakingPoint = null;
-    for (const stage of stages) {
-        const stageData = stageAnalysis[stage];
-        if (stageData?.failureRate > 10) {
-            breakingPoint = {
-                stage: stage,
-                failureRate: stageData.failureRate,
-                requests: stageData.requests
-            };
-            break;
-        }
-    }
-
-    let firstFailureRPS = null;
-    if (data.metrics.failures?.values?.length) {
-        const failuresByWindow = data.metrics.failures.values
-            .filter(v => v.tags && v.count > 0)
-            .sort((a, b) => a.tags.timeWindow - b.tags.timeWindow);
-
-        if (failuresByWindow.length) {
-            const first = failuresByWindow[0];
-            firstFailureRPS = (first.count / 10) * 60;
-        }
-    }
-
-    return {
-        'stdout': JSON.stringify(data, null, 2),
-        'breaking-point-analysis.json': JSON.stringify({
-            summary: {
-                totalRequests: data.metrics.iterations?.count,
-                successRate: data.metrics.checks?.passes / data.metrics.checks?.count,
-                failureRate: data.metrics.checks?.fails / data.metrics.checks?.count,
-                firstFailureRPS
-            },
-            breakingPoint,
-            stageAnalysis,
-            metrics: Object.fromEntries(
-                Object.entries(data.metrics).map(([k, v]) => [k, {
-                    avg: v.values?.avg,
-                    p95: v.values?.['p(95)'],
-                    count: v.values?.count
-                }])
-            )
-        }, null, 2)
-    };
-}
+export const handleSummary = createHandleSummary({
+    START_TIME,
+    testName: 'MULTI-VU GETBYFISCALCODE STRESS TEST',
+    countTag: 'requestCount',
+    reportPrefix: 'fiscalcode',
+    VU_COUNT: VU_COUNT_SET
+});
