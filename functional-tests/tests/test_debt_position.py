@@ -9,13 +9,9 @@ from api.auth import get_access_token
 from api.auth import get_access_token_dev
 from api.auth import get_valid_access_token
 from api.debt_position import create_debt_position
-from api.debt_position import create_debt_position_dev
 from api.debt_position import delete_debt_position
-from api.debt_position import delete_debt_position_dev
 from api.debt_position import get_debt_position
-from api.debt_position import get_debt_position_dev
 from api.debt_position import update_debt_position
-from api.debt_position import update_debt_position_dev
 from config.configuration import secrets
 from utils.dataset import create_debt_position_payload
 from utils.dataset import create_debt_position_update_payload
@@ -33,25 +29,16 @@ from utils.dataset import generate_iuv
 def environment(request):
     """Fixture to provide environment-specific configurations."""
     env = request.param
-
-    if env['is_dev']:
-        env.update({
-            'create_function': create_debt_position_dev,
-            'get_function': get_debt_position_dev,
-            'delete_function': delete_debt_position_dev,
-            'update_function': update_debt_position_dev,
-            'subscription_key': secrets.debt_positions_dev.subscription_key,
-            'organization_id': secrets.debt_positions_dev.organization_id
-        })
-    else:
-        env.update({
-            'create_function': create_debt_position,
-            'get_function': get_debt_position,
-            'delete_function': delete_debt_position,
-            'update_function': update_debt_position,
-            'subscription_key': secrets.debt_positions.subscription_key,
-            'organization_id': secrets.debt_positions.organization_id
-        })
+    is_dev = env['is_dev']
+    
+    env.update({
+        'create_function': lambda sk, org_id, payload, to_publish: create_debt_position(sk, org_id, payload, to_publish, is_dev),
+        'get_function': lambda sk, org_id, iupd: get_debt_position(sk, org_id, iupd, is_dev),
+        'delete_function': lambda sk, org_id, iupd: delete_debt_position(sk, org_id, iupd, is_dev),
+        'update_function': lambda sk, org_id, iupd, payload, to_publish=True: update_debt_position(sk, org_id, iupd, payload, to_publish, is_dev),
+        'subscription_key': secrets.debt_positions_dev.subscription_key if is_dev else secrets.debt_positions.subscription_key,
+        'organization_id': secrets.debt_positions_dev.organization_id if is_dev else secrets.debt_positions.organization_id
+    })
 
     return env
 
