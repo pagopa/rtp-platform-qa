@@ -173,7 +173,7 @@ def test_update_debt_position(setup_data, environment):
     initial_description = initial_data['paymentOption'][0]['description']
     initial_amount = initial_data['paymentOption'][0]['amount']
 
-    time.sleep(20)
+    time.sleep(5)
 
     update_payload = create_debt_position_update_payload(iupd=iupd, debtor_fc=debtor_fc, iuv=iuv)
     print(f'Payload for updating debt position: {update_payload}')
