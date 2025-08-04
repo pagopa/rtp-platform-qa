@@ -1,5 +1,6 @@
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Optional
 
 class RTPOperationCode(str, Enum):
   CREATE = "CREATE"
@@ -22,12 +23,12 @@ class RTPMessage(BaseModel):
   iuv: str
   subject: str
   description: str
-  ec_tax_code: str = Field(..., alias="ec_tax_code")
-  debtor_tax_code: str = Field(..., alias="debtor_tax_code")
+  ec_tax_code: str
+  debtor_tax_code: str
   nav: str
-  due_date: int = Field(..., alias="due_date")
+  due_date: int
   amount: int
   status: PaymentPositionStatus
-  psp_code: str = Field(..., alias="psp_code")
-  psp_tax_code: str = Field(..., alias="psp_tax_code")
-  is_partial_payment: bool = Field(..., alias="is_partial_payment")
+  psp_code: Optional[str] = None
+  psp_tax_code: Optional[str] = None
+  is_partial_payment: Optional[bool] = None
