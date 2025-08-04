@@ -47,6 +47,10 @@ jobs:
     runs-on: [self-hosted-job, "${{ github.event.inputs.environment || 'itn-dev' }}"]
     environment: ${{ github.event.inputs.environment || 'itn-dev' }}
 
+    env:
+      DEPLOYMENT_NAME: rtp-platform-qa
+      NAMESPACE: srtp
+
     permissions:
       contents: read
       id-token: write
@@ -81,4 +85,4 @@ jobs:
 
       - name: Restart deployment to pull latest image
         run: |
-          kubectl rollout restart deployment rtp-platform-qa -n srtp
+          kubectl rollout restart deployment ${{ env.DEPLOYMENT_NAME }} -n ${{ env.NAMESPACE }}
