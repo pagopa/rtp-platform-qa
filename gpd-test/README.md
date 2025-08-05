@@ -1,49 +1,49 @@
 # Gpd-test
 
-## Descrizione
+## Description
 
-`gpd-test` è un microservizio sviluppato con **FastAPI**, pensato esclusivamente per testare la coda **GPD EventHub**. Consente di simulare la creazione, modifica o cancellazione di un messaggio SRTP (SEPA Request to Pay) direttamente sulla coda, senza passare dalla GPD API. Questo permette test controllati e indipendenti per i componenti downstream.
-
----
-
-## Funzionalità principali
-
-- Endpoint REST:
-  - `POST /send/gpd/message`: invia un messaggio custom a GPD
-  - `GET /health`: verifica dello stato del servizio
-- Recupero sicuro della **connessione EventHub** da **Azure Key Vault** tramite **Workload Identity**
-- Immagine Docker e file di deploy Kubernetes
-- Workflow CI/CD GitHub Actions integrato
+`gpd-test` is a microservice built with **FastAPI**, designed exclusively for testing the **GPD EventHub** queue. It allows you to simulate the creation, update, or deletion of an SRTP (SEPA Request to Pay) message directly on the queue, bypassing the GPD API. This enables isolated and controlled testing of downstream components.
 
 ---
 
-## Tecnologie utilizzate
+## Main Features
 
-- Python 3.11
-- FastAPI
-- Kafka (EventHub compatibile)
-- Azure Key Vault + DefaultAzureCredential
-- Docker
-- GitHub Actions
+- REST Endpoints:
+  - `POST /send/gpd/message`: sends a custom message to GPD
+  - `GET /health`: service health check
+- Secure retrieval of the **EventHub connection string** from **Azure Key Vault** using **Workload Identity**
+- Docker image and Kubernetes deployment files
+- Integrated GitHub Actions CI/CD workflow
+
+---
+
+## Technologies Used
+
+- Python 3.11  
+- FastAPI  
+- Kafka (EventHub-compatible)  
+- Azure Key Vault + DefaultAzureCredential  
+- Docker  
+- GitHub Actions  
 - Kubernetes (AKS)
 
 ---
 
-## Deploy su AKS
+## Deployment on AKS
 
-Il deploy è gestito via GitHub Actions:
+Deployment is handled via GitHub Actions:
 
-- Su push/merge su `main`, viene eseguito automaticamente su `itn-dev`
-- Manualmente, si può lanciare da GitHub Actions > workflow `docker-publish.yml` scegliendo `itn-dev` o `itn-uat`
+- On push/merge to `main`, the service is automatically deployed to `itn-dev`
+- Manually, you can trigger it from GitHub Actions > workflow `docker-publish.yml` by selecting `itn-dev` or `itn-uat`
 
-I file di manifest Kubernetes sono in `deploy/deploy-itn-dev.yaml` e `deploy/deploy-itn-uat.yaml`.
+Kubernetes manifests are located in `deploy/deploy-itn-dev.yaml` and `deploy/deploy-itn-uat.yaml`.
 
 ---
 
-## Esempio di chiamata
+## Example Request
 
 ```bash
-curl -X POST http://localhost:8000/send/gpd/message?validate=true \
+curl -X POST http://<your-domain>/send/gpd/message?validate=true \
   -H "Content-Type: application/json" \
   -d '{
     "id": 1,
@@ -68,5 +68,5 @@ curl -X POST http://localhost:8000/send/gpd/message?validate=true \
 
 ## Note aggiuntive
 
-- Il parametro booleano `validate` se valorizzato a true, innietta il messaggio nella coda solo se il payload rispetta il payload [GdpMessage](https://github.com/pagopa/rtp-sender/blob/main/src/main/java/it/gov/pagopa/rtp/sender/domain/gdp/GdpMessage.java)
-- L'API è interna e funziona solo con VPN
+- The `validate` boolean query parameter, if set to true, sends the message to the queue only if the payload complies with the [GdpMessage](https://github.com/pagopa/rtp-sender/blob/main/src/main/java/it/gov/pagopa/rtp/sender/domain/gdp/GdpMessage.java) format
+- This API is internal only and works exclusively over VPN.
