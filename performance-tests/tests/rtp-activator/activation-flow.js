@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { setupAuth, randomFiscalCode, commonOptions, buildHeaders, endpoints } from '../../utils/utils.js';
+import { setupAuth, randomFiscalCode, commonOptions, buildHeaders, endpoints, ActorCredentials } from '../../utils/utils.js';
 import { activationConfig } from '../../config/config.js';
 
 const {
@@ -26,7 +26,7 @@ export let options = {
 };
 
 export function setup() {
-  const { access_token } = setupAuth();
+  const { access_token } = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
   const activationIds = [];
   const headers = buildHeaders(access_token);
   for (let i = 0; i < 20; i++) {
