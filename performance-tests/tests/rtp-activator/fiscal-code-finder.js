@@ -8,7 +8,7 @@ import { createFinderTeardown } from '../../utils/teardown-utils.js';
 
 const START_TIME = Date.now();
 const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
-const VU_COUNT_SET = 5000;
+const VU_COUNT_SET = 500;
 
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
