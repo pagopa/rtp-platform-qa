@@ -232,8 +232,8 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant():
 @allure.title('Unauthorized callback due to wrong certificate serial')
 @pytest.mark.callback
 @pytest.mark.unhappy_path
-def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08P_compliant():
-    callback_data = generate_callback_data_DS_08P_compliant(BIC='MOCKSP01')
+def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant():
+    callback_data = generate_callback_data_DS_08N_compliant(BIC='MOCKSP01')
 
     cert, key = pfx_to_pem(
         secrets.debtor_service_provider_mock_PFX_base64,
@@ -278,8 +278,8 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant()
 @allure.title('Failed callback for non existing Service Provider - DS-08P compliant')
 @pytest.mark.callback
 @pytest.mark.unhappy_path
-def test_fail_send_rtp_callback_non_existing_service_provider_DS_08P_compliant():
-    callback_data = generate_callback_data_DS_08P_compliant(BIC='MOCKSP99')
+def test_fail_send_rtp_callback_non_existing_service_provider_DS_08N_compliant():
+    callback_data = generate_callback_data_DS_08N_compliant(BIC='MOCKSP99')
 
     cert, key = pfx_to_pem(
         secrets.debtor_service_provider_mock_PFX_base64,
