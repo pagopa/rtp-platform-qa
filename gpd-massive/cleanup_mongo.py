@@ -2,14 +2,15 @@ import os
 import pymongo
 import time 
 from pymongo.errors import ConnectionFailure, OperationFailure
+from utilities import require_env
 
 # --- Configuration ---
-CONNECTION_STRING = os.environ.get("COSMOS_DB_CONNECTION_STRING", "PASTE_YOUR_CONNECTION_STRING_HERE")
+CONNECTION_STRING = require_env("COSMOS_DB_CONNECTION_STRING")
 DATABASE_NAME = "rtp"
 COLLECTION_NAME = "rtps"
 BATCH_SIZE = 20
 SECONDS_TO_SLEEP = 1
-SERVICE_PROVIDER_DEBTOR = "MOCKSP04"
+SERVICE_PROVIDER_DEBTOR = require_env("SERVICE_PROVIDER")
 
 def delete_test_records_with_confirmation():
     """

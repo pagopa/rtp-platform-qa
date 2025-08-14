@@ -68,6 +68,7 @@ A Python script to find and delete specific records from an Azure Cosmos DB for 
     ```env
     # .env
     COSMOS_DB_CONNECTION_STRING="mongodb+srv://..."
+    SERVICE_PROVIDER=<RTP_SP_ID>
     ```
 
 ---
