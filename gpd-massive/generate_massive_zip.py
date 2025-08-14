@@ -1,16 +1,18 @@
-# generate_zip.py
-import json
+# generate_massive_zip.py
 import argparse
-import hashlib
+import json
 from pathlib import Path
 from zipfile import ZipFile, ZIP_DEFLATED
-from utilities import random_iupd, random_iuv, get_current_timestamp, calculate_dates, require_env
+
+from utilities import get_current_timestamp
+from utilities import random_iupd, random_iuv, require_env, calculate_dates
 
 
 BASENAME_PREFIX = "testRTP-"
+BASENAME_DELETE_PREFIX = "testRTPDelete-"
 
 # Build one payment position row
-def build_row(fiscal_code: str, iupd: str, iuv: str) -> dict:
+def build_payment_option_row(fiscal_code: str, iupd: str, iuv: str) -> dict:
     due_iso, retention_iso = calculate_dates()
     return {
         "iupd": iupd,
@@ -50,18 +52,38 @@ def build_row(fiscal_code: str, iupd: str, iuv: str) -> dict:
         }],
     }
 
-# Compute SHA256 checksum of a file
-def compute_sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
-            h.update(chunk)
-    return h.hexdigest()
+
+# Generate files using env defaults; returns a summary dict
+def generate_massive_zip(fiscal_code: str) -> dict:
+    rows = int(require_env("ROWS"))
+    out_dir = require_env("OUT_DIR")
+    out_path = Path(out_dir).expanduser().resolve()
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    payment_positions = [
+        build_payment_option_row(fiscal_code, random_iupd(), random_iuv())
+        for _ in range(rows)
+    ]
+    payload = {"paymentPositions": payment_positions}
+
+    iupds = [p["iupd"] for p in payment_positions]
+    delete_body = {"paymentPositionIUPDs": iupds}
+    json_path_delete, zip_path_delete = write_files(delete_body, out_path, BASENAME_DELETE_PREFIX)
+
+    json_path, zip_path = write_files(payload, out_path, BASENAME_PREFIX)
+    return {
+        "jsonPath": str(json_path),
+        "zipPath": str(zip_path),
+        "json_path_delete": str(json_path_delete),
+        "zip_path_delete": str(zip_path_delete),
+        "rows": rows,
+        "fiscalCode": fiscal_code,
+    }
 
 # Write JSON and ZIP files with same basename; returns (json_path, zip_path)
-def write_files(payload: dict, out_dir: Path) -> tuple[Path, Path]:
+def write_files(payload: dict, out_dir: Path, file_name_prefix) -> tuple[Path, Path]:
     stamp = get_current_timestamp()
-    basename = f"{BASENAME_PREFIX}{stamp}"
+    basename = f"{file_name_prefix}{stamp}"
     json_name = f"{basename}.json"
     zip_name = f"{basename}.zip"
 
@@ -75,28 +97,6 @@ def write_files(payload: dict, out_dir: Path) -> tuple[Path, Path]:
         zf.writestr(json_name, json_bytes)
 
     return json_path, zip_path
-
-# Generate files using env defaults; returns a summary dict
-def generate_massive_zip(fiscal_code: str) -> dict:
-    rows = int(require_env("ROWS"))
-    out_dir = require_env("OUT_DIR")
-    out_path = Path(out_dir).expanduser().resolve()
-    out_path.mkdir(parents=True, exist_ok=True)
-
-    payment_positions = [
-        build_row(fiscal_code, random_iupd(), random_iuv())
-        for _ in range(rows)
-    ]
-    payload = {"paymentPositions": payment_positions}
-
-    json_path, zip_path = write_files(payload, out_path)
-    return {
-        "jsonPath": str(json_path),
-        "zipPath": str(zip_path),
-        "rows": rows,
-        "fiscalCode": fiscal_code,
-        "zipSha256": compute_sha256(zip_path),
-    }
 
 # Parse command-line arguments
 def parse_args() -> argparse.Namespace:
