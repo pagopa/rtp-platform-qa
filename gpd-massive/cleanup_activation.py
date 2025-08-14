@@ -1,4 +1,4 @@
-# cleanup.py
+# cleanup_activation.py
 import uuid
 import json
 from pathlib import Path
@@ -49,7 +49,7 @@ def cleanup_local_artifacts() -> dict:
     if out_dir.exists():
         for p in out_dir.iterdir():
             name = p.name
-            if p.is_file() and name.startswith("testRTP-") and (name.endswith(".json") or name.endswith(".zip")):
+            if p.is_file() and (name.endswith(".json") or name.endswith(".zip")):
                 try:
                     p.unlink()
                     deleted.append(str(p))
