@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { activationConfig } from '../config/config.js';
+import {activationConfig, senderConfig} from '../config/config.js';
 
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
@@ -101,6 +101,17 @@ export function setupAuth(actor = ActorCredentials.DEBTOR_SERVICE_PROVIDER) {
 export function randomFiscalCode() {
     return Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
 }
+
+/**
+ * Generates a random notice number for testing purposes.
+ * Creates a basic numeric notice numeber code with 18 digits.
+ *
+ * @returns {string} Random notice number as a zero-padded string
+ */
+export function randomNoticeNumber() {
+    return Math.floor(Math.random() * 1e18).toString().padStart(18, '0');
+}
+
 /**
  * Common options used across all test types.
  * These settings configure the metrics collection and tagging behavior.
@@ -262,7 +273,8 @@ export const stages = [
  */
 export const endpoints = {
   activations: `${activationConfig.activation_base}/activations`,
-  deactivations: `${activationConfig.activation_base}/activations`
+  deactivations: `${activationConfig.activation_base}/activations`,
+  sendRtp: `${senderConfig}/rtps`
 };
 
 /**
