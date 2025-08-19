@@ -94,13 +94,13 @@ async def send_file(
         except Exception as e:
             failures.append({"line": line, "reason": f"Send failed: {str(e)}", "preview": stripped[:200]})
 
-    line_no = 0
+    line = 0
     for raw in file.file:
-        line_no += 1
+        line += 1
         text = raw.decode("utf-8", errors="replace")
         if text.strip() and not text.lstrip().startswith("#"):
             total += 1
-        tasks.append(asyncio.create_task(process_line(line_no, text)))
+        tasks.append(asyncio.create_task(process_line(line, text)))
 
     await asyncio.gather(*tasks, return_exceptions=True)
     return {
