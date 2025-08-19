@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import {activationConfig, senderConfig} from '../config/config.js';
+import {activationConfig, callbackConfig, senderConfig} from '../config/config.js';
 
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
@@ -274,7 +274,8 @@ export const stages = [
 export const endpoints = {
   activations: `${activationConfig.activation_base}/activations`,
   deactivations: `${activationConfig.activation_base}/activations`,
-  sendRtp: `${senderConfig}/rtps`
+  sendRtp: `${senderConfig.sender_base}/rtps`,
+  callbackSend : `${callbackConfig.callback_base}/cb/send`
 };
 
 /**

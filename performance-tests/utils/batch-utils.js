@@ -107,7 +107,7 @@ export function createSendInBatch({
                                       targetRequests,
                                       batchSize = 50,
                                       delayBetweenBatches = 2,
-                                      payerId
+                                      payerId,
                                   }) {
     console.log(`Sending ${targetRequests} RTP requests in batches of ${batchSize}...`);
 
@@ -118,32 +118,32 @@ export function createSendInBatch({
         const batchRequests = [];
 
         for (let i = 0; i < batchSize && (batch * batchSize + i) < targetRequests; i++) {
-            const noticeNumber = randomNoticeNumber()
+            const noticeNumber = randomNoticeNumber();
 
             const payload = {
                 payee: {
-                    name: "Comune di Smartino",
-                    payeeId: "77777777777",
-                    payTrxRef: `ABC/124`
+                    name: 'Comune di Smartino',
+                    payeeId: '77777777777',
+                    payTrxRef: 'ABC/124',
                 },
                 payer: {
-                    name: "Pigrolo",
-                    payerId
+                    name: 'Pigrolo',
+                    payerId,
                 },
                 paymentNotice: {
-                    noticeNumber: noticeNumber,
-                    description: "Paga questo avviso",
-                    subject: "TARI 2025",
+                    noticeNumber,
+                    description: 'Paga questo avviso',
+                    subject: 'TARI 2025',
                     amount: 40000,
-                    expiryDate: "2025-12-31"
-                }
+                    expiryDate: '2025-12-31',
+                },
             };
 
             batchRequests.push({
                 method: 'POST',
                 url: endpoints.sendRtp,
                 body: JSON.stringify(payload),
-                params: { headers, tags: { batchId: batch, itemId: i } }
+                params: { headers, tags: { batchId: batch, itemId: i } },
             });
         }
 
@@ -156,26 +156,26 @@ export function createSendInBatch({
             if (res.status === 201) {
                 successCount++;
 
-                let resourceID;
+                let resourceId;
                 if (res.headers['Location']) {
-                    resourceID = res.headers['Location'].split('/').pop();
+                    resourceId = res.headers['Location'].split('/').pop();
                 }else if (res.json('resourceID')) {
-                    resourceID = res.json('resourceID');
+                    resourceId = res.json('resourceId');
                 }
-                else {
+                if (!resourceId) {
                     try {
                         const body = JSON.parse(res.body);
-                        resourceID = body.resourceID || body.id || null;
+                        resourceId = body.resourceId || body.id || null;
                     } catch (e) {
                         console.warn(`⚠️ Failed to parse response body for request index: ${index}`);
                     }
                 }
 
-                if (resourceID) {
+                if (resourceId) {
                     requestIds.push({
-                        id: resourceID,
+                        id: resourceId,
                         payerId,
-                        sent: true
+                        sent: false
                     });
                 } else {
                     console.error(`⚠️ Request successful but no ID found for index: ${index}`);
