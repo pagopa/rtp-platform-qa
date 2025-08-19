@@ -62,6 +62,7 @@ async def send_msg(request: Request, validate: bool = Query(default=True)):
 async def send_file(
     request: Request,
     file: UploadFile = File(..., description="NDJSON file: one RTPMessage JSON per line"),
+    bulk: bool = Query(default=False, description="If true, send all messages at once without concurrency control"),
     concurrency: int = Query(default=10, ge=1, le=200),
 ):
     producer = getattr(request.app.state, "producer", None)
@@ -73,7 +74,7 @@ async def send_file(
 
     total, sent = 0, 0
     failures = []
-    sem = asyncio.Semaphore(concurrency)
+    sem = None if bulk else asyncio.Semaphore(concurrency)
     tasks = []
 
     async def process_line(line: int, text: str):
@@ -88,8 +89,12 @@ async def send_file(
             failures.append({"line": line, "reason": f"Validation error: {e}", "preview": stripped[:200]})
             return
         try:
-            async with sem:
+            if bulk:
+                # no concurrency, send immediately
                 await producer.send_and_wait(EVENTHUB_TOPIC, json.dumps(payload).encode("utf-8"))
+            else:
+                async with sem:
+                    await producer.send_and_wait(EVENTHUB_TOPIC, json.dumps(payload).encode("utf-8"))
             sent += 1
         except Exception as e:
             failures.append({"line": line, "reason": f"Send failed: {str(e)}", "preview": stripped[:200]})
