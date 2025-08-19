@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
-import {randomFiscalCode, buildHeaders, endpoints, randomNoticeNumber} from './utils.js';
+import {randomFiscalCode, buildHeaders, endpoints} from './utils.js';
+import {buildSendPayload} from "./sender-payloads";
 
 /**
  * Create a batch of activations for testing purposes.
@@ -118,26 +119,7 @@ export function createSendInBatch({
         const batchRequests = [];
 
         for (let i = 0; i < batchSize && (batch * batchSize + i) < targetRequests; i++) {
-            const noticeNumber = randomNoticeNumber();
-
-            const payload = {
-                payee: {
-                    name: 'Comune di Smartino',
-                    payeeId: '77777777777',
-                    payTrxRef: 'ABC/124',
-                },
-                payer: {
-                    name: 'Pigrolo',
-                    payerId,
-                },
-                paymentNotice: {
-                    noticeNumber,
-                    description: 'Paga questo avviso',
-                    subject: 'TARI 2025',
-                    amount: 40000,
-                    expiryDate: '2025-12-31',
-                },
-            };
+            const payload = buildSendPayload(payerId);
 
             batchRequests.push({
                 method: 'POST',
@@ -153,21 +135,26 @@ export function createSendInBatch({
         let failureCount = 0;
 
         responses.forEach((res, index) => {
-            if (res.status === 201) {
+            if (res.status >= 200 && res.status < 300) {
                 successCount++;
 
-                let resourceId;
-                if (res.headers['Location']) {
+                let resourceId = null;
+
+                if (res.headers && res.headers['Location']) {
                     resourceId = res.headers['Location'].split('/').pop();
-                }else if (res.json('resourceID')) {
-                    resourceId = res.json('resourceId');
                 }
+
                 if (!resourceId) {
                     try {
-                        const body = JSON.parse(res.body);
-                        resourceId = body.resourceId || body.id || null;
-                    } catch (e) {
-                        console.warn(`⚠️ Failed to parse response body for request index: ${index}`);
+                        const body = res.json();
+                        resourceId = body?.resourceId || body?.resourceID || body?.id || null;
+                    } catch (_) {
+                        try {
+                            const body = JSON.parse(res.body);
+                            resourceId = body.resourceId || body.resourceID || body.id || null;
+                        } catch (e) {
+                            console.warn(`⚠️ Failed to parse response body for request index: ${index}`);
+                        }
                     }
                 }
 
@@ -175,7 +162,7 @@ export function createSendInBatch({
                     requestIds.push({
                         id: resourceId,
                         payerId,
-                        sent: false
+                        processed: false,
                     });
                 } else {
                     console.error(`⚠️ Request successful but no ID found for index: ${index}`);
