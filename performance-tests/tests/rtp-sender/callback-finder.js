@@ -1,17 +1,17 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
-import { createStandardMetrics } from '../../utils/metrics-utils.js';
-import {shuffleArray, distributeItemsAmongGroups, createSendInBatch} from '../../utils/batch-utils.js';
-import { createHandleSummary } from '../../utils/summary-utils.js';
-import {buildCallbackPayload} from "../../utils/sender-payloads";
-import {createCallbackTeardown} from "../../utils/teardown-utils";
+import { setupAuth, endpoints, determineStage, getOptions, ActorCredentials } from "../../utils/utils.js";
+import { createStandardMetrics } from "../../utils/metrics-utils.js";
+import { shuffleArray, distributeItemsAmongGroups, createSendInBatch } from "../../utils/batch-utils.js";
+import { createHandleSummary } from "../../utils/summary-utils.js";
+import { buildCallbackPayload } from "../../utils/sender-payloads.js";
+import { createCallbackTeardown } from "../../utils/teardown-utils.js";
 
 const START_TIME = Date.now();
 const { SERVICE_PROVIDER_ID } = __ENV;
 const VU_COUNT_SET = 50;
-const MTLS_CERT_PATH = 'performance-tests/utils/certificates/cert-callback.pem';
-const MTLS_KEY_PATH  = 'performance-tests/utils/certificates/key-callback.pem';
+const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
+const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
 
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 

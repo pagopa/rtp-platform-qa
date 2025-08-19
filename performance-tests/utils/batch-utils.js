@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
 import {randomFiscalCode, buildHeaders, endpoints} from './utils.js';
-import {buildSendPayload} from "./sender-payloads";
+import {buildSendPayload} from "./sender-payloads.js";
 
 /**
  * Create a batch of activations for testing purposes.

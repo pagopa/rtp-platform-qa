@@ -1,15 +1,9 @@
-import {randomNoticeNumber, replaceUuidWithoutDashes} from "./utils";
+import {randomNoticeNumber, replaceUuidWithoutDashes} from "./utils.js";
 
 /**
  * Build the payload JSON for sending an RTP (Request To Pay).
- *
- * This payload represents the initial request issued by the creditor
- * to send a payment notice. Most fields are static mock values
- * (payee info, payer name, subject, etc.), while the `noticeNumber`
- * is generated dynamically.
- *
- * @param {string} payerId - Identifier of the payer (e.g. SERVICE_PROVIDER_ID).
- * @returns {Object} - JSON object ready to be serialized and sent via HTTP POST.
+ * @param {string} payerId - Identifier of the payer (e.g., SERVICE_PROVIDER_ID).
+ * @returns {Object}
  */
 export function buildSendPayload(payerId) {
     const noticeNumber = randomNoticeNumber();
@@ -34,14 +28,9 @@ export function buildSendPayload(payerId) {
 }
 
 /**
- * Build the payload JSON to simulate the callback response
- * for a previously sent RTP.
- *
- * The payload follows the AsynchronousSepaRequestToPayResponse schema,
- * including technical/mock data.
- *
- * @param {string} resourceId - Unique identifier of the RTP resource created during send.
- * @returns {Object} - JSON object ready to be serialized and sent via HTTP POST as a callback.
+ * Build the payload JSON to simulate the callback response (ACTC) for a sent RTP.
+ * @param {string} resourceId - RTP UUID (with dashes).
+ * @returns {Object}
  */
 export function buildCallbackPayload(resourceId) {
     const resourceIdNoDash = replaceUuidWithoutDashes(resourceId);
