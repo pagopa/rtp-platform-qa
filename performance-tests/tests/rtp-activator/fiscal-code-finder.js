@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
+import { check } from 'k6';
 import { setupAuth, buildHeaders, endpoints, determineStage, getOptions } from '../../utils/utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createActivationsInBatch } from '../../utils/batch-utils.js';
