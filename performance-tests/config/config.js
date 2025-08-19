@@ -1,4 +1,16 @@
+const ACCESS_TOKEN_URL = 'https://api-mcshared.uat.cstar.pagopa.it/auth/token';
+
 export const activationConfig = {
-  access_token_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token',
+  access_token_url: ACCESS_TOKEN_URL,
   activation_base: 'https://api-rtp.uat.cstar.pagopa.it/rtp/activation'
+};
+
+export const senderConfig = {
+  access_token_url: ACCESS_TOKEN_URL,
+  sender_base: 'https://api-rtp.uat.cstar.pagopa.it/rtp'
+};
+
+export const serviceRegistryConfig = {
+  accessTokenUrl: ACCESS_TOKEN_URL,
+  baseUrl: 'https://api-rtp.uat.cstar.pagopa.it/rtp/service_providers'
 };

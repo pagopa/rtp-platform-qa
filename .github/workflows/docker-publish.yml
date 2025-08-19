@@ -1,0 +1,84 @@
+name: Build & Deploy GPD Test
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: itn-dev
+        type: choice
+        options:
+          - itn-dev
+          - itn-uat
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push Docker image
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83
+        with:
+          context: .
+          file: gpd-test/docker/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/rtp-platform-qa:latest
+
+  deploy:
+    needs: build
+    runs-on: [self-hosted-job, "${{ github.event.inputs.environment || 'itn-dev' }}"]
+    environment: ${{ github.event.inputs.environment || 'itn-dev' }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@776406bce94f63e41d621b960d78ee25c8b76ede
+
+      - name: Azure Login
+        uses: azure/login@89d153571fe9a34ed70fcf9f1d95ab8debea7a73
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@c7eb093e5a5d47caa333f64974d5fd1cd4bf069d
+        with:
+          resource-group: ${{ vars.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.AZURE_AKS_CLUSTER_NAME }}
+
+      - name: Convert kubeconfig for OIDC
+        run: |
+          kubelogin convert-kubeconfig -l azurecli
+
+      - name: Deploy to AKS
+        run: |
+          kubectl apply -f gpd-test/deploy/deploy-${{ github.event.inputs.environment || 'itn-dev' }}.yaml
+
+      - name: Restart deployment to pull latest image
+        run: |
+          kubectl rollout restart deployment ${{ vars.DEPLOYMENT_NAME }} -n ${{ vars.NAMESPACE }}

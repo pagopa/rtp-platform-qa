@@ -423,7 +423,7 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
             {
                 'iuv': iuv,
                 'amount': 10000,
-                'description': 'Canone Unico Patrimoniale - CORPORATE',
+                'description': 'Canone Unico Patrimoniale - CORPORATE - TEST',
                 'isPartialPayment': False,
                 'dueDate': due_date,
                 'retentionDate': retention_date,
@@ -443,6 +443,80 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
         ]
     }
     return payload
+
+def create_debt_position_update_payload(iupd, debtor_fc=None, iuv=None):
+    """
+    Generate a payload for debt position update.
+    """
+    if debtor_fc is None:
+        debtor_fc = fake_fc()
+    if iuv is None:
+        iuv = generate_iuv()
+
+    now = datetime.now(timezone.utc)
+    due_date = now + timedelta(days=7)
+    retention_date = now + timedelta(days=70)
+    validity_date = now - timedelta(days=4)
+
+    date_format = '%Y-%m-%dT%H:%M:%S.000'
+    due_date_str = due_date.astimezone(timezone.utc).strftime(date_format)
+    retention_date_str = retention_date.astimezone(timezone.utc).strftime(date_format)
+    validity_date_str = validity_date.astimezone(timezone.utc).strftime(date_format)
+
+    return {
+        'iupd': iupd,
+        'type': 'F',
+        'fiscalCode': debtor_fc,
+        'fullName': 'John Doe',
+        'streetName': 'streetName',
+        'civicNumber': '11',
+        'postalCode': '00100',
+        'city': 'city',
+        'province': 'RM',
+        'region': 'RM',
+        'country': 'IT',
+        'email': 'lorem@lorem.com',
+        'phone': '333-123456789',
+        'companyName': 'companyName',
+        'officeName': 'officeName',
+        'switchToExpired': False,
+        'validityDate': validity_date_str,
+        'paymentOption': [
+            {
+                'iuv': iuv,
+                'amount': 9500,
+                'description': 'Canone Unico Patrimoniale - CORPORATE Updated',
+                'isPartialPayment': False,
+                'dueDate': due_date_str,
+                'retentionDate': retention_date_str,
+                'fee': 0,
+                'transfer': [
+                    {
+                        'idTransfer': '1',
+                        'amount': 8000,
+                        'remittanceInformation': 'remittanceInformation 1',
+                        'category': '9/0301105TS/',
+                        'iban': 'IT0000000000000000000000000'
+                    },
+                    {
+                        'idTransfer': '2',
+                        'amount': 1000,
+                        'remittanceInformation': 'remittanceInformation 2',
+                        'category': '9/0301105TS/',
+                        'iban': 'IT0000000000000000000000000'
+                    },
+                    {
+                        'idTransfer': '3',
+                        'amount': 500,
+                        'remittanceInformation': 'remittanceInformation 3',
+                        'category': '9/0301105TS/',
+                        'iban': 'IT0000000000000000000000000'
+                    }
+                ]
+            }
+        ]
+    }
+
 def generate_callback_data_DS_05_ACTC_compliant(BIC: str = 'MOCKSP04') -> dict:
     """Generate DS-05 compliant callback data.
 
