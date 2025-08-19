@@ -113,6 +113,16 @@ export function randomNoticeNumber() {
 }
 
 /**
+ * Remove dashes from a UUID string.
+ *
+ * @param {string} uuid - The UUID string in canonical format (with dashes).
+ * @returns {string} - The UUID string with all dashes removed.
+ */
+export function replaceUuidWithoutDashes(uuid) {
+    return uuid.replace(/-/g, '');
+}
+
+/**
  * Common options used across all test types.
  * These settings configure the metrics collection and tagging behavior.
  */
