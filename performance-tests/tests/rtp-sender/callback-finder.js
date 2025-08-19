@@ -1,13 +1,17 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
+import { setupAuth, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import {shuffleArray, distributeItemsAmongGroups, createSendInBatch} from '../../utils/batch-utils.js';
 import { createHandleSummary } from '../../utils/summary-utils.js';
+import {buildCallbackPayload} from "../../utils/sender-payloads";
+import {createCallbackTeardown} from "../../utils/teardown-utils";
 
 const START_TIME = Date.now();
 const { SERVICE_PROVIDER_ID } = __ENV;
 const VU_COUNT_SET = 50;
+const MTLS_CERT_PATH = 'performance-tests/utils/certificates/cert-callback.pem';
+const MTLS_KEY_PATH  = 'performance-tests/utils/certificates/key-callback.pem';
 
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
@@ -22,7 +26,17 @@ export let options = {
             gracefulStop: '30m',
             exec: 'callback'
         }
-    }
+    },
+
+    tlsAuth: [
+        {
+            domains: ['api-rtp-cb.dev.cstar.pagopa.it'],
+            cert: open(MTLS_CERT_PATH),
+            key: open(MTLS_KEY_PATH),
+        }
+    ],
+
+    insecureSkipTLSVerify: true
 };
 
 let testCompleted = false;
@@ -32,10 +46,10 @@ export function setup() {
 
     const resourceIds = createSendInBatch({
         accessToken: auth.access_token,
-        targetActivations: 500,
+        targetRequests: 500,
         batchSize: 50,
         delayBetweenBatches: 2,
-        serviceProviderId: SERVICE_PROVIDER_ID
+        payerId: SERVICE_PROVIDER_ID
     });
 
     shuffleArray(resourceIds)
@@ -101,13 +115,9 @@ export function callback(data){
     }
 
     if (data.vuCallbackCount[vuIndex] >= myCallback.length) {
-        console.log(`✓ VU #${__VU}: Completed all ${myCallback.length} deactivations assigned.`);
+        console.log(`✓ VU #${__VU}: Completed all ${myCallback.length} callbacks assigned.`);
         sleep(5);
-        return {
-            status: 200,
-            message: `VU #${__VU} completed all deactivations, idle for dashboard`,
-            noMetrics: true
-        };
+        return { status: 200, message: `VU #${__VU} completed`, noMetrics: true };
     }
 
     const currentIndex = data.currentIndices[vuIndex];
@@ -118,58 +128,61 @@ export function callback(data){
         return callback(data);
     }
 
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-    const url = endpoints.callbackSend
+    const payload = JSON.stringify(buildCallbackPayload(callbackItem.id));
+
+    const headers = {'Content-Type': 'application/json'};
+    const url = endpoints.callbackSend;
 
     const start = Date.now();
-    const res = http.post(url, null, { headers });
+    const res = http.post(url, payload, { headers });
     const duration = Date.now() - start;
 
     responseTimeTrend.add(duration, tags);
 
-    if (res.status === 200) {
+    if (res.status >= 200 && res.status < 300) {
         successCounter.add(1, tags);
 
         callbackItem.processed = true;
         data.vuCallbackCount[vuIndex]++;
-        data.vuCallbackCount++;
+        data.callbackCount++;
 
-        if (data.vuCallbackCount % 50 === 0 || data.vuCallbackCount[vuIndex] === data.callbackChunks[vuIndex].length) {
-            console.log(`✓ VU #${__VU}: ${data.callbackCount[vuIndex]}/${data.callbackChunks[vuIndex].length} callback completed (Total: ${data.callbackCount}/${data.totalCallback})`);
+        if (data.callbackCount % 50 === 0 || data.vuCallbackCount[vuIndex] === data.callbackChunks[vuIndex].length) {
+            console.log(`✓ VU #${__VU}: ${data.vuCallbackCount[vuIndex]}/${data.callbackChunks[vuIndex].length} callback (Total: ${data.callbackCount}/${data.totalCallback})`);
         }
 
-    }
-
-    if (data.callbackCount >= data.totalCallback && !data.allCompleted) {
-        data.allCompleted = true;
-        testCompleted = true;
-        console.log(`✅ TEST COMPLETED: All ${data.totalCallback} callback have been processed!`);
-        console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
-        console.log(`Dashboard will remain active for viewing results.`);
-        return {
-            status: 200,
-            message: 'Test completed successfully, dashboard still active',
-            noMetrics: false
-        };
+        if (data.callbackCount >= data.totalCallback && !data.allCompleted) {
+            data.allCompleted = true;
+            testCompleted = true;
+            console.log(`✅ TEST COMPLETED: All ${data.totalCallback} callback have been processed!`);
+            console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
+            console.log(`Dashboard will remain active for viewing results.`);
+            return {
+                status: 200,
+                message: 'Test completed successfully, dashboard still active',
+                noMetrics: false
+            };
+        }
     } else {
         failureCounter.add(1, tags);
         console.error(`❌ VU #${__VU}: Failed callback for ID ${callbackItem.id}: Status ${res.status}`);
     }
 
     check(res, {
-        'callback: status is 200': (r) => r.status === 200
+        'callback: status is 2xx': (r) => r.status >= 200 && r.status < 300
     });
 
     data.currentIndices[vuIndex] = (data.currentIndices[vuIndex] + 1) % myCallback.length;
-
-    sleep(1)
-
+    sleep(1);
     return res;
 }
 
 const testCompletedRef = { value: false };
+
+export const teardown = createCallbackTeardown({
+    START_TIME,
+    VU_COUNT: VU_COUNT_SET,
+    testCompletedRef
+});
 
 Object.defineProperty(testCompletedRef, 'value', {
     get: () => testCompleted,
