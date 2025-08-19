@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request, Query
+import asyncio
+
+from fastapi import UploadFile, File, Query, Request, HTTPException, APIRouter
 from dto import RTPMessage
 import os, json, logging
 
@@ -55,3 +57,56 @@ async def send_msg(request: Request, validate: bool = Query(default=True)):
                 "message": str(e)
             }
         )
+
+@gpd_router.post("/send/gpd/file")
+async def send_file(
+    request: Request,
+    file: UploadFile = File(..., description="NDJSON file: one RTPMessage JSON per line"),
+    concurrency: int = Query(default=10, ge=1, le=200),
+):
+    producer = getattr(request.app.state, "producer", None)
+    if producer is None:
+        raise HTTPException(
+            status_code=503,
+            detail={"status": "error", "message": "Kafka producer is not available"},
+        )
+
+    total, sent = 0, 0
+    failures = []
+    sem = asyncio.Semaphore(concurrency)
+    tasks = []
+
+    async def process_line(line: int, text: str):
+        nonlocal sent
+        stripped = text.strip()
+        if not stripped or stripped.startswith("#"):
+            return
+        try:
+            payload = json.loads(stripped)
+            _ = RTPMessage(**payload)  # validate
+        except Exception as e:
+            failures.append({"line": line, "reason": f"Validation error: {e}", "preview": stripped[:200]})
+            return
+        try:
+            async with sem:
+                await producer.send_and_wait(EVENTHUB_TOPIC, json.dumps(payload).encode("utf-8"))
+            sent += 1
+        except Exception as e:
+            failures.append({"line": line, "reason": f"Send failed: {str(e)}", "preview": stripped[:200]})
+
+    line_no = 0
+    for raw in file.file:
+        line_no += 1
+        text = raw.decode("utf-8", errors="replace")
+        if text.strip() and not text.lstrip().startswith("#"):
+            total += 1
+        tasks.append(asyncio.create_task(process_line(line_no, text)))
+
+    await asyncio.gather(*tasks, return_exceptions=True)
+    return {
+        "status": "completed",
+        "total": total,
+        "sent": sent,
+        "failed": len(failures),
+        "errors": failures[:200],
+    }
