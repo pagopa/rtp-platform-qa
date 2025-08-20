@@ -9,7 +9,7 @@ import { createCallbackTeardown } from "../../utils/teardown-utils.js";
 
 const START_TIME = Date.now();
 const { SERVICE_PROVIDER_ID } = __ENV;
-const VU_COUNT_SET = 50;
+const VU_COUNT_SET = 35;
 const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
 const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
 
@@ -17,12 +17,14 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
 
 export let options = {
     ...getOptions('stress_test_fixed_user', 'callback'),
+    setupTimeout: '5m',
     scenarios: {
         stress_test_fixed_user: {
             executor: 'shared-iterations',
             vus: VU_COUNT_SET,
-            iterations: 500,
+            iterations: 700,
             maxDuration: '30m',
+            startTime: '30s',
             gracefulStop: '30m',
             exec: 'callback'
         }
@@ -46,7 +48,7 @@ export function setup() {
 
     const resourceIds = createSendInBatch({
         accessToken: auth.access_token,
-        targetRequests: 500,
+        targetRequests: 700,
         batchSize: 50,
         delayBetweenBatches: 2,
         payerId: SERVICE_PROVIDER_ID
