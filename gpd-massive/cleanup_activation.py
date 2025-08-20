@@ -49,7 +49,7 @@ def cleanup_local_artifacts() -> dict:
     if out_dir.exists():
         for p in out_dir.iterdir():
             name = p.name
-            if p.is_file() and (name.endswith(".json") or name.endswith(".zip")):
+            if p.is_file() and (name.endswith(".json") or name.endswith(".zip") or name.endswith(".ndjson")):
                 try:
                     p.unlink()
                     deleted.append(str(p))
@@ -61,9 +61,12 @@ def cleanup_local_artifacts() -> dict:
 
 def main():
     token = get_token()
-    activation_id = get_activation_id(token)
-    deactivate_activation(token, activation_id)
-    cleanup_local_artifacts()
+    try:
+        activation_id = get_activation_id(token)
+        deactivate_activation(token, activation_id)
+    finally:
+        cleanup_local_artifacts()
+
 
 if __name__ == "__main__":
     main()
