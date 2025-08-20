@@ -86,7 +86,8 @@ async def send_file(
             payload = json.loads(stripped)
             _ = RTPMessage(**payload)  # validate
         except Exception as e:
-            failures.append({"line": line, "reason": f"Validation error: {e}", "preview": stripped[:200]})
+            logger.warning("Validation error on line %d: %s", line, e)
+            failures.append({"line": line, "reason": "Validation error", "preview": stripped[:200]})
             return
         try:
             if bulk:
@@ -97,7 +98,8 @@ async def send_file(
                     await producer.send_and_wait(EVENTHUB_TOPIC, json.dumps(payload).encode("utf-8"))
             sent += 1
         except Exception as e:
-            failures.append({"line": line, "reason": f"Send failed: {str(e)}", "preview": stripped[:200]})
+            logger.error("Send failed on line %d: %s", line, e)
+            failures.append({"line": line, "reason": "Send failed", "preview": stripped[:200]})
 
     line = 0
     for raw in file.file:
