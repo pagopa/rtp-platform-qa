@@ -1,6 +1,5 @@
 # utilities.py
 import os
-import uuid
 import random
 from datetime import datetime, timedelta, UTC
 from dotenv import load_dotenv
@@ -30,7 +29,6 @@ def calculate_dates(due_days: int = 30, retention_days: int = 60) -> tuple[str, 
         retention_date.isoformat().replace("+00:00", "Z")
     )
 
-
 def random_fiscal_code(length: int = 11) -> str:
     return "".join(str(random.randint(0, 9)) for _ in range(length))
 
@@ -40,5 +38,5 @@ def require_env(name: str) -> str:
         raise RuntimeError(f"Missing environment variable: {name}")
     return val
 
-def new_request_id() -> str:
-    return str(uuid.uuid4())
+def to_epoch_millis(dt: datetime) -> int:
+    return int(dt.timestamp() * 1000)
