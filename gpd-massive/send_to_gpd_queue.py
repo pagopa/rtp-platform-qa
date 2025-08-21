@@ -120,8 +120,8 @@ def write_file(out_dir: Path, rows: int, op: str, source_file: Path | None) -> P
 def send_file_to_api(path: Path) -> Dict:
     api_url = f"{GPD_TEST_BASE_URL}/send/gpd/file"
     bulk = str_to_bool(require_env("BULK"))
-    concurrency = int(require_env("CONCURRENCY"))
-    params = {"bulk": "true" if bulk else "false", "concurrency": str(concurrency)}
+    rate = int(require_env("RATE"))
+    params = {"bulk": "true" if bulk else "false", "concurrency": str(rate)}
 
     with path.open("rb") as fh:
         files = {"file": (path.name, fh, "application/x-ndjson")}
