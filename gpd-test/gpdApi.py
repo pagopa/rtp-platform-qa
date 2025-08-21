@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from fastapi import UploadFile, File, Query, Request, HTTPException, APIRouter
 from dto import RTPMessage
@@ -62,58 +63,69 @@ async def send_msg(request: Request, validate: bool = Query(default=True)):
 async def send_file(
     request: Request,
     file: UploadFile = File(..., description="NDJSON file: one RTPMessage JSON per line"),
-    bulk: bool = Query(default=False, description="If true, send all messages at once without concurrency control"),
-    concurrency: int = Query(default=10, ge=1, le=200),
+    bulk: bool = Query(default=False, description="If true, rate applies but no in-flight cap"),
+    rate: int = Query(default=10, ge=1, le=200, description="Messages per second"),
 ):
     producer = getattr(request.app.state, "producer", None)
     if producer is None:
-        raise HTTPException(
-            status_code=503,
-            detail={"status": "error", "message": "Kafka producer is not available"},
-        )
+        raise HTTPException(status_code=503, detail={"status": "error", "message": "Kafka producer is not available"})
 
-    total, sent = 0, 0
-    failures = []
-    sem = None if bulk else asyncio.Semaphore(concurrency)
-    tasks = []
+    sent = 0
+    failed = 0
+    errors_map = {}
+
+    sem = None if bulk else asyncio.Semaphore(rate)
+
+    capacity = float(rate)
+    tokens = capacity
+    refill_rate = float(rate)
+    last_refill = time.monotonic()
+    rate_lock = asyncio.Lock()
+
+    async def take_token():
+        nonlocal tokens, last_refill
+        while True:
+            async with rate_lock:
+                now = time.monotonic()
+                elapsed = now - last_refill
+                if elapsed > 0:
+                    tokens = min(capacity, tokens + elapsed * refill_rate)
+                    last_refill = now
+                if tokens >= 1.0:
+                    tokens -= 1.0
+                    return
+            await asyncio.sleep(0.005)
 
     async def process_line(line: int, text: str):
-        nonlocal sent
+        nonlocal sent, failed
         stripped = text.strip()
         if not stripped or stripped.startswith("#"):
             return
         try:
             payload = json.loads(stripped)
-            _ = RTPMessage(**payload)  # validate
+            _ = RTPMessage(**payload)
         except Exception as e:
-            logger.warning("Validation error on line %d: %s", line, e)
-            failures.append({"line": line, "reason": "Validation error", "preview": stripped[:200]})
+            failed += 1
+            errors_map[type(e).__name__] = {"type": type(e).__name__, "message": str(e)}
             return
         try:
+            await take_token()
             if bulk:
-                # no concurrency, send immediately
                 await producer.send_and_wait(EVENTHUB_TOPIC, json.dumps(payload).encode("utf-8"))
             else:
                 async with sem:
                     await producer.send_and_wait(EVENTHUB_TOPIC, json.dumps(payload).encode("utf-8"))
             sent += 1
         except Exception as e:
-            logger.error("Send failed on line %d: %s", line, e)
-            failures.append({"line": line, "reason": "Send failed", "preview": stripped[:200]})
+            failed += 1
+            errors_map[type(e).__name__] = {"type": type(e).__name__, "message": str(e)}
 
+    tasks = []
     line = 0
     for raw in file.file:
         line += 1
         text = raw.decode("utf-8", errors="replace")
-        if text.strip() and not text.lstrip().startswith("#"):
-            total += 1
         tasks.append(asyncio.create_task(process_line(line, text)))
 
     await asyncio.gather(*tasks, return_exceptions=True)
-    return {
-        "status": "completed",
-        "total": total,
-        "sent": sent,
-        "failed": len(failures),
-        "errors": failures[:200],
-    }
+    return {"sent": sent, "failed": failed, "errors": list(errors_map.values())}
