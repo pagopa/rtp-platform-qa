@@ -19,3 +19,5 @@ azure-core==1.35.0
 certifi==2025.7.14
 
 uvicorn[standard]
+
+python-multipart==0.0.20
