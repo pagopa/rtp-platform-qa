@@ -14,3 +14,7 @@ export const serviceRegistryConfig = {
   accessTokenUrl: ACCESS_TOKEN_URL,
   baseUrl: 'https://api-rtp.uat.cstar.pagopa.it/rtp/service_providers'
 };
+
+export const callbackConfig = {
+    callback_base: 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp'
+}

@@ -134,6 +134,39 @@ export function createActivationTeardown({ START_TIME, VU_COUNT, testCompletedRe
   };
 }
 
+/**
+ * Creates a specialized teardown function for callback tests.
+ *
+ * @param {Object} config - Configuration object
+ * @param {number} config.START_TIME - Test start timestamp
+ * @param {number} config.VU_COUNT - Number of virtual users
+ * @param {Object} config.testCompletedRef - Reference to the testCompleted variable in the calling file
+ * @returns {Function} - A teardown function specifically for callback tests
+ */
+export function createCallbackTeardown({ START_TIME, VU_COUNT, testCompletedRef }) {
+    return function(data) {
+        if (data) {
+            data.vuProcessedCount = data.vuCallbackCount;
+            data.callbackedCount = data.callbackCount;
+
+            if (Array.isArray(data.callbackChunks)) {
+                data.callbackChunks = data.callbackChunks.map(chunk =>
+                    Array.isArray(chunk)
+                        ? chunk.map(item => ({ ...item, callbacked: item.callbacked ?? !!item.processed }))
+                        : chunk
+                );
+            }
+        }
+
+        return createBatchProcessingTeardown({
+            START_TIME,
+            VU_COUNT,
+            testType: 'callback',
+            testCompletedRef
+        })(data);
+    };
+}
+
 export function createFinderTeardown({ START_TIME, VU_COUNT, testCompletedRef }) {
   return function(data) {
     if (data) {
