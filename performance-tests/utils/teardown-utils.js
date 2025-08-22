@@ -167,3 +167,18 @@ export function createCallbackTeardown({ START_TIME, VU_COUNT, testCompletedRef 
     };
 }
 
+export function createFinderTeardown({ START_TIME, VU_COUNT, testCompletedRef }) {
+  return function(data) {
+    if (data) {
+      data.deactivationChunks = data.activationChunks;
+      data.vuProcessedCount = data.vuDeactivatedCount;
+    }
+
+    return createBatchProcessingTeardown({
+      START_TIME,
+      VU_COUNT,
+      testType: 'findByFiscalCode',
+      testCompletedRef
+    })(data);
+  };
+}

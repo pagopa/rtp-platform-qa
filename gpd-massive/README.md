@@ -5,9 +5,11 @@ A set of Python scripts to automate the lifecycle of RTP activations and GPD mas
 
 ## Features
 - Create an RTP activation (`activation.py`)
-- Generate a massive debt position JSON + ZIP (`generate_zip.py`)
-- Upload the ZIP to the GPD massive endpoint (`upload-file.py`)
-- Deactivate an activation and delete local artifacts (`activation-cleanup.py`)
+- Generate a massive debt position JSON + ZIP (`generate_massive_zip.py`)
+- Upload the ZIP to the GPD massive endpoint to create an RTP (`upload_create_pd_file.py`)
+- Upload a json (CREATE and UPDATE) directly to GPD queue (`send_to_gpd_queue.py`)
+- Upload the ZIP to the GPD massive endpoint to delete an RTP (`upload_delete_file.py`)
+- Deactivate an activation and delete local artifacts (`cleanup_activation.py`)
 
 ## Requirements
 - Python 3.11+
@@ -27,12 +29,22 @@ A set of Python scripts to automate the lifecycle of RTP activations and GPD mas
 
 ### 1. Create activation and upload ZIP
 ```bash
-python gpd-massive/upload-file.py
+python gpd-massive/upload_create_pd_file.py
 ```
 
-### 2. Cleanup activation and local artifacts
+### 2. Create and send a json (CREATE and UPDATE)
 ```bash
-python gpd-massive/cleanup.py
+python gpd-massive/send_to_gpd_queue.py
+```
+
+### 3. Delete an RTP
+```bash
+python gpd-massive/upload_delete_file.py
+```
+
+### 3. Cleanup activation and local artifacts
+```bash
+python gpd-massive/cleanup_activation.py
 ```
 
 

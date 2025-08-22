@@ -1,9 +1,9 @@
-# upload-file.py
+# upload_create_pd_file.py
 import json
 from pathlib import Path
 import requests
-from activation import activate_random_cf, save_fiscal_code_to_env
-from generate_zip import generate_massive_zip
+from activation import activate_random_cf
+from generate_massive_zip import generate_massive_zip
 from utilities import require_env
 from config import GPD_MASSIVE_BASE_URL
 
