@@ -11,9 +11,9 @@ function getConfig() {
 
     return {
         serviceProviderId: SERVICE_PROVIDER_ID,
-        targetRequests: Number(__ENV.TARGET_REQUESTS) || 1000,
+        targetRequests: Number(__ENV.TARGET_REQUESTS) || 2000,
         batchSize: Number(__ENV.BATCH_SIZE) || 50,
-        delayBetweenBatches: Number(__ENV.DELAY_BETWEEN_BATCHES) || 2,
+        delayBetweenBatches: Number(__ENV.DELAY_BETWEEN_BATCHES) || 1,
     };
 }
 

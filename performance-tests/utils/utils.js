@@ -119,7 +119,11 @@ export function randomNoticeNumber() {
  * @returns {string} - The UUID string with all dashes removed.
  */
 export function replaceUuidWithoutDashes(uuid) {
-    return uuid.replace(/-/g, '');
+    if (!uuid) {
+        console.error("replaceUuidWithoutDashes got invalid uuid:", uuid);
+        return "";
+    }
+    return String(uuid).replace(/-/g, '');
 }
 
 /**
