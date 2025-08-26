@@ -8,7 +8,7 @@ import { buildCallbackPayload } from "../../utils/sender-payloads.js";
 import { createCallbackTeardown } from "../../utils/teardown-utils.js";
 
 const START_TIME = Date.now();
-const VU_COUNT_SET = __ENV;
+const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 5;
 const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
 const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
 const resourceIds = JSON.parse(open('../../script/resourceIds.json'));

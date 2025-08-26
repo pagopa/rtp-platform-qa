@@ -4,6 +4,11 @@ import { createSendInBatch } from "../utils/batch-utils.js";
 const SERVICE_PROVIDER_ID = __ENV.SERVICE_PROVIDER_ID;
 const FILE_NAME = "resourceIds.json";
 
+export let options = {
+    setupTimeout: '30m',
+};
+
+
 function getConfig() {
     if (!SERVICE_PROVIDER_ID) {
         throw new Error("❌ SERVICE_PROVIDER_ID cannot be null");
@@ -17,9 +22,9 @@ function getConfig() {
     };
 }
 
-export default function () {}
+let savedResourceIds = [];
 
-export function createRtpToSave() {
+export function setup() {
     try {
         const config = getConfig();
         console.log("⚙️ Configuration:", config);
@@ -42,9 +47,10 @@ export function createRtpToSave() {
     }
 }
 
+export default function () {}
+
 export function handleSummary(data) {
-    const resourceIds = createRtpToSave();
-    const idsOnly = (resourceIds || [])
+    const idsOnly = (data.setup_data || [])
         .map((r) => r?.id || r.resourceId)
         .filter(Boolean);
 
