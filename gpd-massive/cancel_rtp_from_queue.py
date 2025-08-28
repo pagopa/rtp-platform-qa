@@ -1,14 +1,13 @@
 #send_to_gpd_queue.py
 import json
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Iterable, Iterator
+from typing import Dict, Iterable
 
 import requests
 from dotenv import load_dotenv
 
-from utilities import random_iupd, random_iuv, require_env, to_epoch_millis
+from utilities import require_env, to_epoch_millis
 from config import GPD_TEST_BASE_URL
 
 load_dotenv()
