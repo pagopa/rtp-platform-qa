@@ -250,7 +250,8 @@ def test_update_valid_debt_position(setup_data, environment):
             
             break
         
-        except AssertionError:
+        except AssertionError as e:
+            print(f'---> {str(e)}')
             pass
 
         time.sleep(POLLING_RATE_SEC)
