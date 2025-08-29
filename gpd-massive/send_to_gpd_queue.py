@@ -116,6 +116,28 @@ def write_file(out_dir: Path, rows: int, op: str, source_file: Path | None) -> P
     return out_path
 
 
+def generate_search_file(out_dir: Path) -> Iterable[Dict]:
+    in_path = out_dir / "createRTP.ndjson"
+    out_path = out_dir / "mongolist.ndjson"
+    ids: List[int] = []
+    with in_path.open("r", encoding="utf-8", newline="\n") as file:
+        for line in file:
+            if line.strip():
+                data = json.loads(line)
+                ids.append(int(data["id"]))
+    mongo_query = {
+        "operationId": {
+            "$in": ids
+        },"status": {
+            "$ne": "CANCELLED"
+        }
+    }
+    with out_path.open("w", encoding="utf-8") as file:
+        json.dump(mongo_query, file, indent=2)
+    
+    print(f"Successfully generated MongoDB query file at {out_path}")
+    print(f"Total IDs processed: {len(ids)}")
+
 # POST file to /send/gpd/file
 def send_file_to_api(path: Path) -> Dict:
     api_url = f"{GPD_TEST_BASE_URL}/send/gpd/file"
@@ -146,6 +168,7 @@ def main() -> None:
 
     out_path = write_file(out_dir, rows, op_env, source_file)
     print(f"[generator] {op_env} -> {out_path.resolve()}")
+    generate_search_file(out_dir)
 
     result = send_file_to_api(out_path)
     print("[uploader] Response:")

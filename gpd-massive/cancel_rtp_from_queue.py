@@ -13,13 +13,10 @@ from config import GPD_TEST_BASE_URL
 load_dotenv()
 
 
-# CREATE: generate new records with fresh IDs
-def generate_create_records(count: int, out_dir: Path) -> Iterable[Dict]:
+def generate_create_records(out_dir: Path) -> Iterable[Dict]:
     in_path = out_dir / "createRTP.ndjson"
-
     now = datetime.now(timezone.utc)
     operation = "DELETE"
-
     with in_path.open("r", encoding="utf-8", newline="\n") as file:
         for line in file:
             if line.strip():
@@ -43,23 +40,17 @@ def generate_create_records(count: int, out_dir: Path) -> Iterable[Dict]:
                 }
 
 
-
 def write_file(out_dir: Path, rows: int) -> Path:
     out_path = out_dir / "deleteRTP.ndjson"
-
-    records = generate_create_records(rows,out_dir)
-
+    records = generate_create_records(out_dir)
     written = 0
-
     with out_path.open("w", encoding="utf-8", newline="\n") as f:
         for rec in records:
             f.write(json.dumps(rec, separators=(",", ":")) + "\n")
             written += 1
-
     if written == 0:
         raise SystemExit("No records written")
     return out_path
-
 
 def str_to_bool(val: str) -> bool:
     return str(val).strip().lower() in {"1", "true", "yes", "y"}
@@ -86,7 +77,6 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     out_path = write_file(out_dir, rows)
-
     result = cancel_file_to_api(out_path)
     print("[uploader] Response:")
     print(json.dumps(result, indent=2))
