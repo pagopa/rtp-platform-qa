@@ -30,6 +30,7 @@ iccrea_send_url: 'https://r5i-svil.api.gbi.bcc.it/pagopa4/pagopa-broker-api/pago
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
 get_rtp_path: "rtps/{rtpId}"
+get_rtp_by_notice_number_path: "rtps"
 get_api_version: 'v1'
 service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
