@@ -238,20 +238,20 @@ def test_update_valid_debt_position(setup_data, environment):
     while True:
         response = find_rtp_function(access_token, nav)
         
-        try:
-            assert response.status_code == 200, f'Expected 200 but got {response.status_code}'
+        if response.status_code != 200:
+            raise RuntimeError(f"Error calling find_rtp_by_notice_number API. Response {response.status_code}. Notice number: {nav}")
+        
+        data = response.json()
             
-            data = response.json()
-            assert not data or not type(data) is list or len(data) != 1, f'Invalid response body.'
+        assert not data or not type(data) is list, f'Invalid response body.'
+        
+        if len(data) != 1:
+            rtp = data[0]
             
-            assert data['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {nav} but got {data['noticeNumber']}'
-            assert data['description'] == "expected_value", f'Wrong description. Expected {description} but got {data['description']}'
-            assert data['amount'] == "expected_value", f'Wrong notice number. Expected {amount} but got {data['amount']}'
+            assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {nav} but got {rtp['noticeNumber']}'
+            assert rtp['description'] == "expected_value", f'Wrong description. Expected {description} but got {rtp['description']}'
+            assert rtp['amount'] == "expected_value", f'Wrong notice number. Expected {amount} but got {rtp['amount']}'
             
             break
-        
-        except AssertionError as e:
-            print(f'---> {str(e)}')
-            pass
 
         time.sleep(POLLING_RATE_SEC)
