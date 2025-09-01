@@ -234,6 +234,49 @@ def test_update_valid_newly_published_debt_position(setup_data, environment):
         time.sleep(POLLING_RATE_SEC)
 
 
+@allure.feature('Debt Positions')
+@allure.story('Update Valid Already published Debt Position')
+@pytest.mark.debt_positions
+@pytest.mark.happy_path
+@pytest.mark.timeout(TEST_TIMEOUT_SEC)
+def test_update_valid_already_published_debt_position(setup_data, environment):
+    allure.dynamic.title(f"Happy path: a debt position with VALID status is updated in {environment['name']} environment")
+    
+    auth_function = environment['rtp_auth_function']
+    find_rtp_function = environment['find_rtp_function']
+
+    update_data = _setup_update_test(setup_data, environment, 'VALID')
+    
+    client_id = secrets.creditor_service_provider.client_id
+    client_secret = secrets.creditor_service_provider.client_secret
+
+    access_token = auth_function(
+        client_id=client_id, 
+        client_secret=client_secret)
+    assert access_token is not None, f'Access token cannot be None'
+
+    while True:
+        response = find_rtp_function(access_token, update_data.nav)
+        
+        if response.status_code != 200:
+            raise RuntimeError(f"Error calling find_rtp_by_notice_number API. Response {response.status_code}. Notice number: {update_data.nav}")
+        
+        data = response.json()
+            
+        assert data is not None and type(data) is list, f'Invalid response body.'
+        
+        if len(data) > 0:
+            rtp = data[0]
+            
+            assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
+            assert rtp['description'] == "expected_value", f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
+            assert rtp['amount'] == "expected_value", f'Wrong notice number. Expected {update_data.amount} but got {rtp['amount']}'
+            
+            break
+
+        time.sleep(POLLING_RATE_SEC)
+
+
 def _setup_update_test(
         setup_data: dict[str, Any], 
         environment: dict[str, Any], 
