@@ -185,11 +185,11 @@ def test_update_debt_position(setup_data, environment):
 
 
 @allure.feature('Debt Positions')
-@allure.story('Update Valid Debt Position')
+@allure.story('Update Valid  Newly Published Debt Position')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
-def test_update_valid_debt_position(setup_data, environment):
+def test_update_valid_newly_published_debt_position(setup_data, environment):
     allure.dynamic.title(f"Happy path: a debt position with VALID status is updated in {environment['name']} environment")
 
     subscription_key = setup_data['subscription_key']
