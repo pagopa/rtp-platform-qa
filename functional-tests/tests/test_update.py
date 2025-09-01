@@ -4,13 +4,9 @@ import allure
 import pytest
 
 from api.activation import activate
-from api.activation import activate_dev
 from api.auth import get_access_token
-from api.auth import get_access_token_dev
 from api.auth import get_valid_access_token
 from api.debt_position import create_debt_position
-from api.debt_position import delete_debt_position
-from api.debt_position import get_debt_position
 from api.debt_position import update_debt_position
 from api.get_rtp import get_rtp_by_notice_number
 from config.configuration import secrets
@@ -33,40 +29,16 @@ class UpdateCheckData(NamedTuple):
 
 
 @pytest.fixture
-def environment(request):
-    """Fixture to provide environment-specific configurations."""
-    env = request.param
-    is_dev = env['is_dev']
-    
-    env.update({
-        'create_function': lambda sk, org_id, payload, to_publish: create_debt_position(sk, org_id, payload, to_publish, is_dev),
-        'get_function': lambda sk, org_id, iupd: get_debt_position(sk, org_id, iupd, is_dev),
-        'delete_function': lambda sk, org_id, iupd: delete_debt_position(sk, org_id, iupd, is_dev),
-        'update_function': lambda sk, org_id, iupd, payload, to_publish=True: update_debt_position(sk, org_id, iupd, payload, to_publish, is_dev),
-        'rtp_auth_function': lambda client_id, client_secret, access_token_function=get_access_token: get_valid_access_token(client_id, client_secret, access_token_function),
-        'find_rtp_function': get_rtp_by_notice_number,
-        'subscription_key': secrets.debt_positions_dev.subscription_key if is_dev else secrets.debt_positions.subscription_key,
-        'organization_id': secrets.debt_positions_dev.organization_id if is_dev else secrets.debt_positions.organization_id
-    })
-
-    return env
-
-
-@pytest.fixture
-def setup_data(environment):
-    access_token_function = get_access_token_dev if environment['is_dev'] else get_access_token
-
+def setup_data():
     access_token = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=access_token_function
+        access_token_function=get_access_token
     )
 
     debtor_fc = fake_fc()
 
-    activation_function = activate_dev if environment['is_dev'] else activate
-
-    activation_response = activation_function(
+    activation_response = activate(
         access_token,
         debtor_fc,
         secrets.debtor_service_provider.service_provider_id
@@ -80,8 +52,8 @@ def setup_data(environment):
         'debtor_fc': debtor_fc,
         'iupd': iupd,
         'iuv': iuv,
-        'subscription_key': environment['subscription_key'],
-        'organization_id': environment['organization_id'],
+        'subscription_key': secrets.debt_positions.subscription_key,
+        'organization_id': secrets.debt_positions.organization_id,
     }
 
 
@@ -90,24 +62,22 @@ def setup_data(environment):
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
-def test_update_valid_newly_published_debt_position(setup_data, environment):
+def test_update_valid_newly_published_debt_position(setup_data):
     allure.dynamic.title(f"Happy path: a newly published debt position with VALID status is updated")
 
-    auth_function = environment['rtp_auth_function']
-    find_rtp_function = environment['find_rtp_function']
-
-    update_data = _setup_update_test(setup_data, environment, 'VALID', to_publish=False)
+    update_data = _setup_update_test(setup_data, 'VALID', to_publish=False)
     
     client_id = secrets.creditor_service_provider.client_id
     client_secret = secrets.creditor_service_provider.client_secret
 
-    access_token = auth_function(
+    access_token = get_valid_access_token(
         client_id=client_id, 
-        client_secret=client_secret)
+        client_secret=client_secret,
+        access_token_function=get_access_token)
     assert access_token is not None, f'Access token cannot be None'
 
     while True:
-        response = find_rtp_function(access_token, update_data.nav)
+        response = get_rtp_by_notice_number(access_token, update_data.nav)
         
         if response.status_code != 200:
             raise RuntimeError(f"Error calling find_rtp_by_notice_number API. Response {response.status_code}. Notice number: {update_data.nav}")
@@ -133,24 +103,22 @@ def test_update_valid_newly_published_debt_position(setup_data, environment):
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
-def test_update_valid_already_published_debt_position(setup_data, environment):
+def test_update_valid_already_published_debt_position(setup_data):
     allure.dynamic.title(f"Happy path: an already published debt position with VALID status is updated")
-    
-    auth_function = environment['rtp_auth_function']
-    find_rtp_function = environment['find_rtp_function']
 
-    update_data = _setup_update_test(setup_data, environment, 'VALID')
+    update_data = _setup_update_test(setup_data, 'VALID')
     
     client_id = secrets.creditor_service_provider.client_id
     client_secret = secrets.creditor_service_provider.client_secret
 
-    access_token = auth_function(
+    access_token = get_valid_access_token(
         client_id=client_id, 
-        client_secret=client_secret)
+        client_secret=client_secret,
+        access_token_function=get_access_token)
     assert access_token is not None, f'Access token cannot be None'
 
     while True:
-        response = find_rtp_function(access_token, update_data.nav)
+        response = get_rtp_by_notice_number(access_token, update_data.nav)
         
         if response.status_code != 200:
             raise RuntimeError(f"Error calling find_rtp_by_notice_number API. Response {response.status_code}. Notice number: {update_data.nav}")
@@ -173,7 +141,6 @@ def test_update_valid_already_published_debt_position(setup_data, environment):
 
 def _setup_update_test(
         setup_data: dict[str, Any], 
-        environment: dict[str, Any], 
         status: str, to_publish: bool = True, 
         waiting_time_sec: int = 5
     ) -> UpdateCheckData:
@@ -184,11 +151,8 @@ def _setup_update_test(
     iupd = setup_data['iupd']
     iuv = setup_data['iuv']
 
-    create_function = environment['create_function']
-    update_function = environment['update_function']
-
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
-    create_response = create_function(subscription_key, organization_id, payload, to_publish=to_publish)
+    create_response = create_debt_position(subscription_key, organization_id, payload, to_publish=to_publish)
     assert create_response.status_code == 201, f'Expected 201 but got {create_response.status_code}'
     
     create_response_body = create_response.json()
@@ -204,7 +168,7 @@ def _setup_update_test(
     time.sleep(waiting_time_sec)
 
     update_payload = create_debt_position_update_payload(iupd=iupd, debtor_fc=debtor_fc, iuv=iuv)
-    update_response = update_function(subscription_key, organization_id, iupd, update_payload)
+    update_response = update_debt_position(subscription_key, organization_id, iupd, update_payload)
     assert update_response.status_code == 200, f'Expected 200 but got {update_response.status_code}'
     
     update_response_body = update_response.json()
