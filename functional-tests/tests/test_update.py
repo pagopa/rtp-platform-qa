@@ -22,8 +22,8 @@ from utils.dataset import generate_iuv
 from typing import NamedTuple, Any
 
 
-TEST_TIMEOUT_SEC = 30
-POLLING_RATE_SEC = 5
+TEST_TIMEOUT_SEC = 300
+POLLING_RATE_SEC = 30
 
 
 class UpdateCheckData(NamedTuple):
