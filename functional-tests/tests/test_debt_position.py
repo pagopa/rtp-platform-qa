@@ -19,10 +19,17 @@ from utils.dataset import create_debt_position_update_payload
 from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.dataset import generate_iuv
+from typing import NamedTuple, Any
 
 
 TEST_TIMEOUT_SEC = 300
 POLLING_RATE_SEC = 10
+
+
+class UpdateCheckData(NamedTuple):
+    nav: str
+    description: str
+    amount: int
 
 
 @pytest.fixture(
@@ -192,40 +199,10 @@ def test_update_debt_position(setup_data, environment):
 def test_update_valid_newly_published_debt_position(setup_data, environment):
     allure.dynamic.title(f"Happy path: a debt position with VALID status is updated in {environment['name']} environment")
 
-    subscription_key = setup_data['subscription_key']
-    organization_id = setup_data['organization_id']
-    debtor_fc = setup_data['debtor_fc']
-    iupd = setup_data['iupd']
-    iuv = setup_data['iuv']
-
-    create_function = environment['create_function']
-    update_function = environment['update_function']
     auth_function = environment['rtp_auth_function']
     find_rtp_function = environment['find_rtp_function']
 
-    payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
-    create_response = create_function(subscription_key, organization_id, payload, to_publish=False)
-    assert create_response.status_code == 201, f'Expected 201 but got {create_response.status_code}'
-    
-    create_response_body = create_response.json()
-    expected_created_status = 'DRAFT'
-    assert create_response_body['status'] == expected_created_status, f'Wrong status. Expected {expected_created_status} but got {create_response_body['status']}'
-    
-    nav = create_response_body['paymentOption'][0]['nav']
-    assert nav is not None, f'NAV cannot be None'
-    
-    description = create_response_body['paymentOption'][0]['description']
-    amount = create_response_body['paymentOption'][0]['amount']
-
-    time.sleep(5)
-
-    update_payload = create_debt_position_update_payload(iupd=iupd, debtor_fc=debtor_fc, iuv=iuv)
-    update_response = update_function(subscription_key, organization_id, iupd, update_payload)
-    assert update_response.status_code == 200, f'Expected 200 but got {update_response.status_code}'
-    
-    update_response_body = update_response.json()
-    expected_update_status = 'VALID'
-    assert update_response_body['status'] == expected_update_status, f'Wrong status. Expected {expected_update_status} but got {update_response_body['status']}'
+    update_data = _setup_update_test(setup_data, environment, 'VALID', to_publish=False)
     
     client_id = secrets.creditor_service_provider.client_id
     client_secret = secrets.creditor_service_provider.client_secret
@@ -236,10 +213,10 @@ def test_update_valid_newly_published_debt_position(setup_data, environment):
     assert access_token is not None, f'Access token cannot be None'
 
     while True:
-        response = find_rtp_function(access_token, nav)
+        response = find_rtp_function(access_token, update_data.nav)
         
         if response.status_code != 200:
-            raise RuntimeError(f"Error calling find_rtp_by_notice_number API. Response {response.status_code}. Notice number: {nav}")
+            raise RuntimeError(f"Error calling find_rtp_by_notice_number API. Response {response.status_code}. Notice number: {update_data.nav}")
         
         data = response.json()
             
@@ -248,10 +225,52 @@ def test_update_valid_newly_published_debt_position(setup_data, environment):
         if len(data) != 1:
             rtp = data[0]
             
-            assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {nav} but got {rtp['noticeNumber']}'
-            assert rtp['description'] == "expected_value", f'Wrong description. Expected {description} but got {rtp['description']}'
-            assert rtp['amount'] == "expected_value", f'Wrong notice number. Expected {amount} but got {rtp['amount']}'
+            assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
+            assert rtp['description'] == "expected_value", f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
+            assert rtp['amount'] == "expected_value", f'Wrong notice number. Expected {update_data.description} but got {rtp['amount']}'
             
             break
 
         time.sleep(POLLING_RATE_SEC)
+
+
+def _setup_update_test(
+        setup_data: dict[str, Any], 
+        environment: dict[str, Any], 
+        status: str, to_publish: bool = True, 
+        waiting_time_sec: int = 5
+    ) -> UpdateCheckData:
+    
+    subscription_key = setup_data['subscription_key']
+    organization_id = setup_data['organization_id']
+    debtor_fc = setup_data['debtor_fc']
+    iupd = setup_data['iupd']
+    iuv = setup_data['iuv']
+
+    create_function = environment['create_function']
+    update_function = environment['update_function']
+
+    payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
+    create_response = create_function(subscription_key, organization_id, payload, to_publish=to_publish)
+    assert create_response.status_code == 201, f'Expected 201 but got {create_response.status_code}'
+    
+    create_response_body = create_response.json()
+    expected_created_status = status if to_publish else 'DRAFT'
+    assert create_response_body['status'] == expected_created_status, f'Wrong status. Expected {expected_created_status} but got {create_response_body['status']}'
+    
+    nav = create_response_body['paymentOption'][0]['nav']
+    assert nav is not None, f'NAV cannot be None'
+    
+    description = create_response_body['paymentOption'][0]['description']
+    amount = create_response_body['paymentOption'][0]['amount']
+
+    time.sleep(waiting_time_sec)
+
+    update_payload = create_debt_position_update_payload(iupd=iupd, debtor_fc=debtor_fc, iuv=iuv)
+    update_response = update_function(subscription_key, organization_id, iupd, update_payload)
+    assert update_response.status_code == 200, f'Expected 200 but got {update_response.status_code}'
+    
+    update_response_body = update_response.json()
+    assert update_response_body['status'] == status, f'Wrong status. Expected {status} but got {update_response_body['status']}'
+    
+    return UpdateCheckData(nav, description, amount)
