@@ -91,7 +91,7 @@ def setup_data(environment):
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_update_valid_newly_published_debt_position(setup_data, environment):
-    allure.dynamic.title(f"Happy path: a debt position with VALID status is updated in {environment['name']} environment")
+    allure.dynamic.title(f"Happy path: a newly published debt position with VALID status is updated")
 
     auth_function = environment['rtp_auth_function']
     find_rtp_function = environment['find_rtp_function']
@@ -134,7 +134,7 @@ def test_update_valid_newly_published_debt_position(setup_data, environment):
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_update_valid_already_published_debt_position(setup_data, environment):
-    allure.dynamic.title(f"Happy path: a debt position with VALID status is updated in {environment['name']} environment")
+    allure.dynamic.title(f"Happy path: an already published debt position with VALID status is updated")
     
     auth_function = environment['rtp_auth_function']
     find_rtp_function = environment['find_rtp_function']
