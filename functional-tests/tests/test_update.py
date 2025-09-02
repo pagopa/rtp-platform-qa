@@ -77,6 +77,8 @@ def test_update_valid_newly_published_debt_position(setup_data):
         client_secret=client_secret,
         access_token_function=get_access_token)
     assert access_token is not None, f'Access token cannot be None'
+    
+    expected_status = 'SENT'
 
     while True:
         response = get_rtp_by_notice_number(access_token, update_data.nav)
@@ -88,16 +90,22 @@ def test_update_valid_newly_published_debt_position(setup_data):
             
         assert data is not None and type(data) is list, f'Invalid response body.'
         
-        if len(data) > 0:
-            rtp = data[0]
-            
-            assert rtp['noticeNumber'] == update_data.nav, f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
-            assert rtp['description'] == update_data.description, f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
-            assert rtp['amount'] == update_data.amount, f'Wrong notice number. Expected {update_data.amount} but got {rtp['amount']}'
-            
-            break
-
-        time.sleep(POLLING_RATE_SEC)
+        if len(data) == 0:
+            time.sleep(POLLING_RATE_SEC)
+            continue
+        
+        assert len(data) == 1
+        
+        rtp = data[0]
+        
+        assert rtp['status'] == expected_status, f'Wrong status. Expected {expected_status} but got {rtp['status']}'
+        assert rtp['noticeNumber'] == update_data.nav, f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
+        assert rtp['description'] == update_data.update_description, f'Wrong description. Expected {update_data.update_description} but got {rtp['description']}'
+        assert rtp['amount'] == update_data.update_amount, f'Wrong notice number. Expected {update_data.update_amount} but got {rtp['amount']}'
+        assert update_data.update_description != update_data.create_description, f'Description must change upon UPDATE'
+        assert update_data.update_amount != update_data.create_amount, f'Amount must change upon UPDATE'
+        
+        break
 
 
 @allure.feature('Debt Positions')
@@ -118,6 +126,8 @@ def test_update_valid_already_published_debt_position(setup_data):
         client_secret=client_secret,
         access_token_function=get_access_token)
     assert access_token is not None, f'Access token cannot be None'
+    
+    expected_status = 'SENT'
 
     while True:
         response = get_rtp_by_notice_number(access_token, update_data.nav)
@@ -129,16 +139,25 @@ def test_update_valid_already_published_debt_position(setup_data):
             
         assert data is not None and type(data) is list, f'Invalid response body.'
         
-        if len(data) > 0:
-            rtp = data[0]
-            
-            assert rtp['noticeNumber'] == update_data.nav, f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
-            assert rtp['description'] == update_data.description, f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
-            assert rtp['amount'] == update_data.amount, f'Wrong notice number. Expected {update_data.amount} but got {rtp['amount']}'
-            
-            break
-
-        time.sleep(POLLING_RATE_SEC)
+        if len(data) == 0:
+            time.sleep(POLLING_RATE_SEC)
+            continue
+        
+        assert len(data) == 2
+        
+        rtp_list = [rtp for rtp in data if rtp["status"] == expected_status]
+        assert len(rtp_list) == 1, f'RTP list must have only an item with status {expected_status}'
+        
+        rtp = rtp_list[0]
+        
+        assert rtp['status'] == expected_status, f'Wrong status. Expected {expected_status} but got {rtp['status']}'
+        assert rtp['noticeNumber'] == update_data.nav, f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
+        assert rtp['description'] == update_data.update_description, f'Wrong description. Expected {update_data.update_description} but got {rtp['description']}'
+        assert rtp['amount'] == update_data.update_amount, f'Wrong notice number. Expected {update_data.update_amount} but got {rtp['amount']}'
+        assert update_data.update_description != update_data.create_description, f'Description must change upon UPDATE'
+        assert update_data.update_amount != update_data.create_amount, f'Amount must change upon UPDATE'
+        
+        break
 
 
 def _setup_update_test(
