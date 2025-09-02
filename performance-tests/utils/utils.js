@@ -119,7 +119,11 @@ export function randomNoticeNumber() {
  * @returns {string} - The UUID string with all dashes removed.
  */
 export function replaceUuidWithoutDashes(uuid) {
-    return uuid.replace(/-/g, '');
+    if (!uuid) {
+        console.error("replaceUuidWithoutDashes got invalid uuid:", uuid);
+        return "";
+    }
+    return String(uuid).replace(/-/g, '');
 }
 
 /**
@@ -285,7 +289,7 @@ export const endpoints = {
   activations: `${activationConfig.activation_base}/activations`,
   deactivations: `${activationConfig.activation_base}/activations`,
   sendRtp: `${senderConfig.sender_base}/rtps`,
-  callbackSend : `${callbackConfig.callback_base}/cb/send`
+  callbackSend : `${callbackConfig.callback_base}/cb/send`,
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
 };
 

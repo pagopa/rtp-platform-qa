@@ -1,18 +1,17 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, endpoints, determineStage, getOptions, ActorCredentials } from "../../utils/utils.js";
+import { endpoints, determineStage, getOptions} from "../../utils/utils.js";
 import { createStandardMetrics } from "../../utils/metrics-utils.js";
-import { shuffleArray, distributeItemsAmongGroups, createSendInBatch } from "../../utils/batch-utils.js";
+import { shuffleArray, distributeItemsAmongGroups} from "../../utils/batch-utils.js";
 import { createHandleSummary } from "../../utils/summary-utils.js";
 import { buildCallbackPayload } from "../../utils/sender-payloads.js";
 import { createCallbackTeardown } from "../../utils/teardown-utils.js";
 
 const START_TIME = Date.now();
-const { SERVICE_PROVIDER_ID } = __ENV;
-const VU_COUNT_SET = 35;
+const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 5;
 const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
 const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
-
+const resourceIds = JSON.parse(open('../../script/resourceIds.json'));
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
 export let options = {
@@ -22,9 +21,8 @@ export let options = {
         stress_test_fixed_user: {
             executor: 'shared-iterations',
             vus: VU_COUNT_SET,
-            iterations: 700,
+            iterations: resourceIds.length,
             maxDuration: '30m',
-            startTime: '30s',
             gracefulStop: '30m',
             exec: 'callback'
         }
@@ -44,19 +42,11 @@ export let options = {
 let testCompleted = false;
 
 export function setup() {
-    const auth = setupAuth(ActorCredentials.CREDITOR_SERVICE_PROVIDER);
 
-    const resourceIds = createSendInBatch({
-        accessToken: auth.access_token,
-        targetRequests: 700,
-        batchSize: 50,
-        delayBetweenBatches: 2,
-        payerId: SERVICE_PROVIDER_ID
-    });
+    const wrappedIds = resourceIds.map(r => ({ id: String(r), processed: false }));
 
-    shuffleArray(resourceIds)
-
-    const callbackChunks = distributeItemsAmongGroups(resourceIds, VU_COUNT_SET);
+    shuffleArray(wrappedIds);
+    const callbackChunks = distributeItemsAmongGroups(wrappedIds, VU_COUNT_SET);
 
     console.log(`Callback distributed among ${VU_COUNT_SET} virtual users:`);
     for (let i = 0; i < VU_COUNT_SET; i++) {
@@ -64,9 +54,8 @@ export function setup() {
     }
 
     return {
-        access_token: auth.access_token,
         callbackChunks: callbackChunks,
-        totalCallback: resourceIds.length,
+        totalCallback: wrappedIds.length,
         callbackCount: 0,
         allCompleted: false
     };
@@ -94,27 +83,18 @@ export function callback(data){
     }
 
     const vuIndex = __VU - 1;
+    const myCallback = data.callbackChunks[vuIndex];
 
-    if (!data.callbackChunks[vuIndex]) {
+    if (!myCallback) {
         console.log(`⚠️ VU #${__VU}: No callback chunk assigned. Termination.`);
         return { status: 400, message: 'No callback chunk assigned', noMetrics: true };
     }
 
-    const myCallback = data.callbackChunks[vuIndex];
+    if (!data.currentIndices) data.currentIndices = {};
+    if (data.currentIndices[vuIndex] === undefined) data.currentIndices[vuIndex] = 0;
 
-    if (data.currentIndices === undefined) {
-        data.currentIndices = {};
-    }
-    if (data.currentIndices[vuIndex] === undefined) {
-        data.currentIndices[vuIndex] = 0;
-    }
-
-    if (data.vuCallbackCount === undefined) {
-        data.vuCallbackCount = {};
-    }
-    if (data.vuCallbackCount[vuIndex] === undefined) {
-        data.vuCallbackCount[vuIndex] = 0;
-    }
+    if (!data.vuCallbackCount) data.vuCallbackCount = {};
+    if (data.vuCallbackCount[vuIndex] === undefined) data.vuCallbackCount[vuIndex] = 0;
 
     if (data.vuCallbackCount[vuIndex] >= myCallback.length) {
         console.log(`✓ VU #${__VU}: Completed all ${myCallback.length} callbacks assigned.`);
@@ -130,7 +110,8 @@ export function callback(data){
         return callback(data);
     }
 
-    const payload = JSON.stringify(buildCallbackPayload(callbackItem.id));
+    const id = callbackItem.id;
+    const payload = JSON.stringify(buildCallbackPayload(id));
 
     const headers = {'Content-Type': 'application/json'};
     const url = endpoints.callbackSend;
@@ -148,8 +129,8 @@ export function callback(data){
         data.vuCallbackCount[vuIndex]++;
         data.callbackCount++;
 
-        if (data.callbackCount % 50 === 0 || data.vuCallbackCount[vuIndex] === data.callbackChunks[vuIndex].length) {
-            console.log(`✓ VU #${__VU}: ${data.vuCallbackCount[vuIndex]}/${data.callbackChunks[vuIndex].length} callback (Total: ${data.callbackCount}/${data.totalCallback})`);
+        if (data.callbackCount % 50 === 0 || data.vuCallbackCount[vuIndex] === myCallback.length) {
+            console.log(`✓ VU #${__VU}: ${data.vuCallbackCount[vuIndex]}/${myCallback.length} callback (Total: ${data.callbackCount}/${data.totalCallback})`);
         }
 
         if (data.callbackCount >= data.totalCallback && !data.allCompleted) {
@@ -157,24 +138,16 @@ export function callback(data){
             testCompleted = true;
             console.log(`✅ TEST COMPLETED: All ${data.totalCallback} callback have been processed!`);
             console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
-            console.log(`Dashboard will remain active for viewing results.`);
-            return {
-                status: 200,
-                message: 'Test completed successfully, dashboard still active',
-                noMetrics: false
-            };
+            return { status: 200, message: 'Test completed successfully', noMetrics: false };
         }
     } else {
         failureCounter.add(1, tags);
-        console.error(`❌ VU #${__VU}: Failed callback for ID ${callbackItem.id}: Status ${res.status}`);
+        console.error(`❌ VU #${__VU}: Failed callback for ID ${id}: Status ${res.status}`);
     }
 
-    check(res, {
-        'callback: status is 2xx': (r) => r.status >= 200 && r.status < 300
-    });
+    check(res, { 'callback: status is 2xx': (r) => r.status >= 200 && r.status < 300 });
 
-    data.currentIndices[vuIndex] = (data.currentIndices[vuIndex] + 1) % myCallback.length;
-    sleep(1);
+    data.currentIndices[vuIndex] = (currentIndex + 1) % myCallback.length;
     return res;
 }
 
