@@ -86,7 +86,7 @@ def test_update_valid_newly_published_debt_position(setup_data):
             
         assert not data or not type(data) is list, f'Invalid response body.'
         
-        if len(data) != 1:
+        if len(data) > 0:
             rtp = data[0]
             
             assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
