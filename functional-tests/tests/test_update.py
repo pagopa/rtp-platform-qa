@@ -84,14 +84,14 @@ def test_update_valid_newly_published_debt_position(setup_data):
         
         data = response.json()
             
-        assert not data or not type(data) is list, f'Invalid response body.'
+        assert data is not None and type(data) is list, f'Invalid response body.'
         
         if len(data) > 0:
             rtp = data[0]
             
-            assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
-            assert rtp['description'] == "expected_value", f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
-            assert rtp['amount'] == "expected_value", f'Wrong notice number. Expected {update_data.description} but got {rtp['amount']}'
+            assert rtp['noticeNumber'] == update_data.nav, f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
+            assert rtp['description'] == update_data.description, f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
+            assert rtp['amount'] == update_data.amount, f'Wrong notice number. Expected {update_data.amount} but got {rtp['amount']}'
             
             break
 
@@ -130,9 +130,9 @@ def test_update_valid_already_published_debt_position(setup_data):
         if len(data) > 0:
             rtp = data[0]
             
-            assert rtp['noticeNumber'] == "expected_value", f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
-            assert rtp['description'] == "expected_value", f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
-            assert rtp['amount'] == "expected_value", f'Wrong notice number. Expected {update_data.amount} but got {rtp['amount']}'
+            assert rtp['noticeNumber'] == update_data.nav, f'Wrong notice number. Expected {update_data.nav} but got {rtp['noticeNumber']}'
+            assert rtp['description'] == update_data.description, f'Wrong description. Expected {update_data.description} but got {rtp['description']}'
+            assert rtp['amount'] == update_data.amount, f'Wrong notice number. Expected {update_data.amount} but got {rtp['amount']}'
             
             break
 
