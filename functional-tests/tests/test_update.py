@@ -9,7 +9,7 @@ from api.auth import get_valid_access_token
 from api.debt_position import create_debt_position
 from api.debt_position import update_debt_position
 from api.get_rtp import get_rtp_by_notice_number
-from config.configuration import secrets
+from config.configuration import secrets, config
 from utils.dataset import create_debt_position_payload
 from utils.dataset import create_debt_position_update_payload
 from utils.dataset import fake_fc
@@ -18,7 +18,7 @@ from utils.dataset import generate_iuv
 from typing import NamedTuple, Any
 
 
-TEST_TIMEOUT_SEC = 300
+TEST_TIMEOUT_SEC = config.test_timeout_sec
 POLLING_RATE_SEC = 30
 
 
