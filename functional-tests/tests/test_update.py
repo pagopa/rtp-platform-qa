@@ -24,8 +24,10 @@ POLLING_RATE_SEC = 30
 
 class UpdateCheckData(NamedTuple):
     nav: str
-    description: str
-    amount: int
+    create_description: str
+    create_amount: int
+    update_description: str
+    update_amount: int
 
 
 @pytest.fixture
@@ -162,8 +164,8 @@ def _setup_update_test(
     nav = create_response_body['paymentOption'][0]['nav']
     assert nav is not None, f'NAV cannot be None'
     
-    description = create_response_body['paymentOption'][0]['description']
-    amount = create_response_body['paymentOption'][0]['amount']
+    create_description = create_response_body['paymentOption'][0]['description']
+    create_amount = create_response_body['paymentOption'][0]['amount']
 
     time.sleep(waiting_time_sec)
 
@@ -174,4 +176,7 @@ def _setup_update_test(
     update_response_body = update_response.json()
     assert update_response_body['status'] == status, f'Wrong status. Expected {status} but got {update_response_body['status']}'
     
-    return UpdateCheckData(nav, description, amount)
+    update_description = update_response_body['paymentOption'][0]['description']
+    update_amount = update_response_body['paymentOption'][0]['amount']
+    
+    return UpdateCheckData(nav, create_description, create_amount, update_description, update_amount)
