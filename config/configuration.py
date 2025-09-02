@@ -78,6 +78,11 @@ secrets.debt_positions_dev = Dynaconf(
     organization_id=os.getenv('DEBT_POSITIONS_DEV_ORGANIZATION_ID'),
 )
 
+secrets.rtp_reader = Dynaconf(
+    client_id=os.getenv('RTP_READER_CLIENT_ID'),
+    client_secret=os.getenv('RTP_READER_CLIENT_SECRET'),
+)
+
 # Direct attributes for backward compatibility
 secrets.CBI_client_id = os.getenv('CBI_CLIENT_ID')
 secrets.CBI_client_secret = os.getenv('CBI_CLIENT_SECRET')
