@@ -69,14 +69,7 @@ def test_update_valid_newly_published_debt_position(setup_data):
 
     update_data = _setup_update_test(setup_data, 'VALID', to_publish=False)
     
-    client_id = secrets.creditor_service_provider.client_id
-    client_secret = secrets.creditor_service_provider.client_secret
-
-    access_token = get_valid_access_token(
-        client_id=client_id, 
-        client_secret=client_secret,
-        access_token_function=get_access_token)
-    assert access_token is not None, f'Access token cannot be None'
+    access_token = _get_rtp_reader_access_token()
     
     expected_status = 'SENT'
 
@@ -117,15 +110,8 @@ def test_update_valid_already_published_debt_position(setup_data):
     allure.dynamic.title(f"Happy path: an already published debt position with VALID status is updated")
 
     update_data = _setup_update_test(setup_data, 'VALID')
-    
-    client_id = secrets.creditor_service_provider.client_id
-    client_secret = secrets.creditor_service_provider.client_secret
 
-    access_token = get_valid_access_token(
-        client_id=client_id, 
-        client_secret=client_secret,
-        access_token_function=get_access_token)
-    assert access_token is not None, f'Access token cannot be None'
+    access_token = _get_rtp_reader_access_token()
     
     expected_status = 'SENT'
 
@@ -158,6 +144,19 @@ def test_update_valid_already_published_debt_position(setup_data):
         assert update_data.update_amount != update_data.create_amount, f'Amount must change upon UPDATE'
         
         break
+
+
+def _get_rtp_reader_access_token() -> str:
+    client_id = secrets.rtp_reader.client_id
+    client_secret = secrets.rtp_reader.client_secret
+
+    access_token = get_valid_access_token(
+        client_id=client_id, 
+        client_secret=client_secret,
+        access_token_function=get_access_token)
+    assert access_token is not None, f'Access token cannot be None'
+    
+    return access_token
 
 
 def _setup_update_test(
