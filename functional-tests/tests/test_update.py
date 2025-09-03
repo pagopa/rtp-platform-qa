@@ -194,6 +194,8 @@ def _setup_update_test(
     update_response_body = update_response.json()
     assert update_response_body['status'] == status, f'Wrong status. Expected {status} but got {update_response_body['status']}'
     
+    time.sleep(waiting_time_sec)
+    
     update_description = update_response_body['paymentOption'][0]['description']
     update_amount = update_response_body['paymentOption'][0]['amount']
     
