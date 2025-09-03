@@ -202,6 +202,10 @@ This secret must be updated manually by admins when needed.
 `PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID` - Client ID for accessing PagoPA service registry  
 `PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET` - Secret key for authenticating with PagoPA service registry  
 
+### RTP Reader
+`RTP_READER_CLIENT_ID` - Client ID for RTP Reader service authentication
+`RTP_READER_CLIENT_SECRET` - Secret key for RTP Reader service authentication
+
 ### Webpage Authentication
 `WEBPAGE_USERNAME` - Username for web application login authentication  
 `WEBPAGE_PASSWORD` - Password for web application login authentication  
