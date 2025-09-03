@@ -9,6 +9,7 @@ This suite:
 
 Pytest markers:
     - debt_positions: Marks tests related to debt positions.
+    - send: Marks tests related to RTP send
     - happy_path: Marks tests that follow the expected success scenario.
     - timeout: Ensures tests fail if runtime exceeds configured timeout.
 
@@ -95,6 +96,7 @@ def setup_data() -> dict[str, Any]:
 @allure.feature("Debt Positions")
 @allure.story("Update Valid Newly Published Debt Position")
 @pytest.mark.debt_positions
+@pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) -> None:
@@ -140,6 +142,7 @@ def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) 
 @allure.feature("Debt Positions")
 @allure.story("Update Valid Already Published Debt Position")
 @pytest.mark.debt_positions
+@pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_update_valid_already_published_debt_position(setup_data: dict[str, Any]) -> None:
