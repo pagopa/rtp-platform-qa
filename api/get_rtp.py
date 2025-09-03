@@ -1,7 +1,5 @@
 import uuid
-
 import requests
-
 from config.configuration import config
 
 GET_RTP_URL = config.rtp_creation_base_url_path + config.get_rtp_path
