@@ -6,14 +6,14 @@ def create_debt_position(
     subscription_key: str, organization_id: str, payload: dict, to_publish: bool = True, is_dev: bool = False
 ) -> requests.Response:
     """API to create a debt position and optionally publish it.
-    
+
     Args:
         subscription_key (str): API subscription key
         organization_id (str): Organization ID
         payload (dict): The debt position data
         to_publish (bool): Whether to publish the debt position
         is_dev (bool): Whether to use the development environment
-        
+
     Returns:
         Response: HTTP response from the API call
     """
@@ -21,7 +21,7 @@ def create_debt_position(
         url = config.debt_positions_dev_base_url_path + config.debt_positions_dev_path
     else:
         url = config.debt_positions_base_url_path + config.debt_positions_path
-    
+
     return requests.post(
         url=url.format(organizationId=organization_id),
         headers={
@@ -37,13 +37,13 @@ def delete_debt_position(
     subscription_key: str, organization_id: str, iupd: str, is_dev: bool = False
 ) -> requests.Response:
     """API to delete a debt position.
-    
+
     Args:
         subscription_key (str): API subscription key
         organization_id (str): Organization ID
         iupd (str): Unique Debt Position Identifier
         is_dev (bool): Whether to use the development environment
-        
+
     Returns:
         Response: HTTP response from the API call
     """
@@ -51,7 +51,7 @@ def delete_debt_position(
         url = config.debt_positions_dev_base_url_path + config.debt_positions_dev_delete_path
     else:
         url = config.debt_positions_base_url_path + config.debt_positions_delete_path
-        
+
     url = url.format(organizationId=organization_id, iupd=iupd)
 
     headers = {
@@ -101,13 +101,13 @@ def get_debt_position(
     subscription_key: str, organization_id: str, iupd: str, is_dev: bool = False
 ) -> requests.Response:
     """API to get a debt position by IUPD.
-    
+
     Args:
         subscription_key (str): API subscription key
         organization_id (str): Organization ID
         iupd (str): Unique Debt Position Identifier
         is_dev (bool): Whether to use the development environment
-        
+
     Returns:
         Response: HTTP response from the API call
     """
@@ -115,9 +115,9 @@ def get_debt_position(
         base_url = config.debt_positions_dev_base_url_path + config.debt_positions_dev_path
     else:
         base_url = config.debt_positions_base_url_path + config.debt_positions_path
-        
+
     url = base_url.format(organizationId=organization_id) + f"/{iupd}"
-    
+
     return requests.get(
         url=url,
         headers={

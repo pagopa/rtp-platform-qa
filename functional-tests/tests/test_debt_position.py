@@ -30,7 +30,7 @@ def environment(request):
     """Fixture to provide environment-specific configurations."""
     env = request.param
     is_dev = env['is_dev']
-    
+
     env.update({
         'create_function': lambda sk, org_id, payload, to_publish: create_debt_position(sk, org_id, payload, to_publish, is_dev),
         'get_function': lambda sk, org_id, iupd: get_debt_position(sk, org_id, iupd, is_dev),

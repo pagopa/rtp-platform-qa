@@ -5,7 +5,7 @@ import {buildSendPayload} from "./sender-payloads.js";
 
 /**
  * Create a batch of activations for testing purposes.
- * 
+ *
  * @param {Object} params - Function parameters
  * @param {string} params.accessToken - Access token for the API
  * @param {number} params.targetActivations - Total number of activations to create
@@ -14,15 +14,15 @@ import {buildSendPayload} from "./sender-payloads.js";
  * @param {string} params.serviceProviderId - ID of the service provider
  * @returns {Array} Array of activation objects with id, fiscalCode, and deactivated status
  */
-export function createActivationsInBatch({ 
-  accessToken, 
-  targetActivations, 
+export function createActivationsInBatch({
+  accessToken,
+  targetActivations,
   batchSize = 50,
   delayBetweenBatches = 2,
   serviceProviderId
 }) {
   console.log(`Creating ${targetActivations} test activations in batches of ${batchSize}...`);
-  
+
   const headers = buildHeaders(accessToken);
   const activationIds = [];
 
@@ -34,7 +34,7 @@ export function createActivationsInBatch({
       const debtor_fc = randomFiscalCode();
       batchFiscalCodes.push(debtor_fc);
       const payload = { payer: { fiscalCode: debtor_fc, rtpSpId: serviceProviderId } };
-      
+
       batchRequests.push({
         method: 'POST',
         url: endpoints.activations,
@@ -44,14 +44,14 @@ export function createActivationsInBatch({
     }
 
     const responses = http.batch(batchRequests);
-    
+
     let successCount = 0;
     let failureCount = 0;
-    
+
     responses.forEach((res, index) => {
       if (res.status === 201) {
         successCount++;
-        
+
         let activationId;
         if (res.headers['Location']) {
           activationId = res.headers['Location'].split('/').pop();
@@ -65,7 +65,7 @@ export function createActivationsInBatch({
             console.warn(`⚠️ Failed to parse response body for fiscalCode: ${batchFiscalCodes[index]}`);
           }
         }
-        
+
         if (activationId) {
           activationIds.push({
             id: activationId,
@@ -80,14 +80,14 @@ export function createActivationsInBatch({
         console.error(`❌ Failed activation for fiscalCode ${batchFiscalCodes[index]}: Status ${res.status}`);
       }
     });
-    
+
     console.log(`Batch ${batch + 1}: ${successCount} activations created (${failureCount} failed), total: ${activationIds.length}`);
-    
+
     if (batch < Math.ceil(targetActivations / batchSize) - 1) {
       sleep(delayBetweenBatches);
     }
   }
-  
+
   console.log(`Batch creation completed: ${activationIds.length} activations ready for testing`);
   return activationIds;
 }
@@ -185,7 +185,7 @@ export function createSendInBatch({
 }
 
 /**
- * 
+ *
  * @param {Array} array - Array to shuffle
  */
 export function shuffleArray(array) {
@@ -204,15 +204,15 @@ export function shuffleArray(array) {
  */
 export function distributeItemsAmongGroups(items, groupCount) {
   const chunks = [];
-  
+
   for (let i = 0; i < groupCount; i++) {
     chunks[i] = [];
   }
-  
+
   items.forEach((item, index) => {
     const chunkIndex = index % groupCount;
     chunks[chunkIndex].push(item);
   });
-  
+
   return chunks;
 }

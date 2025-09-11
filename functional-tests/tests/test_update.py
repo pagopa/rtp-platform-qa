@@ -15,24 +15,26 @@ Pytest markers:
 
 Allure integration provides feature and story annotations for reporting.
 """
-
 import time
+from typing import Any
+from typing import NamedTuple
+
 import allure
 import pytest
-from typing import NamedTuple, Any
 
 from api.activation import activate
-from api.auth import get_access_token, get_valid_access_token
-from api.debt_position import create_debt_position, update_debt_position
+from api.auth import get_access_token
+from api.auth import get_valid_access_token
+from api.debt_position import create_debt_position
+from api.debt_position import update_debt_position
 from api.get_rtp import get_rtp_by_notice_number
-from config.configuration import secrets, config
-from utils.dataset import (
-    create_debt_position_payload,
-    create_debt_position_update_payload,
-    fake_fc,
-    generate_iupd,
-    generate_iuv,
-)
+from config.configuration import config
+from config.configuration import secrets
+from utils.dataset import create_debt_position_payload
+from utils.dataset import create_debt_position_update_payload
+from utils.dataset import fake_fc
+from utils.dataset import generate_iupd
+from utils.dataset import generate_iuv
 
 
 TEST_TIMEOUT_SEC = config.test_timeout_sec
@@ -79,22 +81,22 @@ def setup_data() -> dict[str, Any]:
         debtor_fc,
         secrets.debtor_service_provider.service_provider_id,
     )
-    assert activation_response.status_code == 201, "Error activating debtor before creating debt position"
+    assert activation_response.status_code == 201, 'Error activating debtor before creating debt position'
 
     iupd = generate_iupd()
     iuv = generate_iuv()
 
     return {
-        "debtor_fc": debtor_fc,
-        "iupd": iupd,
-        "iuv": iuv,
-        "subscription_key": secrets.debt_positions.subscription_key,
-        "organization_id": secrets.debt_positions.organization_id,
+        'debtor_fc': debtor_fc,
+        'iupd': iupd,
+        'iuv': iuv,
+        'subscription_key': secrets.debt_positions.subscription_key,
+        'organization_id': secrets.debt_positions.organization_id,
     }
 
 
-@allure.feature("Debt Positions")
-@allure.story("Update Valid Newly Published Debt Position")
+@allure.feature('Debt Positions')
+@allure.story('Update Valid Newly Published Debt Position')
 @pytest.mark.debt_positions
 @pytest.mark.send
 @pytest.mark.happy_path
@@ -104,11 +106,11 @@ def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) 
     Verify that a newly published debt position with VALID status
     can be updated and changes are reflected in RTP lookups.
     """
-    allure.dynamic.title("Happy path: a newly published debt position with VALID status is updated")
+    allure.dynamic.title('Happy path: a newly published debt position with VALID status is updated')
 
-    update_data = _setup_update_test(setup_data, "VALID", to_publish=False)
+    update_data = _setup_update_test(setup_data, 'VALID', to_publish=False)
     access_token = _get_rtp_reader_access_token()
-    expected_status = "SENT"
+    expected_status = 'SENT'
 
     while True:
         response = get_rtp_by_notice_number(access_token, update_data.nav)
@@ -120,7 +122,7 @@ def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) 
             )
 
         data = response.json()
-        assert isinstance(data, list), "Invalid response body."
+        assert isinstance(data, list), 'Invalid response body.'
 
         if len(data) == 0:
             time.sleep(POLLING_RATE_SEC)
@@ -129,18 +131,18 @@ def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) 
         assert len(data) == 1
 
         rtp = data[0]
-        assert rtp["status"] == expected_status, f"Wrong status. Expected {expected_status} but got {rtp['status']}"
-        assert rtp["noticeNumber"] == update_data.nav
-        assert rtp["description"] == update_data.update_description
-        assert rtp["amount"] == update_data.update_amount
+        assert rtp['status'] == expected_status, f"Wrong status. Expected {expected_status} but got {rtp['status']}"
+        assert rtp['noticeNumber'] == update_data.nav
+        assert rtp['description'] == update_data.update_description
+        assert rtp['amount'] == update_data.update_amount
         assert update_data.update_description != update_data.create_description
         assert update_data.update_amount != update_data.create_amount
 
         break
 
 
-@allure.feature("Debt Positions")
-@allure.story("Update Valid Already Published Debt Position")
+@allure.feature('Debt Positions')
+@allure.story('Update Valid Already Published Debt Position')
 @pytest.mark.debt_positions
 @pytest.mark.send
 @pytest.mark.happy_path
@@ -150,11 +152,11 @@ def test_update_valid_already_published_debt_position(setup_data: dict[str, Any]
     Verify that an already published debt position with VALID status
     can be updated and changes are reflected in RTP lookups.
     """
-    allure.dynamic.title("Happy path: an already published debt position with VALID status is updated")
+    allure.dynamic.title('Happy path: an already published debt position with VALID status is updated')
 
-    update_data = _setup_update_test(setup_data, "VALID")
+    update_data = _setup_update_test(setup_data, 'VALID')
     access_token = _get_rtp_reader_access_token()
-    expected_status = "SENT"
+    expected_status = 'SENT'
 
     while True:
         response = get_rtp_by_notice_number(access_token, update_data.nav)
@@ -166,7 +168,7 @@ def test_update_valid_already_published_debt_position(setup_data: dict[str, Any]
             )
 
         data = response.json()
-        assert isinstance(data, list), "Invalid response body."
+        assert isinstance(data, list), 'Invalid response body.'
 
         if len(data) == 0:
             time.sleep(POLLING_RATE_SEC)
@@ -174,14 +176,14 @@ def test_update_valid_already_published_debt_position(setup_data: dict[str, Any]
 
         assert len(data) == 2
 
-        rtp_list = [rtp for rtp in data if rtp["status"] == expected_status]
+        rtp_list = [rtp for rtp in data if rtp['status'] == expected_status]
         assert len(rtp_list) == 1, f"RTP list must contain exactly one item with status {expected_status}"
 
         rtp = rtp_list[0]
-        assert rtp["status"] == expected_status
-        assert rtp["noticeNumber"] == update_data.nav
-        assert rtp["description"] == update_data.update_description
-        assert rtp["amount"] == update_data.update_amount
+        assert rtp['status'] == expected_status
+        assert rtp['noticeNumber'] == update_data.nav
+        assert rtp['description'] == update_data.update_description
+        assert rtp['amount'] == update_data.update_amount
         assert update_data.update_description != update_data.create_description
         assert update_data.update_amount != update_data.create_amount
 
@@ -206,7 +208,7 @@ def _get_rtp_reader_access_token() -> str:
         client_secret=client_secret,
         access_token_function=get_access_token,
     )
-    assert access_token is not None, "Access token cannot be None"
+    assert access_token is not None, 'Access token cannot be None'
     return access_token
 
 
@@ -229,25 +231,25 @@ def _setup_update_test(
     Returns:
         UpdateCheckData: Structured data for validating the update.
     """
-    subscription_key = setup_data["subscription_key"]
-    organization_id = setup_data["organization_id"]
-    debtor_fc = setup_data["debtor_fc"]
-    iupd = setup_data["iupd"]
-    iuv = setup_data["iuv"]
+    subscription_key = setup_data['subscription_key']
+    organization_id = setup_data['organization_id']
+    debtor_fc = setup_data['debtor_fc']
+    iupd = setup_data['iupd']
+    iuv = setup_data['iuv']
 
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
     create_response = create_debt_position(subscription_key, organization_id, payload, to_publish=to_publish)
     assert create_response.status_code == 201
 
     create_response_body = create_response.json()
-    expected_created_status = status if to_publish else "DRAFT"
-    assert create_response_body["status"] == expected_created_status
+    expected_created_status = status if to_publish else 'DRAFT'
+    assert create_response_body['status'] == expected_created_status
 
-    nav = create_response_body["paymentOption"][0]["nav"]
+    nav = create_response_body['paymentOption'][0]['nav']
     assert nav is not None
 
-    create_description = create_response_body["paymentOption"][0]["description"]
-    create_amount = create_response_body["paymentOption"][0]["amount"]
+    create_description = create_response_body['paymentOption'][0]['description']
+    create_amount = create_response_body['paymentOption'][0]['amount']
 
     time.sleep(waiting_time_sec)
 
@@ -256,11 +258,11 @@ def _setup_update_test(
     assert update_response.status_code == 200
 
     update_response_body = update_response.json()
-    assert update_response_body["status"] == status
+    assert update_response_body['status'] == status
 
     time.sleep(waiting_time_sec)
 
-    update_description = update_response_body["paymentOption"][0]["description"]
-    update_amount = update_response_body["paymentOption"][0]["amount"]
+    update_description = update_response_body['paymentOption'][0]['description']
+    update_amount = update_response_body['paymentOption'][0]['amount']
 
     return UpdateCheckData(nav, create_description, create_amount, update_description, update_amount)

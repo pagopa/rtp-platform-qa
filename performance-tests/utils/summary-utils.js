@@ -5,7 +5,7 @@ import { generateTextReport } from './reporting-utils.js';
 /**
  * Generates a detailed report on the test results.
  * Generic function that can be used by the handleSummary functions of different test cases.
- * 
+ *
  * @param {Object} params - Function parameters
  * @param {Object} params.data - Test data provided by k6
  * @param {number} params.startTime - Test start timestamp
@@ -70,7 +70,7 @@ export function createTestSummary({ data, startTime, testCompleted, vuCount, tes
  * Helper function that creates a generator for handleSummary functions.
  * This allows you to define the handleSummary function more cleanly
  * in test files, reducing code duplication.
- * 
+ *
  * @param {Object} config - Base configuration for the report
  * @param {number} config.START_TIME - Test start timestamp
  * @param {string} config.testName - Name of the test (e.g. 'ACTIVATION STRESS TEST')
@@ -78,7 +78,7 @@ export function createTestSummary({ data, startTime, testCompleted, vuCount, tes
  * @param {string} config.reportPrefix - Prefix for report files (e.g. 'activation')
  * @param {number} config.VU_COUNT - Number of virtual users
  * @returns {function} The handleSummary function to export in the test file
- * 
+ *
  * @example
  * // In the test file:
  * export const handleSummary = createHandleSummary({
@@ -91,17 +91,17 @@ export function createTestSummary({ data, startTime, testCompleted, vuCount, tes
  */
 export function createHandleSummary({ START_TIME, testName, countTag, reportPrefix, VU_COUNT }) {
     return function(data) {
-        
+
         let testCompleted = false;
-        
+
         if (typeof this.testCompleted !== 'undefined') {
             console.log(`Found testCompleted in global scope: ${this.testCompleted}`);
             testCompleted = this.testCompleted;
-        } 
+        }
         else if (data.setupData && typeof data.setupData.testCompleted !== 'undefined') {
             console.log(`Found testCompleted in setupData: ${data.setupData.testCompleted}`);
             testCompleted = data.setupData.testCompleted;
-        } 
+        }
         else if (data.setupData && typeof data.setupData.allCompleted !== 'undefined') {
             console.log(`Found allCompleted in setupData: ${data.setupData.allCompleted}`);
             testCompleted = data.setupData.allCompleted;

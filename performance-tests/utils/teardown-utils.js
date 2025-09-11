@@ -3,7 +3,7 @@ import { generateVuStatsText, generateTeardownInfo } from './reporting-utils.js'
 /**
  * Creates a standardized teardown function for batch processing tests
  * like activation or deactivation tests.
- * 
+ *
  * @param {Object} config - Configuration object
  * @param {number} config.START_TIME - Test start timestamp
  * @param {number} config.VU_COUNT - Number of virtual users
@@ -14,13 +14,13 @@ import { generateVuStatsText, generateTeardownInfo } from './reporting-utils.js'
 export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, testCompletedRef }) {
   return function(data) {
     const elapsedSeconds = (Date.now() - START_TIME) / 1000;
-    
+
     let actualProcessedCount = 0;
     let totalItems = 0;
-    
+
     const itemsKey = `${testType}Chunks`;
     const countKey = `${testType}edCount`;
-    
+
     if (data && data[itemsKey]) {
       data[itemsKey].forEach(chunk => {
         if (chunk) {
@@ -29,7 +29,7 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
         }
       });
     }
-    
+
     let vuStats = [];
     if (data && data.vuProcessedCount) {
       for (let i = 0; i < VU_COUNT; i++) {
@@ -43,11 +43,11 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
         });
       }
     }
-    
+
     if (data && data.allCompleted) {
       testCompletedRef.value = true;
     }
-    
+
     const finalState = {
       testCompleted: testCompletedRef.value,
       allCompleted: testCompletedRef.value,
@@ -57,7 +57,7 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
       testDuration: Math.round(elapsedSeconds),
       vuStats: vuStats
     };
-    
+
     if (testCompletedRef.value) {
       console.log('====================================');
       console.log(`TEST COMPLETED SUCCESSFULLY!`);
@@ -71,22 +71,22 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
       console.log(`Total execution time: ${finalState.testDuration} seconds`);
       console.log('====================================');
     }
-    
+
     console.log(`STATISTICS FOR VIRTUAL USERS:`);
     vuStats.forEach(stat => {
       console.log(`- VU #${stat.vu}: ${stat.processed}/${stat.total} (${stat.percentage}%)`);
     });
-    
+
     const vuStatsText = generateVuStatsText(vuStats, 'processed');
     finalState.additionalReportContent = generateTeardownInfo(finalState, vuStatsText, testType);
-    
+
     return finalState;
   };
 }
 
 /**
  * Creates a specialized teardown function for deactivation tests.
- * 
+ *
  * @param {Object} config - Configuration object
  * @param {number} config.START_TIME - Test start timestamp
  * @param {number} config.VU_COUNT - Number of virtual users
@@ -99,7 +99,7 @@ export function createDeactivationTeardown({ START_TIME, VU_COUNT, testCompleted
       data.deactivationChunks = data.activationChunks;
       data.vuProcessedCount = data.vuDeactivatedCount;
     }
-    
+
     return createBatchProcessingTeardown({
       START_TIME,
       VU_COUNT,
@@ -111,7 +111,7 @@ export function createDeactivationTeardown({ START_TIME, VU_COUNT, testCompleted
 
 /**
  * Creates a specialized teardown function for activation tests.
- * 
+ *
  * @param {Object} config - Configuration object
  * @param {number} config.START_TIME - Test start timestamp
  * @param {number} config.VU_COUNT - Number of virtual users
@@ -124,7 +124,7 @@ export function createActivationTeardown({ START_TIME, VU_COUNT, testCompletedRe
       data.activationChunks = data.activationBatches || [];
       data.vuProcessedCount = data.vuActivatedCount;
     }
-    
+
     return createBatchProcessingTeardown({
       START_TIME,
       VU_COUNT,

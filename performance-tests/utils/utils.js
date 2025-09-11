@@ -35,7 +35,7 @@ const ACTOR_CREDENTIALS_MAP = {
 
 /**
  * Gets a valid access token using client credentials authentication.
- * 
+ *
  * @param {string} access_token_url - OAuth token endpoint URL
  * @param {string} client_id - Client ID for authentication
  * @param {string} client_secret - Client secret for authentication
@@ -71,14 +71,14 @@ function retrieveActorClientCredentials(actor) {
 
 /**
  * Sets up authentication for API requests using environment variables related to given actor.
- * 
+ *
  * @param {ActorCredentials} actor - The actor to fetch credentials for
  * @returns {Object} Object containing the access_token
  * @throws {Error} If required environment variables are missing
  */
 export function setupAuth(actor = ActorCredentials.DEBTOR_SERVICE_PROVIDER) {
 	let {clientId, clientSecret} = retrieveActorClientCredentials(actor);
-	
+
     if (!clientId || !clientSecret) {
         console.error('⚠️ Missing client credentials');
         throw new Error('Client credentials are not set');
@@ -95,7 +95,7 @@ export function setupAuth(actor = ActorCredentials.DEBTOR_SERVICE_PROVIDER) {
 /**
  * Generates a random fiscal code for testing purposes.
  * Creates a basic numeric fiscal code with 11 digits.
- * 
+ *
  * @returns {string} Random fiscal code as a zero-padded string
  */
 export function randomFiscalCode() {
@@ -231,7 +231,7 @@ progressiveOptions.scenarios.spike_test_fixed_user = {
 /**
  * Builds standard headers for API requests.
  * Includes authorization, content type, version, and request ID.
- * 
+ *
  * @param {string} token - Access token for Bearer authentication
  * @returns {Object} Headers object for HTTP requests
  */
@@ -247,7 +247,7 @@ export function buildHeaders(token) {
 /**
  * Determines the current test stage based on elapsed time.
  * Maps time windows to named stages that correspond with the stress test profile.
- * 
+ *
  * @param {number} sec - Elapsed seconds since test start
  * @returns {string} Current stage name
  */
@@ -296,7 +296,7 @@ export const endpoints = {
 /**
  * Builds test options based on scenario name and execution function.
  * Creates a deep copy of the selected scenario to avoid reference issues.
- * 
+ *
  * @param {string} scenarioName - Name of the scenario to use (must exist in progressiveOptions.scenarios)
  * @param {string} execFunction - Name of the function to execute for this scenario
  * @returns {Object} Complete k6 options object with the selected scenario
@@ -305,12 +305,12 @@ export function getOptions(scenarioName, execFunction) {
   const scenarioKey = scenarioName in progressiveOptions.scenarios
     ? scenarioName
     : 'stress_test';
-    
+
   const scenario = JSON.parse(JSON.stringify(progressiveOptions.scenarios[scenarioKey]));
   if (execFunction) {
     scenario.exec = execFunction;
   }
-  
+
   return {
     summaryTrendStats: progressiveOptions.summaryTrendStats,
     systemTags: progressiveOptions.systemTags,
