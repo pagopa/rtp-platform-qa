@@ -35,7 +35,7 @@ def then_the_rtp_is_not_created(context, reason_ko):
         assert context.latest_rtp_response.status_code == 403
 
     if reason_ko == 'THE DEBTOR IS NOT ACTIVATED':
-        assert context.latest_rtp_response.status_code == 422
+        assert context.latest_rtp_response.status_code == 404
 
 
 @given('the Ente Creditore is on the web page')
