@@ -11,8 +11,6 @@ from api.send_rtp import send_rtp
 from config.configuration import secrets
 from utils.dataset import generate_rtp_data
 
-
-
 @allure.feature('RTP Get')
 @allure.story('Service provider retrieves an RTP')
 @allure.title('RTP is successfully retrieved')
@@ -33,24 +31,33 @@ def test_get_rtp_success():
         access_token_function=get_access_token,
     )
 
+    rtp_reader_access_token = get_valid_access_token(
+        client_id=secrets.rtp_reader.client_id,
+        client_secret=secrets.rtp_reader.client_secret,
+        access_token_function=get_access_token,
+    )
+
     activation_response = activate(
         debtor_service_provider_access_token,
         rtp_data['payer']['payerId'],
         secrets.debtor_service_provider.service_provider_id,
     )
+
     assert activation_response.status_code == 201, 'Error activating debtor'
 
     send_response = send_rtp(
         access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
     )
+
     assert send_response.status_code == 201
 
     location = send_response.headers['Location']
     resource_id = location.split('/')[-1]
 
     get_response = get_rtp(
-        access_token=creditor_service_provider_access_token, rtp_id=resource_id
+        access_token=rtp_reader_access_token, rtp_id=resource_id
     )
+
     assert get_response.status_code == 200
     body = get_response.json()
     assert body['resourceID'] == resource_id
@@ -65,8 +72,8 @@ def test_get_rtp_not_found():
     fake_rtp_id = str(uuid.uuid4())
 
     token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
+        client_id=secrets.rtp_reader.client_id,
+        client_secret=secrets.rtp_reader.client_secret,
         access_token_function=get_access_token,
     )
 
