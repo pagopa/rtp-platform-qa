@@ -26,7 +26,7 @@ PARAMETERS:
                        - soak_test:   Long-term endurance test
                        - spike_test:  Test with sudden load spikes
 
-  
+
   OUTPUT FORMATS:
     console   | Terminal output (default)
     dashboard | Interactive web dashboard at http://127.0.0.1:5665

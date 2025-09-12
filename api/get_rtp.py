@@ -8,9 +8,10 @@ Functions:
     - get_rtp: Fetch an RTP resource by its RTP ID.
     - get_rtp_by_notice_number: Fetch an RTP resource by its notice number.
 """
-
 import uuid
+
 import requests
+
 from config.configuration import config
 
 
@@ -31,10 +32,10 @@ def get_rtp(access_token: str, rtp_id: str):
     """
     url = GET_RTP_URL.format(rtpId=rtp_id)
     headers = {
-        "Authorization": access_token,
-        "Version": config.get_api_version,
-        "RequestId": str(uuid.uuid4()),
-        "Content-Type": "application/json",
+        'Authorization': access_token,
+        'Version': config.get_api_version,
+        'RequestId': str(uuid.uuid4()),
+        'Content-Type': 'application/json',
     }
 
     resp = requests.get(url=url, headers=headers, timeout=config.default_timeout)
@@ -53,17 +54,17 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str):
         requests.Response: The HTTP response object returned by the API.
     """
     if not access_token:
-        raise ValueError("access_token cannot be None")
+        raise ValueError('access_token cannot be None')
 
     if not notice_number:
-        raise ValueError("notice_number cannot be None")
+        raise ValueError('notice_number cannot be None')
 
-    params = {"noticeNumber": notice_number}
+    params = {'noticeNumber': notice_number}
     headers = {
-        "Authorization": access_token,
-        "Version": config.get_api_version,
-        "RequestId": str(uuid.uuid4()),
-        "Content-Type": "application/json",
+        'Authorization': access_token,
+        'Version': config.get_api_version,
+        'RequestId': str(uuid.uuid4()),
+        'Content-Type': 'application/json',
     }
 
     resp = requests.get(

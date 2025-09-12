@@ -64,4 +64,3 @@ export const handleSummary = createHandleSummary({
   reportPrefix: 'activation',
   VU_COUNT: 50
 });
-

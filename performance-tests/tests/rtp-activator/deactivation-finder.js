@@ -30,7 +30,7 @@ let testCompleted = false;
 
 export function setup() {
   const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
-  
+
   const activationIds = createActivationsInBatch({
     accessToken: auth.access_token,
     targetActivations: 500,
@@ -38,16 +38,16 @@ export function setup() {
     delayBetweenBatches: 2,
     serviceProviderId: DEBTOR_SERVICE_PROVIDER_ID
   });
-  
+
   shuffleArray(activationIds);
-  
+
   const activationChunks = distributeItemsAmongGroups(activationIds, VU_COUNT_SET);
-  
+
   console.log(`Activations distributed among ${VU_COUNT_SET} virtual users:`);
   for (let i = 0; i < VU_COUNT_SET; i++) {
     console.log(`- VU #${i + 1}: ${activationChunks[i].length} activations`);
   }
-  
+
   return {
     access_token: auth.access_token,
     activationChunks: activationChunks,

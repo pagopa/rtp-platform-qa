@@ -10,13 +10,13 @@ const {
 export let options = {
   scenarios: {
     load100: {
-      executor: 'constant-arrival-rate', 
-      rate: 100, 
-      timeUnit: '1s', 
+      executor: 'constant-arrival-rate',
+      rate: 100,
+      timeUnit: '1s',
       duration: '30s',
-      preAllocatedVUs: 100, 
-      maxVUs: 200, 
-      exec: 'activate',  
+      preAllocatedVUs: 100,
+      maxVUs: 200,
+      exec: 'activate',
       startTime: '0s',
     },
   },
@@ -42,7 +42,7 @@ export function activate(data) {
   const url = endpoints.activations;
   const res = http.post(url, JSON.stringify(payload), { headers });
   check(res, { 'activation 201': r => r.status === 201 });
-  
+
   sleep(1);
   return res;
 }

@@ -1,20 +1,21 @@
 from enum import Enum
-from pydantic import BaseModel
 from typing import Optional
 
+from pydantic import BaseModel
+
 class RTPOperationCode(str, Enum):
-  CREATE = "CREATE"
-  UPDATE = "UPDATE"
-  DELETE = "DELETE"
+  CREATE = 'CREATE'
+  UPDATE = 'UPDATE'
+  DELETE = 'DELETE'
 
 class PaymentPositionStatus(str, Enum):
-  VALID = "VALID"
-  PARTIALLY_VALID = "PARTIALLY_VALID"
-  PAID = "PAID"
-  EXPIRED = "EXPIRED"
-  INVALID = "INVALID"
-  DRAFT = "DRAFT"
-  PUBLISHED = "PUBLISHED"
+  VALID = 'VALID'
+  PARTIALLY_VALID = 'PARTIALLY_VALID'
+  PAID = 'PAID'
+  EXPIRED = 'EXPIRED'
+  INVALID = 'INVALID'
+  DRAFT = 'DRAFT'
+  PUBLISHED = 'PUBLISHED'
 
 class RTPMessage(BaseModel):
   id: int

@@ -164,4 +164,3 @@ Use `run-tests.sh` to execute performance scripts:
 
  ## Contributing
  Extend `config/config.js`, add helpers in `utility.js`, or add option factories in `activation_utils.js`. Update this README when adding new features.
-
