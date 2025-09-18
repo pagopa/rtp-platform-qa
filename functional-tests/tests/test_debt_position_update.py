@@ -38,7 +38,8 @@ from utils.dataset import generate_iuv
 
 
 TEST_TIMEOUT_SEC = config.test_timeout_sec
-POLLING_RATE_SEC = 30
+POLLING_RATE_SEC = 3
+MAX_POLLING_ATTEMPTS = 20
 
 
 class UpdateCheckData(NamedTuple):
@@ -112,7 +113,11 @@ def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) 
     access_token = _get_rtp_reader_access_token()
     expected_status = 'SENT'
 
-    while True:
+    attempts = 0
+    while attempts < MAX_POLLING_ATTEMPTS:
+        attempts += 1
+        print(f"Polling attempt {attempts}/{MAX_POLLING_ATTEMPTS}")
+
         response = get_rtp_by_notice_number(access_token, update_data.nav)
 
         if response.status_code != 200:
@@ -139,6 +144,8 @@ def test_update_valid_newly_published_debt_position(setup_data: dict[str, Any]) 
         assert update_data.update_amount != update_data.create_amount
 
         break
+    else:
+        raise AssertionError(f"RTP data not found after {MAX_POLLING_ATTEMPTS} attempts")
 
 
 @allure.feature('Debt Positions')
@@ -158,7 +165,11 @@ def test_update_valid_already_published_debt_position(setup_data: dict[str, Any]
     access_token = _get_rtp_reader_access_token()
     expected_status = 'SENT'
 
-    while True:
+    attempts = 0
+    while attempts < MAX_POLLING_ATTEMPTS:
+        attempts += 1
+        print(f"Polling attempt {attempts}/{MAX_POLLING_ATTEMPTS}")
+
         response = get_rtp_by_notice_number(access_token, update_data.nav)
 
         if response.status_code != 200:
@@ -188,6 +199,8 @@ def test_update_valid_already_published_debt_position(setup_data: dict[str, Any]
         assert update_data.update_amount != update_data.create_amount
 
         break
+    else:
+        raise AssertionError(f"RTP data not found after {MAX_POLLING_ATTEMPTS} attempts")
 
 
 def _get_rtp_reader_access_token() -> str:
