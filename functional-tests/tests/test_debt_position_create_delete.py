@@ -12,12 +12,18 @@ from api.debt_position import create_debt_position
 from api.debt_position import delete_debt_position
 from api.debt_position import get_debt_position
 from api.debt_position import update_debt_position
-from config.configuration import secrets
+from config.configuration import secrets, config
 from utils.dataset import create_debt_position_payload
 from utils.dataset import create_debt_position_update_payload
 from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.dataset import generate_iuv
+from api.get_rtp import get_rtp_by_notice_number
+
+
+TEST_TIMEOUT_SEC = config.test_timeout_sec
+POLLING_RATE_SEC = 30
+
 
 @pytest.fixture(
     params=[
@@ -80,7 +86,12 @@ def setup_data(environment):
 @allure.story('Create Debt Position')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
+@pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_create_debt_position(setup_data, environment):
+    """
+    Verify that after creating and publishing a debt position,
+    the RTP lookup returns exactly one entry for the notice number.
+    """
     allure.dynamic.title(f"Happy path: a debt position is created and published in {environment['name']} environment")
 
     subscription_key = setup_data['subscription_key']
@@ -92,13 +103,49 @@ def test_create_debt_position(setup_data, environment):
     payload = create_debt_position_payload(debtor_fc=debtor_fc, iupd=iupd, iuv=iuv)
 
     create_function = environment['create_function']
-    get_function = environment['get_function']
 
     res = create_function(subscription_key, organization_id, payload, to_publish=True)
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
+    body = res.json()
 
-    get_response = get_function(subscription_key, organization_id, iupd)
-    assert get_response.status_code == 200, f'Expected 200 but got {get_response.status_code}'
+    nav = body['paymentOption'][0]['nav']
+    expected_description = body['paymentOption'][0]['description']
+    expected_amount = body['paymentOption'][0]['amount']
+
+    access_token = get_valid_access_token(
+        client_id=secrets.rtp_reader.client_id,
+        client_secret=secrets.rtp_reader.client_secret,
+        access_token_function=get_access_token,
+    )
+    assert access_token, 'Access token cannot be None'
+
+    expected_status = 'SENT'
+
+    while True:
+        response = get_rtp_by_notice_number(access_token, nav)
+
+        if response.status_code != 200:
+            raise RuntimeError(
+                f"Error calling find_rtp_by_notice_number API. "
+                f"Response {response.status_code}. Notice number: {nav}"
+            )
+
+        data = response.json()
+        assert isinstance(data, list), 'Invalid response body.'
+
+        if len(data) == 0:
+            time.sleep(POLLING_RATE_SEC)
+            continue
+
+        assert len(data) == 1
+
+        rtp = data[0]
+        assert rtp['status'] == expected_status, f"Wrong status. Expected {expected_status} but got {rtp['status']}"
+        assert rtp['noticeNumber'] == nav
+        assert rtp['description'] == expected_description
+        assert rtp['amount'] == expected_amount
+
+        break
 
 
 @allure.feature('Debt Positions')

@@ -374,7 +374,7 @@ def generate_iuv():
     Returns:
         str: A random 18-digit number as string
     """
-    return ''.join(random.choices('0123456789', k=18))
+    return ''.join(random.choices('0123456789', k=17))
 
 def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
     """
@@ -418,7 +418,6 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
         'companyName': 'companyName',
         'officeName': 'officeName',
         'switchToExpired': False,
-        'pspCode': 'MOCKSP04',
         'paymentOption': [
             {
                 'iuv': iuv,
@@ -428,7 +427,6 @@ def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
                 'dueDate': due_date,
                 'retentionDate': retention_date,
                 'fee': 0,
-                'organizationFiscalCode': org_fc,
                 'transfer': [
                     {
                         'idTransfer': '1',
