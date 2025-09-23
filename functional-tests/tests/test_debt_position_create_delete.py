@@ -12,13 +12,14 @@ from api.debt_position import create_debt_position
 from api.debt_position import delete_debt_position
 from api.debt_position import get_debt_position
 from api.debt_position import update_debt_position
-from config.configuration import secrets, config
+from api.get_rtp import get_rtp_by_notice_number
+from config.configuration import config
+from config.configuration import secrets
 from utils.dataset import create_debt_position_payload
 from utils.dataset import create_debt_position_update_payload
 from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.dataset import generate_iuv
-from api.get_rtp import get_rtp_by_notice_number
 
 
 TEST_TIMEOUT_SEC = config.test_timeout_sec
