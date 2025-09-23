@@ -4,7 +4,7 @@ import pytest
 from datetime import datetime, timezone
 
 from api.producer_gpd_message import send_producer_gpd_message
-from utils.gpp_dataset import generate_producer_gpd_message_payload
+from utils.producer_gpp_dataset import generate_producer_gpd_message_payload
 
 @allure.feature('GPD Message')
 @allure.story('Send GPD message to queue')
