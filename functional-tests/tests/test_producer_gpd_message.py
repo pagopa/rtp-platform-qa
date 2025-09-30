@@ -18,7 +18,6 @@ from utils.producer_gpp_dataset import generate_producer_gpd_message_payload
 TEST_TIMEOUT_SEC = config.test_timeout_sec
 POLLING_RATE_SEC = 30
 
-# Primo test invariato
 @allure.feature('GPD Message')
 @allure.story('Send GPD message to queue')
 @allure.title('Send two GPD messages with timestamps T1 and T1-T2')
