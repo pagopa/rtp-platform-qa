@@ -72,53 +72,49 @@ def _get_rtp_reader_access_token() -> str:
 
 @allure.feature('Producer Message')
 @allure.story('Send producer message with invalid payee')
-@allure.title('Send message with invalid payee_name and verify rejection and no RTP creation')
+@allure.title('Send message with invalid payee_id and verify rejection and no RTP creation')
 @pytest.mark.producer_gpd_message
 @pytest.mark.unhappy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_send_producer_gpd_message_invalid_payee():
-    invalid_payee_name = 'InvalidPayee'
+    invalid_ec_tax_code = "INVLD12345X987Y"
+    
+    notice_number = generate_notice_number()
+    nav = f"3{notice_number}"
+    
     rtp_data = generate_rtp_data()
-
-    if 'paymentOption' in rtp_data and len(rtp_data['paymentOption']) > 0:
-        nav = rtp_data['paymentOption'][0].get('nav')
-    elif 'notice_number' in rtp_data:
-        nav = f"3{rtp_data['notice_number']}"
-    else:
-        notice_number = generate_notice_number()
-        nav = f"3{notice_number}"
-        rtp_data['notice_number'] = notice_number
-
+    
     payload = {
-        'payee_name': invalid_payee_name,
-        'nav': nav,
+        "ec_tax_code": invalid_ec_tax_code,
+        "nav": nav,
+        "iuv": notice_number,
         **rtp_data
     }
-
+    
     response = send_producer_gpd_message(payload)
-    assert response.status_code in [400, 422], f"Expected error status for invalid payee: {response.status_code}, {response.text}"
-
+    assert response.status_code in [400, 422], f"Expected error status for invalid payee_id: {response.status_code}, {response.text}"
+    
     access_token = _get_rtp_reader_access_token()
-
+    
     start_time = time.time()
     max_polling_time = TEST_TIMEOUT_SEC - 30
-
+    
     while time.time() - start_time < max_polling_time:
         response = get_rtp_by_notice_number(access_token, nav)
-
+        
         if response.status_code != 200 and response.status_code != 404:
             raise RuntimeError(
                 f"Error calling find_rtp_by_notice_number API. "
                 f"Response {response.status_code}. Notice number: {nav}"
             )
-
+        
         if response.status_code == 404:
             break
-
+            
         data = response.json()
         assert isinstance(data, list), 'Invalid response body.'
-
+        
         if len(data) > 0:
-            pytest.fail(f"RTP should not be created for invalid payee: {data}")
-
+            pytest.fail(f"RTP should not be created for invalid payee_id: {data}")
+        
         time.sleep(POLLING_RATE_SEC)
