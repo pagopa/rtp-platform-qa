@@ -12,6 +12,7 @@ from api.producer_gpd_message import send_producer_gpd_message
 from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import generate_rtp_data
+from utils.generators import generate_notice_number
 from utils.producer_gpp_dataset import generate_producer_gpd_message_payload
 
 TEST_TIMEOUT_SEC = config.test_timeout_sec
@@ -85,7 +86,6 @@ def test_send_producer_gpd_message_invalid_payee():
     elif 'notice_number' in rtp_data:
         nav = f"3{rtp_data['notice_number']}"
     else:
-        from utils.generators import generate_notice_number
         notice_number = generate_notice_number()
         nav = f"3{notice_number}"
         rtp_data['notice_number'] = notice_number
