@@ -1,5 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","3483","RTP form is filled and submitted","tests","Tue Sep 02 07:31:50 GMT 2025","passed","Tue Sep 02 07:31:53 GMT 2025","","test_cancel","",""
-"","739","Whitespaces is allowed in description and company name field","tests","Tue Sep 02 07:31:57 GMT 2025","passed","Tue Sep 02 07:31:58 GMT 2025","","test_submission","",""
-"","2171","RTP form cancellation test","tests","Tue Sep 02 07:31:53 GMT 2025","passed","Tue Sep 02 07:31:56 GMT 2025","","test_cancel","",""
-"","1759","RTP form is filled and submitted","tests","Tue Sep 02 07:31:56 GMT 2025","passed","Tue Sep 02 07:31:57 GMT 2025","","test_submission","",""
