@@ -112,11 +112,18 @@ def test_send_producer_gpd_messages_with_timestamps():
     common_nav = f"3{common_notice_number}"
 
     t1 = int(datetime.now(timezone.utc).timestamp() * 1000)
-    payload_t1 = generate_producer_gpd_message_payload({
-        'timestamp': t1,
-        'iuv': common_iuv,
-        'nav': common_nav
-    })
+    
+    payload_t1 = generate_producer_gpd_message_payload(
+        operation='CREATE',
+        ec_tax_code='80015010723',
+        amount=30000, 
+        status='VALID',
+        overrides={
+            'timestamp': t1,
+            'iuv': common_iuv,
+            'nav': common_nav
+        }
+    )
 
     response_t1 = _send_message_with_retry(payload_t1, 'first')
     body_t1 = response_t1.json()
@@ -126,11 +133,18 @@ def test_send_producer_gpd_messages_with_timestamps():
 
     t2_offset = 5000
     t1_minus_t2 = t1 - t2_offset
-    payload_t1_minus_t2 = generate_producer_gpd_message_payload({
-        'timestamp': t1_minus_t2,
-        'iuv': common_iuv,
-        'nav': common_nav
-    })
+    
+    payload_t1_minus_t2 = generate_producer_gpd_message_payload(
+        operation='CREATE',
+        ec_tax_code='80015010723',
+        amount=30000, 
+        status='VALID',
+        overrides={
+            'timestamp': t1_minus_t2,
+            'iuv': common_iuv,
+            'nav': common_nav
+        }
+    )
 
     response_t1_minus_t2 = _send_message_with_retry(payload_t1_minus_t2, 'second')
     print(f"Response second message: Status {response_t1_minus_t2.status_code}, Body: {response_t1_minus_t2.text}")
