@@ -11,6 +11,6 @@ def send_producer_gpd_message(payload: dict, validate: bool = True):
     :rtype: requests.Response
     """
     url = f"{config.producer_gpd_message_base_url}/send/gpd/message"
-    params = {'validate': 'true' if validate else 'false'}
+    params = {'validate': str(validate).lower()}
     headers = {'Content-Type': 'application/json'}
     return requests.post(url, json=payload, headers=headers, timeout=config.default_timeout)
