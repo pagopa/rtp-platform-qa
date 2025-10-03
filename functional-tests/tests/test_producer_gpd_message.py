@@ -21,7 +21,6 @@ from utils.producer_gpp_dataset import generate_producer_gpd_message_payload
 TEST_TIMEOUT_SEC = config.test_timeout_sec
 POLLING_RATE_SEC = 30
 
-
 @allure.feature('GPD Message')
 @allure.story('Send GPD message to queue')
 @allure.title('Send two GPD messages with timestamps T1 and T1-T2')
@@ -31,8 +30,7 @@ def test_send_producer_gpd_messages_with_timestamps():
     debtor_fc = activate_new_debtor()
 
     common_iuv = ''.join('12345678901234567')
-    common_notice_number = generate_notice_number()
-    common_nav = f"3{common_notice_number}"
+    common_nav = f"3{common_iuv}"
 
     t1 = int(datetime.now(timezone.utc).timestamp() * 1000)
 
@@ -80,8 +78,6 @@ def test_send_producer_gpd_messages_with_timestamps():
 
     assert not second_message_processed, 'The second message with the previous timestamp should not be processed'
     print('Test completed successfully: the message with the previous timestamp has been correctly discarded')
-
-
 
 
 @allure.feature('GPD Message')
@@ -158,6 +154,7 @@ def test_send_producer_gpd_message_invalid_registry_payee():
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_send_producer_gpd_message_valid_registry_payee():
+    
     debtor_fc = activate_new_debtor()
 
     payee_registry_token = get_valid_access_token(
