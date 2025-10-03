@@ -117,9 +117,24 @@ def get_rtp_reader_access_token() -> str:
     return access_token
 
 
-def activate_new_debtor() -> str:
+def generate_fiscal_code() -> str:
     """
-    Generate a new fiscal code and activate it with the debtor service provider.
+    Generate a new random fiscal code using the faker library.
+
+    Returns:
+        str: A new randomly generated fiscal code
+    """
+    debtor_fc = fake_fc()
+    print(f"Generated new fiscal code: {debtor_fc}")
+    return debtor_fc
+
+
+def activate_debtor(fiscal_code: str) -> str:
+    """
+    Activate a given fiscal code with the debtor service provider.
+
+    Args:
+        fiscal_code (str): The fiscal code to activate
 
     Returns:
         str: The activated fiscal code
@@ -133,15 +148,27 @@ def activate_new_debtor() -> str:
         access_token_function=get_access_token,
     )
 
-    debtor_fc = fake_fc()
-    print(f"Generated new fiscal code: {debtor_fc}")
-
     activation_response = activate(
         debtor_service_provider_token,
-        debtor_fc,
+        fiscal_code,
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201, f"Failed to activate debtor: {activation_response.status_code}, {activation_response.text}"
-    print(f"Successfully activated debtor with fiscal code: {debtor_fc}")
+    print(f"Successfully activated debtor with fiscal code: {fiscal_code}")
 
-    return debtor_fc
+    return fiscal_code
+
+
+def activate_new_debtor() -> str:
+    """
+    Generate a new fiscal code and activate it with the debtor service provider.
+    This is a convenience function that combines generate_fiscal_code() and activate_debtor().
+
+    Returns:
+        str: The activated fiscal code
+
+    Raises:
+        AssertionError: If activation fails
+    """
+    fiscal_code = generate_fiscal_code()
+    return activate_debtor(fiscal_code)
