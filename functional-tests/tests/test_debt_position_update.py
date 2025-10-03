@@ -34,7 +34,7 @@ from utils.dataset import create_debt_position_payload
 from utils.dataset import create_debt_position_update_payload
 from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
-from utils.dataset import generate_iuv
+from utils.generators import generate_iuv
 
 
 TEST_TIMEOUT_SEC = config.test_timeout_sec
