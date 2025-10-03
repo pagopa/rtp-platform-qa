@@ -57,6 +57,6 @@ def generate_iuv():
     Generate a unique IUV (Identificativo Univoco Versamento).
 
     Returns:
-        str: A random 18-digit number as string
+        str: A random 17-digit number as string
     """
     return ''.join(random.choices('0123456789', k=17))
