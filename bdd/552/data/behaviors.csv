@@ -1,0 +1,5 @@
+"BROKEN","EPIC","FAILED","FEATURE","PASSED","SKIPPED","STORY","UNKNOWN"
+"3","","0","A Creditor Service Provider can cancel a Request to Pay","0","0","","0"
+"4","","0","A Creditor Service Provider sends an RTP through API","0","0","","0"
+"2","","1","A Debtor Service Providers activates a debtor","0","0","","0"
+"0","","0","A Creditor Service Provider sends an RTP through web page","1","0","","0"
