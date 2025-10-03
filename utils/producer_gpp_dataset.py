@@ -38,8 +38,8 @@ def generate_producer_gpd_message_payload(
         'timestamp': int(datetime.now(timezone.utc).timestamp() * 1000),
         'iuv': generate_random_digits(17),
         'subject': generate_random_description(),
-        'description': 'Canone Unico Patrimoniale - CORPORATE - TEST',
-        'debtor_tax_code': 'NPAPRL01D01X000Q',
+        'description': generate_random_description(),
+        'debtor_tax_code': None,
         'nav': None,
         'due_date': int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp() * 1000),
         'psp_code': None, # max 50

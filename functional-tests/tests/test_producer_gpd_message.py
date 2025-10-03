@@ -7,6 +7,7 @@ import pytest
 
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
+from api.activation import activate
 from api.get_rtp import get_rtp_by_notice_number
 from api.payee_registry import get_payee_registry
 from api.producer_gpd_message import send_producer_gpd_message
@@ -15,6 +16,7 @@ from config.configuration import secrets
 from utils.dataset import generate_rtp_data
 from utils.generators import generate_notice_number
 from utils.producer_gpp_dataset import generate_producer_gpd_message_payload
+from utils.fiscal_code_utils import fake_fc 
 
 TEST_TIMEOUT_SEC = config.test_timeout_sec
 POLLING_RATE_SEC = 30
@@ -101,12 +103,44 @@ def _get_rtp_reader_access_token() -> str:
     return access_token
 
 
+def _activate_new_debtor() -> str:
+    """
+    Generate a new fiscal code and activate it with the debtor service provider.
+    
+    Returns:
+        str: The activated fiscal code
+        
+    Raises:
+        AssertionError: If activation fails
+    """
+    debtor_service_provider_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token,
+    )
+    
+    debtor_fc = fake_fc()
+    print(f"Generated new fiscal code: {debtor_fc}")
+    
+    activation_response = activate(
+        debtor_service_provider_token,
+        debtor_fc,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code == 201, f"Failed to activate debtor: {activation_response.status_code}, {activation_response.text}"
+    print(f"Successfully activated debtor with fiscal code: {debtor_fc}")
+    
+    return debtor_fc
+
+
 @allure.feature('GPD Message')
 @allure.story('Send GPD message to queue')
 @allure.title('Send two GPD messages with timestamps T1 and T1-T2')
 @pytest.mark.producer_gpd_message
 @pytest.mark.happy_path
 def test_send_producer_gpd_messages_with_timestamps():
+    debtor_fc = _activate_new_debtor()
+    
     common_iuv = ''.join('12345678901234567')
     common_notice_number = generate_notice_number()
     common_nav = f"3{common_notice_number}"
@@ -121,7 +155,8 @@ def test_send_producer_gpd_messages_with_timestamps():
         overrides={
             'timestamp': t1,
             'iuv': common_iuv,
-            'nav': common_nav
+            'nav': common_nav,
+            'debtor_tax_code': debtor_fc
         }
     )
 
@@ -142,7 +177,8 @@ def test_send_producer_gpd_messages_with_timestamps():
         overrides={
             'timestamp': t1_minus_t2,
             'iuv': common_iuv,
-            'nav': common_nav
+            'nav': common_nav,
+            'debtor_tax_code': debtor_fc
         }
     )
 
@@ -165,11 +201,12 @@ def test_send_producer_gpd_messages_with_timestamps():
 @pytest.mark.producer_gpd_message
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
-def test_send_producer_gpd_message_invalid_payee():
+def test_send_producer_gpd_message_invalid_registry_payee():
+    debtor_fc = _activate_new_debtor()
 
-    invalid_payee_id = '80015010728' # length = 11 || 16
+    invalid_payee_id = '80015060728' # length = 11 || 16
 
-    common_iuv = '12445678901234067'
+    common_iuv = '12445678901294067'
     common_nav = f"3{common_iuv}"
 
     timestamp = 1768442371790
@@ -182,7 +219,8 @@ def test_send_producer_gpd_message_invalid_payee():
         overrides={
             'iuv': common_iuv,
             'nav': common_nav,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'debtor_tax_code': debtor_fc
         }
     )
 
@@ -231,15 +269,16 @@ def test_send_producer_gpd_message_invalid_payee():
 @pytest.mark.producer_gpd_message
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
-def test_send_producer_gpd_message_registry_payee():
+def test_send_producer_gpd_message_valid_registry_payee():
+    debtor_fc = _activate_new_debtor()
 
-    access_token = get_valid_access_token(
+    payee_registry_token = get_valid_access_token(
         client_id=secrets.pagopa_integration_payee_registry.client_id,
         client_secret=secrets.pagopa_integration_payee_registry.client_secret,
         access_token_function=get_access_token
     )
-
-    payee_response = get_payee_registry(access_token)
+    
+    payee_response = get_payee_registry(payee_registry_token)
     assert payee_response.status_code == 200, f"Failed to get payees: {payee_response.text}"
 
     payees_data = payee_response.json()
@@ -273,11 +312,12 @@ def test_send_producer_gpd_message_registry_payee():
         overrides={
             'iuv': common_iuv,
             'nav': common_nav,
-            'timestamp': timestamp
+            'timestamp': timestamp,
+            'debtor_tax_code': debtor_fc
         }
     )
 
-    print(f"Sending payload with payee ID: {registry_payee_id}")
+    print(f"Sending payload with payee ID: {registry_payee_id} and debtor fiscal code: {debtor_fc}")
     response = _send_message_with_retry(payload, 'registry_payee')
     assert response.status_code == 200, f"Failed to send GPD message: {response.status_code}, {response.text}"
     body = response.json()
