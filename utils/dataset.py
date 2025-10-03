@@ -12,6 +12,7 @@ from .datetime_utils import generate_execution_date
 from .datetime_utils import generate_expiry_date
 from .datetime_utils import generate_future_time
 from .fiscal_code_utils import fake_fc
+from .generators import generate_iuv
 from .generators import generate_notice_number
 from .generators import generate_random_digits
 from .generators import generate_random_organization_id
@@ -366,15 +367,6 @@ def generate_iupd():
         str: A unique identifier using UUID4 in hexadecimal format
     """
     return uuid.uuid4().hex[:17]
-
-def generate_iuv():
-    """
-    Generate a unique IUV (Identificativo Univoco Versamento).
-
-    Returns:
-        str: A random 18-digit number as string
-    """
-    return ''.join(random.choices('0123456789', k=17))
 
 def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
     """

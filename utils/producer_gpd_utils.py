@@ -1,9 +1,10 @@
 import time
+
 import pytest
 
+from api.activation import activate
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
-from api.activation import activate
 from api.get_rtp import get_rtp_by_notice_number
 from api.producer_gpd_message import send_producer_gpd_message
 from config.configuration import secrets
@@ -12,16 +13,16 @@ from utils.fiscal_code_utils import fake_fc
 
 def send_message_with_retry(payload, message_label='', max_retries=3, retry_delay=5):
     """Helper function to send a GPD message with retry mechanism.
-    
+
     Args:
         payload (dict): The message payload to send
         message_label (str): A label for the message for logging purposes
         max_retries (int): Maximum number of retry attempts
         retry_delay (int): Seconds to wait between retry attempts
-        
+
     Returns:
         requests.Response: The API response if successful
-        
+
     Raises:
         AssertionError: If all retries fail
     """
@@ -51,13 +52,13 @@ def send_message_with_retry(payload, message_label='', max_retries=3, retry_dela
 
 def verify_message_processing(access_token, nav, max_polling_time, polling_rate_sec=30):
     """Helper function to verify message processing status.
-    
+
     Args:
         access_token (str): The access token for RTP API
         nav (str): Notice Number to query
         max_polling_time (int): Maximum time to poll in seconds
         polling_rate_sec (int): Polling interval in seconds
-        
+
     Returns:
         bool: True if second message was processed, False otherwise
     """
@@ -119,10 +120,10 @@ def get_rtp_reader_access_token() -> str:
 def activate_new_debtor() -> str:
     """
     Generate a new fiscal code and activate it with the debtor service provider.
-    
+
     Returns:
         str: The activated fiscal code
-        
+
     Raises:
         AssertionError: If activation fails
     """
@@ -131,10 +132,10 @@ def activate_new_debtor() -> str:
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token,
     )
-    
+
     debtor_fc = fake_fc()
     print(f"Generated new fiscal code: {debtor_fc}")
-    
+
     activation_response = activate(
         debtor_service_provider_token,
         debtor_fc,
@@ -142,5 +143,5 @@ def activate_new_debtor() -> str:
     )
     assert activation_response.status_code == 201, f"Failed to activate debtor: {activation_response.status_code}, {activation_response.text}"
     print(f"Successfully activated debtor with fiscal code: {debtor_fc}")
-    
+
     return debtor_fc

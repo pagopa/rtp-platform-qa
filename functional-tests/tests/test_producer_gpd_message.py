@@ -11,7 +11,7 @@ from api.get_rtp import get_rtp_by_notice_number
 from api.payee_registry import get_payee_registry
 from config.configuration import config
 from config.configuration import secrets
-from utils.generators import generate_notice_number
+from utils.generators import generate_iuv
 from utils.producer_gpd_utils import activate_new_debtor
 from utils.producer_gpd_utils import get_rtp_reader_access_token
 from utils.producer_gpd_utils import send_message_with_retry
@@ -29,7 +29,7 @@ POLLING_RATE_SEC = 30
 def test_send_producer_gpd_messages_with_timestamps():
     debtor_fc = activate_new_debtor()
 
-    common_iuv = ''.join('12345678901234567')
+    common_iuv = generate_iuv()
     common_nav = f"3{common_iuv}"
 
     t1 = int(datetime.now(timezone.utc).timestamp() * 1000)
@@ -134,7 +134,6 @@ def test_send_producer_gpd_message_invalid_registry_payee():
             assert isinstance(data, list), 'Invalid response body.'
 
             if len(data) > 0:
-                print(f"RTP found after {int(time.time() - start_time)} seconds")
                 rtp_found = True
 
                 break
@@ -154,7 +153,7 @@ def test_send_producer_gpd_message_invalid_registry_payee():
 @pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_send_producer_gpd_message_valid_registry_payee():
-    
+
     debtor_fc = activate_new_debtor()
 
     payee_registry_token = get_valid_access_token(
@@ -175,19 +174,15 @@ def test_send_producer_gpd_message_valid_registry_payee():
     for payee in registry_payees:
         if payee['payeeId'] == '80015010723':
             registry_payee_id = payee['payeeId']
-            print(f"Found known working payee ID in registry: {registry_payee_id}")
             break
 
     if not registry_payee_id:
         registry_payee_id = registry_payees[0]['payeeId']
-        print(f"Using first payee ID from registry: {registry_payee_id}")
 
     common_iuv = '12445678901234067'
     common_nav = f"3{common_iuv}"
-    print(f"Generated NAV: {common_nav}")
 
     timestamp = 1768442371790 + 10000000
-    print(f"Using timestamp: {timestamp}")
 
     payload = generate_producer_gpd_message_payload(
         operation='CREATE',
@@ -202,7 +197,6 @@ def test_send_producer_gpd_message_valid_registry_payee():
         }
     )
 
-    print(f"Sending payload with payee ID: {registry_payee_id} and debtor fiscal code: {debtor_fc}")
     response = send_message_with_retry(payload, 'registry_payee')
     assert response.status_code == 200, f"Failed to send GPD message: {response.status_code}, {response.text}"
     body = response.json()
@@ -216,14 +210,9 @@ def test_send_producer_gpd_message_valid_registry_payee():
     max_polling_time = TEST_TIMEOUT_SEC - 30
     rtp_found = False
 
-    print(f"Polling for RTP creation with nav={common_nav}...")
-
     while time.time() - start_time < max_polling_time:
-        elapsed = int(time.time() - start_time)
-        print(f"Polling attempt at {elapsed}s...")
 
         response = get_rtp_by_notice_number(reader_token, common_nav)
-        print(f"Response status: {response.status_code}")
 
         if response.status_code != 200 and response.status_code != 404:
             raise RuntimeError(
@@ -233,17 +222,12 @@ def test_send_producer_gpd_message_valid_registry_payee():
 
         if response.status_code == 200:
             data = response.json()
-            print(f"Response data length: {len(data)}")
             assert isinstance(data, list), 'Invalid response body.'
 
             if len(data) > 0:
-                print(f"RTP found after {elapsed} seconds")
                 rtp_found = True
 
                 rtp = data[0]
-                print(f"RTP status: {rtp.get('status', 'NO STATUS')}")
-                print(f"RTP notice number: {rtp['noticeNumber']}")
-                print(f"RTP payee ID: {rtp['payeeId']}")
 
                 assert rtp['payeeId'] == registry_payee_id, f"Unexpected payee ID: {rtp['payeeId']}"
                 assert rtp['noticeNumber'] == common_nav, f"Unexpected notice number: {rtp['noticeNumber']}"
