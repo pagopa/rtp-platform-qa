@@ -11,9 +11,9 @@ from .text_utils import generate_random_description
 fake = Faker('it_IT')
 
 def generate_producer_gpd_message_payload(
-    operation='CREATE', 
-    ec_tax_code='80015010723', 
-    amount=30000, 
+    operation='CREATE',
+    ec_tax_code='80015010723',
+    amount=30000,
     status='VALID',
     overrides=None
 ):
@@ -38,12 +38,12 @@ def generate_producer_gpd_message_payload(
         'timestamp': int(datetime.now(timezone.utc).timestamp() * 1000),
         'iuv': generate_random_digits(17),
         'subject': generate_random_description(),
-        'description': generate_random_description(),
-        'debtor_tax_code': fake_fc(),
+        'description': 'Canone Unico Patrimoniale - CORPORATE - TEST',
+        'debtor_tax_code': 'NPAPRL01D01X000Q',
         'nav': None,
         'due_date': int((datetime.now(timezone.utc) + timedelta(days=30)).timestamp() * 1000),
-        'psp_code': None,
-        'psp_tax_code': None
+        'psp_code': None, # max 50
+        'psp_tax_code': None # max 50
     }
 
     payload = {**defaults, **overrides}

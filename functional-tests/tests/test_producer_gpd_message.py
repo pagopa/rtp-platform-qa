@@ -8,6 +8,7 @@ import pytest
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from api.get_rtp import get_rtp_by_notice_number
+from api.payee_registry import get_payee_registry
 from api.producer_gpd_message import send_producer_gpd_message
 from config.configuration import config
 from config.configuration import secrets
@@ -40,8 +41,6 @@ def _send_message_with_retry(payload, message_label='', max_retries=3, retry_del
             if attempt < max_retries - 1:
                 print(f"Error sending: {str(e)}. Retrying in {retry_delay} seconds...")
                 time.sleep(retry_delay)
-            else:
-                raise
 
     pytest.fail(f"Failed to send {message_label} message after {max_retries} attempts")
 
@@ -113,11 +112,11 @@ def test_send_producer_gpd_messages_with_timestamps():
     common_nav = f"3{common_notice_number}"
 
     t1 = int(datetime.now(timezone.utc).timestamp() * 1000)
-    
+
     payload_t1 = generate_producer_gpd_message_payload(
         operation='CREATE',
         ec_tax_code='80015010723',
-        amount=30000, 
+        amount=30000,
         status='VALID',
         overrides={
             'timestamp': t1,
@@ -134,11 +133,11 @@ def test_send_producer_gpd_messages_with_timestamps():
 
     t2_offset = 5000
     t1_minus_t2 = t1 - t2_offset
-    
+
     payload_t1_minus_t2 = generate_producer_gpd_message_payload(
         operation='CREATE',
         ec_tax_code='80015010723',
-        amount=30000, 
+        amount=30000,
         status='VALID',
         overrides={
             'timestamp': t1_minus_t2,
@@ -158,51 +157,175 @@ def test_send_producer_gpd_messages_with_timestamps():
     print('Test completed successfully: the message with the previous timestamp has been correctly discarded')
 
 
-@allure.feature('Producer Message')
-@allure.story('Send producer message with invalid payee')
-@allure.title('Send message with invalid payee_id and verify rejection and no RTP creation')
+
+
+@allure.feature('GPD Message')
+@allure.story('Send GPD message to queue with invalid payee')
+@allure.title('Send GPD message with invalid payee_id and verify no RTP is created')
 @pytest.mark.producer_gpd_message
-@pytest.mark.unhappy_path
+@pytest.mark.happy_path
 @pytest.mark.timeout(TEST_TIMEOUT_SEC)
 def test_send_producer_gpd_message_invalid_payee():
-    invalid_ec_tax_code = "INVLD12345X987Y"
-    
-    notice_number = generate_notice_number()
-    nav = f"3{notice_number}"
-    
-    rtp_data = generate_rtp_data()
-    
-    payload = {
-        "ec_tax_code": invalid_ec_tax_code,
-        "nav": nav,
-        "iuv": notice_number,
-        **rtp_data
-    }
-    
-    response = send_producer_gpd_message(payload)
-    assert response.status_code in [400, 422], f"Expected error status for invalid payee_id: {response.status_code}, {response.text}"
-    
-    access_token = _get_rtp_reader_access_token()
-    
+
+    invalid_payee_id = '80015010728' # length = 11 || 16
+
+    common_iuv = '12445678901234067'
+    common_nav = f"3{common_iuv}"
+
+    timestamp = 1768442371790
+
+    payload = generate_producer_gpd_message_payload(
+        operation='CREATE',
+        ec_tax_code=invalid_payee_id,
+        amount=30000,
+        status='VALID',
+        overrides={
+            'iuv': common_iuv,
+            'nav': common_nav,
+            'timestamp': timestamp
+        }
+    )
+
+    response = _send_message_with_retry(payload, 'valid_payee')
+    assert response.status_code == 200, f"Failed to send GPD message: {response.status_code}, {response.text}"
+    body = response.json()
+    assert body.get('status') == 'success', f"Unexpected response: {body}"
+
+    reader_token = _get_rtp_reader_access_token()
+
     start_time = time.time()
     max_polling_time = TEST_TIMEOUT_SEC - 30
-    
+    rtp_found = False
+
+
     while time.time() - start_time < max_polling_time:
-        response = get_rtp_by_notice_number(access_token, nav)
-        
+        response = get_rtp_by_notice_number(reader_token, common_nav)
+
         if response.status_code != 200 and response.status_code != 404:
             raise RuntimeError(
                 f"Error calling find_rtp_by_notice_number API. "
-                f"Response {response.status_code}. Notice number: {nav}"
+                f"Response {response.status_code}. Notice number: {common_nav}"
             )
-        
-        if response.status_code == 404:
-            break
-            
-        data = response.json()
-        assert isinstance(data, list), 'Invalid response body.'
-        
-        if len(data) > 0:
-            pytest.fail(f"RTP should not be created for invalid payee_id: {data}")
-        
+
+        if response.status_code == 200:
+            data = response.json()
+            assert isinstance(data, list), 'Invalid response body.'
+
+            if len(data) > 0:
+                print(f"RTP found after {int(time.time() - start_time)} seconds")
+                rtp_found = True
+
+                break
+
         time.sleep(POLLING_RATE_SEC)
+
+    assert not rtp_found, 'RTP was unexpectedly created with an invalid payee ID'
+
+    if not rtp_found:
+        print('Test completed successfully: no RTP was created with invalid payee ID')
+
+
+@allure.feature('GPD Message')
+@allure.story('Send GPD message to queue with valid payee from registry')
+@allure.title('Send GPD message with registry payee_id and verify RTP creation')
+@pytest.mark.producer_gpd_message
+@pytest.mark.happy_path
+@pytest.mark.timeout(TEST_TIMEOUT_SEC)
+def test_send_producer_gpd_message_registry_payee():
+
+    access_token = get_valid_access_token(
+        client_id=secrets.pagopa_integration_payee_registry.client_id,
+        client_secret=secrets.pagopa_integration_payee_registry.client_secret,
+        access_token_function=get_access_token
+    )
+
+    payee_response = get_payee_registry(access_token)
+    assert payee_response.status_code == 200, f"Failed to get payees: {payee_response.text}"
+
+    payees_data = payee_response.json()
+    assert 'payees' in payees_data and len(payees_data['payees']) > 0, 'No payees found in registry'
+
+    registry_payees = payees_data['payees']
+    registry_payee_id = None
+
+    for payee in registry_payees:
+        if payee['payeeId'] == '80015010723':
+            registry_payee_id = payee['payeeId']
+            print(f"Found known working payee ID in registry: {registry_payee_id}")
+            break
+
+    if not registry_payee_id:
+        registry_payee_id = registry_payees[0]['payeeId']
+        print(f"Using first payee ID from registry: {registry_payee_id}")
+
+    common_iuv = '12445678901234067'
+    common_nav = f"3{common_iuv}"
+    print(f"Generated NAV: {common_nav}")
+
+    timestamp = 1768442371790 + 10000000
+    print(f"Using timestamp: {timestamp}")
+
+    payload = generate_producer_gpd_message_payload(
+        operation='CREATE',
+        ec_tax_code=registry_payee_id,
+        amount=30000,
+        status='VALID',
+        overrides={
+            'iuv': common_iuv,
+            'nav': common_nav,
+            'timestamp': timestamp
+        }
+    )
+
+    print(f"Sending payload with payee ID: {registry_payee_id}")
+    response = _send_message_with_retry(payload, 'registry_payee')
+    assert response.status_code == 200, f"Failed to send GPD message: {response.status_code}, {response.text}"
+    body = response.json()
+    assert body.get('status') == 'success', f"Unexpected response: {body}"
+
+    reader_token = _get_rtp_reader_access_token()
+
+    polling_interval = 10
+
+    start_time = time.time()
+    max_polling_time = TEST_TIMEOUT_SEC - 30
+    rtp_found = False
+
+    print(f"Polling for RTP creation with nav={common_nav}...")
+
+    while time.time() - start_time < max_polling_time:
+        elapsed = int(time.time() - start_time)
+        print(f"Polling attempt at {elapsed}s...")
+
+        response = get_rtp_by_notice_number(reader_token, common_nav)
+        print(f"Response status: {response.status_code}")
+
+        if response.status_code != 200 and response.status_code != 404:
+            raise RuntimeError(
+                f"Error calling find_rtp_by_notice_number API. "
+                f"Response {response.status_code}. Notice number: {common_nav}"
+            )
+
+        if response.status_code == 200:
+            data = response.json()
+            print(f"Response data length: {len(data)}")
+            assert isinstance(data, list), 'Invalid response body.'
+
+            if len(data) > 0:
+                print(f"RTP found after {elapsed} seconds")
+                rtp_found = True
+
+                rtp = data[0]
+                print(f"RTP status: {rtp.get('status', 'NO STATUS')}")
+                print(f"RTP notice number: {rtp['noticeNumber']}")
+                print(f"RTP payee ID: {rtp['payeeId']}")
+
+                assert rtp['payeeId'] == registry_payee_id, f"Unexpected payee ID: {rtp['payeeId']}"
+                assert rtp['noticeNumber'] == common_nav, f"Unexpected notice number: {rtp['noticeNumber']}"
+
+                break
+
+        time.sleep(polling_interval)
+
+    assert rtp_found, f"RTP was not created within the timeout period ({max_polling_time} seconds)"
+    print('Test completed successfully: RTP was properly created with registry payee ID')
