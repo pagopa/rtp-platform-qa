@@ -238,4 +238,4 @@ def test_cannot_send_rtp_not_activated_user():
     send_response = send_rtp(
         access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
     )
-    assert send_response.status_code == 422
+    assert send_response.status_code == 404
