@@ -39,6 +39,10 @@ install-performance:
 install-contract:
 	pip install -e .[contract-tests]
 
+install-end-to-end:
+	@echo "Installing end-to-end test extras..."
+	pip install -e .[end-to-end-tests] || true
+
 test-functional:
 	pytest functional-tests/tests/ -q
 
@@ -50,6 +54,11 @@ test-ux:
 
 test-contract:
 	pytest contract-tests/ -q
+
+test-end-to-end:
+	@# ensure .env present if required
+	@make check-env || true
+	pytest end-to-end-test/tests/ -q --maxfail=1
 
 precommit:
 	pre-commit run --all-files

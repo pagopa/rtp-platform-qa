@@ -55,26 +55,49 @@ dev = [
   "uvicorn[standard]",
 ]
 
+end-to-end-tests = [
+  "pytest==8.4.1",
+  "pytest-timeout>=2.2",
+  "requests>=2.31",
+  "faker==22.5.1",
+  "allure-pytest>=2.13",
+]
+
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = [
   "functional-tests/tests",
   "contract-tests",
   "ux-tests/tests",
+  "end-to-end-test/tests",
 ]
 pythonpath = [
   ".",
 ]
 markers = [
-  "happy_path: happy path tests",
-  "send: RTP send tests",
-  "callback: callback tests",
-  "landing_page: landing page reachability",
-  "real_integration: tests hitting real external services",
+  "use_case: ID of the use case",
+  "happy_path: Tests when things goes right",
+  "unhappy_path: Tests when things goes wrong",
+  "need_fix: tests that fails and need a fix",
+  "landing_page: tests on dummy landing page",
+  "auth: tests on authentication service",
+  "activation: tests on activation service",
+  "send: Tests for RTP send",
   "cbi: CBI specific tests",
   "poste: Poste specific tests",
-  "debt_positions: debt position tests",
-  "timeout: long-running tests",
+  "get: mark tests that exercise GET endpoints",
+  "callback: mark tests that exercise callback endpoints",
+  "real_integration: mark tests that are real integration tests",
+  "iccrea: tests on ICCREA service",
+  "cancel: mark tests that exercise cancel endpoints",
+  "deactivation: mark tests that exercise deactivation endpoints",
+  "mock: mark tests that use mock services",
+  "debt_positions: mark tests that exercise debt positions endpoints",
+  "producer_gpd_message: mark tests that exercise GPD message producer endpoints",
+  "timeout: Tests with timeouts",
+  "use_case: ID of the use case",
+  "need_fix: tests that fails and need a fix",
+  "landing_page: tests on dummy landing page",
 ]
 
 [tool.hatch.build.targets.wheel]

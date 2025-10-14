@@ -559,3 +559,24 @@ jobs:
     with:
       THRESHOLD: 20
     secrets: inherit
+
+  EndToEnd_Tests:
+    runs-on: ubuntu-latest
+    name: End-to-End (flaky)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install deps and tools
+        run: |
+          python -m pip install --upgrade pip
+          bash ./install-requirements.sh
+
+      - name: Run end-to-end tests
+        run: |
+          make test-end-to-end
