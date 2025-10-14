@@ -501,7 +501,7 @@ jobs:
   Aggregate_Results:
     runs-on: ubuntu-latest
     environment: uat
-    needs: [EndToEnd_Tests]
+    needs: EndToEnd_Tests
     if: always() && github.ref == 'refs/heads/main'
     steps:
       - name: Copy functional results
