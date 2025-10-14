@@ -48,10 +48,9 @@ jobs:
           python-version: 3.x
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r functional-tests/requirements.txt
-          pip install -e .
+          python -m pip install --upgrade pip
+          # Install core + functional extras from pyproject
+          pip install -e ".[functional-tests]"
       - name: Run functional tests
         if: always()
         continue-on-error: true
@@ -148,10 +147,8 @@ jobs:
           python-version: 3.x
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r bdd-tests/requirements.txt
-          pip install -e .
+          python -m pip install --upgrade pip
+          pip install -e ".[bdd-tests]"
       - name: Run BDD tests
         if: always()
         continue-on-error: true
@@ -248,13 +245,12 @@ jobs:
           python-version: 3.x
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install playwright
-          pip install pytest-playwright
+          python -m pip install --upgrade pip
+          pip install -e ".[ux-tests]"
+          # Playwright still needs browsers installed
+          pip install playwright pytest-playwright
           playwright install-deps
           playwright install
-          pip install -e .
       - name: Run UX tests
         if: always()
         continue-on-error: true
@@ -350,10 +346,9 @@ jobs:
           python-version: 3.x
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r performance-tests/requirements.txt
-          pip install -e .
+          python -m pip install --upgrade pip
+          # If your performance tests need Python deps (eg. locust), add them to pyproject extras.
+          pip install -e ".[performance-tests]" || true
       - name: Run Performance tests
         if: always()
         continue-on-error: true
@@ -415,10 +410,8 @@ jobs:
           python-version: 3.x
       - name: Install dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -r contract-tests/requirements.txt
-          pip install -e .
+          python -m pip install --upgrade pip
+          pip install -e ".[contract-tests]"
       - name: Run contract tests
         if: always()
         continue-on-error: true
