@@ -5,7 +5,7 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 6 * * *'  # Scheduled every day at 01:00 UTC
+    - cron: '0 6 * * *'  # Scheduled every day at 06:00 UTC
   workflow_dispatch: # Allows manual run
     inputs:
       Functional:
