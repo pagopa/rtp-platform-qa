@@ -1,7 +1,7 @@
 # RTP Platform Quality Assurance Repository
 
 This repository contains a comprehensive set of tests for various aspects of the RTP platform, including functional
-tests, BDD tests, UX tests, performance tests and fuzz tests. These tests are implemented using Python and appropriate
+tests, BDD tests, UX tests, performance tests, contract tests, and end-to-end tests. These tests are implemented using Python and appropriate
 libraries for each type of testing.
 
 ## Table of Contents
@@ -12,7 +12,8 @@ libraries for each type of testing.
     - [BDD Tests](#bdd-tests)
     - [UX Tests](#ux-tests)
     - [Performance Tests](#performance-tests)
-    - [Fuzz Tests](#fuzz-tests)
+    - [Contract Tests](#contract-tests)
+    - [End-to-End Tests](#end-to-end-tests)
 
 ## Setup
 
@@ -26,7 +27,6 @@ cd platform-testing-repo
 ### 2. Get secrets
 
 Obtain `secrets.yaml` file (based on `config/secrets_template.yaml`) from admins and place it under `config/`.
-
 
 ### 3. Create a virtual environment
 
@@ -50,13 +50,7 @@ It's recommended to use a virtual environment to manage dependencies.
   pip install --upgrade pip
   ```
 
-3. Install local packages:
-
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-4. Install common dependencies:
+4. Install local packages:
 
   ```bash
   pip install -e .
@@ -64,37 +58,42 @@ It's recommended to use a virtual environment to manage dependencies.
 
 ### 4. Install specific dependencies for test type
 
-Each test type has its own requirements.txt file. You can install dependencies for individual test types using the
-following commands:
+Dependencies are managed via `pyproject.toml` extras. Use the Makefile for installation:
 
 #### Functional Tests:
 
 ```bash
-pip install -r functional-tests/requirements.txt
+make install-functional
 ```
 
 #### BDD Tests:
 
 ```bash
-pip install -r bdd-tests/requirements.txt
+make install-bdd
 ```
 
 #### UX Tests:
 
 ```bash
-pip install -r ux-tests/requirements.txt
+make install-ux
 ```
 
 #### Performance Tests:
 
 ```bash
-pip install -r performance-tests/requirements.txt
+make install-performance
 ```
 
 #### Contract Tests:
 
 ```bash
-pip install -r contract-tests/requirements.txt
+make install-contract
+```
+
+#### End-to-End Tests:
+
+```bash
+make install-end-to-end
 ```
 
 ## Test Overview
@@ -105,11 +104,11 @@ Functional tests verify the basic functionality of the platform. We use pytest f
 
 - Location: functional-tests/
 - Tool: pytest
-- Configuration: pytest.ini
+- Configuration: pyproject.toml
 - Command to run:
 
 ```bash
-pytest functional-tests/tests/
+make test-functional
 ```
 
 ### BDD Tests
@@ -125,7 +124,7 @@ describe user behaviors and expectations.
 - Command to run:
 
 ```bash
-behave bdd-tests/features/
+make test-bdd
 ```
 
 ### UX Tests
@@ -138,7 +137,7 @@ UX tests validate the user experience and interaction flow using Playwright for 
 - Command to run:
 
 ```bash
-pytest ux-tests/tests/
+make test-ux
 ```
 
 ### Performance Tests
@@ -164,7 +163,20 @@ service.
 - Command to run:
 
 ```bash
-pytest contract-tests/*.py --disable-warnings --alluredir allure-results
+make test-contract
+```
+
+### End-to-End Tests
+
+End-to-end tests validate the full user journey and integration points, focusing on flaky or timeout-sensitive scenarios.
+
+- Location: end-to-end-test/
+- Tool: pytest
+- Configuration: pyproject.toml
+- Command to run:
+
+```bash
+make test-end-to-end
 ```
 
 ## Secrets Management on GitHub
@@ -253,6 +265,8 @@ To run the tests locally you need to set up an .env file in the root project dir
 ├── config/
 │   └── __pycache__/
 ├── contract-tests/
+├── end-to-end-test/
+│   └── tests/
 ├── functional-tests/
 │   ├── __pycache__/
 │   └── tests/
