@@ -572,6 +572,8 @@ jobs:
     secrets: inherit
 
   EndToEnd_Tests:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     environment: uat
     name: End-to-End
