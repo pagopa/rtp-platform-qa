@@ -33,6 +33,11 @@ on:
         description: Run Contract tests
         required: false
         default: true
+      EndToEnd:
+        type: boolean
+        description: Run End-to-End flaky tests
+        required: false
+        default: false
 
 jobs:
   Functional_Tests:
@@ -562,21 +567,69 @@ jobs:
 
   EndToEnd_Tests:
     runs-on: ubuntu-latest
-    name: End-to-End (flaky)
+    environment: uat
+    name: End-to-End
+    if: always() && (github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd)
+    needs: Contract_Tests
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3
         with:
-          python-version: "3.x"
-
-      - name: Install deps and tools
+          python-version: 3.x
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          bash ./install-requirements.sh
-
+          pip install -e ".[end-to-end-tests]"
       - name: Run end-to-end tests
+        if: always()
+        continue-on-error: true
+        env:
+          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
+          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_ID }}
+          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
+
+          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
+          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
+          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+
+          PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
+          PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
+          PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
+          PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
+
+          RTP_READER_CLIENT_ID: ${{ vars.RTP_READER_CLIENT_ID }}
+          RTP_READER_CLIENT_SECRET: ${{ secrets.RTP_READER_CLIENT_SECRET }}
+
+          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
+          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
+
+          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
+          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
+          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
+          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
+
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
+          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
+
+          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
+          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
+          CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
+          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
+          ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
+          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEPT_POSITIONS_ORGANIZATION_ID }}
+          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEPT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEPT_POSITIONS_DEV_ORGANIZATION_ID }}
         run: |
           make test-end-to-end
+      - name: Save end-to-end test results
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882
+        id: upload_endtoend_test_results
+        with:
+          name: allure-results-endtoend
+          path: allure-results
