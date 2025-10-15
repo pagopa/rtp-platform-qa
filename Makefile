@@ -57,8 +57,8 @@ test-contract:
 
 test-end-to-end:
 	@# ensure .env present if required
-	@make check-env || true
-	pytest end-to-end-test/tests/ -q --maxfail=1
+    @make check-env || true
+    pytest end-to-end-test/tests/ -q --alluredir allure-results --maxfail=1
 
 precommit:
 	pre-commit run --all-files
