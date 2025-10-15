@@ -1,0 +1,101 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rtp-platform-qa"
+version = "0.1.0"
+description = "RTP Platform Quality Assurance Repository"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "PagoPA" }]
+dependencies = [
+  "requests>=2.31",
+  "dynaconf>=3.2",
+  "python-dotenv>=1.0",
+  "faker==22.5.1",
+  "certifi==2025.7.14",
+  "pyperclip==1.9.0",
+  "schwifty==2025.1.0",
+]
+
+[project.optional-dependencies]
+functional-tests = [
+  "pytest==8.4.1",
+  "pytest-timeout>=2.2",
+  "allure-pytest>=2.13",
+  "allure-python-commons==2.13.5",
+  "cryptography==44.0.2",
+  "urllib3==2.5.0",
+]
+bdd-tests = [
+  "behave>=1.2.6",
+  "allure-behave==2.13.5",
+]
+ux-tests = [
+  "pytest==8.4.1",
+  "pytest-playwright>=0.5.0",
+  "playwright>=1.47.0",
+]
+performance-tests = [
+  "aiokafka==0.12.0",
+  "locust==2.31.8",
+]
+contract-tests = [
+  "schemathesis>=3.23",
+]
+dev = [
+  "pre-commit>=3.7",
+  "azure-core==1.35.0",
+  "azure-identity==1.16.1",
+  "azure-keyvault-secrets==4.10.0",
+  "fastapi==0.116.1",
+  "pydantic==2.11.7",
+  "python-multipart==0.0.20",
+  "uvicorn[standard]",
+]
+
+end-to-end-tests = [
+  "pytest==8.4.1",
+  "pytest-timeout>=2.2",
+  "requests>=2.31",
+  "faker==22.5.1",
+  "allure-pytest>=2.13",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = [
+  "functional-tests/tests",
+  "contract-tests",
+  "ux-tests/tests",
+  "end-to-end-test/tests",
+]
+pythonpath = [
+  ".",
+]
+markers = [
+  "use_case: ID of the use case",
+  "happy_path: Tests when things goes right",
+  "unhappy_path: Tests when things goes wrong",
+  "need_fix: tests that fails and need a fix",
+  "landing_page: tests on dummy landing page",
+  "auth: tests on authentication service",
+  "activation: tests on activation service",
+  "send: Tests for RTP send",
+  "cbi: CBI specific tests",
+  "poste: Poste specific tests",
+  "get: mark tests that exercise GET endpoints",
+  "callback: mark tests that exercise callback endpoints",
+  "real_integration: mark tests that are real integration tests",
+  "iccrea: tests on ICCREA service",
+  "cancel: mark tests that exercise cancel endpoints",
+  "deactivation: mark tests that exercise deactivation endpoints",
+  "mock: mark tests that use mock services",
+  "debt_positions: mark tests that exercise debt positions endpoints",
+  "producer_gpd_message: mark tests that exercise GPD message producer endpoints",
+  "timeout: Tests with timeouts"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["api", "config", "utils"]
