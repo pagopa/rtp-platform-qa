@@ -4,13 +4,12 @@ WORKDIR /app
 
 COPY pyproject.toml /app/
 
-COPY api/ /app/api/
-COPY utils/ /app/utils/
-COPY config/ /app/config/
-COPY gpd-test/ /app/gpd-test/
-
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e .
+    pip install --no-cache-dir hatchling
+
+COPY . /app/
+
+RUN pip install --no-cache-dir -e .
 
 WORKDIR /app/gpd-test
 
