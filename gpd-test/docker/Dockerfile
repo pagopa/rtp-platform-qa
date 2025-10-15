@@ -2,9 +2,16 @@ FROM python:3.13-slim@sha256:4c2cf9917bd1cbacc5e9b07320025bdb7cdf2df7b0ceaccb55e
 
 WORKDIR /app
 
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY pyproject.toml /app/
 
-COPY gpd-test/ /app/
+COPY api/ /app/api/
+COPY utils/ /app/utils/
+COPY config/ /app/config/
+COPY gpd-test/ /app/gpd-test/
+
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -e .
+
+WORKDIR /app/gpd-test
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
