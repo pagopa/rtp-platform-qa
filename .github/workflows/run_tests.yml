@@ -256,7 +256,7 @@ jobs:
           playwright install-deps
           playwright install
       - name: Run UX tests
-        if: always()
+        if: always() && (github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd)
         continue-on-error: true
         env:
           DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
