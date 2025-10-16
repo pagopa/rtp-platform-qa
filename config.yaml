@@ -46,3 +46,4 @@ debt_positions_dev_delete_path: "/gpd/debt-positions-service/v1/organizations/{o
 debt_positions_update_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
 debt_positions_dev_update_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
 producer_gpd_message_base_url: 'http://qa.internal.uat.cstar.pagopa.it'
+activation_takeover_path: "/activations/takeover/{otp}"
