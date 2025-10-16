@@ -1,6 +1,7 @@
 A Service Provider tries to activates a debtor without having the correct credentials
 A debtor Service Provider activates a debtor
 A debtor Service Provider cannot send an RTP
+A debtor Service Provider successfully takes over an activation from another provider
 A debtor Service Provider tries to activates a debtor 2 times, failing the second attempt
 An authenticated Service Provider cannot send an RTP to an activated debtor
 An authenticated Service Provider cannot send an RTP to an unactivated debtor
@@ -9,3 +10,5 @@ Attempt to cancel a non-existing RTP
 Attempt to cancel an already cancelled RTP
 Successful login
 Successfully cancel a Request to Pay
+Takeover fails with invalid OTP
+Takeover fails without authentication
