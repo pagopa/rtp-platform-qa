@@ -1,5 +1,9 @@
-from behave import given, when, then
-from api.activation import activate, get_activation_by_payer_id
+from behave import given
+from behave import then
+from behave import when
+
+from api.activation import activate
+from api.activation import get_activation_by_payer_id
 from api.takeover import takeover_activation
 from config.configuration import secrets
 
@@ -8,15 +12,15 @@ from config.configuration import secrets
 def when_sp_b_attempts_activation(context, role, debtor_name):
     """Attempt activation with Service Provider B to trigger conflict and get OTP"""
     debtor_fc = context.debtor_fc[debtor_name]
-    
+
     activation_response = activate(
-        context.access_tokens['debtor_b'], 
+        context.access_tokens['debtor_b'],
         debtor_fc,
         secrets.debtor_service_provider_B.service_provider_id
     )
-    
+
     context.latest_activation_response = activation_response
-    
+
     if activation_response.status_code == 409:
         location_header = activation_response.headers.get('Location')
         if location_header:
@@ -27,14 +31,14 @@ def when_sp_b_attempts_activation(context, role, debtor_name):
 def when_sp_b_performs_takeover(context, role, debtor_name):
     """Perform the actual takeover using the OTP"""
     debtor_fc = context.debtor_fc[debtor_name]
-    
+
     takeover_response = takeover_activation(
         context.access_tokens['debtor_b'],
         debtor_fc,
         secrets.debtor_service_provider_B.service_provider_id,
         context.otp
     )
-    
+
     context.latest_takeover_response = takeover_response
 
 
@@ -42,16 +46,16 @@ def when_sp_b_performs_takeover(context, role, debtor_name):
 def when_sp_b_attempts_with_invalid_otp(context, role, debtor_name):
     """Attempt takeover with invalid OTP"""
     debtor_fc = context.debtor_fc[debtor_name]
-    
-    invalid_otp = "invalid-otp-12345"
-    
+
+    invalid_otp = 'invalid-otp-12345'
+
     takeover_response = takeover_activation(
         context.access_tokens['debtor_b'],
         debtor_fc,
         secrets.debtor_service_provider_B.service_provider_id,
         invalid_otp
     )
-    
+
     context.latest_takeover_response = takeover_response
 
 
@@ -59,14 +63,14 @@ def when_sp_b_attempts_with_invalid_otp(context, role, debtor_name):
 def when_sp_b_attempts_takeover_unauth(context, role, debtor_name):
     """Attempt takeover without proper authentication"""
     debtor_fc = context.debtor_fc[debtor_name]
-    
+
     takeover_response = takeover_activation(
         context.access_tokens.get('debtor_b', ''),
         debtor_fc,
         secrets.debtor_service_provider_B.service_provider_id,
-        "any-otp"
+        'any-otp'
     )
-    
+
     context.latest_takeover_response = takeover_response
 
 
@@ -75,9 +79,9 @@ def then_debtor_managed_by_sp_b(context, debtor_name):
     """Verify the debtor is now activated with Service Provider B"""
     assert context.latest_takeover_response.status_code == 201, \
         f"Takeover failed with status {context.latest_takeover_response.status_code}"
-    
+
     debtor_fc = context.debtor_fc[debtor_name]
-    
+
     get_response = get_activation_by_payer_id(context.access_tokens['debtor_b'], debtor_fc)
     assert get_response.status_code == 200
     assert get_response.json()['payer']['fiscalCode'] == debtor_fc
