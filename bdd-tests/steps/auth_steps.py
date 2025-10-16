@@ -1,5 +1,8 @@
-from behave import given, when
-from api.auth import get_access_token, get_valid_access_token
+from behave import given
+from behave import when
+
+from api.auth import get_access_token
+from api.auth import get_valid_access_token
 from config.configuration import secrets
 
 
@@ -12,7 +15,7 @@ def ensure_access_tokens_initialized(context):
 @given('the {role} Service Provider is authenticated')
 def given_ec_on_page(context, role):
     ensure_access_tokens_initialized(context)
-    
+
     if role == 'debtor':
         client_id = secrets.debtor_service_provider.client_id
         client_secret = secrets.debtor_service_provider.client_secret
@@ -38,14 +41,14 @@ def given_ec_on_page(context, role):
 def given_sp_b_authenticated(context, role):
     """Authenticate Service Provider B"""
     ensure_access_tokens_initialized(context)
-    
+
     if role.lower() == 'debtor':
         client_id = secrets.debtor_service_provider_B.client_id
         client_secret = secrets.debtor_service_provider_B.client_secret
     else:
         client_id = secrets.creditor_service_provider_B.client_id
         client_secret = secrets.creditor_service_provider_B.client_secret
-    
+
     access_token = get_valid_access_token(
         client_id=client_id,
         client_secret=client_secret,
