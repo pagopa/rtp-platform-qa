@@ -4,7 +4,7 @@ import requests
 
 from config.configuration import config
 
-def takeover_activation(access_token: str, payer_fiscal_code: str, service_provider_id: str, otp: str):
+def takeover_activation(access_token: str, payer_fiscal_code: str, service_provider_id: str, otp: str) -> requests.Response:
     """API to takeover an activation from one service provider to another
 
     :param access_token: The authentication token
