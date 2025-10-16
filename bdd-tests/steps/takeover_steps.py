@@ -55,7 +55,7 @@ def when_sp_b_attempts_with_invalid_otp(context, role, debtor_name):
     context.latest_takeover_response = takeover_response
 
 
-@when('the {role} Service Provider B attempts takeover for debtor {debtor_name}')
+@when('the unauthenticated {role} Service Provider B attempts takeover for debtor {debtor_name}')
 def when_sp_b_attempts_takeover_unauth(context, role, debtor_name):
     """Attempt takeover without proper authentication"""
     debtor_fc = context.debtor_fc[debtor_name]

@@ -26,5 +26,5 @@ Feature: A Debtor Service Provider performs takeover of an existing activation
     And the debtor A has fiscal code random
     And the debtor Service Provider activated the debtor A
     And the debtor Service Provider B is unauthenticated
-    When the debtor Service Provider B attempts takeover for debtor A
+    When the unauthenticated debtor Service Provider B attempts takeover for debtor A
     Then the takeover fails because the Service Provider has wrong credentials
