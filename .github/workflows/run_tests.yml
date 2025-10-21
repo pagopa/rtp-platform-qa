@@ -567,7 +567,7 @@ jobs:
     if: success()
     uses: ./.github/workflows/extract_allure_fail_rate.yml
     with:
-      THRESHOLD: 20
+      THRESHOLD: 0
     secrets: inherit
 
   EndToEnd_Tests:
