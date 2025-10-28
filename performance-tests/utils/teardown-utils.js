@@ -182,3 +182,38 @@ export function createFinderTeardown({ START_TIME, VU_COUNT, testCompletedRef })
     })(data);
   };
 }
+
+/**
+ * Creates a specialized teardown function for "findAllByServiceProvider" tests.
+ *
+ * @param {Object} config - Configuration object
+ * @param {number} config.START_TIME - Test start timestamp
+ * @param {number} config.VU_COUNT - Number of virtual users
+ * @param {Object} config.testCompletedRef - Reference to the testCompleted variable in the calling file
+ * @returns {Function} - A teardown function specifically for "findAllByServiceProvider" tests
+ */
+export function createFindAllByServiceProviderTeardown({ START_TIME, VU_COUNT, testCompletedRef }) {
+    return function (data) {
+        if (data) {
+            data.findChunks = data.findRequests || [];
+            data.vuProcessedCount = data.vuFindCount || [];
+
+            if (!data.allCompleted && data.metrics && data.metrics.successes) {
+                const successCount = data.metrics.successes.values ? data.metrics.successes.values.count : 0;
+                const failureCount = data.metrics.failures?.values?.count || 0;
+
+                if (successCount > 0 && successCount > failureCount * 2) {
+                    data.allCompleted = true;
+                }
+            }
+        }
+
+        return createBatchProcessingTeardown({
+            START_TIME,
+            VU_COUNT,
+            testType: 'findAllByServiceProvider',
+            testCompletedRef
+        })(data);
+    };
+}
+
