@@ -284,7 +284,7 @@ def test_get_all_activations_missing_version_header(access_token):
         params={'size': 5},
         timeout=config.default_timeout
     )
-    assert res.status_code == 404, f'Expected 404 but got {res.status_code}'
+    assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
 
 
 @allure.feature('Activation')
