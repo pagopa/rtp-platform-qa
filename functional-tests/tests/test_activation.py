@@ -297,10 +297,6 @@ def test_get_all_activations_nonexistent_next_activation_id(access_token):
     random_cursor = str(uuid.uuid4())
 
     res = get_all_activations(access_token, size=5, next_activation_id=random_cursor)
-    
-    print("[DEBUG] status:", res.status_code)
-    print("[DEBUG] headers:", dict(res.headers))
-    print("[DEBUG] body:", (res.text or "")[:1000])
 
     assert res.status_code in (400, 404), f'Expected 400/404 but got {res.status_code}'
 
