@@ -72,7 +72,7 @@ export function findAllByServiceProvider(data) {
         } else {
             nextIds[vu] = body?.metadata?.nextActivationId || null;
         }
-        successCounter.add(1, tags)
+        successCounter.add(1, tags);
     } else {
         failureCounter.add(1, tags);
         console.error(`❌ VU #${vu}: Failed GET: Status ${res.status}`);
