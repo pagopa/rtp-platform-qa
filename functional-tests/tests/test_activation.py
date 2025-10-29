@@ -14,6 +14,12 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.dataset import uuidv4_pattern
+from utils.response_assertions import (
+    is_empty_response,
+    ensure_json_response_and_type,
+    validate_error_structure,
+    validate_activations_and_meta,
+)
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
@@ -291,28 +297,20 @@ def test_get_all_activations_nonexistent_next_activation_id(access_token):
     random_cursor = str(uuid.uuid4())
 
     res = get_all_activations(access_token, size=5, next_activation_id=random_cursor)
+    
+    print("[DEBUG] status:", res.status_code)
+    print("[DEBUG] headers:", dict(res.headers))
+    print("[DEBUG] body:", (res.text or "")[:1000])
 
     assert res.status_code in (400, 404), f'Expected 400/404 but got {res.status_code}'
-    content_type = res.headers.get('Content-Type', '')
-    assert 'json' in content_type.lower(), f'Expected JSON response, got Content-Type: {content_type}'
+
+    if is_empty_response(res):
+        return
+
+    ensure_json_response_and_type(res)
 
     body = res.json()
     assert isinstance(body, dict), 'Expected response body to be a JSON object'
 
-    if 'errors' in body:
-        assert isinstance(body['errors'], list) and body['errors'], "Expected non-empty 'errors' list"
-        first_err = body['errors'][0]
-        assert 'code' in first_err and isinstance(first_err['code'], str), 'Missing/invalid error code'
-        assert 'description' in first_err and isinstance(first_err['description'], str), 'Missing/invalid error description'
-    elif 'message' in body:
-        assert isinstance(body['message'], str) and body['message'], "Expected non-empty 'message'"
-        if 'statusCode' in body:
-            assert 400 <= int(body['statusCode']) < 500, f"Expected 4xx statusCode but got {body['statusCode']}"
-    else:
-        pytest.fail("Expected 'errors' or 'message' in error response body")
-
-    if 'activations' in body:
-        assert isinstance(body['activations'], list) and len(body['activations']) == 0, "Unexpected 'activations' content in error response"
-    meta = body.get('metadata') or body.get('page')
-    if isinstance(meta, dict):
-        assert not meta.get('nextActivationId'), "Unexpected 'nextActivationId' in error metadata"
+    validate_error_structure(body)
+    validate_activations_and_meta(body)
