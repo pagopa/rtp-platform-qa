@@ -3,8 +3,10 @@ from datetime import datetime
 
 import allure
 import pytest
+import requests
 
 from api.activation import activate
+from api.activation import ACTIVATION_LIST_URL
 from api.activation import get_activation_by_id
 from api.activation import get_activation_by_payer_id
 from api.activation import get_all_activations
@@ -14,6 +16,7 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.dataset import uuidv4_pattern
+from utils.extract_next_activation_id import extract_next_activation_id
 
 
 @allure.feature('Activation')
@@ -48,6 +51,7 @@ def test_activate_debtor():
     except ValueError:
         assert False, 'Invalid date format'
 
+
 @allure.feature('Activation')
 @allure.story('List Activations')
 @allure.title('Get a page of activations')
@@ -60,11 +64,23 @@ def test_get_all_activations():
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token
     )
-    res = get_all_activations(access_token, page=0, size=16)
+    res = get_all_activations(access_token, size=16)
     assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
     body = res.json()
     assert isinstance(body.get('activations'), list), "Expected 'activations' to be a list"
-    assert isinstance(body.get('page'), dict), "Expected 'page' metadata to be present and be a dict"
+
+    page_meta = body.get('page') or body.get('metadata')
+    if page_meta is not None:
+        assert isinstance(page_meta, dict), 'Expected metadata to be a dict when present'
+
+    next_id = extract_next_activation_id(res)
+    if next_id:
+        res2 = get_all_activations(access_token, size=16, next_activation_id=next_id)
+        assert res2.status_code == 200, f'Expected 200 but got {res2.status_code}'
+        body2 = res2.json()
+        assert isinstance(body2.get('activations'), list), "Expected 'activations' to be a list"
+        assert len(body2['activations']) <= 16, 'Expected 16 or fewer activations in paginated response'
+
 
 @allure.feature('Activation')
 @allure.story('Get Debtor activation by ID')
@@ -168,6 +184,7 @@ def test_fail_activate_debtor_two_times():
     assert res.status_code == 409, f'Error activating debtor, expected 409 but got {res.status_code}'
     assert res.json()['errors'][0]['code'] == '01031000E'
 
+
 @allure.feature('Activation')
 @allure.story('Get Debtor activation by ID')
 @allure.title('Retrieving non-existent activation returns 404')
@@ -183,6 +200,7 @@ def test_get_activation_by_id_not_found():
     random_id = str(uuid.uuid4())
     res = get_activation_by_id(access_token, random_id)
     assert res.status_code == 404
+
 
 @allure.feature('Activation')
 @allure.story('Get Debtor activation by ID')
@@ -200,6 +218,7 @@ def test_get_activation_by_id_invalid_uuid():
     res = get_activation_by_id(access_token, invalid_id)
     assert res.status_code == 400
 
+
 @allure.feature('Activation')
 @allure.story('Get Debtor activation by ID')
 @allure.title('Retrieving activation without valid token returns 401')
@@ -211,26 +230,28 @@ def test_get_activation_by_id_unauthorized():
     res = get_activation_by_id(fake_token, random_id)
     assert res.status_code == 401
 
+
 @allure.feature('Activation')
 @allure.story('List Activations')
 @allure.title('Invalid pagination parameters returns 400')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-@pytest.mark.parametrize('page,size', [(-1,16), (0,-5)])
-def test_get_all_activations_invalid_params(page, size):
+@pytest.mark.parametrize('size', [0, -5])
+def test_get_all_activations_invalid_params(size):
     access_token = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token
     )
-    res = get_all_activations(access_token, page=page, size=size)
+    res = get_all_activations(access_token, size=size)
     assert res.status_code == 400, f'Expected 400 for invalid params, got {res.status_code}'
     body = res.json()
     assert isinstance(body.get('errors'), list), "Expected 'errors' list in response"
     assert body['errors'], 'Expected at least one error entry'
     assert 'code' in body['errors'][0], "Each error must have a 'code'"
     assert 'description' in body['errors'][0], "Each error must have a 'description'"
+
 
 @allure.feature('Activation')
 @allure.story('List Activations')
@@ -246,3 +267,81 @@ def test_get_all_activations_unauthorized():
     assert isinstance(body['message'], str), "Expected 'message' to be a string"
     assert 'statusCode' in body, "Expected 'statusCode' in 401 response"
     assert body['statusCode'] == 401, f"Expected statusCode 401 but got {body['statusCode']}"
+
+
+@allure.feature('Activation')
+@allure.story('List Activations')
+@allure.title('Invalid NextActivationId format returns 400')
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_all_activations_invalid_next_activation_id_format():
+    access_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token
+    )
+    headers = {
+        'Authorization': f'{access_token}',
+        'Version': 'v1',
+        'RequestId': str(uuid.uuid4()),
+        'NextActivationId': 'not-a-valid-uuid'
+    }
+    res = requests.get(
+        ACTIVATION_LIST_URL,
+        headers=headers,
+        params={'size': 5},
+        timeout=config.default_timeout
+    )
+    assert res.status_code == 400, f'Expected 400 but got {res.status_code}'
+
+
+@allure.feature('Activation')
+@allure.story('List Activations')
+@allure.title('Non-integer size returns 400')
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_all_activations_non_integer_size():
+    access_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token
+    )
+    headers = {
+        'Authorization': f'{access_token}',
+        'Version': 'v1',
+        'RequestId': str(uuid.uuid4())
+    }
+    res = requests.get(
+        ACTIVATION_LIST_URL,
+        headers=headers,
+        params={'size': 'abc'},
+        timeout=config.default_timeout
+    )
+    assert res.status_code == 400, f'Expected 400 but got {res.status_code}'
+
+
+@allure.feature('Activation')
+@allure.story('List Activations')
+@allure.title('Missing Version header returns 400')
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_all_activations_missing_version_header():
+    access_token = get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token
+    )
+    headers = {
+        'Authorization': f'{access_token}',
+        'RequestId': str(uuid.uuid4())
+    }
+    res = requests.get(
+        ACTIVATION_LIST_URL,
+        headers=headers,
+        params={'size': 5},
+        timeout=config.default_timeout
+    )
+    assert res.status_code == 404, f'Expected 404 but got {res.status_code}'

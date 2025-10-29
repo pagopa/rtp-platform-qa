@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 import requests
 
@@ -82,15 +83,28 @@ def get_activation_by_id(access_token: str, activation_id: str):
     )
 
 
-def get_all_activations(access_token: str, page: int = 0, size: int = 16):
-    """API to list all activations with pagination."""
+def get_all_activations(access_token: str, page: Optional[int] = None, size: int = 16, next_activation_id: Optional[str] = None):
+    """API to list all activations.
+
+    - Query: 'size'
+    - Cursor: pass 'NextActivationId' header value to fetch the next page
+    - 'page' kept for backward compatibility (if not None, it's sent)
+    """
+    headers = {
+        'Authorization': f'{access_token}',
+        'Version': 'v1',
+        'RequestId': str(uuid.uuid4())
+    }
+    if next_activation_id:
+        headers['NextActivationId'] = next_activation_id
+
+    params = {'size': size}
+    if page is not None:
+        params['page'] = page
+
     return requests.get(
         url=ACTIVATION_LIST_URL,
-        headers={
-            'Authorization': f'{access_token}',
-            'Version': 'v1',
-            'RequestId': str(uuid.uuid4())
-        },
-        params={'page': page, 'size': size},
+        headers=headers,
+        params=params,
         timeout=config.default_timeout
     )
