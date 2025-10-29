@@ -10,14 +10,10 @@ from api.activation import ACTIVATION_LIST_URL
 from api.activation import get_activation_by_id
 from api.activation import get_activation_by_payer_id
 from api.activation import get_all_activations
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.dataset import uuidv4_pattern
-from utils.extract_next_activation_id import extract_next_activation_id
-
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
@@ -25,10 +21,7 @@ from utils.extract_next_activation_id import extract_next_activation_id
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor():
-    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret,
-                                          access_token_function=get_access_token)
+def test_activate_debtor(access_token):
     debtor_fc = fake_fc()
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
@@ -58,12 +51,7 @@ def test_activate_debtor():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_all_activations():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_all_activations(access_token, next_cursor):
     res = get_all_activations(access_token, size=16)
     assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
     body = res.json()
@@ -73,9 +61,9 @@ def test_get_all_activations():
     if page_meta is not None:
         assert isinstance(page_meta, dict), 'Expected metadata to be a dict when present'
 
-    next_id = extract_next_activation_id(res)
-    if next_id:
-        res2 = get_all_activations(access_token, size=16, next_activation_id=next_id)
+    nid = next_cursor(res)
+    if nid:
+        res2 = get_all_activations(access_token, size=16, next_activation_id=nid)
         assert res2.status_code == 200, f'Expected 200 but got {res2.status_code}'
         body2 = res2.json()
         assert isinstance(body2.get('activations'), list), "Expected 'activations' to be a list"
@@ -88,20 +76,8 @@ def test_get_all_activations():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_activation_by_id():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
-    debtor_fc = fake_fc()
-
-    res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
-    assert res.status_code == 201, 'Error activating debtor'
-
-    location = res.headers['Location']
-    activation_id = location.split('/')[-1]
-    assert bool(uuidv4_pattern.fullmatch(activation_id))
+def test_get_activation_by_id(access_token, make_activation):
+    activation_id, debtor_fc = make_activation()
 
     res = get_activation_by_id(access_token, activation_id)
     assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
@@ -122,10 +98,7 @@ def test_get_activation_by_id():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_cannot_activate_debtor_lower_fiscal_code():
-    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret,
-                                          access_token_function=get_access_token)
+def test_cannot_activate_debtor_lower_fiscal_code(access_token):
     debtor_fc = fake_fc().lower()
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
@@ -140,10 +113,7 @@ def test_cannot_activate_debtor_lower_fiscal_code():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_cannot_get_activation_lower_fiscal_code():
-    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret,
-                                          access_token_function=get_access_token)
+def test_cannot_get_activation_lower_fiscal_code(access_token):
     debtor_fc = fake_fc().lower()
 
     res = get_activation_by_payer_id(access_token, debtor_fc)
@@ -156,10 +126,7 @@ def test_cannot_get_activation_lower_fiscal_code():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_fail_activate_debtor_incongruent_service_provider():
-    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret,
-                                          access_token_function=get_access_token)
+def test_fail_activate_debtor_incongruent_service_provider(access_token):
     debtor_fc = fake_fc()
 
     res = activate(access_token, debtor_fc, 'WRONGS01')
@@ -171,10 +138,7 @@ def test_fail_activate_debtor_incongruent_service_provider():
 @allure.title('A debtor cannot be activated more than once')
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_fail_activate_debtor_two_times():
-    access_token = get_valid_access_token(client_id=secrets.debtor_service_provider.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret,
-                                          access_token_function=get_access_token)
+def test_fail_activate_debtor_two_times(access_token):
     debtor_fc = fake_fc()
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
@@ -191,12 +155,7 @@ def test_fail_activate_debtor_two_times():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_get_activation_by_id_not_found():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_activation_by_id_not_found(access_token):
     random_id = str(uuid.uuid4())
     res = get_activation_by_id(access_token, random_id)
     assert res.status_code == 404
@@ -208,12 +167,7 @@ def test_get_activation_by_id_not_found():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_get_activation_by_id_invalid_uuid():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_activation_by_id_invalid_uuid(access_token):
     invalid_id = 'not-a-valid-uuid'
     res = get_activation_by_id(access_token, invalid_id)
     assert res.status_code == 400
@@ -238,12 +192,7 @@ def test_get_activation_by_id_unauthorized():
 @pytest.mark.activation
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize('size', [0, -5])
-def test_get_all_activations_invalid_params(size):
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_all_activations_invalid_params(access_token, size):
     res = get_all_activations(access_token, size=size)
     assert res.status_code == 400, f'Expected 400 for invalid params, got {res.status_code}'
     body = res.json()
@@ -275,12 +224,7 @@ def test_get_all_activations_unauthorized():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_get_all_activations_invalid_next_activation_id_format():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_all_activations_invalid_next_activation_id_format(access_token):
     headers = {
         'Authorization': f'{access_token}',
         'Version': 'v1',
@@ -302,12 +246,7 @@ def test_get_all_activations_invalid_next_activation_id_format():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_get_all_activations_non_integer_size():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_all_activations_non_integer_size(access_token):
     headers = {
         'Authorization': f'{access_token}',
         'Version': 'v1',
@@ -324,16 +263,11 @@ def test_get_all_activations_non_integer_size():
 
 @allure.feature('Activation')
 @allure.story('List Activations')
-@allure.title('Missing Version header returns 400')
+@allure.title('Missing Version header returns 404')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_get_all_activations_missing_version_header():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_all_activations_missing_version_header(access_token):
     headers = {
         'Authorization': f'{access_token}',
         'RequestId': str(uuid.uuid4())
@@ -353,12 +287,7 @@ def test_get_all_activations_missing_version_header():
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_get_all_activations_nonexistent_next_activation_id():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_get_all_activations_nonexistent_next_activation_id(access_token):
     random_cursor = str(uuid.uuid4())
 
     res = get_all_activations(access_token, size=5, next_activation_id=random_cursor)
@@ -373,8 +302,8 @@ def test_get_all_activations_nonexistent_next_activation_id():
     if 'errors' in body:
         assert isinstance(body['errors'], list) and body['errors'], "Expected non-empty 'errors' list"
         first_err = body['errors'][0]
-        assert 'code' in first_err and isinstance(first_err['code'], str), "Missing/invalid error code"
-        assert 'description' in first_err and isinstance(first_err['description'], str), "Missing/invalid error description"
+        assert 'code' in first_err and isinstance(first_err['code'], str), 'Missing/invalid error code'
+        assert 'description' in first_err and isinstance(first_err['description'], str), 'Missing/invalid error description'
     elif 'message' in body:
         assert isinstance(body['message'], str) and body['message'], "Expected non-empty 'message'"
         if 'statusCode' in body:
