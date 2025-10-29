@@ -23,7 +23,7 @@ def validate_error_structure(body: Dict[str, Any]) -> None:
     if 'message' in body:
         assert isinstance(body['message'], str) and body['message'], "Expected non-empty 'message'"
         if 'statusCode' in body:
-            assert 400 <= int(body['statusCode']) < 500, f"Expected 4xx statusCode but got {body['statusCode']}"
+            assert 400 <= int(body['statusCode']) < 500, f"Expected statusCode in 400-499 (4xx client error), but got {body['statusCode']}"
         return
     pytest.fail("Expected 'errors' or 'message' in error response body")
 
