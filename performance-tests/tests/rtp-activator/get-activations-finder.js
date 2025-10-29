@@ -50,7 +50,10 @@ export function findAllByServiceProvider(data) {
     currentRPS.add(1, tags);
 
     const headers = buildHeaders(data.access_token);
-    if (nextIds[vu]) headers['NextActivationId'] = nextIds[vu];
+    const nextActivationId = nextIds[vu];
+    if (nextActivationId !== undefined && nextActivationId !== null) {
+        headers['NextActivationId'] = nextActivationId;
+    }
 
     const size = 128;
     const url = `${endpoints.activations}?size=${size}`;
@@ -65,14 +68,23 @@ export function findAllByServiceProvider(data) {
     });
 
     if (res.status === 200) {
-        const body = res.json();
+        let body;
+        try {
+            body = res.json();
+        } catch (error) {
+            console.error(`❌ VU #${vu}: Failed to parse JSON body (Status ${res.status}): ${error.message}`);
+
+            failureCounter.add(1, tags);
+            return;
+        }
+
         if (!body?.activations || body.activations.length === 0) {
             console.log(`VU #${vu}: received empty page`);
             nextIds[vu] = null;
         } else {
-            nextIds[vu] = body?.metadata?.nextActivationId || null;
+            nextIds[vu] = body.metadata?.nextActivationId || null;
+            successCounter.add(1, tags);
         }
-        successCounter.add(1, tags);
     } else {
         failureCounter.add(1, tags);
         console.error(`❌ VU #${vu}: Failed GET: Status ${res.status}`);
