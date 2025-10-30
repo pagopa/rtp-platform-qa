@@ -3,11 +3,11 @@ from fastapi import APIRouter
 router = APIRouter()
 
 
-@router.get("/health")
+@router.get('/health')
 async def health():
-    return {"status": "healthy", "service": "gpd-producer"}
+    return {'status': 'healthy', 'service': 'gpd-producer'}
 
 
-@router.get("/ready")
+@router.get('/ready')
 async def ready():
-    return {"status": "ready"}
+    return {'status': 'ready'}

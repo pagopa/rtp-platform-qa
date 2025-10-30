@@ -1,6 +1,10 @@
 from enum import Enum
-from typing import Optional, List, Literal
-from pydantic import BaseModel, Field
+from typing import List
+from typing import Literal
+from typing import Optional
+
+from pydantic import BaseModel
+from pydantic import Field
 
 class RTPOperationCode(str, Enum):
   CREATE = 'CREATE'

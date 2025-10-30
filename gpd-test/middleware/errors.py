@@ -1,19 +1,21 @@
 import logging
-from fastapi import FastAPI, Request
+
+from fastapi import FastAPI
+from fastapi import Request
 from fastapi.responses import JSONResponse
 
-logger = logging.getLogger("gpd-producer")
+logger = logging.getLogger('gpd-producer')
 
 
 def unhandled_exception_handler(request: Request, exc: Exception):
     """Global fallback error handler used by FastAPI."""
-    logger.exception("Unhandled error: %s", exc)
+    logger.exception('Unhandled error: %s', exc)
     return JSONResponse(
         status_code=500,
         content={
-            "status": "error",
-            "message": "Internal Server Error",
-            "requestId": request.scope.get("request_id"),
+            'status': 'error',
+            'message': 'Internal Server Error',
+            'requestId': request.scope.get('request_id'),
         },
     )
 

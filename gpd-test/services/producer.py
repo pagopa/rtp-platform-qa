@@ -6,7 +6,6 @@ from typing import Any
 
 import certifi
 from aiokafka import AIOKafkaProducer
-
 from core.config import settings
 from services.keyvault import get_eventhub_connection_string
 
@@ -25,17 +24,17 @@ class ProducerService:
         ssl_context.check_hostname = True
         ssl_context.verify_mode = ssl.CERT_REQUIRED
 
-        if hasattr(ssl, "TLSVersion"):
+        if hasattr(ssl, 'TLSVersion'):
             ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
 
         self._producer = AIOKafkaProducer(
             bootstrap_servers=f"{namespace}.servicebus.windows.net:9093",
-            security_protocol="SASL_SSL",
-            sasl_mechanism="PLAIN",
-            sasl_plain_username="$ConnectionString",
+            security_protocol='SASL_SSL',
+            sasl_mechanism='PLAIN',
+            sasl_plain_username='$ConnectionString',
             sasl_plain_password=connection_string,
             ssl_context=ssl_context,
-            client_id="python-producer",
+            client_id='python-producer',
         )
         await self._producer.start()
 
@@ -46,5 +45,5 @@ class ProducerService:
 
     async def send_json(self, topic: str, payload: dict[str, Any]) -> None:
         if not self._producer:
-            raise RuntimeError("Producer not started")
-        await self._producer.send_and_wait(topic, json.dumps(payload).encode("utf-8"))
+            raise RuntimeError('Producer not started')
+        await self._producer.send_and_wait(topic, json.dumps(payload).encode('utf-8'))
