@@ -14,12 +14,11 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.dataset import uuidv4_pattern
-from utils.response_assertions import (
-    is_empty_response,
-    ensure_json_response_and_type,
-    validate_error_structure,
-    validate_activations_and_meta,
-)
+from utils.random_values import random_page_size
+from utils.response_assertions import ensure_json_response_and_type
+from utils.response_assertions import is_empty_response
+from utils.response_assertions import validate_activations_and_meta
+from utils.response_assertions import validate_error_structure
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
@@ -58,7 +57,8 @@ def test_activate_debtor(access_token):
 @pytest.mark.activation
 @pytest.mark.happy_path
 def test_get_all_activations(access_token, next_cursor):
-    res = get_all_activations(access_token, size=16)
+    page_size = random_page_size()
+    res = get_all_activations(access_token, size=page_size)
     assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
     body = res.json()
     assert isinstance(body.get('activations'), list), "Expected 'activations' to be a list"
@@ -69,11 +69,11 @@ def test_get_all_activations(access_token, next_cursor):
 
     nid = next_cursor(res)
     if nid:
-        res2 = get_all_activations(access_token, size=16, next_activation_id=nid)
+        res2 = get_all_activations(access_token, size=page_size, next_activation_id=nid)
         assert res2.status_code == 200, f'Expected 200 but got {res2.status_code}'
         body2 = res2.json()
         assert isinstance(body2.get('activations'), list), "Expected 'activations' to be a list"
-        assert len(body2['activations']) <= 16, 'Expected 16 or fewer activations in paginated response'
+        assert len(body2['activations']) <= page_size, f'Expected {page_size} or fewer activations in paginated response'
 
 
 @allure.feature('Activation')

@@ -1,7 +1,8 @@
 import pytest
 
 from api.activation import activate
-from api.auth import get_access_token, get_valid_access_token
+from api.auth import get_access_token
+from api.auth import get_valid_access_token
 from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.extract_next_activation_id import extract_next_activation_id
