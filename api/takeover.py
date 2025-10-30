@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 import requests
 
@@ -40,4 +41,27 @@ def takeover_activation(access_token: str, payer_fiscal_code: str, service_provi
         timeout=config.default_timeout
     )
 
+    return response
+
+
+def send_takeover_notification(old_activation_id: str, fiscal_code: str, takeover_timestamp: str, request_id: Optional[str] = None) -> requests.Response:
+    """Send takeover notification to mock endpoint (UAT only)"""
+    url = getattr(config, 'takeover_notification_url', None)
+
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Request-Id': request_id or str(uuid.uuid4()),
+        'X-Version': 'v1'
+    }
+    payload = {
+        'oldActivationId': old_activation_id,
+        'fiscalCode': fiscal_code,
+        'takeoverTimestamp': takeover_timestamp
+    }
+    response = requests.post(
+        url=url,
+        headers=headers,
+        json=payload,
+        timeout=config.default_timeout
+    )
     return response

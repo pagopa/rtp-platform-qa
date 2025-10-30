@@ -1,4 +1,7 @@
 import time
+import uuid
+from datetime import datetime
+from datetime import timezone
 
 import allure
 import pytest
@@ -8,9 +11,11 @@ from api.activation import get_activation_by_id
 from api.activation import get_activation_by_payer_id
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
+from api.takeover import send_takeover_notification
 from api.takeover import takeover_activation
 from config.configuration import secrets
 from utils.dataset import fake_fc
+from utils.dataset import uuidv4_pattern
 
 @pytest.fixture
 def random_fiscal_code():
@@ -75,3 +80,20 @@ def test_takeover_flow(random_fiscal_code):
 
     new_sp = get_after_takeover.json()['payer']['rtpSpId']
     assert new_sp == secrets.debtor_service_provider_B.service_provider_id, f"Takeover failed. Expected service provider {secrets.debtor_service_provider_B.service_provider_id}, got {new_sp}"
+
+@allure.feature('Activation')
+@allure.story('Takeover Notification')
+@pytest.mark.functional
+def test_takeover_notification(random_fiscal_code):
+    """Availability probe for takeover notification mock endpoint: expects 204 No Content"""
+    old_activation_id = str(uuid.uuid4())
+    takeover_ts = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    resp = send_takeover_notification(
+        old_activation_id=old_activation_id,
+        fiscal_code=random_fiscal_code,
+        takeover_timestamp=takeover_ts
+    )
+
+    assert resp.status_code == 204, f"Expected 204 from takeover notification mock, got {resp.status_code} - {resp.text} - url={getattr(resp.request, 'url', '')}"
+    assert not resp.text, 'Expected empty body for 204 No Content response'
