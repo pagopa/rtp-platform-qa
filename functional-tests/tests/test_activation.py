@@ -269,7 +269,7 @@ def test_get_all_activations_non_integer_size(access_token):
 
 @allure.feature('Activation')
 @allure.story('List Activations')
-@allure.title('Missing Version header returns 404')
+@allure.title('Missing Version header returns 200')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
