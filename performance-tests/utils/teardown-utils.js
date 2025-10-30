@@ -216,4 +216,3 @@ export function createFindAllByServiceProviderTeardown({ START_TIME, VU_COUNT, t
         })(data);
     };
 }
-

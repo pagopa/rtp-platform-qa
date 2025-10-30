@@ -11,5 +11,3 @@ def is_empty_response(res: Response) -> bool:
     """
     raw = res.text or ''
     return not raw.strip()
-
-
