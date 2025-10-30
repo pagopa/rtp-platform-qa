@@ -19,6 +19,8 @@ class ProducerService:
     async def start(self) -> None:
         connection_string = get_eventhub_connection_string()
         namespace = settings.eventhub_namespace
+        if not namespace:
+            raise RuntimeError('EVENTHUB_NAMESPACE not configured')
 
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         ssl_context.check_hostname = True
