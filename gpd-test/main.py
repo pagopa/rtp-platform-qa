@@ -1,33 +1,53 @@
 import logging
 from contextlib import asynccontextmanager
-
 from dotenv import load_dotenv
 from fastapi import FastAPI
-from gpdApi import gpd_router
-from healthCheckApi import health_router
-from producer import setup_producer
+
+from api.gpd import router as gpd_router
+from api.health import router as health_router
+from middleware.errors import add_exception_handlers
+from middleware.request_id import request_id_middleware
+from middleware.access_log import access_log_middleware
+from services.producer import ProducerService
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("gpd-producer")
+
 
 @asynccontextmanager
-async def app_lifespan(app: FastAPI):
+async def lifespan(app: FastAPI):
     try:
-        logger.info('Starting producer setup...')
-        kafka_producer = await setup_producer()
-        app.state.producer = kafka_producer
-        logger.info('Producer setup completed successfully')
-        yield
-        logger.info('Shutting down producer...')
-        await kafka_producer.stop()
-        logger.info('Producer shutdown completed')
+        logger.info("Starting ProducerService...")
+        producer_service = ProducerService()
+        await producer_service.start()
+        app.state.producer_service = producer_service
+        logger.info("ProducerService started")
     except Exception as e:
-        logger.error(f"Error during lifespan: {e}")
-        app.state.producer = None
-        yield
+        logger.exception("Failed to start ProducerService: %s", e)
+        app.state.producer_service = None
 
-app = FastAPI(lifespan=app_lifespan)
-app.include_router(health_router)
-app.include_router(gpd_router)
+    yield
+
+    producer_service: ProducerService | None = getattr(app.state, "producer_service", None)
+    if producer_service:
+        logger.info("Stopping ProducerService...")
+        await producer_service.stop()
+        logger.info("ProducerService stopped")
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(title="GPD Producer", lifespan=lifespan)
+
+    app.middleware("http")(request_id_middleware)
+    app.middleware("http")(access_log_middleware)
+    add_exception_handlers(app)
+
+    app.include_router(health_router)
+    app.include_router(gpd_router)
+
+    return app
+
+
+app = create_app()
