@@ -15,10 +15,7 @@ from config.configuration import secrets
 from utils.dataset import fake_fc
 from utils.dataset import uuidv4_pattern
 from utils.random_values import random_page_size
-from utils.response_assertions import ensure_json_response_and_type
 from utils.response_assertions import is_empty_response
-from utils.response_assertions import validate_activations_and_meta
-from utils.response_assertions import validate_error_structure
 
 @allure.feature('Activation')
 @allure.story('Debtor activation')
@@ -289,7 +286,7 @@ def test_get_all_activations_missing_version_header(access_token):
 
 @allure.feature('Activation')
 @allure.story('List Activations')
-@allure.title('Non-existent NextActivationId returns 4xx')
+@allure.title('Non-existent NextActivationId returns 200 with empty body')
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
@@ -298,15 +295,5 @@ def test_get_all_activations_nonexistent_next_activation_id(access_token):
 
     res = get_all_activations(access_token, size=5, next_activation_id=random_cursor)
 
-    assert res.status_code in (400, 404), f'Expected 400/404 but got {res.status_code}'
-
-    if is_empty_response(res):
-        return
-
-    ensure_json_response_and_type(res)
-
-    body = res.json()
-    assert isinstance(body, dict), 'Expected response body to be a JSON object'
-
-    validate_error_structure(body)
-    validate_activations_and_meta(body)
+    assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
+    assert is_empty_response(res), 'Expected empty body for nonexistent NextActivationId'
