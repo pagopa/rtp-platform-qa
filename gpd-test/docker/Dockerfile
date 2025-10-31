@@ -9,7 +9,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY . /app/
 
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir -e ".[dev]" \
+    && pip install --no-cache-dir aiokafka==0.12.0
 
 WORKDIR /app/gpd-test
 
