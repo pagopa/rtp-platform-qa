@@ -1,5 +1,6 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+from pydantic_settings import BaseSettings
+from pydantic_settings import SettingsConfigDict
 
 class Settings(BaseSettings):
     eventhub_namespace: str | None = Field(default=None, validation_alias='EVENTHUB_NAMESPACE')

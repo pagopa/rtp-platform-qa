@@ -4,7 +4,8 @@ from typing import Literal
 from typing import Optional
 
 from pydantic import BaseModel
-from pydantic import Field, ConfigDict
+from pydantic import ConfigDict
+from pydantic import Field
 
 class RTPOperationCode(str, Enum):
   CREATE = 'CREATE'
@@ -37,7 +38,6 @@ class RTPMessage(BaseModel):
   psp_tax_code: Optional[str] = Field(None, min_length=11, max_length=16)
   is_partial_payment: Optional[bool] = None
 
-  # Pydantic v2 config
   model_config = ConfigDict(str_strip_whitespace=True, use_enum_values=True)
 
 class SendStatus(BaseModel):
