@@ -3,7 +3,8 @@ import os
 from azure.identity import DefaultAzureCredential
 from azure.keyvault.secrets import SecretClient
 
-def get_eventhub_connection_string():
+
+def get_eventhub_connection_string() -> str:
     keyvault_name = os.environ['KEYVAULT_NAME']
     secret_name = os.environ['EVENTHUB_SECRET_NAME']
 
