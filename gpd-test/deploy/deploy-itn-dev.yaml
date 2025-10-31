@@ -25,13 +25,13 @@ spec:
               path: /ready
               port: 8080
             initialDelaySeconds: 10
-            periodSeconds: 60
+            periodSeconds: 300
           livenessProbe:
             httpGet:
               path: /health
               port: 8080
             initialDelaySeconds: 15
-            periodSeconds: 60
+            periodSeconds: 300
           env:
             - name: KEYVAULT_NAME
               value: cstar-d-itn-srtp-kv
