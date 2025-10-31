@@ -64,7 +64,8 @@ Notes:
 1. Start the API server
 
 ```bash
-uvicorn gpd-test.main:app --reload --port 8080
+cd gpd-test
+uvicorn main:app --reload --port 8080
 ```
 
 The server logs will show ProducerService startup. If `EVENTHUB_NAMESPACE` or Key Vault envs are missing, startup will warn/fail and `/send/*` will return 5xx/503.

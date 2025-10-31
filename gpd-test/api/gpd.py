@@ -19,6 +19,8 @@ router = APIRouter()
 
 logger = logging.getLogger('gpd-producer')
 EVENTHUB_TOPIC = settings.eventhub_topic
+if not EVENTHUB_TOPIC:
+    raise RuntimeError("EVENTHUB_TOPIC is not configured. Please set 'eventhub_topic' in your settings or the EVENTHUB_TOPIC env var.")
 
 
 def require_producer_service(request: Request, *, missing_status: int = 503) -> ProducerService:
