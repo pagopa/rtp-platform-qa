@@ -39,6 +39,9 @@ on:
         required: false
         default: true
 
+permissions:
+  contents: read
+
 env:
   ALLURE_VERSION: '2.32.0'
 
