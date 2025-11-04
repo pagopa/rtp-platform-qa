@@ -157,6 +157,8 @@ jobs:
     if: always() && (github.event.inputs.Contract == 'true' || !github.event.inputs.Contract)
     runs-on: ubuntu-latest
     environment: uat
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
       - name: Run Contract tests
