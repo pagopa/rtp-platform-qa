@@ -45,31 +45,29 @@ env:
 jobs:
   Functional_Tests:
     if: always() && (github.event.inputs.Functional == 'true' || !github.event.inputs.Functional)
-    uses: ./.github/workflows/reusable_test_job.yml
+    uses: ./.github/workflows/run_test_workflow.yaml
     with:
       job_name: Functional
       extras: functional-tests
       run_cmd: pytest functional-tests/tests/ --alluredir allure-results
       artifact_name: allure-results-functional
-      allure_version: ${{ env.ALLURE_VERSION }}
     secrets: inherit
 
   BDD_Tests:
     needs: Functional_Tests
     if: always() && (github.event.inputs.BDD == 'true' || !github.event.inputs.BDD)
-    uses: ./.github/workflows/reusable_test_job.yml
+    uses: ./.github/workflows/run_test_workflow.yaml
     with:
       job_name: BDD
       extras: bdd-tests
       run_cmd: behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
       artifact_name: allure-results-bdd
-      allure_version: ${{ env.ALLURE_VERSION }}
     secrets: inherit
 
   UX_Tests:
     needs: BDD_Tests
     if: always() && (github.event.inputs.UX == 'true' || !github.event.inputs.UX)
-    uses: ./.github/workflows/reusable_test_job.yml
+    uses: ./.github/workflows/run_test_workflow.yaml
     with:
       job_name: UX
       extras: ux-tests
@@ -79,8 +77,7 @@ jobs:
         playwright install
       run_cmd: pytest ux-tests/tests/ --alluredir allure-results
       artifact_name: allure-results-ux
-      run_if: ${{ always() && (github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd) }}
-      allure_version: ${{ env.ALLURE_VERSION }}
+      run_if: ${{ github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd }}
     secrets: inherit
 
   Performance_Tests:
@@ -150,13 +147,12 @@ jobs:
   Contract_Tests:
     needs: Performance_Tests
     if: always() && (github.event.inputs.Contract == 'true' || !github.event.inputs.Contract)
-    uses: ./.github/workflows/reusable_test_job.yml
+    uses: ./.github/workflows/run_test_workflow.yaml
     with:
       job_name: Contract
       extras: contract-tests
       run_cmd: pytest contract-tests/ --disable-warnings --alluredir allure-results
       artifact_name: allure-results-contract
-      allure_version: ${{ env.ALLURE_VERSION }}
     secrets: inherit
 
   Aggregate_Results:
