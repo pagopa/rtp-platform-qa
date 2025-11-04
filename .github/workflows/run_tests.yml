@@ -176,27 +176,27 @@ jobs:
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: allure-results-functional
-          path: allure-results
+          path: artifacts/functional
       - name: Download BDD results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: allure-results-bdd
-          path: allure-results
+          path: artifacts/bdd
       - name: Download UX results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: allure-results-ux
-          path: allure-results
+          path: artifacts/ux
       - name: Download Contract results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: allure-results-contract
-          path: allure-results
+          path: artifacts/contract
       - name: Download End-to-End results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
           name: allure-results-endtoend
-          path: allure-results
+          path: artifacts/endtoend
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
         if: always()
@@ -204,7 +204,81 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-      - name: Setup Java for Allure
+      - name: Prepare results (functional)
+        if: always()
+        run: |
+          rm -rf allure-results
+          mkdir -p allure-results
+          if [ -d "artifacts/functional" ]; then
+            cp -r artifacts/functional/* allure-results/ || true
+          fi
+      - name: Build Allure report (functional)
+        if: always()
+        uses: ./.github/actions/allure-report
+        with:
+          subfolder: functional
+          allure_version: ${{ env.ALLURE_VERSION }}
+          gh_pages_path: gh-pages
+
+      - name: Prepare results (bdd)
+        if: always()
+        run: |
+          rm -rf allure-results
+          mkdir -p allure-results
+          if [ -d "artifacts/bdd" ]; then
+            cp -r artifacts/bdd/* allure-results/ || true
+          fi
+      - name: Build Allure report (bdd)
+        if: always()
+        uses: ./.github/actions/allure-report
+        with:
+          subfolder: bdd
+          allure_version: ${{ env.ALLURE_VERSION }}
+          gh_pages_path: gh-pages
+
+      - name: Prepare results (ux)
+        if: always()
+        run: |
+          rm -rf allure-results
+          mkdir -p allure-results
+          if [ -d "artifacts/ux" ]; then
+            cp -r artifacts/ux/* allure-results/ || true
+          fi
+      - name: Build Allure report (ux)
+        if: always()
+        uses: ./.github/actions/allure-report
+        with:
+          subfolder: ux
+          allure_version: ${{ env.ALLURE_VERSION }}
+          gh_pages_path: gh-pages
+
+      - name: Prepare results (contract)
+        if: always()
+        run: |
+          rm -rf allure-results
+          mkdir -p allure-results
+          if [ -d "artifacts/contract" ]; then
+            cp -r artifacts/contract/* allure-results/ || true
+          fi
+      - name: Build Allure report (contract)
+        if: always()
+        uses: ./.github/actions/allure-report
+        with:
+          subfolder: contract
+          allure_version: ${{ env.ALLURE_VERSION }}
+          gh_pages_path: gh-pages
+
+      - name: Prepare results (aggregate)
+        if: always()
+        run: |
+          rm -rf allure-results
+          mkdir -p allure-results
+          for d in artifacts/functional artifacts/bdd artifacts/ux artifacts/contract artifacts/endtoend; do
+            if [ -d "$d" ]; then
+              cp -r "$d"/* allure-results/ || true
+            fi
+          done
+      - name: Build Allure report (aggregate)
         if: always()
         uses: ./.github/actions/allure-report
         with:
