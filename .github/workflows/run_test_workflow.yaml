@@ -38,6 +38,8 @@ on:
 jobs:
   test_and_publish:
     name: ${{ inputs.job_name }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     environment: uat
 
