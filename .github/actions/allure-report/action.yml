@@ -42,6 +42,12 @@ runs:
         fi
 
         allure --version
+        if [ ! -d "allure-results" ] || [ -z "$(ls -A allure-results 2>/dev/null)" ]; then
+          echo "No allure-results found for subfolder '${SUBFOLDER}'. Skipping report generation."
+          mkdir -p "allure-history/${SUBFOLDER}"
+          exit 0
+        fi
+
         allure generate "allure-results" --clean -o "allure-report"
 
         rm -rf "allure-history/${SUBFOLDER}"
