@@ -45,40 +45,48 @@ env:
 jobs:
   Functional_Tests:
     if: always() && (github.event.inputs.Functional == 'true' || !github.event.inputs.Functional)
-    uses: ./.github/workflows/run_test_workflow.yaml
-    with:
-      job_name: Functional
-      extras: functional-tests
-      run_cmd: pytest functional-tests/tests/ --alluredir allure-results
-      artifact_name: allure-results-functional
-    secrets: inherit
+    runs-on: ubuntu-latest
+    environment: uat
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+      - name: Run Functional tests
+        uses: ./.github/actions/python-test-runner
+        with:
+          extras: functional-tests
+          run_cmd: pytest functional-tests/tests/ --alluredir allure-results
+          artifact_name: allure-results-functional
 
   BDD_Tests:
     needs: Functional_Tests
     if: always() && (github.event.inputs.BDD == 'true' || !github.event.inputs.BDD)
-    uses: ./.github/workflows/run_test_workflow.yaml
-    with:
-      job_name: BDD
-      extras: bdd-tests
-      run_cmd: behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
-      artifact_name: allure-results-bdd
-    secrets: inherit
+    runs-on: ubuntu-latest
+    environment: uat
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - name: Run BDD tests
+        uses: ./.github/actions/python-test-runner
+        with:
+          extras: bdd-tests
+          run_cmd: behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
+          artifact_name: allure-results-bdd
 
   UX_Tests:
     needs: BDD_Tests
     if: always() && (github.event.inputs.UX == 'true' || !github.event.inputs.UX)
-    uses: ./.github/workflows/run_test_workflow.yaml
-    with:
-      job_name: UX
-      extras: ux-tests
-      extra_install: |
-        pip install playwright pytest-playwright
-        playwright install-deps
-        playwright install
-      run_cmd: pytest ux-tests/tests/ --alluredir allure-results
-      artifact_name: allure-results-ux
-      run_if: ${{ github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd }}
-    secrets: inherit
+    runs-on: ubuntu-latest
+    environment: uat
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - name: Run UX tests
+        uses: ./.github/actions/python-test-runner
+        with:
+          extras: ux-tests
+          extra_install: |
+            pip install playwright pytest-playwright
+            playwright install-deps
+            playwright install
+          run_cmd: pytest ux-tests/tests/ --alluredir allure-results
+          artifact_name: allure-results-ux
 
   Performance_Tests:
     runs-on: ubuntu-latest
@@ -147,13 +155,16 @@ jobs:
   Contract_Tests:
     needs: Performance_Tests
     if: always() && (github.event.inputs.Contract == 'true' || !github.event.inputs.Contract)
-    uses: ./.github/workflows/run_test_workflow.yaml
-    with:
-      job_name: Contract
-      extras: contract-tests
-      run_cmd: pytest contract-tests/ --disable-warnings --alluredir allure-results
-      artifact_name: allure-results-contract
-    secrets: inherit
+    runs-on: ubuntu-latest
+    environment: uat
+    steps:
+      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
+      - name: Run Contract tests
+        uses: ./.github/actions/python-test-runner
+        with:
+          extras: contract-tests
+          run_cmd: pytest contract-tests/ --disable-warnings --alluredir allure-results
+          artifact_name: allure-results-contract
 
   Aggregate_Results:
     runs-on: ubuntu-latest
@@ -161,36 +172,31 @@ jobs:
     needs: EndToEnd_Tests
     if: always() && github.ref == 'refs/heads/main'
     steps:
-      - name: Copy functional results
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+      - name: Download Functional results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
+          name: allure-results-functional
           path: allure-results
-          merge-multiple: true
-          run-id: upload_functional_test_results
-      - name: Copy BDD results
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+      - name: Download BDD results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
+          name: allure-results-bdd
           path: allure-results
-          merge-multiple: true
-          run-id: upload_bdd_test_results
-      - name: Copy UX results
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+      - name: Download UX results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
+          name: allure-results-ux
           path: allure-results
-          merge-multiple: true
-          run-id: upload_ux_test_results
-      - name: Copy contract results
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+      - name: Download Contract results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
+          name: allure-results-contract
           path: allure-results
-          merge-multiple: true
-          run-id: upload_contract_test_results
-      - name: Copy end-to-end results
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
+      - name: Download End-to-End results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
         with:
+          name: allure-results-endtoend
           path: allure-results
-          merge-multiple: true
-          run-id: upload_endtoend_test_results
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
         if: always()
@@ -200,36 +206,11 @@ jobs:
           path: gh-pages
       - name: Setup Java for Allure
         if: always()
-        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
+        uses: ./.github/actions/allure-report
         with:
-          distribution: temurin
-          java-version: '17'
-      - name: Build test report (Allure CLI)
-        if: always()
-        continue-on-error: true
-        run: |
-          set -e
-          ALLURE_VERSION=2.32.0
-          sudo apt-get update
-          sudo apt-get install -y unzip curl
-          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
-          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
-          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
-
-          SUBFOLDER=aggregate
-          mkdir -p allure-results
-
-          if [ -d "gh-pages/${SUBFOLDER}/history" ]; then
-            mkdir -p allure-results/history
-            cp -r "gh-pages/${SUBFOLDER}/history" "allure-results/"
-          fi
-
-          allure --version
-          allure generate "allure-results" --clean -o "allure-report"
-
-          rm -rf "allure-history/${SUBFOLDER}"
-          mkdir -p "allure-history/${SUBFOLDER}"
-          cp -r allure-report/* "allure-history/${SUBFOLDER}/"
+          subfolder: aggregate
+          allure_version: ${{ env.ALLURE_VERSION }}
+          gh_pages_path: gh-pages
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -309,9 +290,9 @@ jobs:
           POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
           ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
           DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEPT_POSITIONS_ORGANIZATION_ID }}
-          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEPT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEPT_POSITIONS_DEV_ORGANIZATION_ID }}
+          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
+          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
+          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID }}
         run: |
           make test-end-to-end
       - name: Save end-to-end test results
