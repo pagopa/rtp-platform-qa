@@ -115,17 +115,36 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-      - name: Build test report
-        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+      - name: Setup Java for Allure
+        if: always()
+        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build test report (Allure CLI)
         if: always()
         continue-on-error: true
-        with:
-          gh_pages: gh-pages
-          allure_results: allure-results
-          allure_report: allure-report
-          allure_history: allure-history
-          subfolder: functional
-          keep_reports: 30
+        run: |
+          set -e
+          ALLURE_VERSION=2.32.0
+          sudo apt-get update
+          sudo apt-get install -y unzip curl
+          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
+          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
+          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+
+          mkdir -p allure-results
+          if [ -d "gh-pages/history" ]; then
+            mkdir -p allure-results/history
+            cp -r "gh-pages/history" "allure-results/"
+          fi
+
+          allure --version
+          allure generate "allure-results" --clean -o "allure-report"
+
+          rm -rf allure-history
+          mkdir -p allure-history
+          cp -r allure-report/* allure-history/
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -213,17 +232,36 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-      - name: Build test report
-        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+      - name: Setup Java for Allure
+        if: always()
+        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build test report (Allure CLI)
         if: always()
         continue-on-error: true
-        with:
-          gh_pages: gh-pages
-          allure_results: allure-results
-          allure_report: allure-report
-          allure_history: allure-history
-          subfolder: bdd
-          keep_reports: 30
+        run: |
+          set -e
+          ALLURE_VERSION=2.32.0
+          sudo apt-get update
+          sudo apt-get install -y unzip curl
+          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
+          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
+          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+
+          mkdir -p allure-results
+          if [ -d "gh-pages/history" ]; then
+            mkdir -p allure-results/history
+            cp -r "gh-pages/history" "allure-results/"
+          fi
+
+          allure --version
+          allure generate "allure-results" --clean -o "allure-report"
+
+          rm -rf allure-history
+          mkdir -p allure-history
+          cp -r allure-report/* allure-history/
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -314,17 +352,36 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-      - name: Build test report
-        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+      - name: Setup Java for Allure
+        if: always()
+        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build test report (Allure CLI)
         if: always()
         continue-on-error: true
-        with:
-          gh_pages: gh-pages
-          allure_results: allure-results
-          allure_report: allure-report
-          allure_history: allure-history
-          subfolder: ux
-          keep_reports: 30
+        run: |
+          set -e
+          ALLURE_VERSION=2.32.0
+          sudo apt-get update
+          sudo apt-get install -y unzip curl
+          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
+          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
+          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+
+          mkdir -p allure-results
+          if [ -d "gh-pages/history" ]; then
+            mkdir -p allure-results/history
+            cp -r "gh-pages/history" "allure-results/"
+          fi
+
+          allure --version
+          allure generate "allure-results" --clean -o "allure-report"
+
+          rm -rf allure-history
+          mkdir -p allure-history
+          cp -r allure-report/* allure-history/
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -474,17 +531,36 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-      - name: Build test report
-        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+      - name: Setup Java for Allure
+        if: always()
+        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build test report (Allure CLI)
         if: always()
         continue-on-error: true
-        with:
-          gh_pages: gh-pages
-          allure_results: allure-results
-          allure_report: allure-report
-          allure_history: allure-history
-          subfolder: contract
-          keep_reports: 30
+        run: |
+          set -e
+          ALLURE_VERSION=2.32.0
+          sudo apt-get update
+          sudo apt-get install -y unzip curl
+          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
+          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
+          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+
+          mkdir -p allure-results
+          if [ -d "gh-pages/history" ]; then
+            mkdir -p allure-results/history
+            cp -r "gh-pages/history" "allure-results/"
+          fi
+
+          allure --version
+          allure generate "allure-results" --clean -o "allure-report"
+
+          rm -rf allure-history
+          mkdir -p allure-history
+          cp -r allure-report/* allure-history/
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -540,16 +616,38 @@ jobs:
         with:
           ref: gh-pages
           path: gh-pages
-      - name: Build test report
-        uses: simple-elf/allure-report-action@91e6ff976a8b2303f2551ca36c39ba5256952c08
+      - name: Setup Java for Allure
+        if: always()
+        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build test report (Allure CLI)
         if: always()
         continue-on-error: true
-        with:
-          gh_pages: gh-pages
-          allure_results: allure-results
-          allure_report: allure-report
-          allure_history: allure-history
-          keep_reports: 30
+        run: |
+          set -e
+          ALLURE_VERSION=2.32.0
+          sudo apt-get update
+          sudo apt-get install -y unzip curl
+          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
+          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
+          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
+
+          SUBFOLDER=aggregate
+          mkdir -p allure-results
+
+          if [ -d "gh-pages/${SUBFOLDER}/history" ]; then
+            mkdir -p allure-results/history
+            cp -r "gh-pages/${SUBFOLDER}/history" "allure-results/"
+          fi
+
+          allure --version
+          allure generate "allure-results" --clean -o "allure-report"
+
+          rm -rf "allure-history/${SUBFOLDER}"
+          mkdir -p "allure-history/${SUBFOLDER}"
+          cp -r allure-report/* "allure-history/${SUBFOLDER}/"
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
