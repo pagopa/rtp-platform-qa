@@ -170,7 +170,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: uat
     needs: EndToEnd_Tests
-    if: always() && github.ref == 'refs/heads/main'
+    if: always()
     permissions:
       contents: write
     steps:
