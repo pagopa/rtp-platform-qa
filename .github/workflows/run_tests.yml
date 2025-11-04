@@ -171,6 +171,8 @@ jobs:
     environment: uat
     needs: EndToEnd_Tests
     if: always() && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     steps:
       - name: Download Functional results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16
@@ -209,7 +211,9 @@ jobs:
         run: |
           rm -rf allure-results
           mkdir -p allure-results
-          if [ -d "artifacts/functional" ]; then
+          if [ -d "artifacts/functional/allure-results" ]; then
+            cp -r artifacts/functional/allure-results/* allure-results/ || true
+          elif [ -d "artifacts/functional" ]; then
             cp -r artifacts/functional/* allure-results/ || true
           fi
       - name: Build Allure report (functional)
@@ -225,7 +229,9 @@ jobs:
         run: |
           rm -rf allure-results
           mkdir -p allure-results
-          if [ -d "artifacts/bdd" ]; then
+          if [ -d "artifacts/bdd/allure-results" ]; then
+            cp -r artifacts/bdd/allure-results/* allure-results/ || true
+          elif [ -d "artifacts/bdd" ]; then
             cp -r artifacts/bdd/* allure-results/ || true
           fi
       - name: Build Allure report (bdd)
@@ -241,7 +247,9 @@ jobs:
         run: |
           rm -rf allure-results
           mkdir -p allure-results
-          if [ -d "artifacts/ux" ]; then
+          if [ -d "artifacts/ux/allure-results" ]; then
+            cp -r artifacts/ux/allure-results/* allure-results/ || true
+          elif [ -d "artifacts/ux" ]; then
             cp -r artifacts/ux/* allure-results/ || true
           fi
       - name: Build Allure report (ux)
@@ -257,7 +265,9 @@ jobs:
         run: |
           rm -rf allure-results
           mkdir -p allure-results
-          if [ -d "artifacts/contract" ]; then
+          if [ -d "artifacts/contract/allure-results" ]; then
+            cp -r artifacts/contract/allure-results/* allure-results/ || true
+          elif [ -d "artifacts/contract" ]; then
             cp -r artifacts/contract/* allure-results/ || true
           fi
       - name: Build Allure report (contract)
@@ -274,7 +284,9 @@ jobs:
           rm -rf allure-results
           mkdir -p allure-results
           for d in artifacts/functional artifacts/bdd artifacts/ux artifacts/contract artifacts/endtoend; do
-            if [ -d "$d" ]; then
+            if [ -d "$d/allure-results" ]; then
+              cp -r "$d/allure-results"/* allure-results/ || true
+            elif [ -d "$d" ]; then
               cp -r "$d"/* allure-results/ || true
             fi
           done
