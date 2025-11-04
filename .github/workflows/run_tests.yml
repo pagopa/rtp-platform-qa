@@ -39,360 +39,50 @@ on:
         required: false
         default: true
 
+env:
+  ALLURE_VERSION: '2.32.0'
+
 jobs:
   Functional_Tests:
-    runs-on: ubuntu-latest
-    environment: uat
-    name: Functional
-    if: always() && (github.event.inputs.Functional  == 'true' || !github.event.inputs.Functional)
-    steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
-        with:
-          python-version: 3.x
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          # Install core + functional extras from pyproject
-          pip install -e ".[functional-tests]"
-      - name: Run functional tests
-        if: always()
-        continue-on-error: true
-        env:
-          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
-          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
-
-          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
-          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
-          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
-          PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
-          PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
-          PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
-
-          RTP_READER_CLIENT_ID: ${{ vars.RTP_READER_CLIENT_ID }}
-          RTP_READER_CLIENT_SECRET: ${{ secrets.RTP_READER_CLIENT_SECRET }}
-
-          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
-          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
-
-          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
-          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
-          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
-          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
-
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
-
-          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
-          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
-          CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
-          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-          ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
-          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
-          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID }}
-        run: |
-          pytest functional-tests/tests/ --alluredir allure-results
-      - name: Save functional test results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        id: upload_functional_test_results
-        with:
-          name: allure-results-functional
-          path: allure-results
-      - name: Load test report history
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - name: Setup Java for Allure
-        if: always()
-        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Build test report (Allure CLI)
-        if: always()
-        continue-on-error: true
-        run: |
-          set -e
-          ALLURE_VERSION=2.32.0
-          sudo apt-get update
-          sudo apt-get install -y unzip curl
-          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
-          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
-          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
-
-          mkdir -p allure-results
-          if [ -d "gh-pages/history" ]; then
-            mkdir -p allure-results/history
-            cp -r "gh-pages/history" "allure-results/"
-          fi
-
-          allure --version
-          allure generate "allure-results" --clean -o "allure-report"
-
-          rm -rf allure-history
-          mkdir -p allure-history
-          cp -r allure-report/* allure-history/
-      - name: Publish test report
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
-        if: always()
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-          keep_files: true
-          user_name: 'rtp-gh-bot'
-          user_email: 'rtp-github-bot@pagopa.it'
+    if: always() && (github.event.inputs.Functional == 'true' || !github.event.inputs.Functional)
+    uses: ./.github/workflows/reusable_test_job.yml
+    with:
+      job_name: Functional
+      extras: functional-tests
+      run_cmd: pytest functional-tests/tests/ --alluredir allure-results
+      artifact_name: allure-results-functional
+      allure_version: ${{ env.ALLURE_VERSION }}
+    secrets: inherit
 
   BDD_Tests:
-    runs-on: ubuntu-latest
     needs: Functional_Tests
-    environment: uat
-    if: always() && (github.event.inputs.BDD  == 'true' || !github.event.inputs.BDD)
-    name: BDD
-    steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
-        with:
-          python-version: 3.x
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[bdd-tests]"
-      - name: Run BDD tests
-        if: always()
-        continue-on-error: true
-        env:
-          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
-          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
-
-          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
-          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
-          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
-          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
-
-          RTP_READER_CLIENT_ID: ${{ vars.RTP_READER_CLIENT_ID }}
-          RTP_READER_CLIENT_SECRET: ${{ secrets.RTP_READER_CLIENT_SECRET }}
-
-          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
-          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
-
-          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
-          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
-          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
-          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
-
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
-
-          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
-          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
-          CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
-          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-          ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
-          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
-          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID }}
-        run: |
-          behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
-      - name: Save BDD test results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        id: upload_bdd_test_results
-        with:
-          name: allure-results-bdd
-          path: allure-results
-      - name: Load test report history
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - name: Setup Java for Allure
-        if: always()
-        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Build test report (Allure CLI)
-        if: always()
-        continue-on-error: true
-        run: |
-          set -e
-          ALLURE_VERSION=2.32.0
-          sudo apt-get update
-          sudo apt-get install -y unzip curl
-          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
-          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
-          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
-
-          mkdir -p allure-results
-          if [ -d "gh-pages/history" ]; then
-            mkdir -p allure-results/history
-            cp -r "gh-pages/history" "allure-results/"
-          fi
-
-          allure --version
-          allure generate "allure-results" --clean -o "allure-report"
-
-          rm -rf allure-history
-          mkdir -p allure-history
-          cp -r allure-report/* allure-history/
-      - name: Publish test report
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
-        if: always()
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-          keep_files: true
-          user_name: 'rtp-gh-bot'
-          user_email: 'rtp-github-bot@pagopa.it'
+    if: always() && (github.event.inputs.BDD == 'true' || !github.event.inputs.BDD)
+    uses: ./.github/workflows/reusable_test_job.yml
+    with:
+      job_name: BDD
+      extras: bdd-tests
+      run_cmd: behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
+      artifact_name: allure-results-bdd
+      allure_version: ${{ env.ALLURE_VERSION }}
+    secrets: inherit
 
   UX_Tests:
-    runs-on: ubuntu-latest
-    environment: uat
     needs: BDD_Tests
-    if: always() && (github.event.inputs.UX  == 'true' || !github.event.inputs.UX)
-    name: UX
-    steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
-        with:
-          python-version: 3.x
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[ux-tests]"
-          pip install playwright pytest-playwright
-          playwright install-deps
-          playwright install
-      - name: Run UX tests
-        if: always() && (github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd)
-        continue-on-error: true
-        env:
-          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
-          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
+    if: always() && (github.event.inputs.UX == 'true' || !github.event.inputs.UX)
+    uses: ./.github/workflows/reusable_test_job.yml
+    with:
+      job_name: UX
+      extras: ux-tests
+      extra_install: |
+        pip install playwright pytest-playwright
+        playwright install-deps
+        playwright install
+      run_cmd: pytest ux-tests/tests/ --alluredir allure-results
+      artifact_name: allure-results-ux
+      run_if: ${{ always() && (github.event.inputs.EndToEnd == 'true' || !github.event.inputs.EndToEnd) }}
+      allure_version: ${{ env.ALLURE_VERSION }}
+    secrets: inherit
 
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
-
-          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
-          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
-          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
-          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
-
-          RTP_READER_CLIENT_ID: ${{ vars.RTP_READER_CLIENT_ID }}
-          RTP_READER_CLIENT_SECRET: ${{ secrets.RTP_READER_CLIENT_SECRET }}
-
-          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
-          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
-
-          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
-          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
-          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
-          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
-
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
-
-          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
-          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
-          CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
-          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-          ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
-          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
-          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID }}
-        run: |
-          pytest ux-tests/tests/ --alluredir allure-results
-      - name: Save UX test results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        id: upload_ux_test_results
-        with:
-          name: allure-results-ux
-          path: allure-results
-      - name: Load test report history
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - name: Setup Java for Allure
-        if: always()
-        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Build test report (Allure CLI)
-        if: always()
-        continue-on-error: true
-        run: |
-          set -e
-          ALLURE_VERSION=2.32.0
-          sudo apt-get update
-          sudo apt-get install -y unzip curl
-          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
-          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
-          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
-
-          mkdir -p allure-results
-          if [ -d "gh-pages/history" ]; then
-            mkdir -p allure-results/history
-            cp -r "gh-pages/history" "allure-results/"
-          fi
-
-          allure --version
-          allure generate "allure-results" --clean -o "allure-report"
-
-          rm -rf allure-history
-          mkdir -p allure-history
-          cp -r allure-report/* allure-history/
-      - name: Publish test report
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
-        if: always()
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-          keep_files: true
-          user_name: 'rtp-gh-bot'
-          user_email: 'rtp-github-bot@pagopa.it'
   Performance_Tests:
     runs-on: ubuntu-latest
     environment: uat
@@ -458,120 +148,16 @@ jobs:
           locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com --html .report/report.html
 
   Contract_Tests:
-    runs-on: ubuntu-latest
-    environment: uat
     needs: Performance_Tests
-    if: always() && (github.event.inputs.Contract  == 'true' || !github.event.inputs.Contract)
-    name: Contract
-    steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
-        with:
-          python-version: 3.x
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[contract-tests]"
-      - name: Run contract tests
-        if: always()
-        continue-on-error: true
-        env:
-          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
-          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
-
-          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
-          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
-          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
-          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
-
-          RTP_READER_CLIENT_ID: ${{ vars.RTP_READER_CLIENT_ID }}
-          RTP_READER_CLIENT_SECRET: ${{ secrets.RTP_READER_CLIENT_SECRET }}
-
-          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
-          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
-
-          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
-          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
-          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
-          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
-
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
-          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
-          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
-          CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
-          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-          ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
-          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
-          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID }}
-        run: |
-          pytest contract-tests/ --disable-warnings --alluredir allure-results
-      - name: Save contract test results
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
-        id: upload_contract_test_results
-        with:
-          name: allure-results-contract
-          path: allure-results
-      - name: Load test report history
-        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-      - name: Setup Java for Allure
-        if: always()
-        uses: actions/setup-java@f4f1212c880fdec8162ea9a6493f4495191887b4 # v4.7.1
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: Build test report (Allure CLI)
-        if: always()
-        continue-on-error: true
-        run: |
-          set -e
-          ALLURE_VERSION=2.32.0
-          sudo apt-get update
-          sudo apt-get install -y unzip curl
-          curl -sSL -o "allure-${ALLURE_VERSION}.zip" "https://github.com/allure-framework/allure2/releases/download/${ALLURE_VERSION}/allure-${ALLURE_VERSION}.zip"
-          sudo unzip -o "allure-${ALLURE_VERSION}.zip" -d /usr/local/
-          sudo ln -sfn "/usr/local/allure-${ALLURE_VERSION}/bin/allure" /usr/local/bin/allure
-
-          mkdir -p allure-results
-          if [ -d "gh-pages/history" ]; then
-            mkdir -p allure-results/history
-            cp -r "gh-pages/history" "allure-results/"
-          fi
-
-          allure --version
-          allure generate "allure-results" --clean -o "allure-report"
-
-          rm -rf allure-history
-          mkdir -p allure-history
-          cp -r allure-report/* allure-history/
-      - name: Publish test report
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
-        if: always()
-        continue-on-error: true
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-          keep_files: true
-          user_name: 'rtp-gh-bot'
-          user_email: 'rtp-github-bot@pagopa.it'
+    if: always() && (github.event.inputs.Contract == 'true' || !github.event.inputs.Contract)
+    uses: ./.github/workflows/reusable_test_job.yml
+    with:
+      job_name: Contract
+      extras: contract-tests
+      run_cmd: pytest contract-tests/ --disable-warnings --alluredir allure-results
+      artifact_name: allure-results-contract
+      allure_version: ${{ env.ALLURE_VERSION }}
+    secrets: inherit
 
   Aggregate_Results:
     runs-on: ubuntu-latest
