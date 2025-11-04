@@ -24,14 +24,18 @@ runs:
     - name: Install dependencies
       shell: bash
       run: |
-        set -e
+        set -euo pipefail
+        EXTRAS="${{ inputs.extras }}"
+        if [[ -z "$EXTRAS" || ! "$EXTRAS" =~ ^[A-Za-z0-9._,-]+$ ]]; then
+          echo "Invalid extras value: '$EXTRAS'"; exit 1
+        fi
         python -m pip install --upgrade pip
-        pip install -e ".[${{ inputs.extras }}]"
+        pip install -e ".[${EXTRAS}]"
     - name: Extra install
       if: ${{ inputs.extra_install != '' }}
       shell: bash
       run: |
-        set -e
+        set -euo pipefail
         bash -lc "${{ inputs.extra_install }}"
     - name: Run tests
       shell: bash
