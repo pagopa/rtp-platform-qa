@@ -31,37 +31,59 @@ jobs:
           echo "Latest directory: $latest_dir"
           echo "latest_dir=$latest_dir" >> $GITHUB_OUTPUT
       - name: Extract Fail Rate from Allure
+        shell: bash
         run: |
-          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
-          summary_file="$latest_dir/widgets/summary.json"
-          latest_folder=$(basename "$latest_dir" | grep -oE '[0-9]+')
-          if [ -f "$summary_file" ]; then
-            failed=$(jq '.statistic.failed // 0' "$summary_file")
-            total=$(jq '.statistic.total // 0' "$summary_file")
+          set -euo pipefail
+          ROOT="temp-gh-pages"
+          SUM=""
+          FOLDER="aggregate"
 
-            if [ "$failed" -eq 0 ]; then
-              fail_rate_number=0
-              success_rate_string="100.00"
-            else
-              fail_rate=$(echo "$failed / $total * 100" | bc -l)
-              fail_rate_number=$(printf "%.0f" $fail_rate)
-              success_rate=$(echo "100 - $fail_rate" | bc -l)
-              success_rate_string=$(printf "%.2f" $success_rate)
+          if [ -f "${ROOT}/aggregate/widgets/summary.json" ]; then
+            SUM="${ROOT}/aggregate/widgets/summary.json"
+            FOLDER="aggregate"
+          else
+            for sub in functional bdd ux contract; do
+              if [ -f "${ROOT}/${sub}/widgets/summary.json" ]; then
+                SUM="${ROOT}/${sub}/widgets/summary.json"
+                FOLDER="$sub"
+                break
+              fi
+            done
+          fi
+
+          if [ -z "$SUM" ]; then
+            latest_dir=$(ls -d ${ROOT}/*/ 2>/dev/null | grep -E '/[0-9]+/$' | sort -V | tail -n 1 || true)
+            if [ -n "$latest_dir" ] && [ -f "${latest_dir}/widgets/summary.json" ]; then
+              SUM="${latest_dir}/widgets/summary.json"
+              FOLDER="$(basename "$latest_dir")"
             fi
-          else
-            fail_rate_number=0
           fi
 
-          if [ "$fail_rate_number" -gt ${{ inputs.THRESHOLD }} ]; then
-            send_notification="true"
-          else
-            send_notification="false"
+          if [ -z "$SUM" ]; then
+            echo "No Allure summary found."
+            echo "FAIL_RATE=0" >> $GITHUB_ENV
+            echo "SUCCESS_RATE=0.00" >> $GITHUB_ENV
+            echo "SEND_NOTIFICATION=false" >> $GITHUB_ENV
+            echo "LATEST_FOLDER=" >> $GITHUB_ENV
+            exit 0
           fi
 
-          echo "FAIL_RATE=$fail_rate_number" >> $GITHUB_ENV
+          passed=$(jq -r '.statistic.passed // 0' "$SUM")
+          total=$(jq -r  '.statistic.total  // 0' "$SUM")
+
+          if [ "$total" -le 0 ]; then
+            success_rate="0.00"
+          else
+            success_rate=$(awk -v p="$passed" -v t="$total" 'BEGIN{printf("%.2f",(p/t)*100)}')
+          fi
+
+          fail_rate_number=$(awk -v s="$success_rate" 'BEGIN{printf("%.0f", 100 - s)}')
+          send_notification=$([ "$fail_rate_number" -gt ${{ inputs.THRESHOLD }} ] && echo true || echo false)
+
+          echo "FAIL_RATE=$fail_rate_number"   >> $GITHUB_ENV
+          echo "SUCCESS_RATE=$success_rate"    >> $GITHUB_ENV
           echo "SEND_NOTIFICATION=$send_notification" >> $GITHUB_ENV
-          echo "SUCCESS_RATE=$success_rate_string" >> $GITHUB_ENV
-          echo "LATEST_FOLDER=$latest_folder" >> $GITHUB_ENV
+          echo "LATEST_FOLDER=$FOLDER"         >> $GITHUB_ENV
 
   SendSlackNotification:
     needs: ExtractFailRate
