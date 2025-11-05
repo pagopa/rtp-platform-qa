@@ -106,7 +106,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          # If your performance tests need Python deps (eg. locust), add them to pyproject extras.
           pip install -e ".[performance-tests]" || true
       - name: Run Performance tests
         if: always()

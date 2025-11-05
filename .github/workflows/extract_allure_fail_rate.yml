@@ -36,20 +36,23 @@ jobs:
           summary_file="$latest_dir/widgets/summary.json"
           latest_folder=$(basename "$latest_dir" | grep -oE '[0-9]+')
           if [ -f "$summary_file" ]; then
-            failed=$(jq '.statistic.failed // 0' "$summary_file")
-            total=$(jq '.statistic.total // 0' "$summary_file")
+            passed=$(jq -r '.statistic.passed // 0' "$summary_file")
+            failed=$(jq -r '.statistic.failed // 0' "$summary_file")
+            broken=$(jq -r '.statistic.broken // 0' "$summary_file")
+            total=$(jq -r  '.statistic.total  // 0' "$summary_file")
 
-            if [ "$failed" -eq 0 ]; then
+            if [ "$total" -eq 0 ]; then
               fail_rate_number=0
-              success_rate_string="100.00"
+              success_rate_string="0.00"
             else
-              fail_rate=$(echo "$failed / $total * 100" | bc -l)
-              fail_rate_number=$(printf "%.0f" $fail_rate)
-              success_rate=$(echo "100 - $fail_rate" | bc -l)
-              success_rate_string=$(printf "%.2f" $success_rate)
+              success_rate=$(echo "$passed / $total * 100" | bc -l)
+              success_rate_string=$(printf "%.2f" "$success_rate")
+              fail_rate=$(echo "($failed + $broken) / $total * 100" | bc -l)
+              fail_rate_number=$(printf "%.0f" "$fail_rate")
             fi
           else
             fail_rate_number=0
+            success_rate_string="0.00"
           fi
 
           if [ "$fail_rate_number" -gt ${{ inputs.THRESHOLD }} ]; then
