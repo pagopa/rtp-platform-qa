@@ -27,44 +27,29 @@ jobs:
         continue-on-error: true
         id: find_latest_run
         run: |
-          latest_dir=$(ls -d temp-gh-pages/*/ 2>/dev/null | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
+          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
           echo "Latest directory: $latest_dir"
           echo "latest_dir=$latest_dir" >> $GITHUB_OUTPUT
-
-      - name: Extract rates (compute from aggregate, keep link to numeric folder)
-        shell: bash
+      - name: Extract Fail Rate from Allure
         run: |
-          set -euo pipefail
+          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
+          summary_file="$latest_dir/widgets/summary.json"
+          latest_folder=$(basename "$latest_dir" | grep -oE '[0-9]+')
+          if [ -f "$summary_file" ]; then
+            failed=$(jq '.statistic.failed // 0' "$summary_file")
+            total=$(jq '.statistic.total // 0' "$summary_file")
 
-          latest_dir=$(ls -d temp-gh-pages/*/ 2>/dev/null | grep -E '/[0-9]+/$' | sort -V | tail -n 1 || true)
-          latest_folder=""
-          if [ -n "$latest_dir" ]; then
-            latest_folder=$(basename "$latest_dir" | grep -oE '[0-9]+')
-          fi
-
-          sum="temp-gh-pages/aggregate/widgets/summary.json"
-          if [ ! -f "$sum" ]; then
-            if [ -n "$latest_dir" ] && [ -f "${latest_dir}/widgets/summary.json" ]; then
-              sum="${latest_dir}/widgets/summary.json"
+            if [ "$failed" -eq 0 ]; then
+              fail_rate_number=0
+              success_rate_string="100.00"
             else
-              echo "No Allure summary found."
-              echo "FAIL_RATE=0" >> $GITHUB_ENV
-              echo "SUCCESS_RATE=0.00" >> $GITHUB_ENV
-              echo "SEND_NOTIFICATION=false" >> $GITHUB_ENV
-              echo "LATEST_FOLDER=$latest_folder" >> $GITHUB_ENV
-              exit 0
+              fail_rate=$(echo "$failed / $total * 100" | bc -l)
+              fail_rate_number=$(printf "%.0f" $fail_rate)
+              success_rate=$(echo "100 - $fail_rate" | bc -l)
+              success_rate_string=$(printf "%.2f" $success_rate)
             fi
-          fi
-
-          passed=$(jq -r '.statistic.passed // 0' "$sum")
-          total=$(jq -r  '.statistic.total  // 0' "$sum")
-
-          if [ "$total" -le 0 ]; then
-            success_rate="0.00"
-            fail_rate_number=0
           else
-            success_rate=$(awk -v p="$passed" -v t="$total" 'BEGIN{printf("%.2f",(p/t)*100)}')
-            fail_rate_number=$(awk -v s="$success_rate" 'BEGIN{printf("%.0f",100 - s)}')
+            fail_rate_number=0
           fi
 
           if [ "$fail_rate_number" -gt ${{ inputs.THRESHOLD }} ]; then
@@ -75,7 +60,7 @@ jobs:
 
           echo "FAIL_RATE=$fail_rate_number" >> $GITHUB_ENV
           echo "SEND_NOTIFICATION=$send_notification" >> $GITHUB_ENV
-          echo "SUCCESS_RATE=$success_rate" >> $GITHUB_ENV
+          echo "SUCCESS_RATE=$success_rate_string" >> $GITHUB_ENV
           echo "LATEST_FOLDER=$latest_folder" >> $GITHUB_ENV
 
   SendSlackNotification:
