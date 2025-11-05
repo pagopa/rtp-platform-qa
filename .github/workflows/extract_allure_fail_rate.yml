@@ -16,52 +16,61 @@ jobs:
       SUCCESS_RATE: ${{ env.SUCCESS_RATE }}
       LATEST_FOLDER: ${{ env.LATEST_FOLDER }}
     steps:
-      - name: Clone gh-pages branch into a temporary directory
-        if: always()
-        continue-on-error: true
-        run: |
-          git clone --branch gh-pages --depth 1 https://github.com/pagopa/${{ github.event.repository.name }}.git temp-gh-pages
-          echo "Cloned gh-pages branch into temp-gh-pages directory."
-      - name: Find Latest Run Directory
-        if: always()
-        continue-on-error: true
-        id: find_latest_run
-        run: |
-          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
-          echo "Latest directory: $latest_dir"
-          echo "latest_dir=$latest_dir" >> $GITHUB_OUTPUT
-      - name: Extract Fail Rate from Allure
-        run: |
-          latest_dir=$(ls -d temp-gh-pages/*/ | grep -E '/[0-9]+/$' | sort -V | tail -n 1)
-          summary_file="$latest_dir/widgets/summary.json"
-          latest_folder=$(basename "$latest_dir" | grep -oE '[0-9]+')
-          if [ -f "$summary_file" ]; then
-            failed=$(jq '.statistic.failed // 0' "$summary_file")
-            total=$(jq '.statistic.total // 0' "$summary_file")
+      - name: Checkout gh-pages
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
+        with:
+          ref: gh-pages
+          path: gh-pages
 
-            if [ "$failed" -eq 0 ]; then
-              fail_rate_number=0
-              success_rate_string="100.00"
-            else
-              fail_rate=$(echo "$failed / $total * 100" | bc -l)
-              fail_rate_number=$(printf "%.0f" $fail_rate)
-              success_rate=$(echo "100 - $fail_rate" | bc -l)
-              success_rate_string=$(printf "%.2f" $success_rate)
-            fi
-          else
-            fail_rate_number=0
+      - name: Calculate rates from Allure summary (aggregate preferred)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ROOT="gh-pages"
+          CANDIDATES=()
+          if [[ -f "${ROOT}/aggregate/widgets/summary.json" ]]; then
+            CANDIDATES+=("${ROOT}/aggregate/widgets/summary.json")
+          fi
+          for f in "${ROOT}"/{functional,bdd,ux,contract}/*; do :; done 2>/dev/null || true
+          for sub in functional bdd ux contract; do
+            [[ -f "${ROOT}/${sub}/widgets/summary.json" ]] && CANDIDATES+=("${ROOT}/${sub}/widgets/summary.json")
+          done
+          if [[ ${#CANDIDATES[@]} -eq 0 ]]; then
+            echo "No Allure summaries found under gh-pages."
+            echo "FAIL_RATE=0" >> "$GITHUB_ENV"
+            echo "SUCCESS_RATE=0.00" >> "$GITHUB_ENV"
+            echo "SEND_NOTIFICATION=false" >> "$GITHUB_ENV"
+            echo "LATEST_FOLDER=" >> "$GITHUB_ENV"
+            exit 0
           fi
 
-          if [ "$fail_rate_number" -gt ${{ inputs.THRESHOLD }} ]; then
+          SUM="${CANDIDATES[0]}"
+          FOLDER="$(basename "$(dirname "$(dirname "$SUM")")")"
+
+          passed=$(jq -r '.statistic.passed // 0' "$SUM")
+          failed=$(jq -r '.statistic.failed // 0' "$SUM")
+          broken=$(jq -r '.statistic.broken // 0' "$SUM")
+          total=$(jq -r '.statistic.total  // 0' "$SUM")
+
+          if [[ "$total" -le 0 ]]; then
+            success_rate="0.00"
+            fail_rate="0"
+          else
+            success_rate=$(awk -v p="$passed" -v t="$total" 'BEGIN{printf("%.2f",(p/t)*100)}')
+            fail_rate=$(awk -v f="$failed" -v b="$broken" -v t="$total" 'BEGIN{printf("%.0f", ((f+b)/t)*100)}')
+          fi
+
+          if [[ "$fail_rate" -gt "${{ inputs.THRESHOLD }}" ]]; then
             send_notification="true"
           else
             send_notification="false"
           fi
 
-          echo "FAIL_RATE=$fail_rate_number" >> $GITHUB_ENV
-          echo "SEND_NOTIFICATION=$send_notification" >> $GITHUB_ENV
-          echo "SUCCESS_RATE=$success_rate_string" >> $GITHUB_ENV
-          echo "LATEST_FOLDER=$latest_folder" >> $GITHUB_ENV
+          echo "FAIL_RATE=$fail_rate" >> "$GITHUB_ENV"
+          echo "SUCCESS_RATE=$success_rate" >> "$GITHUB_ENV"
+          echo "SEND_NOTIFICATION=$send_notification" >> "$GITHUB_ENV"
+          echo "LATEST_FOLDER=$FOLDER" >> "$GITHUB_ENV"
 
   SendSlackNotification:
     needs: ExtractFailRate
