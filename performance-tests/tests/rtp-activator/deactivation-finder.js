@@ -1,24 +1,34 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { setupAuth, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
-import { createStandardMetrics } from '../../utils/metrics-utils.js';
-import { createActivationsInBatch, shuffleArray, distributeItemsAmongGroups } from '../../utils/batch-utils.js';
-import { createHandleSummary } from '../../utils/summary-utils.js';
-import { createDeactivationTeardown } from '../../utils/teardown-utils.js';
+import {check, sleep} from 'k6';
+import {setupAuth, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials} from '../../utils/utils.js';
+import {createStandardMetrics} from '../../utils/metrics-utils.js';
+import {shuffleArray, distributeItemsAmongGroups} from '../../utils/batch-utils.js';
+import {createHandleSummary} from '../../utils/summary-utils.js';
+import {createDeactivationTeardown} from '../../utils/teardown-utils.js';
 
+// === CONFIG ===
 const START_TIME = Date.now();
-const { DEBTOR_SERVICE_PROVIDER_ID } = __ENV;
-const VU_COUNT_SET = 50;
+const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 7;
+const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
+// === LOAD DATA ===
+const activations = JSON.parse(open('../../json-file/rtp-activator/activations.json'));
+const activationIds = activations
+    .map(r => r?.id ?? r?.activationId ?? r?.activationID)
+    .filter(id => id != null && id !== '')
+const wrappedActivations = activationIds.map(id => ({id, deactivated: false}));
+
+// === METRICS ===
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
+// === K6 OPTIONS ===
 export let options = {
   ...getOptions('stress_test_fixed_user', 'deactivate'),
   scenarios: {
     stress_test_fixed_user: {
       executor: 'shared-iterations',
       vus: VU_COUNT_SET,
-      iterations: 500,
+      iterations: wrappedActivations.length,
       maxDuration: '30m',
       gracefulStop: '30m',
       exec: 'deactivate'
@@ -28,20 +38,13 @@ export let options = {
 
 let testCompleted = false;
 
+// === SETUP ===
 export function setup() {
   const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
 
-  const activationIds = createActivationsInBatch({
-    accessToken: auth.access_token,
-    targetActivations: 500,
-    batchSize: 50,
-    delayBetweenBatches: 2,
-    serviceProviderId: DEBTOR_SERVICE_PROVIDER_ID
-  });
+  shuffleArray(wrappedActivations);
 
-  shuffleArray(activationIds);
-
-  const activationChunks = distributeItemsAmongGroups(activationIds, VU_COUNT_SET);
+  const activationChunks = distributeItemsAmongGroups(wrappedActivations, VU_COUNT_SET);
 
   console.log(`Activations distributed among ${VU_COUNT_SET} virtual users:`);
   for (let i = 0; i < VU_COUNT_SET; i++) {
@@ -51,12 +54,13 @@ export function setup() {
   return {
     access_token: auth.access_token,
     activationChunks: activationChunks,
-    totalActivations: activationIds.length,
+    totalActivations: wrappedActivations.length,
     deactivatedCount: 0,
     allCompleted: false
   };
 }
 
+// === MAIN TEST FUNCTION ===
 export function deactivate(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
   const tags = {
@@ -128,6 +132,7 @@ export function deactivate(data) {
 
   responseTimeTrend.add(duration, tags);
 
+  // === HANDLE RESPONSE ===
   if (res.status === 204) {
     successCounter.add(1, tags);
 
@@ -162,22 +167,24 @@ export function deactivate(data) {
 
   data.currentIndices[vuIndex] = (data.currentIndices[vuIndex] + 1) % myActivations.length;
 
-  sleep(1);
+  if (SLEEP_ITER > 0) {
+    sleep(SLEEP_ITER);
+  }
 
   return res;
 }
 
+// === TEARDOWN / SUMMARY ===
 const testCompletedRef = { value: false };
+Object.defineProperty(testCompletedRef, 'value', {
+  get: () => testCompleted,
+  set: (v) => { testCompleted = v; }
+});
 
 export const teardown = createDeactivationTeardown({
   START_TIME,
   VU_COUNT: VU_COUNT_SET,
   testCompletedRef
-});
-
-Object.defineProperty(testCompletedRef, 'value', {
-  get: () => testCompleted,
-  set: (newValue) => { testCompleted = newValue; }
 });
 
 export const handleSummary = createHandleSummary({
