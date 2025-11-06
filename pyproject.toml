@@ -94,7 +94,8 @@ markers = [
   "mock: mark tests that use mock services",
   "debt_positions: mark tests that exercise debt positions endpoints",
   "producer_gpd_message: mark tests that exercise GPD message producer endpoints",
-  "timeout: Tests with timeouts"
+  "timeout: Tests with timeouts",
+  "functional: Functional tests",
 ]
 
 [tool.hatch.build.targets.wheel]
