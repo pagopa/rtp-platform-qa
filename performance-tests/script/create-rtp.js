@@ -2,7 +2,7 @@ import { ActorCredentials, setupAuth } from "../utils/utils.js";
 import { createSendInBatch } from "../utils/batch-utils.js";
 
 const SERVICE_PROVIDER_ID = __ENV.SERVICE_PROVIDER_ID;
-const FILE_NAME = "resourceIds.json";
+const FILE_PATH = 'json-file/rtp-sender/resourceIds.json';
 
 export let options = {
     setupTimeout: '30m',
@@ -54,9 +54,9 @@ export function handleSummary(data) {
         .map((r) => r?.id || r.resourceId)
         .filter(Boolean);
 
-    console.log(`💾 Saving ${idsOnly.length} resourceIds to file: ${FILE_NAME}`);
+    console.log(`💾 Saving ${idsOnly.length} resourceIds to file: ${FILE_PATH}`);
 
     return {
-        [FILE_NAME]: JSON.stringify(idsOnly, null, 2),
+        [FILE_PATH]: JSON.stringify(idsOnly, null, 2),
     };
 }
