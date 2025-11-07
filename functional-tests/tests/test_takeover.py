@@ -215,12 +215,6 @@ def test_takeover_otp_for_different_payer_fails(random_fiscal_code, token_a, tok
     payer1 = random_fiscal_code
     assert activate(token_a, payer1, secrets.debtor_service_provider.service_provider_id).status_code == 201
 
-
-def test_takeover_otp_for_different_payer_fails(random_fiscal_code, token_a, token_b):
-    """OTP bound to payer1 should not work for payer2"""
-    payer1 = random_fiscal_code
-    assert activate(token_a, payer1, secrets.debtor_service_provider.service_provider_id).status_code == 201
-
     resp = activate(token_b, payer1, secrets.debtor_service_provider_B.service_provider_id)
     assert resp.status_code == 409
     otp = resp.headers['Location'].split('/')[-1]
