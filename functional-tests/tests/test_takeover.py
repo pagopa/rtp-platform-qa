@@ -14,7 +14,8 @@ from api.takeover import takeover_activation
 from config.configuration import secrets
 from utils.dataset import fake_fc
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover happy path')
 @allure.story('Takeover')
 @allure.tag('functional', 'happy_path', 'activation', 'takeover')
 @pytest.mark.functional
@@ -64,8 +65,8 @@ def test_takeover_flow(random_fiscal_code, token_a, token_b):
     new_sp = get_after_takeover.json()['payer']['rtpSpId']
     assert new_sp == secrets.debtor_service_provider_B.service_provider_id, f"Takeover failed. Expected service provider {secrets.debtor_service_provider_B.service_provider_id}, got {new_sp}"
 
-
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover happy path')
 @allure.story('Takeover Notification')
 @pytest.mark.functional
 @allure.tag('functional', 'happy_path', 'activation', 'takeover')
@@ -84,7 +85,8 @@ def test_takeover_notification(random_fiscal_code):
     assert resp.status_code == 204, f"Expected 204 from takeover notification mock, got {resp.status_code} - {resp.text} - url={getattr(resp.request, 'url', '')}"
     assert not resp.text, 'Expected empty body for 204 No Content response'
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of valid OTP')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -111,8 +113,8 @@ def test_takeover_fails_invalid_otp(random_fiscal_code, token_a, token_b):
 
     assert takeover_response.status_code == 400, f"Expected 400 Bad Request for invalid OTP, got {takeover_response.status_code}"
 
-
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of unauthenticated SP')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -140,8 +142,8 @@ def test_takeover_with_unauthenticated_sp(random_fiscal_code, token_a, token_b):
 
     assert takeover_response.status_code == 401, f"Expected 401 Unauthorized for unauthenticated SP, got {takeover_response.status_code}"
 
-
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of reused OTP')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -166,7 +168,8 @@ def test_takeover_reuse_otp_fails(random_fiscal_code, token_a, token_b):
     )
     assert retry.status_code == 401, f"Expected 401 on OTP reuse, got {retry.status_code}: {retry.text}"
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of nonsensical body')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -186,7 +189,8 @@ def test_takeover_no_sense_body_but_valid_syntax(random_fiscal_code, token_a, to
     assert bad.status_code in (400, 404), f"Expected 400/404 for nonsensical body, got {bad.status_code}: {bad.text}"
 
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of mismatched spId and token')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -205,7 +209,8 @@ def test_takeover_mismatched_spid_and_token_forbidden(random_fiscal_code, token_
     assert forbidden.status_code == 403, f"Expected 403 Forbidden, got {forbidden.status_code}: {forbidden.text}"
 
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of OTP bound to different payer')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -226,7 +231,8 @@ def test_takeover_otp_for_different_payer_fails(random_fiscal_code, token_a, tok
     assert bad.status_code in (400, 404), f"Expected 400/404 for OTP bound to another payer, got {bad.status_code}: {bad.text}"
 
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of missing OTP')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
@@ -242,8 +248,9 @@ def test_takeover_without_prior_otp_fails(random_fiscal_code, token_a, token_b):
     assert resp.status_code == 401, f"Expected 401 for takeover without OTP issuance, got {resp.status_code}: {resp.text}"
 
 
-@allure.feature('Activation')
-@allure.story('Takeover')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
+@allure.story('Takeover fails because of empty OTP')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
 @pytest.mark.unhappy_path
@@ -257,7 +264,8 @@ def test_takeover_empty_otp_bad_request(random_fiscal_code, token_a, token_b):
         )
 
 
-@allure.feature('Activation')
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
 @allure.story('Takeover fails because of wrong SP token')
 @pytest.mark.functional
 @allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
