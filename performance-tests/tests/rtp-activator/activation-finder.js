@@ -5,24 +5,68 @@ import { createHandleSummary } from '../../utils/summary-utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createActivationTeardown } from '../../utils/teardown-utils.js';
 
-// === CONFIG ===
+/**
+ * @file Activation Stress Test (k6)
+ * @description
+ * High-throughput activations using a shared-iterations scenario. Each iteration generates
+ * a random debtor fiscal code and posts an activation payload to the configured endpoint.
+ * Custom metrics track RPS, success/failure counts, and response time trends. The run can
+ * optionally sleep between iterations. A teardown helper summarizes results at the end.
+ *
+ * ## Inputs
+ * - Environment variables:
+ * - `DEBTOR_SERVICE_PROVIDER_ID` (required): Debtor Service Provider identifier used in payloads.
+ * - `VU_COUNT_SET` (number, optional, default: 10): number of virtual users.
+ * - `ITERATIONS` (number, optional, default: 30000): total iterations across all VUs.
+ * - `SLEEP_ITER` (number, seconds, optional, default: 0): sleep after each iteration.
+ *
+ * ## Behavior
+ * - `setup()` authenticates and returns an access token.
+ * - `activate()` posts activation requests, collects metrics, and validates 201 responses.
+ * - `teardown` and `handleSummary` generate end-of-test artifacts.
+ */
+
+/** Run start timestamp (ms). */
 const START_TIME = Date.now();
+
+/** Debtor Service Provider ID from environment (required). */
 const DEBTOR_SERVICE_PROVIDER_ID = String(__ENV.DEBTOR_SERVICE_PROVIDER_ID);
+
+/** Number of virtual users. */
 const VU_COUNT = Number(__ENV.VU_COUNT_SET) || 10;
+
+/** Total shared iterations for the scenario. */
 const ITERATIONS = Number(__ENV.ITERATIONS) || 30000;
+
+/** Optional per-iteration sleep (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
 if (!__ENV.DEBTOR_SERVICE_PROVIDER_ID) {
     throw new Error("❌ DEBTOR_SERVICE_PROVIDER_ID cannot be null or undefined");
 }
 
-// === METRICS ===
+/**
+ * Custom metrics used by the test.
+ * @typedef {Object} StandardMetrics
+ * @property {import('k6/metrics').Rate} currentRPS
+ * @property {import('k6/metrics').Counter} failureCounter
+ * @property {import('k6/metrics').Counter} successCounter
+ * @property {import('k6/metrics').Trend} responseTimeTrend
+ */
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
-// === TEST STATE REFERENCE ===
+/**
+ * Mutable ref object used by teardown/summary helpers to read completion state.
+ * @type {{ value: boolean }}
+ */
 const testCompletedRef = { value: false };
 
-// === K6 OPTIONS ===
+/**
+ * k6 options and scenario configuration.
+ * - Uses a `shared-iterations` executor and runs the `activate` function.
+ *
+ * @type {import('k6/options').Options}
+ */
 export let options = {
   ...getOptions('stress_test_fixed_user', 'activate'),
   setupTimeout: '5m',
@@ -38,12 +82,34 @@ export let options = {
     }
 };
 
-// === SETUP ===
+/**
+ * @typedef {Object} SetupAuthResult
+ * @property {string} access_token OAuth access token.
+ */
+
+/**
+ * k6 `setup()` lifecycle function.
+ *
+ * Authenticates as `DEBTOR_SERVICE_PROVIDER` and returns the resulting token for use
+ * in the test function.
+ *
+ * @returns {SetupAuthResult} Access token wrapper used by `activate()`.
+ */
 export function setup() {
   return setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
 }
 
-// === MAIN TEST FUNCTION ===
+/**
+ * Test body: performs an activation request with a random debtor fiscal code.
+ *
+ * - Builds headers with the access token, sets JSON content type.
+ * - Constructs the activation payload using `DEBTOR_SERVICE_PROVIDER_ID` and a random fiscal code.
+ * - Posts to the activations endpoint and records metrics.
+ * - Marks a request as successful only on HTTP 201.
+ *
+ * @param {SetupAuthResult} data Setup data returned by `setup()`.
+ * @returns {import('k6/http').RefinedResponse<'text'>} The HTTP response object.
+ */
 export function activate(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
 
@@ -90,14 +156,21 @@ export function activate(data) {
   return res;
 }
 
-// === TEARDOWN ===
+/**
+ * k6 `teardown` export produced by the activation-specific teardown factory.
+ */
 export const teardown = createActivationTeardown({
   START_TIME,
   VU_COUNT,
   testCompletedRef
 });
 
-// === SUMMARY ===
+/**
+ * k6 `handleSummary` export.
+ *
+ * Ensures `testCompletedRef` is set to true before delegating to the shared summary factory,
+ * which generates aggregated artifacts and annotates results.
+ */
 export const handleSummary = (opts) => {
     testCompletedRef.value = true;
     return createHandleSummary({
