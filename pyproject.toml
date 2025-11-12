@@ -17,6 +17,7 @@ dependencies = [
   "certifi==2025.7.14",
   "pyperclip==1.9.0",
   "schwifty==2025.1.0",
+  "pydantic-settings>=2.6.0",
 ]
 
 [project.optional-dependencies]
@@ -51,6 +52,7 @@ dev = [
   "azure-keyvault-secrets==4.10.0",
   "fastapi==0.116.1",
   "pydantic==2.11.7",
+  "pytest-asyncio>=0.23.0",
   "python-multipart==0.0.20",
   "uvicorn[standard]",
 ]
@@ -70,9 +72,11 @@ testpaths = [
   "contract-tests",
   "ux-tests/tests",
   "end-to-end-test/tests",
+  "gpd-test/tests",
 ]
 pythonpath = [
   ".",
+  "gpd-test",
 ]
 markers = [
   "use_case: ID of the use case",

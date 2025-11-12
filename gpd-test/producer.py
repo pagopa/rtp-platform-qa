@@ -1,26 +1,17 @@
-import os
-import ssl
+"""Compatibility shim for legacy imports of setup_producer().
 
-import certifi
-from aiokafka import AIOKafkaProducer
-from keyvault import get_eventhub_connection_string
+Prefer using services.producer.ProducerService in new code.
+"""
+from services.producer import ProducerService
+
 
 async def setup_producer():
-    connection_string = get_eventhub_connection_string()
-    namespace = os.environ['EVENTHUB_NAMESPACE']
+    """Start a ProducerService and return the underlying AIOKafkaProducer.
 
-    ssl_context = ssl.create_default_context(cafile=certifi.where())
-    ssl_context.check_hostname = True
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
-
-    producer = AIOKafkaProducer(
-        bootstrap_servers=f"{namespace}.servicebus.windows.net:9093",
-        security_protocol='SASL_SSL',
-        sasl_mechanism='PLAIN',
-        sasl_plain_username='$ConnectionString',
-        sasl_plain_password=connection_string,
-        ssl_context=ssl_context,
-        client_id='python-producer'
-    )
-    await producer.start()
+    This preserves the old behavior where callers expected an AIOKafkaProducer
+    instance with .send_and_wait() and .stop().
+    """
+    svc = ProducerService()
+    await svc.start()
+    producer = svc.producer
     return producer
