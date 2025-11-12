@@ -46,13 +46,6 @@ async def send_file(
     rate: int,
     bulk: bool,
 ) -> FileSendResult:
-    sent: int = 0
-    failed: int = 0
-    errors_map: dict[str, FileError] = {}
-
-    sem = None if bulk else asyncio.Semaphore(rate)
-    limiter = TokenBucketLimiter(rate=rate)
-
     async def process_line(line_no: int, text: str):
         nonlocal sent, failed
         stripped = text.strip()
@@ -80,6 +73,13 @@ async def send_file(
             err = FileError(type=type(e).__name__, message=str(e))
             errors_map[err.type] = err
             logger.debug('Failed to send line %s due to %s', line_no, err.type)
+
+    sent: int = 0
+    failed: int = 0
+    errors_map: dict[str, FileError] = {}
+
+    sem = None if bulk else asyncio.Semaphore(rate)
+    limiter = TokenBucketLimiter(rate=rate)
 
     tasks = []
     line_no = 0
