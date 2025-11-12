@@ -13,10 +13,5 @@ async def setup_producer():
     """
     svc = ProducerService()
     await svc.start()
-    # Fail fast if initialization didn't create the underlying producer
-    if svc._producer is None:
-        raise RuntimeError(
-            "ProducerService failed to initialize the producer. _producer is None after start()."
-        )
-
-    return svc._producer
+    producer = svc.producer
+    return producer

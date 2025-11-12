@@ -45,6 +45,13 @@ class ProducerService:
             await self._producer.stop()
             self._producer = None
 
+    @property
+    def producer(self) -> AIOKafkaProducer:
+        """Read-only accessor for the underlying AIOKafkaProducer."""
+        if self._producer is None:
+            raise RuntimeError('Producer not started')
+        return self._producer
+
     async def send_json(self, topic: str, payload: dict[str, Any]) -> None:
         if not self._producer:
             raise RuntimeError('Producer not started')
