@@ -6,8 +6,10 @@ import pytest
 from utils.dataset import create_debt_position_payload
 from utils.dataset import create_debt_position_update_payload
 
-@allure.feature('Debt Positions')
+@allure.epic('GPD Availability')
+@allure.feature('Create Debt Positions happy path')
 @allure.story('Create Debt Position')
+@allure.tag('debt_positions', 'happy_path, availability')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_create_debt_position(gpd_test_data, environment):
@@ -32,8 +34,10 @@ def test_create_debt_position(gpd_test_data, environment):
     assert res.status_code == 201, f'Expected 201 but got {res.status_code}'
 
 
-@allure.feature('Debt Positions')
+@allure.epic('GPD Availability')
+@allure.feature('Delete Debt Positions happy path')
 @allure.story('Delete Debt Position')
+@allure.tag('debt_positions', 'happy_path, availability')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_delete_debt_position(gpd_test_data, environment):
@@ -70,8 +74,10 @@ def test_delete_debt_position(gpd_test_data, environment):
     assert get_response.status_code == 404, f'Expected 404 but got {get_response.status_code}'
 
 
-@allure.feature('Debt Positions')
+@allure.epic('GPD Availability')
+@allure.feature('Update Debt Positions happy path')
 @allure.story('Update Debt Position')
+@allure.tag('debt_positions', 'happy_path, availability')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_update_debt_position(gpd_test_data, environment):
