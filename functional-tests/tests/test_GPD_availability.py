@@ -14,8 +14,7 @@ from utils.dataset import create_debt_position_update_payload
 @pytest.mark.happy_path
 def test_create_debt_position(gpd_test_data, environment):
     """
-    Verify that after creating and publishing a debt position,
-    the RTP lookup returns exactly one entry for the notice number.
+        Verify that a debt position can be created and published successfully.
     """
     allure.dynamic.title(f"Happy path: a debt position is created and published in {environment['name']} environment")
 
@@ -41,6 +40,9 @@ def test_create_debt_position(gpd_test_data, environment):
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_delete_debt_position(gpd_test_data, environment):
+    """
+        Verify that a debt position can be deleted successfully.
+    """
     allure.dynamic.title(f"Happy path: a debt position is deleted in {environment['name']} environment")
 
     payload = create_debt_position_payload(
@@ -81,6 +83,9 @@ def test_delete_debt_position(gpd_test_data, environment):
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_update_debt_position(gpd_test_data, environment):
+    """
+        Verify that a debt position can be updated successfully.
+    """
     allure.dynamic.title(f"Happy path: a debt position is updated in {environment['name']} environment")
 
     payload = create_debt_position_payload(
