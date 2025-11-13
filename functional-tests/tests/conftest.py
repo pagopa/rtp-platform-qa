@@ -1,3 +1,5 @@
+from types import SimpleNamespace
+
 import pytest
 
 from api.activation import activate
@@ -119,3 +121,8 @@ def setup_data(environment):
         'subscription_key': environment['subscription_key'],
         'organization_id': environment['organization_id'],
     }
+
+@pytest.fixture
+def gpd_test_data(setup_data):
+    """Fixture to provide GPD test data with attribute access."""
+    return SimpleNamespace(**setup_data)
