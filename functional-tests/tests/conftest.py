@@ -1,3 +1,4 @@
+import re
 from types import SimpleNamespace
 
 import pytest
@@ -16,6 +17,31 @@ from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.generators import generate_iuv
+
+
+def sanitize_bearer_token(text):
+    """Remove bearer tokens from text to prevent exposure in reports"""
+    if not text or not isinstance(text, str):
+        return text
+
+    pattern = r'Bearer\s+[A-Za-z0-9_\-\.]{50,}'
+    return re.sub(pattern, 'Bearer ***REDACTED***', text)
+
+
+@pytest.hookimpl(hookwrapper=True, tryfirst=True)
+def pytest_runtest_makereport(item, call):
+    """Hook to sanitize bearer tokens from test reports"""
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.longrepr:
+        report.longrepr = sanitize_bearer_token(str(report.longrepr))
+
+    if hasattr(item, 'callspec') and hasattr(item.callspec, 'params'):
+        for key, value in item.callspec.params.items():
+            if isinstance(value, str) and 'Bearer' in value:
+                item.callspec.params[key] = sanitize_bearer_token(value)
+
 
 @pytest.fixture
 def access_token():
