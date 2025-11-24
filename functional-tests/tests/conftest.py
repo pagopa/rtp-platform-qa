@@ -30,7 +30,7 @@ def sanitize_bearer_token(text):
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):
-    """Hook per sanitizzare i bearer token nei report Allure"""
+    """Hook to sanitize bearer tokens from test reports"""
     outcome = yield
     report = outcome.get_result()
 
