@@ -1,5 +1,7 @@
-import pytest
+import re
 from types import SimpleNamespace
+
+import pytest
 
 from api.activation import activate
 from api.activation import activate_dev
@@ -15,13 +17,16 @@ from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.generators import generate_iuv
-from utils.test_sanitization import sanitize_bearer_token
-from utils.test_sanitization import sanitize_dict
 
 
-# ============================================================================
-# PYTEST HOOKS - Token Sanitization
-# ============================================================================
+def sanitize_bearer_token(text):
+    """Remove bearer tokens from text to prevent exposure in reports"""
+    if not text or not isinstance(text, str):
+        return text
+
+    pattern = r'Bearer\s+[A-Za-z0-9_\-\.]{50,}'
+    return re.sub(pattern, 'Bearer ***REDACTED***', text)
+
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
 def pytest_runtest_makereport(item, call):
@@ -37,64 +42,19 @@ def pytest_runtest_makereport(item, call):
             if isinstance(value, str) and 'Bearer' in value:
                 item.callspec.params[key] = sanitize_bearer_token(value)
 
-    if hasattr(item, 'funcargs'):
-        item.funcargs = sanitize_dict(item.funcargs)
-
-
-@pytest.hookimpl(tryfirst=True)
-def pytest_fixture_post_finalizer(fixturedef, request):
-    """Sanitize fixture values after finalization"""
-    if hasattr(fixturedef, 'cached_result') and fixturedef.cached_result:
-        result = fixturedef.cached_result[0]
-        if isinstance(result, str) and 'Bearer' in result:
-            fixturedef.cached_result = (sanitize_bearer_token(result),) + fixturedef.cached_result[1:]
-
-
-# ============================================================================
-# AUTHENTICATION FIXTURES
-# ============================================================================
 
 @pytest.fixture
 def access_token():
-    """Access token for the default debtor service provider"""
     return get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token,
     )
 
-
-@pytest.fixture
-def token_a() -> str:
-    """Access token for the debtor service provider A"""
-    return get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
-
-
-@pytest.fixture
-def token_b() -> str:
-    """Access token for the debtor service provider B"""
-    return get_valid_access_token(
-        client_id=secrets.debtor_service_provider_B.client_id,
-        client_secret=secrets.debtor_service_provider_B.client_secret,
-        access_token_function=get_access_token
-    )
-
-
-# ============================================================================
-# ACTIVATION FIXTURES
-# ============================================================================
-
 @pytest.fixture
 def make_activation(access_token):
     """
-    Factory fixture to create a debtor activation.
-    
-    Returns:
-        Callable that returns (activation_id, debtor_fc) tuple
+    Create a debtor activation and return (activation_id, debtor_fc).
     """
     def _create():
         debtor_fc = fake_fc()
@@ -106,20 +66,31 @@ def make_activation(access_token):
 
 
 @pytest.fixture
+def next_cursor():
+    return extract_next_activation_id
+
+@pytest.fixture
 def random_fiscal_code():
     """Generate a random fiscal code for testing"""
     return fake_fc()
 
+@pytest.fixture
+def token_a() -> str:
+    """Access token for the debtor service provider A"""
+    return get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_access_token
+    )
 
 @pytest.fixture
-def next_cursor():
-    """Utility function to extract next activation ID from response"""
-    return extract_next_activation_id
-
-
-# ============================================================================
-# ENVIRONMENT FIXTURES
-# ============================================================================
+def token_b() -> str:
+    """Access token for the debtor service provider B"""
+    return get_valid_access_token(
+        client_id=secrets.debtor_service_provider_B.client_id,
+        client_secret=secrets.debtor_service_provider_B.client_secret,
+        access_token_function=get_access_token
+    )
 
 @pytest.fixture(
     params=[
@@ -144,11 +115,6 @@ def environment(request):
 
     return env
 
-
-# ============================================================================
-# GPD TEST DATA FIXTURES
-# ============================================================================
-
 @pytest.fixture
 def setup_data(environment):
     """Fixture to set up data for tests based on the environment."""
@@ -161,6 +127,7 @@ def setup_data(environment):
     )
 
     debtor_fc = fake_fc()
+
     activation_function = activate_dev if environment['is_dev'] else activate
 
     activation_response = activation_function(
@@ -180,7 +147,6 @@ def setup_data(environment):
         'subscription_key': environment['subscription_key'],
         'organization_id': environment['organization_id'],
     }
-
 
 @pytest.fixture
 def gpd_test_data(setup_data):
