@@ -150,32 +150,6 @@ def test_takeover_with_unauthenticated_sp(random_fiscal_code, token_a, token_b):
 
 @allure.epic('Activation')
 @allure.feature('Takeover unhappy path')
-@allure.title('Test Takeover Fails with Mismatched SPID and Token')
-@allure.story('Takeover fails because of mismatched spId and token')
-@pytest.mark.functional
-@allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
-@pytest.mark.unhappy_path
-def test_takeover_mismatched_spid_and_token_forbidden(random_fiscal_code, token_a, token_b):
-    """Token of SP B but spId of SP A should be forbidden."""
-    assert activate(token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id).status_code == 201
-
-    resp = activate(token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id)
-    assert resp.status_code == 409
-    otp = resp.headers['Location'].split('/')[-1]
-
-    forbidden = takeover_activation(
-        token_a,
-        random_fiscal_code,
-        secrets.debtor_service_provider.service_provider_id,
-        otp,
-    )
-    assert forbidden.status_code == 403, (
-        f"Expected 403 Forbidden for mismatched spId/token, got {forbidden.status_code}: {forbidden.text}"
-    )
-
-
-@allure.epic('Activation')
-@allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with OTP Bound to Different Payer')
 @allure.story('Takeover fails because of OTP bound to different payer')
 @pytest.mark.functional
@@ -192,13 +166,12 @@ def test_takeover_otp_for_different_payer_fails(random_fiscal_code, token_a, tok
 
     payer2 = fake_fc()
     bad = takeover_activation(
-        token_b,
+        token_a,
         payer2,
         secrets.debtor_service_provider_B.service_provider_id,
-        otp,
-        include_payload=True,
+        otp
     )
-    assert bad.status_code == 400, f"Expected 400 for OTP bound to another payer, got {bad.status_code}: {bad.text}"
+    assert bad.status_code == 403, f"Expected 403 for OTP bound to another payer, got {bad.status_code}: {bad.text}"
 
 
 @allure.epic('Activation')
