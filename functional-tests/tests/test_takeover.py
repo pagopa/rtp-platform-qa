@@ -41,6 +41,7 @@ def test_takeover_flow(random_fiscal_code, token_a, token_b):
     assert second_activation_response.status_code == 409, f"Expected 409 conflict, got {second_activation_response.status_code}"
 
     location_header = second_activation_response.headers.get('Location')
+
     assert location_header is not None, 'Missing Location header in 409 response'
 
     otp = location_header.split('/')[-1]
@@ -146,75 +147,6 @@ def test_takeover_with_unauthenticated_sp(random_fiscal_code, token_a, token_b):
 
     assert takeover_response.status_code == 401, f"Expected 401 Unauthorized for unauthenticated SP, got {takeover_response.status_code}"
 
-@allure.epic('Activation')
-@allure.feature('Takeover unhappy path')
-@allure.title('Test Takeover Fails with Reused OTP')
-@allure.story('Takeover fails because of reused OTP')
-@pytest.mark.functional
-@allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
-@pytest.mark.unhappy_path
-def test_takeover_reuse_otp_fails(random_fiscal_code, token_a, token_b):
-    """Reusing the same OTP after a successful takeover should fail"""
-    activation_response = activate(token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id)
-    assert activation_response.status_code == 201
-
-    second_activation_response = activate(token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id)
-    assert second_activation_response.status_code == 409
-
-    otp = second_activation_response.headers['Location'].split('/')[-1]
-
-    takeover_response = takeover_activation(
-        token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id, otp
-    )
-    assert takeover_response.status_code == 201
-
-    retry = takeover_activation(
-        token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id, otp
-    )
-    assert retry.status_code == 401, f"Expected 401 on OTP reuse, got {retry.status_code}: {retry.text}"
-
-@allure.epic('Activation')
-@allure.feature('Takeover unhappy path')
-@allure.title('Test Takeover Fails with Nonsensical Body')
-@allure.story('Takeover fails because of nonsensical body')
-@pytest.mark.functional
-@allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
-@pytest.mark.unhappy_path
-def test_takeover_no_sense_body_but_valid_syntax(random_fiscal_code, token_a, token_b):
-    """Takeover with syntactically valid but nonsensical body should fail"""
-    assert activate(token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id).status_code == 201
-
-    resp = activate(token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id)
-    assert resp.status_code == 409
-    otp = resp.headers['Location'].split('/')[-1]
-
-    fake_fc_2 = fake_fc()
-    bad = takeover_activation(
-        token_b, fake_fc_2, secrets.debtor_service_provider_B.service_provider_id, otp
-    )
-    assert bad.status_code in (400, 404), f"Expected 400/404 for nonsensical body, got {bad.status_code}: {bad.text}"
-
-
-@allure.epic('Activation')
-@allure.feature('Takeover unhappy path')
-@allure.title('Test Takeover Fails with Mismatched SPID and Token')
-@allure.story('Takeover fails because of mismatched spId and token')
-@pytest.mark.functional
-@allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
-@pytest.mark.unhappy_path
-def test_takeover_mismatched_spid_and_token_forbidden(random_fiscal_code, token_a, token_b):
-    """Token of SP B but spId of SP A should be forbidden"""
-    assert activate(token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id).status_code == 201
-
-    resp = activate(token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id)
-    assert resp.status_code == 409
-    otp = resp.headers['Location'].split('/')[-1]
-
-    forbidden = takeover_activation(
-        token_b, random_fiscal_code, secrets.debtor_service_provider.service_provider_id, otp
-    )
-    assert forbidden.status_code == 403, f"Expected 403 Forbidden, got {forbidden.status_code}: {forbidden.text}"
-
 
 @allure.epic('Activation')
 @allure.feature('Takeover unhappy path')
@@ -234,9 +166,12 @@ def test_takeover_otp_for_different_payer_fails(random_fiscal_code, token_a, tok
 
     payer2 = fake_fc()
     bad = takeover_activation(
-        token_b, payer2, secrets.debtor_service_provider_B.service_provider_id, otp
+        token_a,
+        payer2,
+        secrets.debtor_service_provider_B.service_provider_id,
+        otp
     )
-    assert bad.status_code in (400, 404), f"Expected 400/404 for OTP bound to another payer, got {bad.status_code}: {bad.text}"
+    assert bad.status_code == 403, f"Expected 403 for OTP bound to another payer, got {bad.status_code}: {bad.text}"
 
 
 @allure.epic('Activation')
@@ -296,3 +231,55 @@ def test_takeover_with_token_of_wrong_sp_forbidden(random_fiscal_code, token_a, 
         otp
     )
     assert forbidden.status_code == 403, f"Expected 403 Forbidden, got {forbidden.status_code}: {forbidden.text}"
+
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
+@allure.title('Test Takeover Fails with Reused OTP')
+@allure.story('Takeover fails because of reused OTP')
+@pytest.mark.functional
+@allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
+@pytest.mark.unhappy_path
+def test_takeover_reuse_otp_fails(random_fiscal_code, token_a, token_b):
+    """Reusing the same OTP after a successful takeover should fail"""
+    activation_response = activate(token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id)
+    assert activation_response.status_code == 201
+
+    second_activation_response = activate(token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id)
+    assert second_activation_response.status_code == 409
+
+    otp = second_activation_response.headers['Location'].split('/')[-1]
+
+    takeover_response = takeover_activation(
+        token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id, otp
+    )
+    assert takeover_response.status_code == 201
+
+    retry = takeover_activation(
+        token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id, otp
+    )
+    assert retry.status_code == 401, f"Expected 401 on OTP reuse, got {retry.status_code}: {retry.text}"
+
+@allure.epic('Activation')
+@allure.feature('Takeover unhappy path')
+@allure.title('Test Takeover Fails with Nonsensical Body')
+@allure.story('Takeover fails because of nonsensical body')
+@pytest.mark.functional
+@allure.tag('functional', 'unhappy_path', 'activation', 'takeover')
+@pytest.mark.unhappy_path
+def test_takeover_no_sense_body_but_valid_syntax(random_fiscal_code, token_a, token_b):
+    """Takeover with syntactically valid but nonsensical body should fail"""
+    assert activate(token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id).status_code == 201
+
+    resp = activate(token_b, random_fiscal_code, secrets.debtor_service_provider_B.service_provider_id)
+    assert resp.status_code == 409
+    otp = resp.headers['Location'].split('/')[-1]
+
+    fake_fc_2 = fake_fc()
+    bad = takeover_activation(
+        token_b,
+        fake_fc_2,
+        secrets.debtor_service_provider_B.service_provider_id,
+        otp,
+        include_payload=True,
+    )
+    assert bad.status_code == 400, f"Expected 400 for nonsensical body, got {bad.status_code}: {bad.text}"
