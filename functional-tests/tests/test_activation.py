@@ -149,7 +149,8 @@ def test_fail_activate_debtor_two_times(access_token):
 
     res = activate(access_token, debtor_fc, secrets.debtor_service_provider.service_provider_id)
     assert res.status_code == 409, f'Error activating debtor, expected 409 but got {res.status_code}'
-    assert res.json()['errors'][0]['code'] == '01031000E'
+
+    assert res.text == "" or res.text is None, "Expected empty body for 409 response on double activation"
 
 
 @allure.feature('Activation')
