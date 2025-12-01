@@ -188,3 +188,11 @@ config/.secrets.yaml
 
 #gpd-massive
 gpd-massive/out/*.ndjson
+
+#allure files
+bdd/
+ux/
+allure-results/
+allure-report/
+allure-report/**
+aggregate/
