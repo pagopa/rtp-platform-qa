@@ -79,6 +79,17 @@ def debtor_service_provider_token_b() -> str:
         access_token_function=get_access_token,
     )
 
+@pytest.fixture
+def creditor_service_provider_token_a() -> str:
+    """
+    Access token for Creditor Service Provider A.
+    Used by tests that send or manage RTP as creditor.
+    """
+    return get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_access_token,
+    )
 
 # ============================================================
 #  Activation fixtures (create activation, cursor helpers)
