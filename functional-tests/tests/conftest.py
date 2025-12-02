@@ -188,34 +188,11 @@ def environment(request):
 def setup_data(environment):
     """
     Prepare base test data for GPD / debt position tests:
-
-    - resolves the correct access_token function (UAT vs DEV)
-    - activates a debtor (precondition for creating debt positions)
     - generates synthetic IUPD and IUV
     - exposes env-specific subscription key and organization id
     """
-    access_token_function = (
-        get_access_token_dev if environment['is_dev'] else get_access_token
-    )
-
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=access_token_function,
-    )
 
     debtor_fc = fake_fc()
-
-    activation_function = activate_dev if environment['is_dev'] else activate
-
-    activation_response = activation_function(
-        access_token,
-        debtor_fc,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert activation_response.status_code == 201, (
-        'Error activating debtor before creating debt position'
-    )
 
     iupd = generate_iupd()
     iuv = generate_iuv()
