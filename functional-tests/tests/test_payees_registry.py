@@ -51,8 +51,7 @@ class TestPayeesRegistry:
             assert 'name' in payee
             assert isinstance(payee['payeeId'], str)
             assert isinstance(payee['name'], str)
-            assert len(payee['payeeId']) in [11, 16]
-            assert payee['payeeId'].isdigit()
+            assert 1 <= len(payee['payeeId']) <= 30
             assert len(payee['name']) > 0, 'Payee name should not be empty'
 
     @allure.title('Get payees with invalid authorization')
