@@ -188,9 +188,6 @@ def environment(request):
 def setup_data(environment):
     """
     Prepare base test data for GPD / debt position tests:
-
-    - resolves the correct access_token function (UAT vs DEV)
-    - activates a debtor (precondition for creating debt positions)
     - generates synthetic IUPD and IUV
     - exposes env-specific subscription key and organization id
     """
