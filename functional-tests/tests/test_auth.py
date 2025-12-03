@@ -2,7 +2,6 @@ import allure
 import pytest
 
 from api.auth import get_access_token
-from api.auth import get_valid_access_token
 from config.configuration import secrets
 
 
@@ -11,10 +10,8 @@ from config.configuration import secrets
 @allure.title('A Service Provider is authenticated')
 @pytest.mark.auth
 @pytest.mark.happy_path
-def test_get_valid_token():
-    access_token = get_valid_access_token(client_id=secrets.creditor_service_provider.client_id,
-                                          client_secret=secrets.creditor_service_provider.client_secret,
-                                          access_token_function=get_access_token)
+def test_get_valid_token(debtor_service_provider_token_a):
+    access_token = debtor_service_provider_token_a
 
     assert isinstance(access_token, str), 'Token must be a string'
     assert access_token.startswith('Bearer '), "Token must start with 'Bearer '"
@@ -44,4 +41,3 @@ def test_get_token_with_invalid_client_secret():
     token_response = get_access_token(client_id=secrets.creditor_service_provider.client_id,
                                       client_secret=invalid_client_secret)
     assert token_response.status_code == 401
-    # assert 'Wrong secret' in str(token_response.json()['descriptions'])
