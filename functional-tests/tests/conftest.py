@@ -17,7 +17,8 @@ from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.generators import generate_iuv
-
+from utils.cryptography import pfx_to_pem
+from config.configuration import config, secrets
 
 # ============================================================
 #  Logging / reporting utilities (sanitize Bearer tokens)
@@ -91,6 +92,18 @@ def creditor_service_provider_token_a() -> str:
         access_token_function=get_access_token,
     )
 
+@pytest.fixture
+def rtp_reader_access_token() -> str:
+    """
+    Access token for RTP Reader client.
+    Used by tests that read RTP status.
+    """
+    return get_valid_access_token(
+        client_id=secrets.rtp_reader.client_id,
+        client_secret=secrets.rtp_reader.client_secret,
+        access_token_function=get_access_token,
+    )
+
 # ============================================================
 #  Activation fixtures (create activation, cursor helpers)
 # ============================================================
@@ -128,7 +141,32 @@ def random_fiscal_code():
     """Generate a random fiscal code for tests that need a fresh debtor."""
     return fake_fc()
 
+@pytest.fixture
+def activate_payer(debtor_service_provider_token_a):
+    """
+    Factory fixture to activate a payer for RTP tests.
 
+    Usage:
+        activation_response = activate_payer(payer_id)
+        # or:
+        activation_id = activate_payer(payer_id, return_id=True)
+    """
+    def _activate(payer_id: str, return_id: bool = False):
+        res = activate(
+            debtor_service_provider_token_a,
+            payer_id,
+            secrets.debtor_service_provider.service_provider_id,
+        )
+        assert res.status_code == 201, f'Activation failed: {res.status_code} {res.text}'
+
+        if return_id:
+            location = res.headers.get('Location', '').rstrip('/')
+            activation_id = location.split('/')[-1] if location else None
+            return activation_id
+
+        return res
+
+    return _activate
 # ============================================================
 #  Environment fixture (UAT / DEV) + Debt Position helpers
 # ============================================================
@@ -236,3 +274,20 @@ def gpd_test_data(setup_data):
     e.g. gpd_test_data.debtor_fc, gpd_test_data.iupd, …
     """
     return SimpleNamespace(**setup_data)
+
+
+# ============================================================
+# Debtor Service Provider mock PFX certificate fixture
+# ============================================================
+@pytest.fixture
+def debtor_sp_mock_cert_key():
+    """
+    Returns (cert_path, key_path) for the debtor service provider mock PFX.
+    """
+    cert, key = pfx_to_pem(
+        secrets.debtor_service_provider_mock_PFX_base64,
+        secrets.debtor_service_provider_mock_PFX_password_base64,
+        config.cert_path,
+        config.key_path,
+    )
+    return cert, key
