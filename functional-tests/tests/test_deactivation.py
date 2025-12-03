@@ -4,8 +4,6 @@ import allure
 import pytest
 
 from api.activation import activate
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
 from api.deactivation import deactivate
 from config.configuration import secrets
 from utils.dataset import fake_fc
@@ -17,12 +15,9 @@ from utils.dataset import fake_fc
 @pytest.mark.auth
 @pytest.mark.deactivation
 @pytest.mark.happy_path
-def test_deactivate_debtor():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_deactivate_debtor(debtor_service_provider_token_a):
+
+    access_token = debtor_service_provider_token_a
 
     debtor_fc = fake_fc()
     activation_response = activate(
@@ -45,12 +40,9 @@ def test_deactivate_debtor():
 @pytest.mark.auth
 @pytest.mark.deactivation
 @pytest.mark.unhappy_path
-def test_deactivate_nonexistent_debtor():
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_deactivate_nonexistent_debtor(debtor_service_provider_token_a):
+
+    access_token = debtor_service_provider_token_a
 
     fake_activation_id = str(uuid.uuid4())
 
@@ -64,22 +56,15 @@ def test_deactivate_nonexistent_debtor():
 @pytest.mark.auth
 @pytest.mark.deactivation
 @pytest.mark.unhappy_path
-def test_deactivate_debtor_wrong_service_provider():
-    debtor_service_provider_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token
-    )
+def test_deactivate_debtor_wrong_service_provider(debtor_service_provider_token_a, debtor_service_provider_token_b):
 
-    debtor_service_provider_B_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider_B.client_id,
-        client_secret=secrets.debtor_service_provider_B.client_secret,
-        access_token_function=get_access_token
-    )
+    debtor_service_provider_a = debtor_service_provider_token_a
+
+    debtor_service_provider_b = debtor_service_provider_token_b
 
     debtor_fc = fake_fc()
     activation_response = activate(
-        debtor_service_provider_token,
+        debtor_service_provider_a,
         debtor_fc,
         secrets.debtor_service_provider.service_provider_id
     )
@@ -88,5 +73,5 @@ def test_deactivate_debtor_wrong_service_provider():
     location = activation_response.headers['Location']
     activation_id = location.split('/')[-1]
 
-    deactivation_response = deactivate(debtor_service_provider_B_token, activation_id)
+    deactivation_response = deactivate(debtor_service_provider_b, activation_id)
     assert deactivation_response.status_code == 404, f'Expected 404 for deactivation by wrong service provider, got {deactivation_response.status_code}'
