@@ -116,6 +116,18 @@ def pagopa_payee_registry_token() -> str:
         access_token_function=get_access_token,
     )
 
+@pytest.fixture
+def pagopa_service_providers_registry_token() -> str:
+    """
+    Access token for pagoPA service providers registry client.
+    Used by tests that call the Service Providers Registry API.
+    """
+    return get_valid_access_token(
+        client_id=secrets.pagopa_integration_service_registry.client_id,
+        client_secret=secrets.pagopa_integration_service_registry.client_secret,
+        access_token_function=get_access_token,
+    )
+
 # ============================================================
 #  Activation fixtures (create activation, cursor helpers)
 # ============================================================

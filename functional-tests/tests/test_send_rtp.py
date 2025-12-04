@@ -19,7 +19,7 @@ from utils.dataset import uuidv4_pattern
 @pytest.mark.send
 @pytest.mark.happy_path
 def test_send_rtp_api(debtor_service_provider_token_a, creditor_service_provider_token_a):
-    
+
     rtp_data = generate_rtp_data()
 
     activation_response = activate(
@@ -79,7 +79,7 @@ def test_send_rtp_to_cbi(creditor_service_provider_token_a):
 @pytest.mark.real_integration
 @pytest.mark.poste
 def test_send_rtp_to_poste(creditor_service_provider_token_a):
-    
+
     amount = random.randint(100, 10000)
     rtp_data = generate_rtp_data(
         payer_id=secrets.poste_activated_fiscal_code, amount=amount
@@ -107,7 +107,7 @@ def test_send_rtp_to_poste(creditor_service_provider_token_a):
 @pytest.mark.real_integration
 @pytest.mark.iccrea
 def test_send_rtp_to_iccrea(creditor_service_provider_token_a):
-    
+
     rtp_data = generate_rtp_data(payer_id=secrets.iccrea_activated_fiscal_code)
 
     send_response = send_rtp(
@@ -130,7 +130,7 @@ def test_send_rtp_to_iccrea(creditor_service_provider_token_a):
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_cannot_send_rtp_api_lower_fiscal_code(debtor_service_provider_token_a, creditor_service_provider_token_a):
-    
+
     rtp_data = generate_rtp_data()
 
     res = activate(
