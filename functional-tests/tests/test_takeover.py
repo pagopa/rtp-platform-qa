@@ -12,7 +12,6 @@ from api.activation import get_activation_by_payer_id
 from api.takeover import send_takeover_notification
 from api.takeover import takeover_activation
 from config.configuration import secrets
-from utils.dataset import fake_fc
 
 @allure.epic('Activation')
 @allure.feature('Takeover happy path')
@@ -194,10 +193,9 @@ def test_takeover_otp_for_different_payer_fails(random_fiscal_code, debtor_servi
     assert resp.status_code == 409
     otp = resp.headers['Location'].split('/')[-1]
 
-    payer2 = fake_fc()
     bad = takeover_activation(
         debtor_service_provider_token_a,
-        payer2,
+        random_fiscal_code,
         secrets.debtor_service_provider_B.service_provider_id,
         otp,
     )
@@ -345,10 +343,9 @@ def test_takeover_no_sense_body_but_valid_syntax(random_fiscal_code, debtor_serv
     assert resp.status_code == 409
     otp = resp.headers['Location'].split('/')[-1]
 
-    fake_fc_2 = fake_fc()
     bad = takeover_activation(
         debtor_service_provider_token_b,
-        fake_fc_2,
+        random_fiscal_code,
         secrets.debtor_service_provider_B.service_provider_id,
         otp,
         include_payload=True,

@@ -6,7 +6,6 @@ import pytest
 from api.activation import activate
 from api.deactivation import deactivate
 from config.configuration import secrets
-from utils.dataset import fake_fc
 
 
 @allure.feature('Deactivation')
@@ -15,12 +14,11 @@ from utils.dataset import fake_fc
 @pytest.mark.auth
 @pytest.mark.deactivation
 @pytest.mark.happy_path
-def test_deactivate_debtor(debtor_service_provider_token_a):
+def test_deactivate_debtor(debtor_service_provider_token_a, random_fiscal_code):
 
-    debtor_fc = fake_fc()
     activation_response = activate(
         debtor_service_provider_token_a,
-        debtor_fc,
+        random_fiscal_code,
         secrets.debtor_service_provider.service_provider_id
     )
     assert activation_response.status_code == 201, 'Error activating debtor'
@@ -52,12 +50,11 @@ def test_deactivate_nonexistent_debtor(debtor_service_provider_token_a):
 @pytest.mark.auth
 @pytest.mark.deactivation
 @pytest.mark.unhappy_path
-def test_deactivate_debtor_wrong_service_provider(debtor_service_provider_token_a, debtor_service_provider_token_b):
+def test_deactivate_debtor_wrong_service_provider(debtor_service_provider_token_a, debtor_service_provider_token_b, random_fiscal_code):
 
-    debtor_fc = fake_fc()
     activation_response = activate(
         debtor_service_provider_token_a,
-        debtor_fc,
+        random_fiscal_code,
         secrets.debtor_service_provider.service_provider_id
     )
     assert activation_response.status_code == 201, 'Error activating debtor'
