@@ -446,7 +446,7 @@ def create_debt_position_update_payload(iupd, debtor_fc=None, iuv=None):
     now = datetime.now(timezone.utc)
     due_date = now + timedelta(days=7)
     retention_date = now + timedelta(days=70)
-    validity_date = now - timedelta(days=4)
+    validity_date = now + timedelta(days=4)
 
     date_format = '%Y-%m-%dT%H:%M:%S.000'
     due_date_str = due_date.astimezone(timezone.utc).strftime(date_format)
