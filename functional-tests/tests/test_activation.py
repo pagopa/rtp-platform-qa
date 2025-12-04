@@ -307,7 +307,7 @@ def test_get_all_activations_missing_version_header(debtor_service_provider_toke
 @pytest.mark.activation
 @pytest.mark.unhappy_path
 def test_get_all_activations_nonexistent_next_activation_id(debtor_service_provider_token_a):
-    
+
     random_cursor = str(uuid.uuid4())
 
     res = get_all_activations(debtor_service_provider_token_a, size=5, next_activation_id=random_cursor)

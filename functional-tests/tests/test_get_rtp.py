@@ -15,6 +15,7 @@ from utils.dataset import generate_rtp_data
 @pytest.mark.get
 @pytest.mark.happy_path
 def test_get_rtp_success(debtor_service_provider_token_a, creditor_service_provider_token_a, rtp_reader_access_token):
+
     rtp_data = generate_rtp_data()
 
     activation_response = activate(
@@ -49,6 +50,7 @@ def test_get_rtp_success(debtor_service_provider_token_a, creditor_service_provi
 @pytest.mark.get
 @pytest.mark.unhappy_path
 def test_get_rtp_not_found(rtp_reader_access_token):
+
     fake_rtp_id = str(uuid.uuid4())
 
     resp = get_rtp(access_token=rtp_reader_access_token, rtp_id=fake_rtp_id)

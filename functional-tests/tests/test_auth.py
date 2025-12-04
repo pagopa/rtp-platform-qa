@@ -37,7 +37,7 @@ def test_get_token_with_invalid_client_id():
 @pytest.mark.auth
 @pytest.mark.unhappy_path
 def test_get_token_with_invalid_client_secret():
-    
+
     invalid_client_secret = '000000000000000000000000000000000000'
     token_response = get_access_token(client_id=secrets.creditor_service_provider.client_id,
                                       client_secret=invalid_client_secret)

@@ -65,7 +65,7 @@ def test_receive_rtp_callback_DS_08N_compliant(
     activate_payer,
     debtor_sp_mock_cert_key,
 ):
-    
+
     rtp_data = generate_rtp_data()
 
     activation_response = activate_payer(rtp_data['payer']['payerId'])
@@ -119,7 +119,7 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
     activate_payer,
     debtor_sp_mock_cert_key,
 ):
-    
+
     rtp_data = generate_rtp_data()
 
     activation_response = activate_payer(rtp_data['payer']['payerId'])
@@ -169,7 +169,7 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
     debtor_sp_mock_cert_key,
 ):
-    
+
     callback_data = generate_callback_data_DS_04b_compliant(BIC='MOCKSP01')
 
     cert, key = debtor_sp_mock_cert_key
@@ -192,7 +192,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
     debtor_sp_mock_cert_key,
 ):
-    
+
     callback_data = generate_callback_data_DS_08N_compliant(BIC='MOCKSP01')
 
     cert, key = debtor_sp_mock_cert_key
@@ -215,7 +215,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
     debtor_sp_mock_cert_key,
 ):
-    
+
     callback_data = generate_callback_data_DS_04b_compliant(BIC='MOCKSP99')
 
     cert, key = debtor_sp_mock_cert_key
@@ -238,7 +238,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_08N_compliant(
     debtor_sp_mock_cert_key,
 ):
-    
+
     callback_data = generate_callback_data_DS_08N_compliant(BIC='MOCKSP99')
 
     cert, key = debtor_sp_mock_cert_key
