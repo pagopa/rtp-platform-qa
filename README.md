@@ -1,7 +1,7 @@
 # RTP Platform Quality Assurance Repository
 
 This repository contains a comprehensive set of tests for various aspects of the RTP platform, including functional
-tests, BDD tests, UX tests, performance tests, contract tests, and end-to-end tests. These tests are implemented using Python and appropriate
+tests, BDD tests, UX tests, performance tests, contract tests. These tests are implemented using Python and appropriate
 libraries for each type of testing.
 
 ## Table of Contents
@@ -13,7 +13,6 @@ libraries for each type of testing.
     - [UX Tests](#ux-tests)
     - [Performance Tests](#performance-tests)
     - [Contract Tests](#contract-tests)
-    - [End-to-End Tests](#end-to-end-tests)
 
 ## Setup
 
@@ -265,7 +264,6 @@ To run the tests locally you need to set up an .env file in the root project dir
 ├── config/
 │   └── __pycache__/
 ├── contract-tests/
-├── end-to-end-test/
 │   └── tests/
 ├── functional-tests/
 │   ├── __pycache__/

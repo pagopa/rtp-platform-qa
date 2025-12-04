@@ -57,21 +57,12 @@ dev = [
   "uvicorn[standard]",
 ]
 
-end-to-end-tests = [
-  "pytest==8.4.1",
-  "pytest-timeout>=2.2",
-  "requests>=2.31",
-  "faker==22.5.1",
-  "allure-pytest>=2.13",
-]
-
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = [
   "functional-tests/tests",
   "contract-tests",
   "ux-tests/tests",
-  "end-to-end-test/tests",
   "gpd-test/tests",
 ]
 pythonpath = [
