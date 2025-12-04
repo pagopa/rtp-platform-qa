@@ -4,7 +4,6 @@ import pytest
 from api.callback import srtp_callback
 from api.get_rtp import get_rtp
 from api.send_rtp import send_rtp
-from config.configuration import secrets
 from utils.callback_builder import build_callback_with_original_msg_id
 from utils.dataset import generate_callback_data_DS_04b_compliant
 from utils.dataset import generate_callback_data_DS_05_ACTC_compliant
@@ -24,13 +23,11 @@ def test_receive_rtp_callback_DS_04b_compliant(
 
     rtp_data = generate_rtp_data()
 
-    creditor_service_provider_access_token = creditor_service_provider_token_a
-
     activation_response = activate_payer(rtp_data['payer']['payerId'])
     assert activation_response.status_code == 201
 
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token,
+        access_token=creditor_service_provider_token_a,
         rtp_payload=rtp_data,
     )
     assert send_response.status_code == 201
@@ -68,15 +65,14 @@ def test_receive_rtp_callback_DS_08N_compliant(
     activate_payer,
     debtor_sp_mock_cert_key,
 ):
+    
     rtp_data = generate_rtp_data()
-
-    creditor_service_provider_access_token = creditor_service_provider_token_a
 
     activation_response = activate_payer(rtp_data['payer']['payerId'])
     assert activation_response.status_code == 201
 
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token,
+        access_token=creditor_service_provider_token_a,
         rtp_payload=rtp_data,
     )
 
@@ -118,21 +114,19 @@ def test_receive_rtp_callback_DS_08N_compliant(
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_05_ACTC_compliant(
-    debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     activate_payer,
     debtor_sp_mock_cert_key,
 ):
+    
     rtp_data = generate_rtp_data()
-
-    creditor_service_provider_access_token = creditor_service_provider_token_a
 
     activation_response = activate_payer(rtp_data['payer']['payerId'])
     assert activation_response.status_code == 201
 
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token,
+        access_token=creditor_service_provider_token_a,
         rtp_payload=rtp_data,
     )
     assert send_response.status_code == 201
@@ -175,6 +169,7 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
     debtor_sp_mock_cert_key,
 ):
+    
     callback_data = generate_callback_data_DS_04b_compliant(BIC='MOCKSP01')
 
     cert, key = debtor_sp_mock_cert_key
@@ -197,6 +192,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
     debtor_sp_mock_cert_key,
 ):
+    
     callback_data = generate_callback_data_DS_08N_compliant(BIC='MOCKSP01')
 
     cert, key = debtor_sp_mock_cert_key
@@ -219,6 +215,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
     debtor_sp_mock_cert_key,
 ):
+    
     callback_data = generate_callback_data_DS_04b_compliant(BIC='MOCKSP99')
 
     cert, key = debtor_sp_mock_cert_key
@@ -241,6 +238,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_08N_compliant(
     debtor_sp_mock_cert_key,
 ):
+    
     callback_data = generate_callback_data_DS_08N_compliant(BIC='MOCKSP99')
 
     cert, key = debtor_sp_mock_cert_key

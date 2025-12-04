@@ -17,11 +17,9 @@ from utils.dataset import fake_fc
 @pytest.mark.happy_path
 def test_deactivate_debtor(debtor_service_provider_token_a):
 
-    access_token = debtor_service_provider_token_a
-
     debtor_fc = fake_fc()
     activation_response = activate(
-        access_token,
+        debtor_service_provider_token_a,
         debtor_fc,
         secrets.debtor_service_provider.service_provider_id
     )
@@ -30,7 +28,7 @@ def test_deactivate_debtor(debtor_service_provider_token_a):
     location = activation_response.headers['Location']
     activation_id = location.split('/')[-1]
 
-    deactivation_response = deactivate(access_token, activation_id)
+    deactivation_response = deactivate(debtor_service_provider_token_a, activation_id)
     assert deactivation_response.status_code == 204, f'Error deactivating debtor, expected 204 but got {deactivation_response.status_code}'
 
 
@@ -42,11 +40,9 @@ def test_deactivate_debtor(debtor_service_provider_token_a):
 @pytest.mark.unhappy_path
 def test_deactivate_nonexistent_debtor(debtor_service_provider_token_a):
 
-    access_token = debtor_service_provider_token_a
-
     fake_activation_id = str(uuid.uuid4())
 
-    deactivation_response = deactivate(access_token, fake_activation_id)
+    deactivation_response = deactivate(debtor_service_provider_token_a, fake_activation_id)
     assert deactivation_response.status_code == 404, f'Expected 404 status code for non-existent activation, got {deactivation_response.status_code}'
 
 
@@ -58,13 +54,9 @@ def test_deactivate_nonexistent_debtor(debtor_service_provider_token_a):
 @pytest.mark.unhappy_path
 def test_deactivate_debtor_wrong_service_provider(debtor_service_provider_token_a, debtor_service_provider_token_b):
 
-    debtor_service_provider_a = debtor_service_provider_token_a
-
-    debtor_service_provider_b = debtor_service_provider_token_b
-
     debtor_fc = fake_fc()
     activation_response = activate(
-        debtor_service_provider_a,
+        debtor_service_provider_token_a,
         debtor_fc,
         secrets.debtor_service_provider.service_provider_id
     )
@@ -73,5 +65,5 @@ def test_deactivate_debtor_wrong_service_provider(debtor_service_provider_token_
     location = activation_response.headers['Location']
     activation_id = location.split('/')[-1]
 
-    deactivation_response = deactivate(debtor_service_provider_b, activation_id)
+    deactivation_response = deactivate(debtor_service_provider_token_b, activation_id)
     assert deactivation_response.status_code == 404, f'Expected 404 for deactivation by wrong service provider, got {deactivation_response.status_code}'
