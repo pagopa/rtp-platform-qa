@@ -19,17 +19,11 @@ from utils.dataset import fake_fc
 from utils.dataset import generate_iupd
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.generators import generate_iuv
+from utils.log_sanitizer import sanitize_bearer_token
 
 # ============================================================
 #  Logging / reporting utilities (sanitize Bearer tokens)
 # ============================================================
-def sanitize_bearer_token(text):
-    """Remove bearer tokens from text to prevent exposure in reports."""
-    if not text or not isinstance(text, str):
-        return text
-
-    pattern = r'Bearer\s+[A-Za-z0-9_\-\.]{50,}'
-    return re.sub(pattern, 'Bearer ***REDACTED***', text)
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
@@ -191,9 +185,11 @@ def activate_payer(debtor_service_provider_token_a):
         return res
 
     return _activate
+
 # ============================================================
 #  Environment fixture (UAT / DEV) + Debt Position helpers
 # ============================================================
+
 @pytest.fixture(
     params=[
         {'name': 'UAT', 'is_dev': False},
