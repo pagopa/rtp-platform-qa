@@ -1,4 +1,3 @@
-import json
 import random
 
 import allure
@@ -19,30 +18,19 @@ from utils.dataset import uuidv4_pattern
 @allure.title('An RTP is sent through API')
 @pytest.mark.send
 @pytest.mark.happy_path
-def test_send_rtp_api():
+def test_send_rtp_api(debtor_service_provider_token_a, creditor_service_provider_token_a):
+    
     rtp_data = generate_rtp_data()
 
-    debtor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     activation_response = activate(
-        debtor_service_provider_access_token,
+        debtor_service_provider_token_a,
         rtp_data['payer']['payerId'],
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201, 'Error activating debtor'
 
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert send_response.status_code == 201
 
@@ -62,19 +50,14 @@ def test_send_rtp_api():
 @pytest.mark.happy_path
 @pytest.mark.real_integration
 @pytest.mark.cbi
-def test_send_rtp_to_cbi():
+def test_send_rtp_to_cbi(creditor_service_provider_token_a):
+
     fiscal_code = secrets.cbi_activated_fiscal_code
     payee_id = secrets.cbi_payee_id
     rtp_data = generate_rtp_data(payer_id=fiscal_code, payee_id=str(payee_id))
 
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
 
     assert send_response.status_code == 201
@@ -95,20 +78,15 @@ def test_send_rtp_to_cbi():
 @pytest.mark.happy_path
 @pytest.mark.real_integration
 @pytest.mark.poste
-def test_send_rtp_to_poste():
+def test_send_rtp_to_poste(creditor_service_provider_token_a):
+    
     amount = random.randint(100, 10000)
     rtp_data = generate_rtp_data(
         payer_id=secrets.poste_activated_fiscal_code, amount=amount
     )
 
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert send_response.status_code == 201
 
@@ -128,17 +106,12 @@ def test_send_rtp_to_poste():
 @pytest.mark.happy_path
 @pytest.mark.real_integration
 @pytest.mark.iccrea
-def test_send_rtp_to_iccrea():
+def test_send_rtp_to_iccrea(creditor_service_provider_token_a):
+    
     rtp_data = generate_rtp_data(payer_id=secrets.iccrea_activated_fiscal_code)
 
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert send_response.status_code == 201
 
@@ -156,23 +129,12 @@ def test_send_rtp_to_iccrea():
 @allure.title('Debtor fiscal code must be lower case during RTP send')
 @pytest.mark.send
 @pytest.mark.unhappy_path
-def test_cannot_send_rtp_api_lower_fiscal_code():
+def test_cannot_send_rtp_api_lower_fiscal_code(debtor_service_provider_token_a, creditor_service_provider_token_a):
+    
     rtp_data = generate_rtp_data()
 
-    debtor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     res = activate(
-        debtor_service_provider_access_token,
+        debtor_service_provider_token_a,
         rtp_data['payer']['payerId'],
         secrets.debtor_service_provider.service_provider_id,
     )
@@ -180,7 +142,7 @@ def test_cannot_send_rtp_api_lower_fiscal_code():
 
     rtp_data['payer']['payerId'] = rtp_data['payer']['payerId'].lower()
     response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert response.status_code == 400
 
@@ -190,23 +152,12 @@ def test_cannot_send_rtp_api_lower_fiscal_code():
 @allure.title('The response body contains a comprehensible error message')
 @pytest.mark.send
 @pytest.mark.unhappy_path
-def test_field_error_in_body():
+def test_field_error_in_body(debtor_service_provider_token_a, creditor_service_provider_token_a):
+
     rtp_data = generate_rtp_data()
 
-    debtor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     res = activate(
-        debtor_service_provider_access_token,
+        debtor_service_provider_token_a,
         rtp_data['payer']['payerId'],
         secrets.debtor_service_provider.service_provider_id,
     )
@@ -214,7 +165,7 @@ def test_field_error_in_body():
 
     rtp_data['payee']['payeeId'] = None
     response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert response.status_code == 400
     assert response.json()['error'] == 'NotNull.createRtpDtoMono.payee.payeeId'
@@ -226,16 +177,11 @@ def test_field_error_in_body():
 @allure.title('An RTP is sent through API')
 @pytest.mark.send
 @pytest.mark.unhappy_path
-def test_cannot_send_rtp_not_activated_user():
+def test_cannot_send_rtp_not_activated_user(creditor_service_provider_token_a):
+
     rtp_data = generate_rtp_data()
 
-    creditor_service_provider_access_token = get_valid_access_token(
-        client_id=secrets.creditor_service_provider.client_id,
-        client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     send_response = send_rtp(
-        access_token=creditor_service_provider_access_token, rtp_payload=rtp_data
+        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert send_response.status_code == 404
