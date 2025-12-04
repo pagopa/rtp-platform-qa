@@ -132,7 +132,7 @@ def test_send_rtp_to_poste_invalid_amount():
 @pytest.mark.unhappy_path
 @pytest.mark.poste
 def test_send_rtp_to_poste_over_limit_amount():
-    
+
     over_limit_amount = 1_000_000_000_000
     rtp_data = generate_rtp_data(amount=over_limit_amount)
     poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
@@ -163,7 +163,7 @@ def test_send_rtp_to_poste_expired_date():
 @pytest.mark.happy_path
 @pytest.mark.iccrea
 def test_send_rtp_to_iccrea():
-    
+
     rtp_data = generate_rtp_data(payer_id=secrets.iccrea_activated_fiscal_code)
     iccrea_payload = generate_epc_rtp_data(rtp_data, bic='ICRAITRRXXX')
     response = send_srtp_to_iccrea(iccrea_payload)

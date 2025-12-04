@@ -17,7 +17,7 @@ from utils.dataset import generate_rtp_data
 @pytest.mark.cancel
 @pytest.mark.happy_path
 def test_cancel_rtp_success(creditor_service_provider_token_a, activate_payer):
-    
+
     rtp_data = generate_rtp_data()
     creditor_service_provider_access_token = creditor_service_provider_token_a
 
@@ -41,7 +41,7 @@ def test_cancel_rtp_success(creditor_service_provider_token_a, activate_payer):
 @pytest.mark.cancel
 @pytest.mark.unhappy_path
 def test_cancel_rtp_with_nonexistent_resource_id(creditor_service_provider_token_a):
-    
+
     creditor_service_provider_access_token = creditor_service_provider_token_a
     fake_resource_id = str(uuid.uuid4())
     cancel_response = cancel_rtp(creditor_service_provider_access_token, fake_resource_id)

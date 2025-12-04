@@ -5,11 +5,11 @@ from api.callback import srtp_callback
 from api.get_rtp import get_rtp
 from api.send_rtp import send_rtp
 from config.configuration import secrets
+from utils.callback_builder import build_callback_with_original_msg_id
 from utils.dataset import generate_callback_data_DS_04b_compliant
 from utils.dataset import generate_callback_data_DS_05_ACTC_compliant
 from utils.dataset import generate_callback_data_DS_08N_compliant
 from utils.dataset import generate_rtp_data
-from utils.callback_builder import build_callback_with_original_msg_id
 
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
