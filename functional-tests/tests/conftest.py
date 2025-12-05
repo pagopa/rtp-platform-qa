@@ -199,12 +199,11 @@ def activate_payer(
         )
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
 
-        if return_id:
-            location = res.headers.get('Location', '').rstrip('/')
-            activation_id: Optional[str] = location.split('/')[-1] if location else None
-            return activation_id
+        if not return_id: return res
 
-        return res
+        location = res.headers.get('Location', '').rstrip('/')
+        activation_id: Optional[str] = location.split('/')[-1] if location else None
+        return activation_id
 
     return _activate
 
