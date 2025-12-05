@@ -11,7 +11,6 @@ import pytest
 from _pytest.fixtures import SubRequest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
-from _pytest.runner import CallInfo
 
 from api.activation import activate
 from api.auth import get_access_token
