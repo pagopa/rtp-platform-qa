@@ -40,7 +40,6 @@ ux-tests = [
 ]
 performance-tests = [
   "aiokafka==0.12.0",
-  "locust==2.31.8",
 ]
 contract-tests = [
   "schemathesis>=3.23",

@@ -141,15 +141,16 @@ make test-ux
 
 ### Performance Tests
 
-Performance tests help evaluate how the platform performs under heavy performance or high traffic using Locust.
+Performance tests help evaluate how the platform performs under heavy performance or high traffic using k6.
 
 - Location: performance-tests/
-- Tool: Locust
-- Configuration: locustfile.py
-- Command to run:
+- Tool: k6
+- Configuration: JavaScript test files under `performance-tests/` and shared utilities in `performance-tests/utils/`
+- Command to run (via helper script):
 
 ```bash
-locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com
+cd performance-tests
+./run-tests.sh tests/rtp-activator activation-finder.js console
 ```
 
 ### Contract Tests
@@ -163,19 +164,6 @@ service.
 
 ```bash
 make test-contract
-```
-
-### End-to-End Tests
-
-End-to-end tests validate the full user journey and integration points, focusing on flaky or timeout-sensitive scenarios.
-
-- Location: end-to-end-test/
-- Tool: pytest
-- Configuration: pyproject.toml
-- Command to run:
-
-```bash
-make test-end-to-end
 ```
 
 ## Secrets Management on GitHub
