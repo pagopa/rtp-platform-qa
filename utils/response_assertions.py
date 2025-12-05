@@ -1,5 +1,6 @@
-from requests import Response
 import json
+
+from requests import Response
 
 
 def is_empty_response(res: Response) -> bool:
@@ -27,13 +28,13 @@ def is_empty_response(res: Response) -> bool:
     if not isinstance(body, dict):
         return False
 
-    activations = body.get("activations")
-    metadata = body.get("metadata")
+    activations = body.get('activations')
+    metadata = body.get('metadata')
 
     return (
         activations == [] and
         isinstance(metadata, dict) and
-        "nextActivationId" in metadata and
-        metadata["nextActivationId"] is None and
-        "size" in metadata
+        'nextActivationId' in metadata and
+        metadata['nextActivationId'] is None and
+        'size' in metadata
     )

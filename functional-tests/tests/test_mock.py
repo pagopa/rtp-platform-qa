@@ -11,6 +11,7 @@ from utils.dataset import generate_rtp_data
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_mock_reachability():
+
     rtp_data = generate_rtp_data()
     response = send_rtp_to_mock(rtp_payload=rtp_data)
     assert response.status_code == 201
@@ -22,6 +23,7 @@ def test_mock_reachability():
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_receive_server_error_from_mock():
+
     mock_fiscal_code = 'RSSMRA85T10X000D'
     expected_mocked_failure_status_code = 502
 
