@@ -112,7 +112,7 @@ make test-functional
 
 ### BDD Tests
 
-BDD (Behavior-Driven Development) tests sono scritti usando Behave, con scenari in sintassi Gherkin per descrivere i comportamenti attesi.
+BDD (Behavior-Driven Development) tests are written using Behave, with scenarios in Gherkin syntax to describe the expected behaviors.
 
 - Location: `bdd-tests/`
 - Tool: Behave
