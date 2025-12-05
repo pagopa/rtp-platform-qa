@@ -1,4 +1,4 @@
-import re 
+import re
 
 def sanitize_bearer_token(text: str) -> str:
     """Remove bearer tokens from text to prevent exposure in logs/reports."""

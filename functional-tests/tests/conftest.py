@@ -1,11 +1,17 @@
 from types import SimpleNamespace
-from typing import Callable, Dict, Generator, Tuple, Optional, Mapping, MutableMapping
+from typing import Callable
+from typing import Dict
+from typing import Generator
+from typing import Mapping
+from typing import MutableMapping
+from typing import Optional
+from typing import Tuple
 
 import pytest
+from _pytest.fixtures import SubRequest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 from _pytest.runner import CallInfo
-from _pytest.fixtures import SubRequest
 
 from api.activation import activate
 from api.auth import get_access_token
@@ -43,10 +49,10 @@ def pytest_runtest_makereport(
     if report.longrepr:
         report.longrepr = sanitize_bearer_token(str(report.longrepr))
 
-    if hasattr(item, "callspec") and hasattr(item.callspec, "params"):
+    if hasattr(item, 'callspec') and hasattr(item.callspec, 'params'):
         params: MutableMapping[str, object] = item.callspec.params
         for key, value in list(params.items()):
-            if isinstance(value, str) and "Bearer" in value:
+            if isinstance(value, str) and 'Bearer' in value:
                 params[key] = sanitize_bearer_token(value)
 
 
@@ -152,7 +158,7 @@ def make_activation(
         )
 
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
-        activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
+        activation_id = res.headers['Location'].rstrip('/').split('/')[-1]
         return activation_id, debtor_fc
 
     return _create
@@ -194,8 +200,8 @@ def activate_payer(
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
 
         if return_id:
-            location = res.headers.get("Location", "").rstrip("/")
-            activation_id: Optional[str] = location.split("/")[-1] if location else None
+            location = res.headers.get('Location', '').rstrip('/')
+            activation_id: Optional[str] = location.split('/')[-1] if location else None
             return activation_id
 
         return res
@@ -208,10 +214,10 @@ def activate_payer(
 
 @pytest.fixture(
     params=[
-        {"name": "UAT", "is_dev": False},
-        {"name": "DEV", "is_dev": True},
+        {'name': 'UAT', 'is_dev': False},
+        {'name': 'DEV', 'is_dev': True},
     ],
-    ids=["environment_uat", "environment_dev"],
+    ids=['environment_uat', 'environment_dev'],
 )
 def environment(request: SubRequest) -> Dict[str, object]:
     """
@@ -227,7 +233,7 @@ def environment(request: SubRequest) -> Dict[str, object]:
 
     env: Dict[str, object] = dict(request.param)
 
-    is_dev = bool(env["is_dev"])
+    is_dev = bool(env['is_dev'])
 
     def _create_function(
         subscription_key: str,
@@ -296,12 +302,12 @@ def environment(request: SubRequest) -> Dict[str, object]:
 
     env.update(
         {
-            "create_function": _create_function,
-            "get_function": _get_function,
-            "delete_function": _delete_function,
-            "update_function": _update_function,
-            "subscription_key": subscription_key,
-            "organization_id": organization_id,
+            'create_function': _create_function,
+            'get_function': _get_function,
+            'delete_function': _delete_function,
+            'update_function': _update_function,
+            'subscription_key': subscription_key,
+            'organization_id': organization_id,
         }
     )
 
@@ -324,15 +330,15 @@ def setup_data(environment: Dict[str, object]) -> Dict[str, object]:
     iupd: str = generate_iupd()
     iuv: str = generate_iuv()
 
-    subscription_key = str(environment["subscription_key"])
-    organization_id = str(environment["organization_id"])
+    subscription_key = str(environment['subscription_key'])
+    organization_id = str(environment['organization_id'])
 
     return {
-        "debtor_fc": debtor_fc,
-        "iupd": iupd,
-        "iuv": iuv,
-        "subscription_key": subscription_key,
-        "organization_id": organization_id,
+        'debtor_fc': debtor_fc,
+        'iupd': iupd,
+        'iuv': iuv,
+        'subscription_key': subscription_key,
+        'organization_id': organization_id,
     }
 
 

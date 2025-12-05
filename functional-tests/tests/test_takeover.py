@@ -11,7 +11,8 @@ from api.activation import get_activation_by_payer_id
 from api.takeover import send_takeover_notification
 from api.takeover import takeover_activation
 from config.configuration import secrets
-from utils.activation_helpers import activate_with_sp_a, activate_with_sp_b
+from utils.activation_helpers import activate_with_sp_a
+from utils.activation_helpers import activate_with_sp_b
 from utils.http_utils import extract_id_from_location
 
 
