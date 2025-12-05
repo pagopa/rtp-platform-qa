@@ -112,18 +112,19 @@ make test-functional
 
 ### BDD Tests
 
-BDD (Behavior-Driven Development) tests are written using behave, which allows defining scenarios in Gherkin syntax to
-describe user behaviors and expectations.
+BDD (Behavior-Driven Development) tests are written using Behave, with scenarios in Gherkin syntax to describe the expected behaviors.
 
-- Location: bdd-tests/
-- Tool: behave
-- Feature files: bdd-tests/features/
-- Step definitions: bdd-tests/steps/
-- Configuration: behave.ini
+- Location: `bdd-tests/`
+- Tool: Behave
+- Feature files: `bdd-tests/features/`
+- Step definitions: `bdd-tests/steps/`
+- Configurazione condivisa: `bdd-tests/environment.py`
 - Command to run:
 
 ```bash
 make test-bdd
+or
+behave bdd-tests
 ```
 
 ### UX Tests
@@ -241,26 +242,34 @@ To run the tests locally you need to set up an .env file in the root project dir
 
 ## Project Structure
 
-```
+```text
 ├── api/
-│   └── __pycache__/
 ├── bdd-tests/
-│   ├── Central Registry/
-│   │   └── features/
-│   ├── Creditor Service Provider/
-│   └── steps/
+│   ├── features/
+│   │   ├── central_registry/
+│   │   │   ├── activation.feature
+│   │   │   └── takeover.feature
+│   │   └── creditor_service_provider/
+│   │       ├── cancel_RTP.feature
+│   │       ├── send_RTP_through_API.feature
+│   │       └── send_RTP_through_web_page.feature
+│   ├── steps/
+│   │   ├── activation_steps.py
+│   │   ├── auth_steps.py
+│   │   ├── cancel_rtp_steps.py
+│   │   ├── dataset_steps.py
+│   │   ├── debtor_steps.py
+│   │   ├── send_rtp_steps.py
+│   │   └── takeover_steps.py
+│   └── environment.py
 ├── config/
-│   └── __pycache__/
 ├── contract-tests/
 │   └── tests/
 ├── functional-tests/
-│   ├── __pycache__/
 │   └── tests/
-│       └── __pycache__/
 ├── performance-tests/
-├── rtd_platform_qa.egg-info/
-├── utils/
-│   └── __pycache__/
-└── ux-tests/
+├── ux-tests/
+│   └── tests/
+└── end-to-end-test/
     └── tests/
 ```
