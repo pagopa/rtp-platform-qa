@@ -23,11 +23,6 @@ on:
         description: Run UX tests
         required: false
         default: true
-      Performance:
-        type: boolean
-        description: Run Performance tests
-        required: false
-        default: true
       Contract:
         type: boolean
         description: Run Contract tests
@@ -332,73 +327,10 @@ jobs:
           user_name: 'rtp-gh-bot'
           user_email: 'rtp-github-bot@pagopa.it'
 
-  Performance_Tests:
-    runs-on: ubuntu-latest
-    environment: uat
-    needs: UX_Tests
-    if: always() && (github.event.inputs.Performance  == 'true' || !github.event.inputs.Performance)
-    name: Performance
-    steps:
-      - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
-      - name: Setup Python
-        uses: actions/setup-python@f677139bbe7f9c59b41e40162b753c062f5d49a3 #v5.2.0
-        with:
-          python-version: 3.x
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[performance-tests]" || true
-      - name: Run Performance tests
-        if: always()
-        continue-on-error: true
-        env:
-          DEBTOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_ID }}
-          DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_ID: ${{ vars.DEBTOR_SERVICE_PROVIDER_B_ID }}
-          DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET: ${{ secrets.DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET }}
-
-          CREDITOR_SERVICE_PROVIDER_CLIENT_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_CLIENT_ID }}
-          CREDITOR_SERVICE_PROVIDER_ID: ${{ vars.CREDITOR_SERVICE_PROVIDER_ID }}
-          CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET: ${{ secrets.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET }}
-
-          PAGOPA_PAYEE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID }}
-          PAGOPA_PAYEE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_ID: ${{ vars.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID }}
-          PAGOPA_SERVICE_REGISTRY_CLIENT_SECRET: ${{ secrets.PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET }}
-
-          RTP_READER_CLIENT_ID: ${{ vars.RTP_READER_CLIENT_ID }}
-          RTP_READER_CLIENT_SECRET: ${{ secrets.RTP_READER_CLIENT_SECRET }}
-
-          WEBPAGE_USERNAME: ${{ vars.WEBPAGE_USERNAME }}
-          WEBPAGE_PASSWORD: ${{ secrets.WEBPAGE_PASSWORD }}
-
-          CBI_CLIENT_ID: ${{ vars.CBI_CLIENT_ID }}
-          CBI_CLIENT_SECRET: ${{ secrets.CBI_CLIENT_SECRET }}
-          CBI_CLIENT_PFX_BASE64: ${{ secrets.CBI_CLIENT_PFX_BASE64 }}
-          CBI_CLIENT_PFX_PASSWORD_BASE64: ${{ secrets.CBI_CLIENT_PFX_PASSWORD_BASE64 }}
-
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64 }}
-          DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64: ${{ secrets.DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64 }}
-
-          CBI_ACTIVATED_FISCAL_CODE: ${{ vars.CBI_ACTIVATED_FISCAL_CODE }}
-          CBI_PAYEE_ID: ${{ vars.CBI_PAYEE_ID }}
-          CREDITOR_AGENT_ID: ${{ vars.CREDITOR_AGENT_ID }}
-          POSTE_ACTIVATED_FISCAL_CODE: ${{ vars.POSTE_ACTIVATED_FISCAL_CODE }}
-          ICCREA_ACTIVATED_FISCAL_CODE: ${{ vars.ICCREA_ACTIVATED_FISCAL_CODE }}
-          DEBT_POSITIONS_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_ORGANIZATION_ID }}
-          DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY: ${{ secrets.DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY }}
-          DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID }}
-        run: |
-          locust -f performance-tests/locustfile.py --headless --users 5 --spawn-rate 1 --run-time 10 --host=http://example.com --html .report/report.html
-
   Contract_Tests:
     runs-on: ubuntu-latest
     environment: uat
-    needs: Performance_Tests
+    needs: UX_Tests
     if: always() && (github.event.inputs.Contract  == 'true' || !github.event.inputs.Contract)
     name: Contract
     steps:
