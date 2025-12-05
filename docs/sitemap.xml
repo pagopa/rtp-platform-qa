@@ -5,31 +5,27 @@
          <lastmod>2025-12-05</lastmod>
     </url>
     <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Central%20Registry/</loc>
+         <loc>https://pagopa.github.io/rtp-platform-qa/components/features/</loc>
          <lastmod>2025-12-05</lastmod>
     </url>
     <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/</loc>
+         <loc>https://pagopa.github.io/rtp-platform-qa/components/features/activation/</loc>
          <lastmod>2025-12-05</lastmod>
     </url>
     <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Central%20Registry/activation/</loc>
+         <loc>https://pagopa.github.io/rtp-platform-qa/components/features/cancel_RTP/</loc>
          <lastmod>2025-12-05</lastmod>
     </url>
     <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Central%20Registry/takeover/</loc>
+         <loc>https://pagopa.github.io/rtp-platform-qa/components/features/send_RTP_through_API/</loc>
          <lastmod>2025-12-05</lastmod>
     </url>
     <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/cancel_RTP/</loc>
+         <loc>https://pagopa.github.io/rtp-platform-qa/components/features/send_RTP_through_web_page/</loc>
          <lastmod>2025-12-05</lastmod>
     </url>
     <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/send_RTP_through_API/</loc>
-         <lastmod>2025-12-05</lastmod>
-    </url>
-    <url>
-         <loc>https://pagopa.github.io/rtp-platform-qa/components/Creditor%20Service%20Provider/send_RTP_through_web_page/</loc>
+         <loc>https://pagopa.github.io/rtp-platform-qa/components/features/takeover/</loc>
          <lastmod>2025-12-05</lastmod>
     </url>
 </urlset>
