@@ -43,7 +43,7 @@ test-functional:
 	pytest functional-tests/tests/ -q
 
 test-bdd:
-	behave bdd-tests
+	behave bdd-tests/features
 
 test-ux:
 	pytest ux-tests/tests/ -q
