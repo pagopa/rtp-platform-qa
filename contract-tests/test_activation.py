@@ -1,6 +1,7 @@
 import uuid
 
 import allure
+import requests
 import schemathesis
 from schemathesis import Case
 
@@ -10,29 +11,39 @@ from config.configuration import config
 from config.configuration import secrets
 
 SPEC_URL = config.activation_api_specification
-
-BASE_URL = "https://api-rtp.uat.cstar.pagopa.it/rtp/activation"
+BASE_URL = config.activation_base_url_path  # https://api-rtp.uat.cstar.pagopa.it/rtp/activation
 
 schema = schemathesis.openapi.from_url(SPEC_URL)
+
+# Prendiamo il token UNA sola volta per tutto il modulo
+ACCESS_TOKEN = get_valid_access_token(
+    client_id=secrets.debtor_service_provider.client_id,
+    client_secret=secrets.debtor_service_provider.client_secret,
+    access_token_function=get_access_token,
+)
 
 
 @allure.label("parentSuite", "contract-tests.tests")
 @allure.feature("RTP Activation")
 @schema.parametrize()
 def test_activation(case: Case):
-    access_token = get_valid_access_token(
-        client_id=secrets.debtor_service_provider.client_id,
-        client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token,
-    )
-
     request_id = str(uuid.uuid4())
 
-    case.call_and_validate(
-        base_url=BASE_URL,
+    response = requests.request(
+        method=case.method,
+        url=BASE_URL.rstrip("/") + case.path,
         headers={
-            "Authorization": access_token,
+            "Authorization": ACCESS_TOKEN,
             "RequestId": request_id,
             "Version": "v1",
+            **{
+                h: v
+                for h, v in (case.headers or {}).items()
+                if h.lower() not in {"authorization", "requestid", "version"}
+            },
         },
+        params=case.query,
+        json=case.body,
     )
+
+    case.validate_response(response)
