@@ -10,9 +10,7 @@ from utils.dataset import fake_fc
 
 
 def _init_access_tokens() -> Dict[str, str]:
-    """
-    Allinea la gestione dei token a quella dei functional tests.
-    """
+
     tokens: Dict[str, str] = {}
 
     tokens['debtor'] = get_valid_access_token(
