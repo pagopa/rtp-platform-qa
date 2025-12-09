@@ -134,12 +134,15 @@ mkdocs_config = {
     'nav': [
         {'Home': 'index.md'},
         {'Components': nav_links},
-        {'Allure Reports': [
-            {'Functional': f'https://pagopa.github.io/{args.repo_name[0]}/functional'},
-            {'BDD': f'https://pagopa.github.io/{args.repo_name[0]}/bdd'},
-            {'UX': f'https://pagopa.github.io/{args.repo_name[0]}/ux'},
-            {'Contract': f'https://pagopa.github.io/{args.repo_name[0]}/contract'},
-        ]},
+        {
+            'Allure Reports': [
+                {'Functional': f'https://pagopa.github.io/{args.repo_name[0]}/functional'},
+                {'BDD': f'https://pagopa.github.io/{args.repo_name[0]}/bdd'},
+                {'UX': f'https://pagopa.github.io/{args.repo_name[0]}/ux'},
+                {'Contract': f'https://pagopa.github.io/{args.repo_name[0]}/contract'},
+                {'Aggregate': f'https://pagopa.github.io/{args.repo_name[0]}/aggregate'},
+            ]
+        },
     ],
     'theme': {
         'name': 'material',
