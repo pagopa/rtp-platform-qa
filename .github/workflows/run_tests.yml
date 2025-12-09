@@ -427,7 +427,7 @@ jobs:
   Aggregate_Results:
     runs-on: ubuntu-latest
     environment: uat
-    needs: BDD_Tests
+    needs: UX_Tests
     # if: always() && github.ref == 'refs/heads/main'
     if: always()
     steps:
