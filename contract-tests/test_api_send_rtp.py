@@ -1,5 +1,6 @@
+import uuid
+
 import allure
-import pytest
 import schemathesis
 from schemathesis import Case
 
@@ -9,11 +10,13 @@ from config.configuration import config
 from config.configuration import secrets
 
 SPEC_URL = config.send_api_specification
-BASE_URL = config.rtp_creation_base_url_path
 
-schema = schemathesis.openapi.from_uri(SPEC_URL, base_url=BASE_URL + "/v1")
+BASE_URL = "https://api-rtp.uat.cstar.pagopa.it/rtp"
+
+schema = schemathesis.openapi.from_url(SPEC_URL)
 
 
+@allure.label("parentSuite", "contract-tests.tests")
 @allure.feature("RTP Send")
 @schema.parametrize()
 def test_send_rtp(case: Case):
@@ -22,7 +25,15 @@ def test_send_rtp(case: Case):
         client_secret=secrets.creditor_service_provider.client_secret,
         access_token_function=get_access_token,
     )
+
+    request_id = str(uuid.uuid4())
+
     case.call_and_validate(
-        headers={"Authorization": access_token},
+        base_url=BASE_URL,
+        headers={
+            "Authorization": access_token,
+            "RequestId": request_id,
+            "Version": "v1",
+        },
         json={"payerId": secrets.creditor_service_provider.service_provider_id},
     )
