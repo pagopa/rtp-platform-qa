@@ -49,5 +49,5 @@ def send_srtp_to_iccrea(rtp_payload):
         url=config.iccrea_send_url,
         json=rtp_payload,
         cert=(config.cert_path, config.key_path),
-        timeout=config.default_timeout
+        timeout=config.default_timeout,
     )

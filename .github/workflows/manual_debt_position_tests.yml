@@ -55,7 +55,7 @@ jobs:
           DEBT_POSITIONS_ORGANIZATION_ID: ${{ github.event.inputs.environment == 'dev' && vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID || vars.DEBT_POSITIONS_ORGANIZATION_ID }}
           DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ github.event.inputs.environment == 'dev' && vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID || '' }}
         run: |
-          pytest "functional-tests/tests/test_GPD_availability.py::test_create_debt_position[environment_${{ github.event.inputs.environment }}]" -v
+          pytest "functional-tests/tests/test_availability_GPD.py::test_create_debt_position[environment_${{ github.event.inputs.environment }}]" -v
 
       - name: Delete debt position
         if: ${{ github.event.inputs.operation == 'delete' || github.event.inputs.operation == 'all' }}
@@ -68,7 +68,7 @@ jobs:
           DEBT_POSITIONS_ORGANIZATION_ID: ${{ github.event.inputs.environment == 'dev' && vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID || vars.DEBT_POSITIONS_ORGANIZATION_ID }}
           DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ github.event.inputs.environment == 'dev' && vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID || '' }}
         run: |
-          pytest "functional-tests/tests/test_GPD_availability.py::test_delete_debt_position[environment_${{ github.event.inputs.environment }}]" -v
+          pytest "functional-tests/tests/test_availability_GPD.py::test_delete_debt_position[environment_${{ github.event.inputs.environment }}]" -v
 
       - name: Update debt position
         if: ${{ github.event.inputs.operation == 'update' || github.event.inputs.operation == 'all' }}
@@ -81,4 +81,4 @@ jobs:
           DEBT_POSITIONS_ORGANIZATION_ID: ${{ github.event.inputs.environment == 'dev' && vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID || vars.DEBT_POSITIONS_ORGANIZATION_ID }}
           DEBT_POSITIONS_DEV_ORGANIZATION_ID: ${{ github.event.inputs.environment == 'dev' && vars.DEBT_POSITIONS_DEV_ORGANIZATION_ID || '' }}
         run: |
-          pytest "functional-tests/tests/test_GPD_availability.py::test_update_debt_position[environment_${{ github.event.inputs.environment }}]" -v
+          pytest "functional-tests/tests/test_availability_GPD.py::test_update_debt_position[environment_${{ github.event.inputs.environment }}]" -v
