@@ -51,13 +51,11 @@ def before_scenario(context, scenario) -> None:
     context.latest_rtp_resource_id = None
     context.otp = None
 
-
     allure.label('parentSuite', 'bdd-tests.tests')
 
+    allure.label('suite', 'BDD Scenarios')
+
     if scenario.feature and scenario.feature.name:
-        allure.label('suite', scenario.feature.name)
         allure.feature(scenario.feature.name)
-    else:
-        allure.label('suite', 'BDD Scenarios')
 
     allure.label('test_type', 'bdd')
