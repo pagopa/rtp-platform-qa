@@ -1,4 +1,5 @@
 import allure
+import pytest
 import schemathesis
 from schemathesis import Case
 
@@ -10,10 +11,10 @@ from config.configuration import secrets
 SPEC_URL = config.activation_api_specification
 BASE_URL = config.rtp_creation_base_url_path
 
-schema = schemathesis.loaders.from_uri(SPEC_URL, base_url=BASE_URL)
+schema = schemathesis.from_uri(SPEC_URL, base_url=BASE_URL)
 
 
-@allure.feature('Activation')
+@allure.feature("RTP Activation")
 @schema.parametrize()
 def test_activation(case: Case):
     access_token = get_valid_access_token(
