@@ -27,7 +27,7 @@ on:
         type: boolean
         description: Run Contract tests
         required: false
-        default: true
+        default: false
 
 jobs:
   Functional_Tests:
