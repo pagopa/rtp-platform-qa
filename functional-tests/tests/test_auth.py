@@ -42,3 +42,27 @@ def test_get_token_with_invalid_client_secret():
     token_response = get_access_token(client_id=secrets.creditor_service_provider.client_id,
                                       client_secret=invalid_client_secret)
     assert token_response.status_code == 401
+
+
+@allure.feature('Authentication')
+@allure.story('Service Provider authentication')
+@allure.title('All auth fixtures expose a valid Bearer token format')
+@pytest.mark.auth
+@pytest.mark.happy_path
+@pytest.mark.parametrize(
+    'token_fixture_name',
+    [
+        'debtor_service_provider_token_a',
+        'debtor_service_provider_token_b',
+        'creditor_service_provider_token_a',
+        'rtp_reader_access_token',
+        'pagopa_payee_registry_token',
+        'pagopa_service_providers_registry_token',
+    ],
+)
+def test_all_token_fixtures_return_bearer_tokens(request, token_fixture_name):
+    token = request.getfixturevalue(token_fixture_name)
+
+    assert isinstance(token, str), f'{token_fixture_name} must be a string'
+    assert token.startswith('Bearer '), f'{token_fixture_name} must start with "Bearer "'
+    assert len(token) > 7, f'{token_fixture_name} should not be empty after "Bearer "'
