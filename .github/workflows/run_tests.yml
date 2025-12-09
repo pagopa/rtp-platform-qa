@@ -427,7 +427,7 @@ jobs:
   Aggregate_Results:
     runs-on: ubuntu-latest
     environment: uat
-    needs: Functional_Tests
+    needs: BDD_Tests
     # if: always() && github.ref == 'refs/heads/main'
     if: always()
     steps:
@@ -436,25 +436,29 @@ jobs:
         with:
           path: allure-results
           merge-multiple: true
-          run-id: upload_functional_test_results
+          name: allure-results-functional
+
       - name: Copy BDD results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
-          run-id: upload_bdd_test_results
+          name: allure-results-bdd
+
       - name: Copy UX results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
-          run-id: upload_ux_test_results
+          name: allure-results-ux
+
       - name: Copy contract results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           path: allure-results
           merge-multiple: true
-          run-id: upload_contract_test_results
+          name: allure-results-contract
+          continue-on-error: true
       - name: Load test report history
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
         if: always()
