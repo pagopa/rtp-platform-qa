@@ -6,6 +6,8 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
 
+from allure_commons._allure import dynamic
+
 
 def _init_access_tokens() -> Dict[str, str]:
     """
@@ -62,7 +64,7 @@ def before_all(context) -> None:
 def before_scenario(context, scenario) -> None:
     """
     Initializes/resets some holders used in steps to save state between
-    Given/When/Then.
+    Given/When/Then and labels BDD scenarios for Allure.
     """
     context.debtor_fc = {}
 
@@ -71,3 +73,10 @@ def before_scenario(context, scenario) -> None:
     context.latest_rtp_resource_id = None
 
     context.otp = None
+
+    dynamic.suite("BDD Scenarios")
+
+    dynamic.label("test_type", "bdd")
+
+    if scenario.feature and scenario.feature.name:
+        dynamic.feature(scenario.feature.name)
