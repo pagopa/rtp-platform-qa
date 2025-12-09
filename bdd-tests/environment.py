@@ -6,7 +6,7 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
 
-from allure_commons._allure import dynamic
+import allure
 
 
 def _init_access_tokens() -> Dict[str, str]:
@@ -21,20 +21,20 @@ def _init_access_tokens() -> Dict[str, str]:
     """
     tokens: Dict[str, str] = {}
 
-    tokens['debtor'] = get_valid_access_token(
+    tokens["debtor"] = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token,
     )
 
-    tokens['debtor_b'] = get_valid_access_token(
+    tokens["debtor_b"] = get_valid_access_token(
         client_id=secrets.debtor_service_provider_B.client_id,
         client_secret=secrets.debtor_service_provider_B.client_secret,
         access_token_function=get_access_token,
     )
 
-    if getattr(secrets, 'creditor_service_provider', None):
-        tokens['creditor'] = get_valid_access_token(
+    if getattr(secrets, "creditor_service_provider", None):
+        tokens["creditor"] = get_valid_access_token(
             client_id=secrets.creditor_service_provider.client_id,
             client_secret=secrets.creditor_service_provider.client_secret,
             access_token_function=get_access_token,
@@ -74,9 +74,9 @@ def before_scenario(context, scenario) -> None:
 
     context.otp = None
 
-    dynamic.suite("BDD Scenarios")
+    allure.suite("BDD Scenarios")
 
-    dynamic.label("test_type", "bdd")
+    allure.label("test_type", "bdd")
 
     if scenario.feature and scenario.feature.name:
-        dynamic.feature(scenario.feature.name)
+        allure.feature(scenario.feature.name)
