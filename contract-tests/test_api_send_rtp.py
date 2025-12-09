@@ -11,7 +11,7 @@ from config.configuration import secrets
 SPEC_URL = config.send_api_specification
 BASE_URL = config.rtp_creation_base_url_path
 
-schema = schemathesis.from_uri(SPEC_URL, base_url=BASE_URL + "/v1")
+schema = schemathesis.openapi.from_uri(SPEC_URL, base_url=BASE_URL + "/v1")
 
 
 @allure.feature("RTP Send")
