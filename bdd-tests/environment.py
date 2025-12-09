@@ -15,20 +15,20 @@ def _init_access_tokens() -> Dict[str, str]:
     """
     tokens: Dict[str, str] = {}
 
-    tokens["debtor"] = get_valid_access_token(
+    tokens['debtor'] = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token,
     )
 
-    tokens["debtor_b"] = get_valid_access_token(
+    tokens['debtor_b'] = get_valid_access_token(
         client_id=secrets.debtor_service_provider_B.client_id,
         client_secret=secrets.debtor_service_provider_B.client_secret,
         access_token_function=get_access_token,
     )
 
-    if getattr(secrets, "creditor_service_provider", None):
-        tokens["creditor"] = get_valid_access_token(
+    if getattr(secrets, 'creditor_service_provider', None):
+        tokens['creditor'] = get_valid_access_token(
             client_id=secrets.creditor_service_provider.client_id,
             client_secret=secrets.creditor_service_provider.client_secret,
             access_token_function=get_access_token,
@@ -52,12 +52,12 @@ def before_scenario(context, scenario) -> None:
     context.otp = None
 
 
-    allure.label("parentSuite", "bdd-tests.tests")
+    allure.label('parentSuite', 'bdd-tests.tests')
 
     if scenario.feature and scenario.feature.name:
-        allure.label("suite", scenario.feature.name)
+        allure.label('suite', scenario.feature.name)
         allure.feature(scenario.feature.name)
     else:
-        allure.label("suite", "BDD Scenarios")
+        allure.label('suite', 'BDD Scenarios')
 
-    allure.label("test_type", "bdd")
+    allure.label('test_type', 'bdd')

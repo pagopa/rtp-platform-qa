@@ -22,23 +22,23 @@ ACCESS_TOKEN = get_valid_access_token(
 )
 
 
-@allure.label("parentSuite", "contract-tests.tests")
-@allure.feature("RTP Create")
+@allure.label('parentSuite', 'contract-tests.tests')
+@allure.feature('RTP Create')
 @schema.parametrize()
 def test_create_rtp(case: Case):
     request_id = str(uuid.uuid4())
 
     response = requests.request(
         method=case.method,
-        url=BASE_URL.rstrip("/") + case.path,
+        url=BASE_URL.rstrip('/') + case.path,
         headers={
-            "Authorization": ACCESS_TOKEN,
-            "RequestId": request_id,
-            "Version": "v1",
+            'Authorization': ACCESS_TOKEN,
+            'RequestId': request_id,
+            'Version': 'v1',
             **{
                 h: v
                 for h, v in (case.headers or {}).items()
-                if h.lower() not in {"authorization", "requestid", "version"}
+                if h.lower() not in {'authorization', 'requestid', 'version'}
             },
         },
         params=case.query,
