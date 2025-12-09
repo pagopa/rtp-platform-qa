@@ -427,7 +427,7 @@ jobs:
   Aggregate_Results:
     runs-on: ubuntu-latest
     environment: uat
-    needs: Contract_Tests
+    needs: Functional_Tests
     # if: always() && github.ref == 'refs/heads/main'
     if: always()
     steps:
