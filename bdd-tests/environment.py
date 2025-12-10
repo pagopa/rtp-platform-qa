@@ -42,23 +42,14 @@ def before_all(context) -> None:
     context.access_tokens = _init_access_tokens()
 
 
-def before_scenario(context, scenario) -> None:
+def before_scenario(context) -> None:
     context.debtor_fc = {}
     context.latest_activation_response = None
     context.latest_rtp_response = None
     context.latest_rtp_resource_id = None
     context.otp = None
 
-    feature_name = (
-        scenario.feature.name
-        if scenario.feature and scenario.feature.name
-        else "Unspecified Feature"
-    )
-
-    allure.dynamic.parent_suite("bdd-tests")
-    allure.dynamic.suite("RTP")
-    allure.dynamic.sub_suite(feature_name)
-
     allure.dynamic.label("package", "bdd-tests")
     allure.dynamic.label("test_type", "bdd")
+
 

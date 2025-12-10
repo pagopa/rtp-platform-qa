@@ -1,3 +1,7 @@
+@allure.label.parentSuite:bdd-tests
+@allure.label.suite:RTP
+@allure.label.subSuite:Debtor_Activation_Takeover
+
 @allure.label.epic:RTP
 @allure.label.feature:Debtor_Activation_Takeover
 Feature: A Debtor Service Provider performs takeover of an existing activation

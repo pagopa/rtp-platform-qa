@@ -1,3 +1,7 @@
+@allure.label.parentSuite:bdd-tests
+@allure.label.suite:RTP
+@allure.label.subSuite:RTP_Cancellation
+
 @allure.label.epic:RTP
 @allure.label.feature:RTP_Cancellation
 Feature: A Creditor Service Provider can cancel a Request to Pay

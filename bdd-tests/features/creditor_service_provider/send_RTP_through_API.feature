@@ -1,3 +1,7 @@
+@allure.label.parentSuite:bdd-tests
+@allure.label.suite:RTP
+@allure.label.subSuite:RTP_Sending
+
 @allure.label.epic:RTP
 @allure.label.feature:RTP_Sending
 Feature: A Creditor Service Provider sends an RTP through API

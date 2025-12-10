@@ -1,3 +1,7 @@
+@allure.label.parentSuite:bdd-tests
+@allure.label.suite:RTP
+@allure.label.subSuite:Debtor_Activation
+
 @allure.label.epic:RTP
 @allure.label.feature:Debtor_Activation
 Feature: A Debtor Service Providers activates a debtor
