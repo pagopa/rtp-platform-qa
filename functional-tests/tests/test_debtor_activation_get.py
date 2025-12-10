@@ -77,5 +77,3 @@ def test_get_activation_by_id_invalid_uuid(debtor_service_provider_token_a):
     invalid_id = 'not-a-valid-uuid'
     res = get_activation_by_id(debtor_service_provider_token_a, invalid_id)
     assert res.status_code == 400
-
-

@@ -49,7 +49,5 @@ def before_scenario(context, scenario) -> None:
     context.latest_rtp_resource_id = None
     context.otp = None
 
-    allure.dynamic.label("package", "bdd-tests")
-    allure.dynamic.label("test_type", "bdd")
-
-
+    allure.dynamic.label('package', 'bdd-tests')
+    allure.dynamic.label('test_type', 'bdd')

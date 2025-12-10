@@ -17,7 +17,7 @@ def test_get_valid_token(debtor_service_provider_token_a):
     assert debtor_service_provider_token_a.startswith('Bearer '), "Token must start with 'Bearer '"
     assert len(debtor_service_provider_token_a) > 7, "Token should not be empty after 'Bearer '"
 
-    
+
 @allure.epic('Authentication')
 @allure.feature('Authentication Token Retrieval')
 @allure.story('Service Provider authentication')
@@ -73,5 +73,3 @@ def test_get_token_with_invalid_client_secret():
     token_response = get_access_token(client_id=secrets.creditor_service_provider.client_id,
                                       client_secret=invalid_client_secret)
     assert token_response.status_code == 401
-
-
