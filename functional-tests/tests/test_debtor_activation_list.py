@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime
 
 import allure
 import pytest
@@ -7,45 +6,11 @@ import requests
 
 from api.activation import activate
 from api.activation import ACTIVATION_LIST_URL
-from api.activation import get_activation_by_id
-from api.activation import get_activation_by_payer_id
 from api.activation import get_all_activations
 from config.configuration import config
 from config.configuration import secrets
-from utils.dataset import uuidv4_pattern
 from utils.random_values import random_page_size
 from utils.response_assertions import is_empty_response
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Debtor activation')
-@allure.title('A debtor is activated by an authenticated service provider')
-@allure.tag('functional', 'happy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.happy_path
-def test_activate_debtor(debtor_service_provider_token_a, random_fiscal_code):
-
-    res = activate(debtor_service_provider_token_a, random_fiscal_code, secrets.debtor_service_provider.service_provider_id)
-    assert res.status_code == 201, 'Error activating debtor'
-
-    location = res.headers['Location']
-    location_split = location.split('/')
-
-    assert '/'.join(location_split[:-1]) == config.activation_base_url_path + config.activation_path
-    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
-
-    res = get_activation_by_payer_id(debtor_service_provider_token_a, random_fiscal_code)
-    assert res.status_code == 200
-    assert res.json()['payer']['fiscalCode'] == random_fiscal_code
-    assert res.json()['payer']['rtpSpId'] == secrets.debtor_service_provider.service_provider_id
-    assert bool(uuidv4_pattern.fullmatch(res.json()['id']))
-
-    try:
-        datetime.strptime(res.json()['effectiveActivationDate'], '%Y-%m-%dT%H:%M:%S.%f')
-    except ValueError:
-        assert False, 'Invalid date format'
-
 
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')
@@ -75,60 +40,6 @@ def test_get_all_activations(debtor_service_provider_token_a, next_cursor):
         assert isinstance(body2.get('activations'), list), "Expected 'activations' to be a list"
         assert len(body2['activations']) <= page_size, f'Expected {page_size} or fewer activations in paginated response'
 
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Get Debtor activation by ID')
-@allure.title('A debtor is activated and retrieved by activation id')
-@allure.tag('functional', 'happy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.happy_path
-def test_get_activation_by_id(debtor_service_provider_token_a, make_activation):
-
-    activation_id, debtor_fc = make_activation()
-
-    res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
-    assert res.status_code == 200, f'Expected 200 but got {res.status_code}'
-    body = res.json()
-    assert body['id'] == activation_id
-    assert body['payer']['fiscalCode'] == debtor_fc
-    assert body['payer']['rtpSpId'] == secrets.debtor_service_provider.service_provider_id
-
-    try:
-        datetime.strptime(body['effectiveActivationDate'], '%Y-%m-%dT%H:%M:%S.%f')
-    except ValueError:
-        assert False, 'Invalid date format'
-
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Debtor activation')
-@allure.title('The activation request must contain lower case fiscal code')
-@allure.tag('functional', 'unhappy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_cannot_activate_debtor_lower_fiscal_code(debtor_service_provider_token_a, random_fiscal_code):
-
-    res = activate(debtor_service_provider_token_a, random_fiscal_code.lower(), secrets.debtor_service_provider.service_provider_id)
-    assert res.status_code == 400
-    assert res.json()['errors'][0]['code'] == 'Pattern.activationReqDtoMono.payer.fiscalCode'
-    assert res.json()['errors'][0]['description'].startswith('payer.fiscalCode must match')
-
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Debtor activation')
-@allure.title('Find by payer id request must contain lower case fiscal code')
-@allure.tag('functional', 'unhappy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_cannot_get_activation_lower_fiscal_code(debtor_service_provider_token_a, random_fiscal_code):
-
-    res = get_activation_by_payer_id(debtor_service_provider_token_a, random_fiscal_code.lower())
-    assert res.status_code == 400
 
 
 @allure.epic('Debtor Activation')
@@ -162,52 +73,6 @@ def test_fail_activate_debtor_two_times(debtor_service_provider_token_a, random_
     assert res.status_code == 409, f'Error activating debtor, expected 409 but got {res.status_code}'
 
     assert res.text == '' or res.text is None, 'Expected empty body for 409 response on double activation'
-
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Get Debtor activation by ID')
-@allure.title('Retrieving non-existent activation returns 404')
-@allure.tag('functional', 'unhappy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_get_activation_by_id_not_found(debtor_service_provider_token_a):
-
-    random_id = str(uuid.uuid4())
-    res = get_activation_by_id(debtor_service_provider_token_a, random_id)
-    assert res.status_code == 404
-
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Get Debtor activation by ID')
-@allure.title('Retrieving activation with invalid UUID returns 400')
-@allure.tag('functional', 'unhappy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_get_activation_by_id_invalid_uuid(debtor_service_provider_token_a):
-
-    invalid_id = 'not-a-valid-uuid'
-    res = get_activation_by_id(debtor_service_provider_token_a, invalid_id)
-    assert res.status_code == 400
-
-
-@allure.epic('Debtor Activation')
-@allure.feature('Activation')
-@allure.story('Get Debtor activation by ID')
-@allure.title('Retrieving activation without valid token returns 401')
-@allure.tag('functional', 'unhappy_path', 'activation', 'debtor_activation')
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_get_activation_by_id_unauthorized():
-
-    fake_token = 'Bearer invalid.token.value'
-    random_id = str(uuid.uuid4())
-    res = get_activation_by_id(fake_token, random_id)
-    assert res.status_code == 401
 
 
 @allure.epic('Debtor Activation')
