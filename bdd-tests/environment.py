@@ -49,11 +49,10 @@ def before_scenario(context, scenario) -> None:
     context.latest_rtp_resource_id = None
     context.otp = None
 
-    allure.label('parentSuite', 'bdd-tests.tests')
-
-    allure.label('suite', 'BDD Scenarios')
+    allure.dynamic.suite('bdd-tests.tests')
 
     if scenario.feature and scenario.feature.name:
-        allure.feature(scenario.feature.name)
+        allure.dynamic.feature(scenario.feature.name)
+        allure.dynamic.sub_suite(scenario.feature.name)
 
-    allure.label('test_type', 'bdd')
+    allure.dynamic.label('test_type', 'bdd')
