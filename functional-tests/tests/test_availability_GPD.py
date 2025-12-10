@@ -9,7 +9,7 @@ from utils.dataset import create_debt_position_update_payload
 @allure.epic('GPD Availability')
 @allure.feature('Create Debt Positions happy path')
 @allure.story('Create Debt Position')
-@allure.tag('debt_positions', 'happy_path, availability')
+@allure.tag('debt_positions', 'happy_path', 'availability')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_create_debt_position(gpd_test_data, environment):

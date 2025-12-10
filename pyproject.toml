@@ -95,6 +95,7 @@ markers = [
   "producer_gpd_message: mark tests that exercise GPD message producer endpoints",
   "timeout: Tests with timeouts",
   "functional: Functional tests",
+  "webform: Tests on RTP webform",
 ]
 
 [tool.hatch.build.targets.wheel]

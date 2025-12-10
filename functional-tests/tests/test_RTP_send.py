@@ -13,9 +13,11 @@ from utils.dataset import generate_rtp_data
 from utils.dataset import uuidv4_pattern
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP')
 @allure.title('An RTP is sent through API')
+@allure.tag('functional', 'happy_path', 'rtp_send')
 @pytest.mark.send
 @pytest.mark.happy_path
 def test_send_rtp_api(debtor_service_provider_token_a, creditor_service_provider_token_a):
@@ -43,9 +45,11 @@ def test_send_rtp_api(debtor_service_provider_token_a, creditor_service_provider
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to a provider through Sender')
 @allure.title('An RTP is sent to a CBI service with activated fiscal code')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'cbi')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.real_integration
@@ -71,9 +75,11 @@ def test_send_rtp_to_cbi(creditor_service_provider_token_a):
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to a provider')
 @allure.title('An RTP is sent to Poste service with activated fiscal code')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'poste')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.real_integration
@@ -99,9 +105,11 @@ def test_send_rtp_to_poste(creditor_service_provider_token_a):
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to a provider')
 @allure.title('An RTP is sent to ICCREA service with activated fiscal code')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'iccrea')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.real_integration
@@ -124,9 +132,11 @@ def test_send_rtp_to_iccrea(creditor_service_provider_token_a):
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP')
 @allure.title('Debtor fiscal code must be lower case during RTP send')
+@allure.tag('functional', 'unhappy_path', 'rtp_send')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_cannot_send_rtp_api_lower_fiscal_code(debtor_service_provider_token_a, creditor_service_provider_token_a):
@@ -147,9 +157,11 @@ def test_cannot_send_rtp_api_lower_fiscal_code(debtor_service_provider_token_a, 
     assert response.status_code == 400
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP')
 @allure.title('The response body contains a comprehensible error message')
+@allure.tag('functional', 'unhappy_path', 'rtp_send')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_field_error_in_body(debtor_service_provider_token_a, creditor_service_provider_token_a):
@@ -172,9 +184,11 @@ def test_field_error_in_body(debtor_service_provider_token_a, creditor_service_p
     assert response.json()['details'] == 'payee.payeeId must not be null'
 
 
+@allure.epic('RTP Send')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to a non-activated debtor')
 @allure.title('An RTP is sent through API')
+@allure.tag('functional', 'unhappy_path', 'rtp_send')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_cannot_send_rtp_not_activated_user(creditor_service_provider_token_a):

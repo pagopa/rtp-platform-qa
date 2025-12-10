@@ -8,10 +8,11 @@ from utils.dataset import generate_epc_rtp_data
 from utils.dataset import generate_rtp_data
 
 
-
+@allure.epic('POSTE Availability')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to POSTE directly')
 @allure.title('An RTP is sent through POSTE API')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'poste_availability')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.poste
@@ -24,10 +25,11 @@ def test_send_rtp_to_poste():
 
     assert response.status_code == 201
 
-
+@allure.epic('POSTE Availability')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to POSTE')
 @allure.title('Cannot send RTP with invalid amount')
+@allure.tag('functional', 'unhappy_path', 'rtp_send', 'poste_availability')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.poste
@@ -40,10 +42,11 @@ def test_send_rtp_to_poste_invalid_amount():
 
     assert response.status_code == 400
 
-
+@allure.epic('POSTE Availability')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to POSTE')
 @allure.title('Cannot send RTP with an amount over the POSTE limit')
+@allure.tag('functional', 'unhappy_path', 'rtp_send', 'poste_availability')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.poste
@@ -57,9 +60,11 @@ def test_send_rtp_to_poste_over_limit_amount():
     assert response.status_code == 400
 
 
+@allure.epic('POSTE Availability')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to POSTE')
 @allure.title('Cannot send RTP with expired date')
+@allure.tag('functional', 'unhappy_path', 'rtp_send', 'poste_availability')
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.poste

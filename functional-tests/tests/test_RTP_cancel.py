@@ -7,9 +7,11 @@ from api.cancel_rtp import cancel_rtp
 from api.send_rtp import send_rtp
 from utils.dataset import generate_rtp_data
 
+@allure.epic('RTP Cancel')
 @allure.feature('RTP Cancel')
 @allure.story('Service provider cancels RTP')
 @allure.title('RTP is successfully cancelled')
+@allure.tag('functional', 'happy_path', 'rtp_cancel')
 @pytest.mark.cancel
 @pytest.mark.happy_path
 def test_cancel_rtp_success(creditor_service_provider_token_a, activate_payer):
@@ -31,9 +33,11 @@ def test_cancel_rtp_success(creditor_service_provider_token_a, activate_payer):
     assert cancel_response.status_code == 204
 
 
-@allure.feature('RTP Callback')
+@allure.epic('RTP Cancel')
+@allure.feature('RTP Cancel')
 @allure.story('Service provider cancels RTP')
 @allure.title('RTP cancellation fails if ID does not exist')
+@allure.tag('functional', 'unhappy_path', 'rtp_cancel')
 @pytest.mark.cancel
 @pytest.mark.unhappy_path
 def test_cancel_rtp_with_nonexistent_resource_id(creditor_service_provider_token_a):

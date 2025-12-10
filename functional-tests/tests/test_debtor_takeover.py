@@ -16,7 +16,7 @@ from utils.activation_helpers import activate_with_sp_b
 from utils.http_utils import extract_id_from_location
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover happy path')
 @allure.title('Test Takeover Flow')
 @allure.story('Takeover')
@@ -65,7 +65,7 @@ def test_takeover_flow(random_fiscal_code, debtor_service_provider_token_a, debt
     assert new_sp == secrets.debtor_service_provider_B.service_provider_id, f"Takeover failed. Expected service provider {secrets.debtor_service_provider_B.service_provider_id}, got {new_sp}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover happy path')
 @allure.title('Test Takeover Notification Endpoint')
 @allure.story('Takeover Notification')
@@ -87,7 +87,7 @@ def test_takeover_notification(random_fiscal_code):
     assert not resp.text, 'Expected empty body for 204 No Content response'
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with Invalid OTP')
 @allure.story('Takeover fails because of valid OTP')
@@ -117,7 +117,7 @@ def test_takeover_fails_invalid_otp(random_fiscal_code, debtor_service_provider_
     assert takeover_response.status_code == 400, f"Expected 400 Bad Request for invalid OTP, got {takeover_response.status_code}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with Unauthenticated SP')
 @allure.story('Takeover fails because of unauthenticated SP')
@@ -146,7 +146,7 @@ def test_takeover_with_unauthenticated_sp(random_fiscal_code, debtor_service_pro
     assert takeover_response.status_code == 401, f"Expected 401 Unauthorized for unauthenticated SP, got {takeover_response.status_code}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with OTP Bound to Different Payer')
 @allure.story('Takeover fails because of OTP bound to different payer')
@@ -172,7 +172,7 @@ def test_takeover_otp_for_different_payer_fails(random_fiscal_code, debtor_servi
     assert bad.status_code == 403, f"Expected 403 for OTP bound to another payer, got {bad.status_code}: {bad.text}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails without Prior OTP')
 @allure.story('Takeover fails because of missing OTP')
@@ -193,7 +193,7 @@ def test_takeover_without_prior_otp_fails(random_fiscal_code, debtor_service_pro
     assert resp.status_code == 401, f"Expected 401 for takeover without OTP issuance, got {resp.status_code}: {resp.text}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with Empty OTP')
 @allure.story('Takeover fails because of empty OTP')
@@ -213,7 +213,7 @@ def test_takeover_empty_otp_bad_request(random_fiscal_code, debtor_service_provi
         )
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with Wrong SP Token')
 @allure.story('Takeover fails because of wrong SP token')
@@ -238,7 +238,7 @@ def test_takeover_with_token_of_wrong_sp_forbidden(random_fiscal_code, debtor_se
     assert forbidden.status_code == 403, f"Expected 403 Forbidden, got {forbidden.status_code}: {forbidden.text}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with Reused OTP')
 @allure.story('Takeover fails because of reused OTP')
@@ -273,7 +273,7 @@ def test_takeover_reuse_otp_fails(random_fiscal_code, debtor_service_provider_to
     assert retry.status_code == 401, f"Expected 401 on OTP reuse, got {retry.status_code}: {retry.text}"
 
 
-@allure.epic('Activation')
+@allure.epic('Debtor Takeover')
 @allure.feature('Takeover unhappy path')
 @allure.title('Test Takeover Fails with Nonsensical Body')
 @allure.story('Takeover fails because of nonsensical body')
