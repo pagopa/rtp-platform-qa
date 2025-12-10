@@ -1,5 +1,5 @@
 @allure.label.epic:RTP
-@allure.label.feature:RTP Sending
+@allure.label.feature:RTP_Sending
 Feature: A Creditor Service Provider sends an RTP through API
 
   Background:

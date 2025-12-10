@@ -1,5 +1,5 @@
 @allure.label.epic:RTP
-@allure.label.feature:Debtor Activation – Takeover
+@allure.label.feature:Debtor_Activation_Takeover
 Feature: A Debtor Service Provider performs takeover of an existing activation
 
   @allure.label.story:Successful_Takeover
