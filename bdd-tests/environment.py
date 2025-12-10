@@ -11,6 +11,16 @@ from utils.dataset import fake_fc
 
 def _init_access_tokens() -> Dict[str, str]:
 
+    """
+    Align token management with what is done in functional tests
+    (see functional-tests/tests/conftest.py).
+
+    Returns a dict with:
+    - debtor:    Debtor Service Provider A
+    - debtor_b:  Debtor Service Provider B
+    - creditor:  Creditor Service Provider A (if needed in RTP scenarios)
+    """
+
     tokens: Dict[str, str] = {}
 
     tokens['debtor'] = get_valid_access_token(
@@ -36,6 +46,16 @@ def _init_access_tokens() -> Dict[str, str]:
 
 
 def before_all(context) -> None:
+
+    """
+    Global Behave hook executed once at the start of the BDD suite.
+    Initialize:
+    - context.config
+    - context.secrets
+    - context.fake_fc
+    - context.access_tokens
+    """
+
     context.config = config
     context.secrets = secrets
     context.fake_fc = fake_fc
@@ -43,6 +63,20 @@ def before_all(context) -> None:
 
 
 def before_scenario(context, scenario) -> None:
+    
+    """
+    Behave hook executed before each scenario.
+
+    Resets per-scenario state on context:
+    - context.debtor_fc
+    - context.latest_activation_response
+    - context.latest_rtp_response
+    - context.latest_rtp_resource_id
+    - context.otp
+
+    Also sets Allure labels for BDD tests.
+    """
+    
     context.debtor_fc = {}
     context.latest_activation_response = None
     context.latest_rtp_response = None
