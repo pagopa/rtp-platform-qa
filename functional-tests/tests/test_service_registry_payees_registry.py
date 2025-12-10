@@ -4,9 +4,11 @@ import pytest
 from api.payee_registry import get_payee_registry
 
 
+@allure.epic('Service Registry Payees')
 @allure.feature('Payees Registry')
 @allure.story('pagoPA retrieves payees registry')
 @allure.title('Get paginated list of payees successfully')
+@allure.tag('functional', 'happy_path', 'payees_registry')
 @pytest.mark.happy_path
 def test_get_payees_success(pagopa_payee_registry_token):
     response = get_payee_registry(pagopa_payee_registry_token)
@@ -39,9 +41,11 @@ def test_get_payees_success(pagopa_payee_registry_token):
         assert len(payee['name']) > 0, 'Payee name should not be empty'
 
 
+@allure.epic('Service Registry Payees')
 @allure.feature('Payees Registry')
 @allure.story('pagoPA retrieves payees registry')
 @allure.title('Get payees with invalid authorization')
+@allure.tag('functional', 'unhappy_path', 'payees_registry')
 @pytest.mark.unhappy_path
 def test_get_payees_invalid_auth():
     response = get_payee_registry('invalid_token')

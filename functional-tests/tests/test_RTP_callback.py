@@ -10,9 +10,11 @@ from utils.dataset import generate_callback_data_DS_05_ACTC_compliant
 from utils.dataset import generate_callback_data_DS_08N_compliant
 from utils.dataset import generate_rtp_data
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
 @allure.title('An RTP callback is successfully received')
+@allure.tag('functional', 'happy_path', 'rtp_callback', 'ds_04b_compliant')
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_04b_compliant(
@@ -54,9 +56,11 @@ def test_receive_rtp_callback_DS_04b_compliant(
     ), f"Error from callback, expected 200 got {callback_response.status_code}"
 
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
 @allure.title('An RTP callback is successfully received')
+@allure.tag('functional', 'happy_path', 'rtp_callback', 'ds_08n_compliant')
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08N_compliant(
@@ -108,9 +112,11 @@ def test_receive_rtp_callback_DS_08N_compliant(
     assert body['status'] == 'REJECTED'
 
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP with status ACTC')
 @allure.title('An RTP callback with status ACTC is successfully received')
+@allure.tag('functional', 'happy_path', 'rtp_callback', 'ds_05_actc_compliant')
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_05_ACTC_compliant(
@@ -161,9 +167,11 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
     assert body['status'] == 'ACCEPTED'
 
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
 @allure.title('Unauthorized callback due to wrong certificate serial')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_04b_compliant')
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
@@ -184,9 +192,11 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
     ), f"Expecting error from callback, expected 403 got {callback_response.status_code}"
 
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
 @allure.title('Unauthorized callback due to wrong certificate serial')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_08n_compliant')
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
@@ -207,9 +217,11 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
     ), f"Expecting error from callback, expected 403 got {callback_response.status_code}"
 
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
 @allure.title('Failed callback for non existing Service Provider - DS-04b compliant')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_04b_compliant')
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
@@ -230,9 +242,11 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
     ), f"Expecting error from callback, expected 400 got {callback_response.status_code}"
 
 
+@allure.epic('RTP Callback')
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP')
 @allure.title('Failed callback for non existing Service Provider - DS-08P compliant')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_08n_compliant')
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_08N_compliant(

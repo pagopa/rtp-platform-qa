@@ -3,10 +3,11 @@ import pytest
 
 from api.service_providers_registry import get_service_providers_registry
 
-
+@allure.epic('Service Registry Service Providers')
 @allure.feature('Service Providers Registry')
 @allure.story('pagoPA retrieves service providers registry')
 @allure.title('Get list of service providers successfully')
+@allure.tag('functional', 'happy_path', 'service_providers_registry')
 @pytest.mark.happy_path
 def test_get_service_providers_success(pagopa_service_providers_registry_token):
     response = get_service_providers_registry(pagopa_service_providers_registry_token)
@@ -68,9 +69,11 @@ def test_get_service_providers_success(pagopa_service_providers_registry_token):
         assert sp['tsp_id'] in tsp_ids, f"SP's tsp_id '{sp['tsp_id']}' should reference an existing TSP"
 
 
+@allure.epic('Service Registry Service Providers')
 @allure.feature('Service Providers Registry')
 @allure.story('pagoPA retrieves service providers registry')
 @allure.title('Get payees with invalid authorization')
+@allure.tag('functional', 'unhappy_path', 'service_providers_registry')
 @pytest.mark.unhappy_path
 def test_get_payees_invalid_auth():
     response = get_service_providers_registry('invalid_token')

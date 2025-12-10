@@ -7,10 +7,11 @@ from api.activation import activate
 from api.deactivation import deactivate
 from config.configuration import secrets
 
-
+@allure.epic('Debtor Deactivation')
 @allure.feature('Deactivation')
 @allure.story('Debtor deactivation')
 @allure.title('A debtor is deactivated by an authenticated service provider')
+@allure.tag('functional', 'happy_path', 'deactivation', 'debtor_deactivation')
 @pytest.mark.auth
 @pytest.mark.deactivation
 @pytest.mark.happy_path

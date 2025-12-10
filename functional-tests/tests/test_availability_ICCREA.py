@@ -6,10 +6,11 @@ from config.configuration import secrets
 from utils.dataset import generate_epc_rtp_data
 from utils.dataset import generate_rtp_data
 
-
+@allure.epic('ICCREA Availability')
 @allure.feature('RTP Send')
 @allure.story('Service provider sends an RTP to ICCREA directly')
 @allure.title('An RTP is sent through ICCREA API')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'iccrea_availability')
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.iccrea

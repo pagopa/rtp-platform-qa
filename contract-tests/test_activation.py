@@ -1,7 +1,11 @@
+import uuid
+
 import allure
+import requests
 import schemathesis
 from schemathesis import Case
 
+from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
@@ -9,11 +13,46 @@ from config.configuration import secrets
 SPEC_URL = config.activation_api_specification
 BASE_URL = config.activation_base_url_path
 
-schema = schemathesis.from_uri(SPEC_URL, base_url=BASE_URL)
+schema = schemathesis.openapi.from_url(SPEC_URL)
 
-@allure.feature('Activation')
+ACCESS_TOKEN = get_valid_access_token(
+    client_id=secrets.debtor_service_provider.client_id,
+    client_secret=secrets.debtor_service_provider.client_secret,
+    access_token_function=get_access_token,
+)
+
+
+@allure.label('parentSuite', 'contract-tests.tests')
+@allure.feature('RTP Activation')
 @schema.parametrize()
 def test_activation(case: Case):
-    access_token = get_valid_access_token(client_id=secrets.client_id,
-                                          client_secret=secrets.debtor_service_provider.client_secret)
-    response = case.call_and_validate(headers={'Authorization': access_token})
+    request_id = str(uuid.uuid4())
+
+    request_kwargs: dict = {
+        'method': case.method,
+        'url': BASE_URL.rstrip('/') + case.path,
+        'headers': {
+            'Authorization': ACCESS_TOKEN,
+            'RequestId': request_id,
+            'Version': 'v1',
+            **{
+                h: v
+                for h, v in (case.headers or {}).items()
+                if h.lower() not in {'authorization', 'requestid', 'version'}
+            },
+        },
+        'params': case.query,
+    }
+
+    if isinstance(case.body, (dict, list)):
+        request_kwargs['json'] = case.body
+
+    response = requests.request(**request_kwargs)
+
+    assert 100 <= response.status_code < 600
+
+    if 400 <= response.status_code < 500:
+        return
+
+    if response.headers.get('Content-Type', '').startswith('application/json'):
+        _ = response.json()

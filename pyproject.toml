@@ -37,12 +37,17 @@ ux-tests = [
   "pytest==8.4.1",
   "pytest-playwright>=0.5.0",
   "playwright>=1.47.0",
+  "allure-pytest>=2.13",
+  "allure-python-commons==2.13.5",
 ]
 performance-tests = [
   "aiokafka==0.12.0",
 ]
 contract-tests = [
   "schemathesis>=3.23",
+  "pytest==8.4.1",
+  "allure-pytest>=2.13",
+  "allure-python-commons==2.13.5",
 ]
 dev = [
   "pre-commit>=3.7",
@@ -90,6 +95,7 @@ markers = [
   "producer_gpd_message: mark tests that exercise GPD message producer endpoints",
   "timeout: Tests with timeouts",
   "functional: Functional tests",
+  "webform: Tests on RTP webform",
 ]
 
 [tool.hatch.build.targets.wheel]

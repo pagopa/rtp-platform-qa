@@ -1,5 +1,7 @@
 from typing import Dict
 
+import allure
+
 from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from config.configuration import config
@@ -8,6 +10,7 @@ from utils.dataset import fake_fc
 
 
 def _init_access_tokens() -> Dict[str, str]:
+
     """
     Align token management with what is done in functional tests
     (see functional-tests/tests/conftest.py).
@@ -17,6 +20,7 @@ def _init_access_tokens() -> Dict[str, str]:
     - debtor_b:  Debtor Service Provider B
     - creditor:  Creditor Service Provider A (if needed in RTP scenarios)
     """
+
     tokens: Dict[str, str] = {}
 
     tokens['debtor'] = get_valid_access_token(
@@ -42,32 +46,42 @@ def _init_access_tokens() -> Dict[str, str]:
 
 
 def before_all(context) -> None:
+
     """
     Global Behave hook executed once at the start of the BDD suite.
-
     Initialize:
     - context.config
     - context.secrets
     - context.fake_fc
     - context.access_tokens
     """
+
     context.config = config
     context.secrets = secrets
-
     context.fake_fc = fake_fc
-
     context.access_tokens = _init_access_tokens()
 
 
 def before_scenario(context, scenario) -> None:
+    
     """
-    Initializes/resets some holders used in steps to save state between
-    Given/When/Then.
-    """
-    context.debtor_fc = {}
+    Behave hook executed before each scenario.
 
+    Resets per-scenario state on context:
+    - context.debtor_fc
+    - context.latest_activation_response
+    - context.latest_rtp_response
+    - context.latest_rtp_resource_id
+    - context.otp
+
+    Also sets Allure labels for BDD tests.
+    """
+    
+    context.debtor_fc = {}
     context.latest_activation_response = None
     context.latest_rtp_response = None
     context.latest_rtp_resource_id = None
-
     context.otp = None
+
+    allure.dynamic.label('package', 'bdd-tests')
+    allure.dynamic.label('test_type', 'bdd')

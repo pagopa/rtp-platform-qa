@@ -9,9 +9,12 @@ from api.send_rtp import send_rtp
 from config.configuration import secrets
 from utils.dataset import generate_rtp_data
 
+
+@allure.epic('RTP Get')
 @allure.feature('RTP Get')
 @allure.story('Service provider retrieves an RTP')
 @allure.title('RTP is successfully retrieved')
+@allure.tag('functional', 'happy_path', 'rtp_get')
 @pytest.mark.get
 @pytest.mark.happy_path
 def test_get_rtp_success(debtor_service_provider_token_a, creditor_service_provider_token_a, rtp_reader_access_token):
@@ -44,9 +47,11 @@ def test_get_rtp_success(debtor_service_provider_token_a, creditor_service_provi
     assert body['resourceID'] == resource_id
 
 
+@allure.epic('RTP Get')
 @allure.feature('RTP Get')
 @allure.story('Service provider retrieves an RTP')
 @allure.title('inexistent RTP -> empty body')
+@allure.tag('functional', 'unhappy_path', 'rtp_get')
 @pytest.mark.get
 @pytest.mark.unhappy_path
 def test_get_rtp_not_found(rtp_reader_access_token):
@@ -66,9 +71,11 @@ def test_get_rtp_not_found(rtp_reader_access_token):
         assert resp.text == '' or resp.json() == {}
 
 
+@allure.epic('RTP Get')
 @allure.feature('RTP Get')
 @allure.story('Service provider retrieves an RTP')
 @allure.title('malformed rtp_id → 400 Bad Request')
+@allure.tag('functional', 'unhappy_path', 'rtp_get')
 @pytest.mark.get
 @pytest.mark.unhappy_path
 def test_get_rtp_invalid_id_format(creditor_service_provider_token_a):
