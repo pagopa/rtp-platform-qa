@@ -2,7 +2,7 @@
 @allure.label.feature:Debtor Activation – Takeover
 Feature: A Debtor Service Provider performs takeover of an existing activation
 
-  @allure.label.story:Successful Takeover
+  @allure.label.story:Successful_Takeover
   @happy_path @authentication @activation @takeover
   Scenario: A debtor Service Provider successfully takes over an activation from another provider
     Given the debtor Service Provider is authenticated
@@ -14,7 +14,7 @@ Feature: A Debtor Service Provider performs takeover of an existing activation
     When the debtor Service Provider B performs takeover for debtor A
     Then the debtor A is now managed by Service Provider B
 
-  @allure.label.story:Invalid OTP
+  @allure.label.story:Invalid_OTP
   @unhappy_path @authentication @activation @takeover
   Scenario: Takeover fails with invalid OTP
     Given the debtor Service Provider is authenticated
@@ -24,7 +24,7 @@ Feature: A Debtor Service Provider performs takeover of an existing activation
     When the debtor Service Provider B tries takeover with invalid OTP for debtor A
     Then the takeover fails because of invalid OTP
 
-  @allure.label.story:Unauthenticated Provider
+  @allure.label.story:Unauthenticated_Provider
   @unhappy_path @authentication @activation @takeover
   Scenario: Takeover fails without authentication
     Given the debtor Service Provider is authenticated

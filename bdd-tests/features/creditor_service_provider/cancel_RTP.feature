@@ -1,5 +1,5 @@
 @allure.label.epic:RTP
-@allure.label.feature:RTP Cancellation
+@allure.label.feature:RTP_Cancellation
 Feature: A Creditor Service Provider can cancel a Request to Pay
 
   Background:
@@ -8,14 +8,14 @@ Feature: A Creditor Service Provider can cancel a Request to Pay
     And the debtor Service Provider activated the debtor A
     And the creditor Service Provider is authenticated
 
-  @allure.label.story:Successful Cancellation
+  @allure.label.story:Successful_Cancellation
   @happy_path @authentication @send @cancel
   Scenario: Successfully cancel a Request to Pay
     Given the creditor Service Provider sent an RTP to the debtor A
     When the creditor Service send a cancellation request for the RTP
     Then the RTP is cancelled
 
-  @allure.label.story:Already Cancelled RTP
+  @allure.label.story:Already_Cancelled_RTP
   @unhappy_path @authentication @send @cancel
   Scenario: Attempt to cancel an already cancelled RTP
     Given the creditor Service Provider sent an RTP to the debtor A
@@ -23,7 +23,7 @@ Feature: A Creditor Service Provider can cancel a Request to Pay
     When the creditor Service send another cancellation request for the RTP
     Then the RTP is already cancelled
 
-  @allure.label.story:Non-existing RTP
+  @allure.label.story:Non_existing_RTP
   @unhappy_path @authentication @send @cancel
   Scenario: Attempt to cancel a non-existing RTP
     Given the creditor Service Provider sent an RTP to the debtor A
