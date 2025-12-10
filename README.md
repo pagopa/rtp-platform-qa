@@ -273,3 +273,38 @@ To run the tests locally you need to set up an .env file in the root project dir
 └── end-to-end-test/
     └── tests/
 ```
+
+## Helper scripts
+
+### install-requirements.sh
+
+This script installs all the Python dependencies required to run the different test suites.
+
+```bash
+./install-requirements.sh
+```
+
+It is equivalent to running the appropriate `make install-*` targets defined in the `Makefile`.
+
+### generate-allure-report.sh
+
+This script runs all the main test suites and generates a unified Allure report.
+
+It executes, in order:
+
+1. Functional tests (`functional-tests/`)
+2. BDD tests (`bdd-tests/`)
+3. UX tests (`ux-tests/`)
+4. Contract tests (`contract-tests/`)
+
+All results are merged into a single Allure report, which is then opened in your browser.
+
+```bash
+./generate-allure-report.sh
+```
+
+Make sure the scripts are executable:
+
+```bash
+chmod +x install-requirements.sh generate-allure-report.sh
+```
