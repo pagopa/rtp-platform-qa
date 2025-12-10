@@ -51,10 +51,12 @@ def before_scenario(context, scenario) -> None:
 
     allure.dynamic.label('package', 'bdd-tests.tests')
 
+    allure.dynamic.parent_suite('bdd-tests')
+
     if scenario.feature and scenario.feature.name:
         allure.dynamic.suite(scenario.feature.name)
         allure.dynamic.feature(scenario.feature.name)
     else:
-        allure.dynamic.suite('bdd-tests')
+        allure.dynamic.suite('Unspecified Feature')
 
     allure.dynamic.label('test_type', 'bdd')
