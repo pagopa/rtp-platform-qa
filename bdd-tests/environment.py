@@ -42,7 +42,7 @@ def before_all(context) -> None:
     context.access_tokens = _init_access_tokens()
 
 
-def before_scenario(context) -> None:
+def before_scenario(context, scenario) -> None:
     context.debtor_fc = {}
     context.latest_activation_response = None
     context.latest_rtp_response = None
