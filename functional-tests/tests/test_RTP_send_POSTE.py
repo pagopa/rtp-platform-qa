@@ -6,8 +6,8 @@ import pytest
 from api.RTP_send_api import send_rtp
 from config.configuration import config
 from config.configuration import secrets
-from utils.dataset import generate_rtp_data
-from utils.dataset import uuidv4_pattern
+from utils.dataset_RTP_data import generate_rtp_data
+from utils.regex_utils import uuidv4_pattern
 
 @allure.epic('RTP Send')
 @allure.feature('RTP Send')

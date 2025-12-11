@@ -6,9 +6,9 @@ import pytest
 from api.auth_api import get_cbi_access_token
 from api.debtor_service_provider_api import send_srtp_to_cbi
 from config.configuration import secrets
-from utils.cryptography import client_credentials_to_auth_token
-from utils.dataset import generate_epc_rtp_data
-from utils.dataset import generate_rtp_data
+from utils.cryptography_utils import client_credentials_to_auth_token
+from utils.dataset_EPC_RTP_data import generate_epc_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
 
 @allure.epic('CBI Availability')
 @allure.feature('Authentication Token Retrieval')

@@ -7,7 +7,7 @@ from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
-from utils.dataset import generate_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
 
 
 @allure.epic('RTP Get')

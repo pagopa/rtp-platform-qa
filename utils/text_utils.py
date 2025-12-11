@@ -1,6 +1,10 @@
 import random
 import string
 
+from faker import Faker
+
+
+fake = Faker('it_IT')
 
 def generate_random_description(min_length: int = 0, max_length: int = 140) -> str:
     """Generate a random description string.
@@ -27,7 +31,7 @@ def generate_transaction_id() -> str:
     Returns:
         Transaction ID string in format RTP-{random}-{timestamp}
     """
-    from .generators import generate_random_string
+    from .generators_utils import generate_random_string
     from datetime import datetime
 
     random_part = generate_random_string(9)

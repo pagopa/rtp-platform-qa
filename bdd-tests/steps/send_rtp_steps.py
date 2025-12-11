@@ -3,7 +3,8 @@ from behave import then
 from behave import when
 
 from api.RTP_send_api import send_rtp
-from utils.dataset import generate_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
+from api.RTP_send_api import send_rtp
 
 TEST_SHOULD_NOT_FAIL_MSG = 'This test should not fail'
 TEST_TRUE_CONDITION = True

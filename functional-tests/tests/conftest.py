@@ -21,12 +21,12 @@ from api.GPD_debt_position_api import get_debt_position
 from api.GPD_debt_position_api import update_debt_position
 from config.configuration import config
 from config.configuration import secrets
-from utils.cryptography import pfx_to_pem
-from utils.dataset import fake_fc
-from utils.dataset import generate_iupd
+from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
-from utils.generators import generate_iuv
-from utils.log_sanitizer import sanitize_bearer_token
+from utils.fiscal_code_utils import fake_fc
+from utils.generators_utils import generate_iupd
+from utils.generators_utils import generate_iuv
+from utils.log_sanitizer_helper import sanitize_bearer_token
 
 # ============================================================
 #  Logging / reporting utilities (sanitize Bearer tokens)

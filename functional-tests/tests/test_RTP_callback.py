@@ -5,10 +5,10 @@ from api.RTP_callback_api import srtp_callback
 from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from utils.callback_builder import build_callback_with_original_msg_id
-from utils.dataset import generate_callback_data_DS_04b_compliant
-from utils.dataset import generate_callback_data_DS_05_ACTC_compliant
-from utils.dataset import generate_callback_data_DS_08N_compliant
-from utils.dataset import generate_rtp_data
+from utils.dataset_callback_data_DS_04b_compliant import generate_callback_data_DS_04b_compliant
+from utils.dataset_callback_data_DS_05_ACTC_compliant import generate_callback_data_DS_05_ACTC_compliant
+from utils.dataset_callback_data_DS_08N_compliant import generate_callback_data_DS_08N_compliant
+from utils.dataset_RTP_data import generate_rtp_data
 
 @allure.epic('RTP Callback')
 @allure.feature('RTP Callback')

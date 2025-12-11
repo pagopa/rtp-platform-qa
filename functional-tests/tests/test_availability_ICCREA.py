@@ -3,8 +3,8 @@ import pytest
 
 from api.debtor_service_provider_api import send_srtp_to_iccrea
 from config.configuration import secrets
-from utils.dataset import generate_epc_rtp_data
-from utils.dataset import generate_rtp_data
+from utils.dataset_EPC_RTP_data import generate_epc_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
 
 @allure.epic('ICCREA Availability')
 @allure.feature('RTP Send')
