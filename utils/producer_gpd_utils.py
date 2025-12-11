@@ -2,10 +2,10 @@ import time
 
 import pytest
 
-from api.activation import activate
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
-from api.get_rtp import get_rtp_by_notice_number
+from api.debtor_activation_api import activate
+from api.auth_api import get_access_token
+from api.auth_api import get_valid_access_token
+from api.RTP_get_api import get_rtp_by_notice_number
 from api.producer_gpd_message import send_producer_gpd_message
 from config.configuration import secrets
 from utils.fiscal_code_utils import fake_fc

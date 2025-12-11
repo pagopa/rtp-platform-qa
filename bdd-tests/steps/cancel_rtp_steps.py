@@ -4,7 +4,7 @@ from behave import given
 from behave import then
 from behave import when
 
-from api.cancel_rtp import cancel_rtp
+from api.RTP_cancel_api import cancel_rtp
 
 
 @when('the {role} Service send a cancellation request for the RTP')

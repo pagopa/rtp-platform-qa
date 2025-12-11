@@ -2,7 +2,6 @@
 API client module for retrieving RTP (Request To Pay) resources.
 
 This module provides helper functions for interacting with RTP-related
-REST endpoints, using configuration values from `config.configuration.config`.
 
 Functions:
     - get_rtp: Fetch an RTP resource by its RTP ID.
@@ -12,12 +11,11 @@ import uuid
 
 import requests
 
-from config.configuration import config
-
-
-GET_RTP_URL = config.rtp_creation_base_url_path + config.get_rtp_path
-GET_RTP_BY_NOTICE_NUMBER_URL = config.rtp_creation_base_url_path + config.get_rtp_by_notice_number_path
-
+from api.utils.api_version import GET_RTP_VERSION
+from api.utils.endpoints import GET_RTP_BY_NOTICE_NUMBER_URL
+from api.utils.endpoints import GET_RTP_URL
+from api.utils.http_utils import APPLICATION_JSON_HEADER
+from api.utils.http_utils import HTTP_TIMEOUT
 
 def get_rtp(access_token: str, rtp_id: str):
     """
@@ -33,12 +31,12 @@ def get_rtp(access_token: str, rtp_id: str):
     url = GET_RTP_URL.format(rtpId=rtp_id)
     headers = {
         'Authorization': access_token,
-        'Version': config.get_api_version,
+        'Version': GET_RTP_VERSION,
         'RequestId': str(uuid.uuid4()),
-        'Content-Type': 'application/json',
+        **APPLICATION_JSON_HEADER
     }
 
-    resp = requests.get(url=url, headers=headers, timeout=config.default_timeout)
+    resp = requests.get(url=url, headers=headers, timeout=HTTP_TIMEOUT)
     return resp
 
 
@@ -62,15 +60,15 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str):
     params = {'noticeNumber': notice_number}
     headers = {
         'Authorization': access_token,
-        'Version': config.get_api_version,
+        'Version': GET_RTP_VERSION,
         'RequestId': str(uuid.uuid4()),
-        'Content-Type': 'application/json',
+        **APPLICATION_JSON_HEADER
     }
 
     resp = requests.get(
         url=GET_RTP_BY_NOTICE_NUMBER_URL,
         params=params,
         headers=headers,
-        timeout=config.default_timeout,
+        timeout=HTTP_TIMEOUT,
     )
     return resp

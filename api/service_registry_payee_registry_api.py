@@ -2,9 +2,10 @@ import uuid
 
 import requests
 
-from config.configuration import config
+from api.utils.api_version import PAYEES_VERSION
+from api.utils.endpoints import PAYEES_URL
+from api.utils.http_utils import HTTP_TIMEOUT
 
-PAYEES_URL = f"{config.rtp_creation_base_url_path}{config.payees_registry_path}"
 
 def get_payee_registry(access_token: str, page: int = 0, size: int = 20):
 
@@ -12,12 +13,12 @@ def get_payee_registry(access_token: str, page: int = 0, size: int = 20):
                 url=PAYEES_URL,
                 headers={
                     'Authorization': access_token,
-                    'Version': config.payees_registry_api_version,
+                    'Version': PAYEES_VERSION,
                     'RequestId': str(uuid.uuid4())
                 },
                 params={
                     'page': page,
                     'size': size
                 },
-                timeout=config.default_timeout
+                timeout=HTTP_TIMEOUT
             )

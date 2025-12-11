@@ -1,50 +1,113 @@
+# ============================
+# SECRETS & CERTIFICATES
+# ============================
 SECRET_PATH: "config/.secrets.yaml"
 cert_path: "config/cert.pem"
 key_path: "config/key.pem"
-# Default environment. Overridden if specified through environment variable (prefixed by conf.RTP_ENV_VAR_PREFIX current value)
-TARGET_ENV: "uat"
+
+# ============================
+# GENERAL CONFIGURATION
+# ============================
+TARGET_ENV: "uat"   # Default environment (overridden by env variable)
 API_KEY_HEADER: "Ocp-Apim-Subscription-Key"
 default_timeout: 5000
 long_timeout: 60000
 test_timeout_sec: 300
 iso_date_format: '%Y-%m-%dT%H:%M:%S.000%z'
+
+# ============================
+# FRONTEND PAGES
+# ============================
 landing_page_path: "https://rtp.uat.cstar.pagopa.it/"
 login_page_path: "https://rtp.uat.cstar.pagopa.it/login"
+
+# ============================
+# RTP BASE API URLS
+# ============================
 rtp_creation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/"
 activation_base_url_path: "https://api-rtp.uat.cstar.pagopa.it/rtp/activation"
 activation_base_url_path_dev: "https://api-rtp.dev.cstar.pagopa.it/rtp/activation"
+
+# ============================
+# RTP OPERATIONS PATHS
+# ============================
 send_rtp_path: "rtps"
 activation_path: "/activations"
-payees_registry_path: "payees/payees"
-payees_registry_api_version: "v1"
-callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
-callback_api_version: 'v1'
-mock_service_provider_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/sepa-request-to-pay-requests"
-activation_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehub-infra-api-spec/main/src/srtp/api/pagopa/activation.yaml'
-send_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehub-infra-api-spec/main/src/srtp/api/pagopa/send.openapi.yaml'
-mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
-mcshared_auth_url_dev: 'https://api-mcshared.dev.cstar.pagopa.it/auth/token'
-cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/nexi/oauth/v2/token'
-cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/sepa-request-to-pay-requests'
-poste_send_url: 'https://rtp.svil.poste.it:446/iso20022/api/v1/sepa-request-to-pay-requests'
-iccrea_send_url: 'https://r5i-svil.api.gbi.bcc.it/pagopa4/pagopa-broker-api/pagopa/srtp/sepa-request-to-pay-requests'
+activation_api_version: 'v1'
+deactivation_path: "/activations"
+deactivation_api_version: 'v1'
+cancel_rtp_operation: '/sepa-request-to-pay-requests'
+cancel: '/cancel'
 cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
 get_rtp_path: "rtps/{rtpId}"
 get_rtp_by_notice_number_path: "rtps"
 get_api_version: 'v1'
+
+# ============================
+# REGISTRIES (PAYEES / SERVICE PROVIDERS)
+# ============================
+payees_registry_path: "payees/payees"
+payees_registry_api_version: "v1"
+
 service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
+
+# ============================
+# CALLBACK URL
+# ============================
+callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
+callback_api_version: 'v1'
+
+# ============================
+# MOCK SERVICES & API SPECIFICATIONS
+# ============================
+mock_service_provider_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/sepa-request-to-pay-requests"
+activation_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehub-infra-api-spec/main/src/srtp/api/pagopa/activation.yaml'
+send_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehub-infra-api-spec/main/src/srtp/api/pagopa/send.openapi.yaml'
+
+# ============================
+# AUTHENTICATION PROVIDERS
+# ============================
+mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
+mcshared_auth_url_dev: 'https://api-mcshared.dev.cstar.pagopa.it/auth/token'
+cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/nexi/oauth/v2/token'
+
+# ============================
+# SEND ENDPOINTS (CBI / POSTE / ICCREA)
+# ============================
+cbi_send_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/srtp/core/v1/1.0.0/sepa-request-to-pay-requests'
+poste_send_url: 'https://rtp.svil.poste.it:446/iso20022/api/v1/sepa-request-to-pay-requests'
+iccrea_send_url: 'https://r5i-svil.api.gbi.bcc.it/pagopa4/pagopa-broker-api/pagopa/srtp/sepa-request-to-pay-requests'
+
+# ============================
+# ACTIVATION LIST AND DETAILS
+# ============================
 activation_list_path: "/activations"
+activation_takeover: "/activations/takeover"
+takeover_api_version: 'v1'
 activation_by_id_path: "/activations/{activationId}"
-debt_positions_base_url_path: "https://api.uat.platform.pagopa.it"
-debt_positions_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
-debt_positions_dev_base_url_path: "https://api.dev.platform.pagopa.it"
-debt_positions_dev_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
-debt_positions_delete_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
-debt_positions_dev_delete_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
-debt_positions_update_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
-debt_positions_dev_update_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
-producer_gpd_message_base_url: 'http://qa.internal.uat.cstar.pagopa.it'
 activation_takeover_path: "/activations/takeover/{otp}"
 takeover_notification_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/takeover/takeover"
+
+# ============================
+# DEBT POSITIONS (GPD)
+# ============================
+send_gpd_message: '/send/gpd/message'
+
+debt_positions_base_url_path: "https://api.uat.platform.pagopa.it"
+debt_positions_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
+
+debt_positions_dev_base_url_path: "https://api.dev.platform.pagopa.it"
+debt_positions_dev_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions"
+
+debt_positions_delete_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
+debt_positions_dev_delete_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
+
+debt_positions_update_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
+debt_positions_dev_update_path: "/gpd/debt-positions-service/v1/organizations/{organizationId}/debtpositions/{iupd}"
+
+# ============================
+# GPD MESSAGE PRODUCER
+# ============================
+producer_gpd_message_base_url: 'http://qa.internal.uat.cstar.pagopa.it'

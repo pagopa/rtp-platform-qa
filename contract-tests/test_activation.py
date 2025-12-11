@@ -5,8 +5,8 @@ import requests
 import schemathesis
 from schemathesis import Case
 
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
+from api.auth_api import get_access_token
+from api.auth_api import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
 

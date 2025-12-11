@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.send_rtp import send_rtp_to_mock
+from api.RTP_send_api import send_rtp_to_mock
 from utils.dataset import generate_rtp_data
 
 @allure.epic('RTP Availability')

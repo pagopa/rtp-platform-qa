@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.landing_page import landing_page
+from api.RTP_landing_page_api import landing_page
 
 @allure.epic('RTP Webform Availability')
 @allure.feature('Web page')

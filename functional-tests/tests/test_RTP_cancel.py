@@ -3,8 +3,8 @@ import uuid
 import allure
 import pytest
 
-from api.cancel_rtp import cancel_rtp
-from api.send_rtp import send_rtp
+from api.RTP_cancel_api import cancel_rtp
+from api.RTP_send_api import send_rtp
 from utils.dataset import generate_rtp_data
 
 @allure.epic('RTP Cancel')

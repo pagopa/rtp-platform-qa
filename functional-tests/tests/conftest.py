@@ -12,13 +12,13 @@ from _pytest.fixtures import SubRequest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from api.activation import activate
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
-from api.debt_position import create_debt_position
-from api.debt_position import delete_debt_position
-from api.debt_position import get_debt_position
-from api.debt_position import update_debt_position
+from api.debtor_activation_api import activate
+from api.auth_api import get_access_token
+from api.auth_api import get_valid_access_token
+from api.GPD_debt_position_api import create_debt_position
+from api.GPD_debt_position_api import delete_debt_position
+from api.GPD_debt_position_api import get_debt_position
+from api.GPD_debt_position_api import update_debt_position
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import pfx_to_pem

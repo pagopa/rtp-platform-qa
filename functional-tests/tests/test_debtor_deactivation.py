@@ -3,8 +3,8 @@ import uuid
 import allure
 import pytest
 
-from api.activation import activate
-from api.deactivation import deactivate
+from api.debtor_activation_api import activate
+from api.debtor_deactivation_api import deactivate
 from config.configuration import secrets
 
 @allure.epic('Debtor Deactivation')

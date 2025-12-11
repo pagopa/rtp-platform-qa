@@ -2,8 +2,8 @@ from typing import Dict
 
 import allure
 
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
+from api.auth_api import get_access_token
+from api.auth_api import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
 from utils.dataset import fake_fc
@@ -63,7 +63,7 @@ def before_all(context) -> None:
 
 
 def before_scenario(context, scenario) -> None:
-    
+
     """
     Behave hook executed before each scenario.
 
@@ -76,7 +76,7 @@ def before_scenario(context, scenario) -> None:
 
     Also sets Allure labels for BDD tests.
     """
-    
+
     context.debtor_fc = {}
     context.latest_activation_response = None
     context.latest_rtp_response = None
