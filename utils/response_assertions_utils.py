@@ -1,7 +1,4 @@
-import json
-
 from requests import Response
-
 
 def is_empty_response(res: Response) -> bool:
     """

@@ -5,7 +5,6 @@ This module provides functions to:
 - convert PKCS#12 (.pfx) bundles to PEM-encoded certificate and key files,
 - extract certificate serial numbers from PEM data.
 """
-
 import base64
 import os
 

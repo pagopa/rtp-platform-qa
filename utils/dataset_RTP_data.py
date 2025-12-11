@@ -5,8 +5,7 @@ from .fiscal_code_utils import fake_fc
 from .generators_utils import generate_notice_number
 from .generators_utils import random_payee_id
 from .text_utils import generate_random_description
-
-from utils.constants_utils import TEST_PAYEE_COMPANY_NAME
+from utils.constants_text_helper import TEST_PAYEE_COMPANY_NAME
 
 def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amount: int = None) -> dict:
     """Generate RTP (Request to Pay) data for testing.

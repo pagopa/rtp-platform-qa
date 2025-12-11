@@ -4,7 +4,6 @@ The generated payload mimics the callback sent for an asynchronous SEPA
 Request-to-Pay response with an `ACTC` (Accepted Technical Validation)
 transaction status.
 """
-
 import random
 import uuid
 

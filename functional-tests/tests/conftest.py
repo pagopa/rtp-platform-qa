@@ -22,9 +22,9 @@ from api.debt_position import update_debt_position
 from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography_utils import pfx_to_pem
+from utils.extract_next_activation_id import extract_next_activation_id
 from utils.fiscal_code_utils import fake_fc
 from utils.generators_utils import generate_iupd
-from utils.extract_next_activation_id import extract_next_activation_id
 from utils.generators_utils import generate_iuv
 from utils.log_sanitizer_helper import sanitize_bearer_token
 

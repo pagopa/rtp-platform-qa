@@ -2,15 +2,13 @@ import uuid
 from datetime import datetime
 from datetime import timezone
 
-
-from .generators_utils import generate_random_organization_id
-
-from .iban_utils import generate_random_iban
-
-from config.configuration import config
-from config.configuration import secrets
-from utils.text_utils import fake
+from .constants_config_helper import CALLBACK_URL
+from .constants_secrets_helper import CBI_PAYEE_ID
+from .constants_secrets_helper import CREDITOR_AGENT_ID
 from .dataset_RTP_data import generate_rtp_data
+from .generators_utils import generate_random_organization_id
+from .iban_utils import generate_random_iban
+from utils.text_utils import fake
 
 
 def generate_epc_rtp_data(
@@ -31,13 +29,13 @@ def generate_epc_rtp_data(
         rtp_data = generate_rtp_data()
 
     if not payee_id:
-        payee_id = secrets.cbi_payee_id
+        payee_id = CBI_PAYEE_ID
 
     if bic:
         rtp_data['bic'] = bic
 
     if not creditor_agent_id:
-        creditor_agent_id = secrets.creditor_agent_id
+        creditor_agent_id = CREDITOR_AGENT_ID
 
     resource_id = str(uuid.uuid4())
     sanitized_id = resource_id.replace('-', '')
@@ -151,6 +149,5 @@ def generate_epc_rtp_data(
                 ],
             }
         },
-        'callbackUrl': config.callback_url,
+        'callbackUrl': CALLBACK_URL
     }
-

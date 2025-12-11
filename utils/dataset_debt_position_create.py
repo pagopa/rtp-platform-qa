@@ -3,9 +3,9 @@ from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
 
+from .constants_secrets_helper import DEBT_POSITIONS_ORGANIZATION_ID
 from .fiscal_code_utils import fake_fc
 from .generators_utils import generate_notice_number
-from config.configuration import secrets
 
 
 def generate_debt_position_create_payload(debtor_fc=None, iupd=None, iuv=None):
@@ -32,7 +32,7 @@ def generate_debt_position_create_payload(debtor_fc=None, iupd=None, iuv=None):
     now_utc = datetime.now(timezone.utc)
     due_date = (now_utc + timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
     retention_date = (now_utc + timedelta(days=60)).strftime('%Y-%m-%dT%H:%M:%S.000Z')
-    org_fc = secrets.debt_positions.organization_id
+    org_fc = DEBT_POSITIONS_ORGANIZATION_ID
     payload = {
         'iupd': iupd,
         'type': 'F',

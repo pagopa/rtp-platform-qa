@@ -3,7 +3,6 @@
 The generated payload mimics the callback sent for an asynchronous SEPA
 Request-to-Pay response with a rejected transaction status.
 """
-
 import random
 import uuid
 

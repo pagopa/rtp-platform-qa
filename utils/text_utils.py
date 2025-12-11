@@ -1,5 +1,6 @@
 import random
 import string
+
 from faker import Faker
 
 
@@ -36,4 +37,3 @@ def generate_transaction_id() -> str:
     random_part = generate_random_string(9)
     timestamp = int(datetime.now().timestamp() * 1000)
     return f"RTP-{random_part}-{timestamp}"
-

@@ -2,7 +2,6 @@
 
 Currently exposes patterns for validating commonly used identifiers.
 """
-
 import re
 
 uuidv4_pattern = re.compile(

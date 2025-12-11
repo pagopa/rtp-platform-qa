@@ -4,12 +4,10 @@ The generated payload mimics the callback that the callback-broker would
 send for an asynchronous SEPA Request-to-Pay response with a rejected
 transaction.
 """
-
 import uuid
 
 from .datetime_utils import generate_create_time
 from .datetime_utils import generate_future_time
-
 from .generators_utils import generate_random_string
 
 
