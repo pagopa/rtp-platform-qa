@@ -2,7 +2,7 @@ from behave import given
 from behave import then
 from behave import when
 
-from api.send_rtp import send_rtp
+from api.RTP_send_api import send_rtp
 from utils.dataset import generate_rtp_data
 
 TEST_SHOULD_NOT_FAIL_MSG = 'This test should not fail'

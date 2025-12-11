@@ -6,10 +6,10 @@ from datetime import timezone
 import allure
 import pytest
 
-from api.activation import get_activation_by_id
-from api.activation import get_activation_by_payer_id
-from api.takeover import send_takeover_notification
-from api.takeover import takeover_activation
+from api.debtor_activation_api import get_activation_by_id
+from api.debtor_activation_api import get_activation_by_payer_id
+from api.debtor_takeover_api import send_takeover_notification
+from api.debtor_takeover_api import takeover_activation
 from config.configuration import secrets
 from utils.activation_helpers import activate_with_sp_a
 from utils.activation_helpers import activate_with_sp_b

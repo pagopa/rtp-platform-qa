@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.service_providers_registry import get_service_providers_registry
+from api.servise_registry_service_providers_api import get_service_providers_registry
 
 @allure.epic('Service Registry Service Providers')
 @allure.feature('Service Providers Registry')

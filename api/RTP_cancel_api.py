@@ -2,7 +2,7 @@ import uuid
 
 import requests
 
-from .debtor_service_provider import generate_idempotency_key
+from .debtor_service_provider_api import generate_idempotency_key
 from api.utils.api_version import CANCEL_VERSION
 from api.utils.endpoints import CANCEL_RTP_OPERATION
 from api.utils.endpoints import CANCEL_RTP_URL

@@ -1,4 +1,4 @@
-from api.activation import activate
+from api.debtor_activation_api import activate
 from config.configuration import secrets
 
 def activate_with_sp_a(token: str, fiscal_code: str):
