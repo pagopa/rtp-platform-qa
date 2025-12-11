@@ -1,3 +1,10 @@
+"""Utility to generate DS-05 ACTC compliant callback payloads for tests.
+
+The generated payload mimics the callback sent for an asynchronous SEPA
+Request-to-Pay response with an `ACTC` (Accepted Technical Validation)
+transaction status.
+"""
+
 import random
 import uuid
 
@@ -13,13 +20,19 @@ from utils.text_utils import fake
 
 
 def generate_callback_data_DS_05_ACTC_compliant(BIC: str = 'MOCKSP04') -> dict:
-    """Generate DS-05 compliant callback data.
+    """Generate a DS-05 ACTC compliant callback payload.
+
+    The payload simulates an asynchronous SEPA Request-to-Pay response
+    with an accepted technical validation (`TxSts: ACTC`), including group
+    header, original message information, payment details and HAL-style links.
 
     Args:
-        BIC: Bank Identifier Code
+        BIC: Bank Identifier Code of the initiating party
+            (defaults to ``'MOCKSP04'``).
 
     Returns:
-        Dictionary containing DS-05 compliant callback data
+        dict: JSON-serializable DS-05 ACTC compliant callback payload,
+        ready to be used in tests.
     """
     message_id = str(uuid.uuid4())
     resource_id = f"TestRtpMessage{generate_random_string(16)}"

@@ -1,6 +1,11 @@
+"""Utility to generate DS-08N compliant callback payloads for tests.
+
+The generated payload mimics the callback sent for an asynchronous SEPA
+Request-to-Pay response with a rejected transaction status.
+"""
+
 import random
 import uuid
-
 
 from .datetime_utils import generate_create_time
 from .datetime_utils import generate_execution_date
@@ -13,17 +18,21 @@ from .text_utils import generate_transaction_id
 from utils.text_utils import fake
 
 
-
-
-
 def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
-    """Generate DS-08N compliant callback data.
+    """Generate a DS-08N compliant callback payload.
+
+    The payload simulates an asynchronous SEPA Request-to-Pay response
+    with a rejected transaction status (``TxSts: RJCT``), including group
+    header, original message information, payment details and HAL-style
+    links.
 
     Args:
-        BIC: Bank Identifier Code
+        BIC: Bank Identifier Code of the initiating party
+            (defaults to ``'MOCKSP04'``).
 
     Returns:
-        Dictionary containing DS-08N compliant callback data
+        dict: JSON-serializable DS-08N compliant callback payload, ready
+        to be used in tests.
     """
     message_id = str(uuid.uuid4())
     resource_id = f"TestRtpMessage{generate_random_string(16)}"

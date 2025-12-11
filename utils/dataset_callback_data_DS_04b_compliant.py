@@ -1,3 +1,10 @@
+"""Utility to generate DS-04b compliant callback payloads for tests.
+
+The generated payload mimics the callback that the callback-broker would
+send for an asynchronous SEPA Request-to-Pay response with a rejected
+transaction.
+"""
+
 import uuid
 
 from .datetime_utils import generate_create_time
@@ -7,13 +14,21 @@ from .generators_utils import generate_random_string
 
 
 def generate_callback_data_DS_04b_compliant(BIC: str = 'MOCKSP04') -> dict:
-    """Generate DS-04b compliant callback data.
+    """Generate a DS-04b compliant callback payload.
+
+    The payload simulates an asynchronous SEPA Request-to-Pay response
+    with a rejected transaction status (`TxSts: RJCT`), including
+    group header, original message information and HAL-style links.
 
     Args:
-        BIC: Bank Identifier Code
+        BIC: Bank Identifier Code of the initiating party (default: 'MOCKSP04').
 
     Returns:
-        Dictionary containing DS-04b compliant callback data
+        dict: JSON-serializable DS-04b compliant callback payload with:
+            - ``resourceId``: unique identifier of the RTP message.
+            - ``AsynchronousSepaRequestToPayResponse``: nested SEPA structure
+              containing group header, original message info and status.
+            - ``_links.initialSepaRequestToPayUri.href``: URL of the initial request.
     """
     message_id = str(uuid.uuid4())
     resource_id = f"TestRtpMessage{generate_random_string(16)}"
