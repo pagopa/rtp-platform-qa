@@ -1,5 +1,4 @@
 import random
-import re
 import uuid
 from datetime import datetime
 from datetime import timedelta
@@ -28,10 +27,6 @@ from config.configuration import secrets
 fake = Faker('it_IT')
 
 TEST_PAYEE_COMPANY_NAME = 'Test payee company name'
-
-uuidv4_pattern = re.compile(
-    r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
-)
 
 
 def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amount: int = None) -> dict:
@@ -359,14 +354,7 @@ def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
     }
 
 
-def generate_iupd():
-    """
-    Generate a unique IUPD (Identificativo Univoco Posizione Debitoria).
 
-    Returns:
-        str: A unique identifier using UUID4 in hexadecimal format
-    """
-    return uuid.uuid4().hex[:17]
 
 def create_debt_position_payload(debtor_fc=None, iupd=None, iuv=None):
     """

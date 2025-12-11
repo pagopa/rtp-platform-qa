@@ -1,6 +1,6 @@
 import random
 import string
-
+import uuid
 
 def generate_random_string(length: int) -> str:
     """Generate a random string of specified length with letters and digits.
@@ -60,3 +60,12 @@ def generate_iuv():
         str: A random 17-digit number as string
     """
     return ''.join(random.choices('0123456789', k=17))
+
+def generate_iupd():
+    """
+    Generate a unique IUPD (Identificativo Univoco Posizione Debitoria).
+
+    Returns:
+        str: A unique identifier using UUID4 in hexadecimal format
+    """
+    return uuid.uuid4().hex[:17]

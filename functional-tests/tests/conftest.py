@@ -23,7 +23,7 @@ from config.configuration import config
 from config.configuration import secrets
 from utils.cryptography import pfx_to_pem
 from utils.dataset import fake_fc
-from utils.dataset import generate_iupd
+from utils.generators import generate_iupd
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.generators import generate_iuv
 from utils.log_sanitizer import sanitize_bearer_token
