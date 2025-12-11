@@ -1,8 +1,8 @@
 from behave import given
 from behave import when
 
-from api.auth import get_access_token
-from api.auth import get_valid_access_token
+from api.auth_api import get_access_token
+from api.auth_api import get_valid_access_token
 from config.configuration import secrets
 
 

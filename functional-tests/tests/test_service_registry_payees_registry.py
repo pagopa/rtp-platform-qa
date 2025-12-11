@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.payee_registry import get_payee_registry
+from api.service_registry_payee_registry_api import get_payee_registry
 
 
 @allure.epic('Service Registry Payees')

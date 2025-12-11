@@ -1,0 +1,10 @@
+from config.configuration import config
+
+CALLBACK_VERSION = config.callback_api_version
+ACTIVATION_VERSION = config.activation_api_version
+CANCEL_VERSION = config.cancel_api_version
+DEACTIVATION_VERSION = config.deactivation_api_version
+GET_RTP_VERSION = config.get_api_version
+PAYEES_VERSION = config.payees_registry_api_version
+SERVICE_PROVIDER_VERSION = config.service_providers_registry_api_version
+TAKEOVER_API_VERSION = config.takeover_api_version

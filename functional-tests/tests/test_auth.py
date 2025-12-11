@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.auth import get_access_token
+from api.auth_api import get_access_token
 from config.configuration import secrets
 
 @allure.epic('Authentication')

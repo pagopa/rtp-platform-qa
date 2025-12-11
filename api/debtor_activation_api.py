@@ -3,13 +3,14 @@ from typing import Optional
 
 import requests
 
-from config.configuration import config
+from api.utils.api_version import ACTIVATION_VERSION
+from api.utils.endpoints import ACTIVATION_BY_ID_URL
+from api.utils.endpoints import ACTIVATION_LIST_URL
+from api.utils.endpoints import ACTIVATION_URL
+from api.utils.endpoints import ACTIVATION_URL_DEV
+from api.utils.http_utils import HTTP_TIMEOUT
 
-ACTIVATION_URL = config.activation_base_url_path + config.activation_path
-ACTIVATION_URL_DEV = config.activation_base_url_path_dev + config.activation_path
-ACTIVATION_LIST_URL = config.activation_base_url_path + config.activation_list_path
 
-ACTIVATION_BY_ID_URL = config.activation_base_url_path + config.activation_by_id_path
 
 def activate(access_token: str, payer_fiscal_code: str, service_provider_id: str):
     """API to activate a debtor to receive RTP
@@ -20,7 +21,7 @@ def activate(access_token: str, payer_fiscal_code: str, service_provider_id: str
         url=ACTIVATION_URL,
         headers={
             'Authorization': f'{access_token}',
-            'Version': 'v1',
+            'Version': ACTIVATION_VERSION,
             'RequestId': str(uuid.uuid4())
         },
         json={
@@ -29,7 +30,7 @@ def activate(access_token: str, payer_fiscal_code: str, service_provider_id: str
                 'rtpSpId': service_provider_id
             }
         },
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
 
 def activate_dev(access_token: str, payer_fiscal_code: str, service_provider_id: str):
@@ -41,7 +42,7 @@ def activate_dev(access_token: str, payer_fiscal_code: str, service_provider_id:
         url=ACTIVATION_URL_DEV,
         headers={
             'Authorization': f'{access_token}',
-            'Version': 'v1',
+            'Version': ACTIVATION_VERSION,
             'RequestId': str(uuid.uuid4())
         },
         json={
@@ -50,7 +51,7 @@ def activate_dev(access_token: str, payer_fiscal_code: str, service_provider_id:
                 'rtpSpId': service_provider_id
             }
         },
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
 
 
@@ -63,11 +64,11 @@ def get_activation_by_payer_id(access_token: str, payer_fiscal_code: str):
         url=ACTIVATION_URL+'/payer',
         headers={
             'Authorization': f'{access_token}',
-            'Version': 'v1',
+            'Version': ACTIVATION_VERSION,
             'RequestId': str(uuid.uuid4()),
             'PayerId': payer_fiscal_code
         },
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
 
 def get_activation_by_id(access_token: str, activation_id: str):
@@ -76,10 +77,10 @@ def get_activation_by_id(access_token: str, activation_id: str):
         url=ACTIVATION_BY_ID_URL.format(activationId=activation_id),
         headers={
             'Authorization': f'{access_token}',
-            'Version': 'v1',
+            'Version': ACTIVATION_VERSION,
             'RequestId': str(uuid.uuid4())
         },
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
 
 
@@ -92,7 +93,7 @@ def get_all_activations(access_token: str, page: Optional[int] = None, size: int
     """
     headers = {
         'Authorization': f'{access_token}',
-        'Version': 'v1',
+        'Version': ACTIVATION_VERSION,
         'RequestId': str(uuid.uuid4())
     }
     if next_activation_id:
@@ -106,5 +107,5 @@ def get_all_activations(access_token: str, page: Optional[int] = None, size: int
         url=ACTIVATION_LIST_URL,
         headers=headers,
         params=params,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )

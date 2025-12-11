@@ -2,9 +2,9 @@ import uuid
 
 import requests
 
-from config.configuration import config
-
-ACTIVATION_URL = config.activation_base_url_path + config.activation_path
+from api.utils.api_version import DEACTIVATION_VERSION
+from api.utils.endpoints import DEACTIVATION_URL
+from api.utils.http_utils import HTTP_TIMEOUT
 
 
 def deactivate(access_token: str, activation_id: str):
@@ -15,11 +15,11 @@ def deactivate(access_token: str, activation_id: str):
         :rtype: requests.Response
     """
     return requests.delete(
-        url=f"{ACTIVATION_URL}/{activation_id}",
+        url=f"{DEACTIVATION_URL}/{activation_id}",
         headers={
             'Authorization': f'{access_token}',
-            'Version': 'v1',
+            'Version': DEACTIVATION_VERSION,
             'RequestId': str(uuid.uuid4())
         },
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )

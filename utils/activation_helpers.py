@@ -1,7 +1,9 @@
 """Helper functions to trigger debtor activation flows for specific service providers."""
-from api.activation import activate
+
+from api.debtor_activation_api import activate
 from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_B_ID
 from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_ID
+from api.debtor_activation_api import activate
 
 def activate_with_sp_a(token: str, fiscal_code: str):
     """Activate a debtor using service provider A.

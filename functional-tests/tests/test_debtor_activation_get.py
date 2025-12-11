@@ -4,7 +4,8 @@ from datetime import datetime
 import allure
 import pytest
 
-from api.activation import get_activation_by_id
+from api.debtor_activation_api import get_activation_by_id
+from api.debtor_activation_api import get_activation_by_id
 from config.configuration import secrets
 
 @allure.epic('Debtor Activation')

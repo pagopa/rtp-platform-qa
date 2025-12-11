@@ -3,8 +3,8 @@ import random
 import allure
 import pytest
 
-from api.auth import get_cbi_access_token
-from api.debtor_service_provider import send_srtp_to_cbi
+from api.auth_api import get_cbi_access_token
+from api.debtor_service_provider_api import send_srtp_to_cbi
 from config.configuration import secrets
 from utils.cryptography_utils import client_credentials_to_auth_token
 from utils.dataset_EPC_RTP_data import generate_epc_rtp_data

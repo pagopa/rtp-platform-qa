@@ -1,9 +1,8 @@
 import requests
 
-from config.configuration import config
-
-SEND_RTP_URL = config.rtp_creation_base_url_path + config.send_rtp_path
-SERVICE_PROVIDER_MOCK_URL = config.mock_service_provider_url
+from api.utils.endpoints import SEND_RTP_URL
+from api.utils.endpoints import SERVICE_PROVIDER_MOCK_URL
+from api.utils.http_utils import HTTP_TIMEOUT
 
 
 def send_rtp(access_token: str, rtp_payload):
@@ -18,7 +17,7 @@ def send_rtp(access_token: str, rtp_payload):
         },
         url=SEND_RTP_URL,
         json=rtp_payload,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
 
 
@@ -26,5 +25,5 @@ def send_rtp_to_mock(rtp_payload):
     return requests.post(
         url=SERVICE_PROVIDER_MOCK_URL,
         json=rtp_payload,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )

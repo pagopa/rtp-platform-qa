@@ -4,9 +4,9 @@ import allure
 import pytest
 import requests
 
-from api.activation import activate
-from api.activation import ACTIVATION_LIST_URL
-from api.activation import get_all_activations
+from api.debtor_activation_api import activate
+from api.debtor_activation_api import ACTIVATION_LIST_URL
+from api.debtor_activation_api import get_all_activations
 from config.configuration import config
 from config.configuration import secrets
 from utils.generator_random_values_utils import random_page_size
