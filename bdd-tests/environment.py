@@ -63,7 +63,7 @@ def before_all(context) -> None:
 
 
 def before_scenario(context, scenario) -> None:
-    
+
     """
     Behave hook executed before each scenario.
 
@@ -76,7 +76,7 @@ def before_scenario(context, scenario) -> None:
 
     Also sets Allure labels for BDD tests.
     """
-    
+
     context.debtor_fc = {}
     context.latest_activation_response = None
     context.latest_rtp_response = None

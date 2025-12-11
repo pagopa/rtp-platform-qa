@@ -3,7 +3,11 @@ from typing import Optional
 
 import requests
 
-from config.configuration import config
+from api.utils.api_version import TAKEOVER_API_VERSION
+from api.utils.endpoints import TAKEOVER_NOTIFICATION_URL
+from api.utils.endpoints import TAKEOVER_URL
+from api.utils.http_utils import APPLICATION_JSON_HEADER
+from api.utils.http_utils import HTTP_TIMEOUT
 
 def takeover_activation(
     access_token: str,
@@ -25,13 +29,13 @@ def takeover_activation(
     if not otp:
         raise ValueError('OTP is required for takeover')
 
-    url = f"{config.activation_base_url_path}/activations/takeover/{otp}"
+
     request_id = str(uuid.uuid4())
     headers = {
         'Authorization': f'{access_token}',
-        'Version': 'v1',
+        'Version': TAKEOVER_API_VERSION,
         'RequestId': request_id,
-        'Content-Type': 'application/json'
+        **APPLICATION_JSON_HEADER
     }
 
     payload = None
@@ -44,10 +48,10 @@ def takeover_activation(
         }
 
     response = requests.post(
-        url=url,
+        url=f"{TAKEOVER_URL}/{otp}",
         headers=headers,
         json=payload,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
 
     return response
@@ -55,12 +59,11 @@ def takeover_activation(
 
 def send_takeover_notification(old_activation_id: str, fiscal_code: str, takeover_timestamp: str, request_id: Optional[str] = None) -> requests.Response:
     """Send takeover notification to mock endpoint (UAT only)"""
-    url = getattr(config, 'takeover_notification_url', None)
 
     headers = {
-        'Content-Type': 'application/json',
+        **APPLICATION_JSON_HEADER,
         'X-Request-Id': request_id or str(uuid.uuid4()),
-        'X-Version': 'v1'
+        'X-Version': TAKEOVER_API_VERSION
     }
     payload = {
         'oldActivationId': old_activation_id,
@@ -68,9 +71,9 @@ def send_takeover_notification(old_activation_id: str, fiscal_code: str, takeove
         'takeoverTimestamp': takeover_timestamp
     }
     response = requests.post(
-        url=url,
+        url=TAKEOVER_NOTIFICATION_URL,
         headers=headers,
         json=payload,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )
     return response

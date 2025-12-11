@@ -3,11 +3,12 @@ import uuid
 import requests
 
 from .debtor_service_provider import generate_idempotency_key
-from config.configuration import config
+from api.utils.api_version import CANCEL_VERSION
+from api.utils.endpoints import CANCEL_RTP_OPERATION
+from api.utils.endpoints import CANCEL_RTP_URL
+from api.utils.http_utils import HTTP_TIMEOUT
 
-CANCEL_RTP_OPERATION = '/cancel'
 
-CANCEL_RTP_URL = config.rtp_creation_base_url_path + config.cancel_rtp_path
 
 
 def cancel_rtp(access_token: str, rtp_id: str):
@@ -16,7 +17,7 @@ def cancel_rtp(access_token: str, rtp_id: str):
 
     headers = {
         'Authorization': f'{access_token}',
-        'Version': config.cancel_api_version,
+        'Version': CANCEL_VERSION,
         'RequestId': str(uuid.uuid4()),
         'Idempotency-key': idempotency_key
     }
@@ -24,5 +25,5 @@ def cancel_rtp(access_token: str, rtp_id: str):
     return requests.post(
         headers=headers,
         url=url,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )

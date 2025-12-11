@@ -1,6 +1,8 @@
 import requests
 
-from config.configuration import config
+from api.utils.api_version import CALLBACK_VERSION
+from api.utils.endpoints import CALLBACK_URL
+from api.utils.http_utils import HTTP_TIMEOUT
 
 
 def srtp_callback(cert_path: str, key_path: str, rtp_payload):
@@ -9,10 +11,10 @@ def srtp_callback(cert_path: str, key_path: str, rtp_payload):
             cert_path,
             key_path
         ),
-        url=config.callback_url,
+        url=CALLBACK_URL,
         headers={
-            'Version': config.callback_api_version
+            'Version': CALLBACK_VERSION
         },
         json=rtp_payload,
-        timeout=config.default_timeout
+        timeout=HTTP_TIMEOUT
     )

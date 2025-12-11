@@ -1,6 +1,13 @@
 import requests
 
-from config.configuration import config
+from api.utils.endpoints import DEBT_POSITIONS_DELETE_URL
+from api.utils.endpoints import DEBT_POSITIONS_DELETE_URL_DEV
+from api.utils.endpoints import DEBT_POSITIONS_UPDATE_URL
+from api.utils.endpoints import DEBT_POSITIONS_UPDATE_URL_DEV
+from api.utils.endpoints import DEBT_POSITIONS_URL
+from api.utils.endpoints import DEBT_POSITIONS_URL_DEV
+from api.utils.http_utils import APPLICATION_JSON_HEADER
+from api.utils.http_utils import HTTP_TIMEOUT
 
 def create_debt_position(
     subscription_key: str, organization_id: str, payload: dict, to_publish: bool = True, is_dev: bool = False
@@ -18,19 +25,19 @@ def create_debt_position(
         Response: HTTP response from the API call
     """
     if is_dev:
-        url = config.debt_positions_dev_base_url_path + config.debt_positions_dev_path
+        url = DEBT_POSITIONS_URL_DEV
     else:
-        url = config.debt_positions_base_url_path + config.debt_positions_path
+        url = DEBT_POSITIONS_URL
 
     return requests.post(
         url=url.format(organizationId=organization_id),
         headers={
             'ocp-apim-subscription-key': subscription_key,
-            'Content-Type': 'application/json',
+            **APPLICATION_JSON_HEADER,
         },
         params={'toPublish': to_publish},
         json=payload,
-        timeout=config.default_timeout,
+        timeout=HTTP_TIMEOUT,
     )
 
 def delete_debt_position(
@@ -48,18 +55,17 @@ def delete_debt_position(
         Response: HTTP response from the API call
     """
     if is_dev:
-        url = config.debt_positions_dev_base_url_path + config.debt_positions_dev_delete_path
+        url = DEBT_POSITIONS_DELETE_URL_DEV
     else:
-        url = config.debt_positions_base_url_path + config.debt_positions_delete_path
-
+        url = DEBT_POSITIONS_DELETE_URL
     url = url.format(organizationId=organization_id, iupd=iupd)
 
     headers = {
         'ocp-apim-subscription-key': subscription_key,
-        'Content-Type': 'application/json'
+        **APPLICATION_JSON_HEADER
     }
 
-    return requests.delete(url, headers=headers, timeout=config.default_timeout)
+    return requests.delete(url, headers=headers, timeout=HTTP_TIMEOUT)
 
 def update_debt_position(
     subscription_key: str,
@@ -84,19 +90,15 @@ def update_debt_position(
         Response: HTTP response from the API call
     """
     if is_dev:
-        url = (config.debt_positions_dev_base_url_path +
-               config.debt_positions_dev_update_path.format(organizationId=organization_id, iupd=iupd))
+        url = DEBT_POSITIONS_UPDATE_URL_DEV.format(organizationId=organization_id, iupd=iupd)
     else:
-        url = (config.debt_positions_base_url_path +
-               config.debt_positions_update_path.format(organizationId=organization_id, iupd=iupd))
-
+        url = DEBT_POSITIONS_UPDATE_URL.format(organizationId=organization_id, iupd=iupd)
     headers = {
         'ocp-apim-subscription-key': subscription_key,
-        'Content-Type': 'application/json'
+        **APPLICATION_JSON_HEADER
     }
 
-    return requests.put(url, headers=headers, json=payload, timeout=config.default_timeout, params={'toPublish': to_publish})
-
+    return requests.put(url, headers=headers, json=payload, timeout=HTTP_TIMEOUT, params={'toPublish': to_publish})
 def get_debt_position(
     subscription_key: str, organization_id: str, iupd: str, is_dev: bool = False
 ) -> requests.Response:
@@ -112,9 +114,9 @@ def get_debt_position(
         Response: HTTP response from the API call
     """
     if is_dev:
-        base_url = config.debt_positions_dev_base_url_path + config.debt_positions_dev_path
+        base_url = DEBT_POSITIONS_URL_DEV
     else:
-        base_url = config.debt_positions_base_url_path + config.debt_positions_path
+        base_url = DEBT_POSITIONS_URL
 
     url = base_url.format(organizationId=organization_id) + f"/{iupd}"
 
@@ -122,9 +124,9 @@ def get_debt_position(
         url=url,
         headers={
             'ocp-apim-subscription-key': subscription_key,
-            'Content-Type': 'application/json',
+            **APPLICATION_JSON_HEADER,
         },
-        timeout=config.default_timeout,
+        timeout=HTTP_TIMEOUT,
     )
 
 def create_debt_position_dev(subscription_key: str, organization_id: str, payload: dict, to_publish: bool = True) -> requests.Response:

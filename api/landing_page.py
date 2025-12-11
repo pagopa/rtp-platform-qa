@@ -1,7 +1,7 @@
 import requests
 
-from config.configuration import config
-
+from api.utils.endpoints import LANDING_PAGE_URL
+from api.utils.http_utils import HTTP_TIMEOUT
 
 def landing_page():
     """API to get landing page
@@ -9,6 +9,6 @@ def landing_page():
         :rtype: requests.Response
     """
     return requests.get(
-        url=config.landing_page_path,
-        timeout=config.default_timeout
+        url=LANDING_PAGE_URL,
+        timeout=HTTP_TIMEOUT
     )

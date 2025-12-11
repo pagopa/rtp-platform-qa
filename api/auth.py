@@ -1,6 +1,8 @@
 import requests
 
-from config.configuration import config
+from api.utils.endpoints import CBI_AUTH_URL
+from api.utils.endpoints import MC_SHARED_AUTH_URL
+from api.utils.endpoints import MC_SHARED_AUTH_URL_DEV
 
 
 def get_valid_access_token(client_id: str, client_secret: str, access_token_function):
@@ -12,7 +14,7 @@ def get_valid_access_token(client_id: str, client_secret: str, access_token_func
 
 def get_access_token(client_id: str, client_secret: str):
     token_response = requests.post(
-        config.mcshared_auth_url,
+        MC_SHARED_AUTH_URL,
         data={
             'grant_type': 'client_credentials',
             'client_id': client_id,
@@ -24,7 +26,7 @@ def get_access_token(client_id: str, client_secret: str):
 
 def get_access_token_dev(client_id: str, client_secret: str):
     token_response = requests.post(
-        config.mcshared_auth_url_dev,
+        MC_SHARED_AUTH_URL_DEV,
         data={
             'grant_type': 'client_credentials',
             'client_id': client_id,
@@ -37,7 +39,7 @@ def get_access_token_dev(client_id: str, client_secret: str):
 
 def get_cbi_access_token(cert_path: str, key_path: str, authorization: str):
     token_response = requests.post(
-        config.cbi_auth_url,
+        CBI_AUTH_URL,
         cert=(
             cert_path,
             key_path
