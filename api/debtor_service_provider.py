@@ -3,7 +3,7 @@ import uuid
 import requests
 
 from config.configuration import config
-from utils.idempotency import generate_idempotency_key
+from utils.idempotency_key_utils import generate_idempotency_key
 
 
 CREATE_RTP_OPERATION = '/sepa-request-to-pay-requests'

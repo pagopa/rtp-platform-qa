@@ -6,7 +6,7 @@ from api.auth import get_access_token
 from api.auth import get_valid_access_token
 from config.configuration import config
 from config.configuration import secrets
-from utils.dataset import fake_fc
+from utils.fiscal_code_utils import fake_fc
 
 
 def _init_access_tokens() -> Dict[str, str]:

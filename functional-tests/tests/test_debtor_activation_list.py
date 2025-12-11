@@ -9,8 +9,8 @@ from api.activation import ACTIVATION_LIST_URL
 from api.activation import get_all_activations
 from config.configuration import config
 from config.configuration import secrets
-from utils.random_values import random_page_size
-from utils.response_assertions import is_empty_response
+from utils.generator_random_values_utils import random_page_size
+from utils.response_assertions_utils import is_empty_response
 
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')

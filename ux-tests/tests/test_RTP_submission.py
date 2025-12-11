@@ -6,7 +6,7 @@ from playwright.sync_api import expect
 
 from config.configuration import config
 from config.configuration import secrets
-from utils.dataset import generate_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
 
 page_url = config.landing_page_path
 

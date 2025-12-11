@@ -7,7 +7,7 @@ from api.activation import activate
 from api.get_rtp import get_rtp
 from api.send_rtp import send_rtp
 from config.configuration import secrets
-from utils.dataset import generate_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
 
 
 @allure.epic('RTP Get')

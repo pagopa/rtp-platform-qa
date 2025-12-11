@@ -3,8 +3,8 @@ import time
 import allure
 import pytest
 
-from utils.dataset import create_debt_position_payload
-from utils.dataset import create_debt_position_update_payload
+from utils.dataset_debt_position_create import generate_debt_position_create_payload
+from utils.dataset_debt_position_update import generate_debt_position_update_payload
 
 @allure.epic('GPD Availability')
 @allure.feature('Create Debt Positions happy path')
@@ -18,7 +18,7 @@ def test_create_debt_position(gpd_test_data, environment):
     """
     allure.dynamic.title(f"Happy path: a debt position is created and published in {environment['name']} environment")
 
-    payload = create_debt_position_payload(
+    payload = generate_debt_position_create_payload(
         debtor_fc=gpd_test_data.debtor_fc,
         iupd=gpd_test_data.iupd,
         iuv=gpd_test_data.iuv
@@ -45,7 +45,7 @@ def test_delete_debt_position(gpd_test_data, environment):
     """
     allure.dynamic.title(f"Happy path: a debt position is deleted in {environment['name']} environment")
 
-    payload = create_debt_position_payload(
+    payload = generate_debt_position_create_payload(
         debtor_fc=gpd_test_data.debtor_fc,
         iupd=gpd_test_data.iupd,
         iuv=gpd_test_data.iuv
@@ -88,7 +88,7 @@ def test_update_debt_position(gpd_test_data, environment):
     """
     allure.dynamic.title(f"Happy path: a debt position is updated in {environment['name']} environment")
 
-    payload = create_debt_position_payload(
+    payload = generate_debt_position_create_payload(
         debtor_fc=gpd_test_data.debtor_fc,
         iupd=gpd_test_data.iupd,
         iuv=gpd_test_data.iuv
@@ -111,7 +111,7 @@ def test_update_debt_position(gpd_test_data, environment):
 
     time.sleep(5)
 
-    update_payload = create_debt_position_update_payload(
+    update_payload = generate_debt_position_update_payload(
         iupd=gpd_test_data.iupd,
         debtor_fc=gpd_test_data.debtor_fc,
         iuv=gpd_test_data.iuv

@@ -5,7 +5,7 @@ import pytest
 
 from api.cancel_rtp import cancel_rtp
 from api.send_rtp import send_rtp
-from utils.dataset import generate_rtp_data
+from utils.dataset_RTP_data import generate_rtp_data
 
 @allure.epic('RTP Cancel')
 @allure.feature('RTP Cancel')
