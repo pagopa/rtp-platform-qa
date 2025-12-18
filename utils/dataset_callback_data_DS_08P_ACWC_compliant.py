@@ -1,4 +1,4 @@
-"""Utility to generate DS-08N compliant callback payloads for tests.
+"""Utility to generate DS-08P compliant callback payloads for tests.
 
 The generated payload mimics the callback sent for an asynchronous SEPA
 Request-to-Pay response with a rejected transaction status.
