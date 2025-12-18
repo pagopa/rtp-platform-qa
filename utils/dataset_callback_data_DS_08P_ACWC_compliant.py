@@ -30,7 +30,7 @@ def generate_callback_data_DS_08P_ACWC_compliant(BIC: str = 'MOCKSP04') -> dict:
             (defaults to ``'MOCKSP04'``).
 
     Returns:
-        dict: JSON-serializable DS-08N compliant callback payload, ready
+        dict: JSON-serializable DS-08P compliant callback payload, ready
         to be used in tests.
     """
     message_id = str(uuid.uuid4())
