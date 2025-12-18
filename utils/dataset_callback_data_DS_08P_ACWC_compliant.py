@@ -1,7 +1,7 @@
 """Utility to generate DS-08P compliant callback payloads for tests.
 
 The generated payload mimics the callback sent for an asynchronous SEPA
-Request-to-Pay response with a rejected transaction status.
+Request-to-Pay response with an accepted transaction status (ACWC - Accepted With Change).
 """
 import random
 import uuid
@@ -30,7 +30,7 @@ def generate_callback_data_DS_08P_ACWC_compliant(BIC: str = 'MOCKSP04') -> dict:
             (defaults to ``'MOCKSP04'``).
 
     Returns:
-        dict: JSON-serializable DS-08N compliant callback payload, ready
+        dict: JSON-serializable DS-08P compliant callback payload, ready
         to be used in tests.
     """
     message_id = str(uuid.uuid4())
