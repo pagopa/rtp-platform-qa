@@ -511,9 +511,9 @@ def test_receive_rtp_callback_DS_08P_compliant_RJCT(
 @allure.feature('RTP Callback')
 @allure.story('Service provider sends a callback referred to an RTP with status ACTC')
 @allure.title('An RTP callback with status ACTC is successfully received')
-@allure.tag('functional', 'happy_path', 'rtp_callback', 'DS_08P_ACWC_compliant')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'DS_08P_ACWC_compliant')
 @pytest.mark.callback
-@pytest.mark.happy_path
+@pytest.mark.unhappy_path
 def test_receive_rtp_callback_DS_08P_compliant_ACWC(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
