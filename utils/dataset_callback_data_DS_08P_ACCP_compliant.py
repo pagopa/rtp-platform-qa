@@ -17,7 +17,7 @@ from .text_utils import generate_transaction_id
 from utils.text_utils import fake
 
 
-def generate_callback_data_DS_08P_compliant(BIC: str = 'MOCKSP04') -> dict:
+def generate_callback_data_DS_08P_ACCP_compliant(BIC: str = 'MOCKSP04') -> dict:
     """Generate a DS-08P compliant callback payload.
 
     The payload simulates an asynchronous SEPA Request-to-Pay response
