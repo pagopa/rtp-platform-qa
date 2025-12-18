@@ -1,7 +1,7 @@
 """Utility to generate DS-08N compliant callback payloads for tests.
 
 The generated payload mimics the callback sent for an asynchronous SEPA
-Request-to-Pay response with a rejected transaction status.
+Request-to-Pay response with an accepted transaction status (ACWC - Accepted With Change).
 """
 import random
 import uuid
