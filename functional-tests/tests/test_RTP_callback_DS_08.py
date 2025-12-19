@@ -367,7 +367,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
 @allure.epic('RTP Callback')
 @allure.feature('RTP Callback DS_08')
 @allure.story('Service provider sends a callback referred to an RTP')
-@allure.title('An RTP callback is successfully received')
+@allure.title('An RTP callback with status REJECTED is successfully received')
 @allure.tag('functional', 'happy_path', 'rtp_callback', 'ds_08n_compliant')
 @pytest.mark.callback
 @pytest.mark.happy_path
