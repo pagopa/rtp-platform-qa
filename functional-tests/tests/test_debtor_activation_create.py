@@ -70,7 +70,6 @@ def test_activate_debtor_already_active_on_another_service_provider_triggers_tak
     assert (
         otp is not None
     ), 'Missing/invalid Location header (expected OTP for takeover trigger)'
-
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')
 @allure.story('Debtor activation')
