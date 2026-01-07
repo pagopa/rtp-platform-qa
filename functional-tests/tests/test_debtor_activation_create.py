@@ -7,11 +7,10 @@ from api.debtor_activation_api import activate
 from api.debtor_activation_api import get_activation_by_payer_id
 from config.configuration import config
 from config.configuration import secrets
-from utils.regex_utils import uuidv4_pattern
 from utils.activation_helpers import activate_with_sp_a
 from utils.activation_helpers import activate_with_sp_b
 from utils.http_utils import extract_id_from_location
-from api.debtor_activation_api import activate
+from utils.regex_utils import uuidv4_pattern
 
 
 @allure.epic('Debtor Activation')
