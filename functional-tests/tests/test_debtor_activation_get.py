@@ -7,6 +7,8 @@ import pytest
 from api.debtor_activation_api import get_activation_by_id
 from config.configuration import secrets
 
+
+
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')
 @allure.story('Get Debtor activation by ID')
@@ -30,6 +32,7 @@ def test_get_activation_by_id(debtor_service_provider_token_a, make_activation):
         datetime.strptime(body['effectiveActivationDate'], '%Y-%m-%dT%H:%M:%S.%f')
     except ValueError:
         assert False, 'Invalid date format'
+
 
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')
