@@ -42,7 +42,6 @@ def test_activate_debtor(debtor_service_provider_token_a, random_fiscal_code):
         datetime.strptime(res.json()['effectiveActivationDate'], '%Y-%m-%dT%H:%M:%S.%f')
     except ValueError:
         assert False, 'Invalid date format'
-
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')
 @allure.story('Debtor activation')
