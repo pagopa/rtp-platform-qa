@@ -108,8 +108,8 @@ def test_fail_activate_debtor_two_times(
     assert (
         isinstance(body.get('errors'), list) and body['errors']
     ), "Expected non-empty 'errors' list in 409 response"
-    assert body['errors'][0].get('code') == '01031006E'
-    assert body['errors'][0].get('description') == 'User is already active'
+    assert body['errors'][0]['code'] == '01031006E'
+    assert body['errors'][0]['description'] == 'User is already active'
 
 @allure.epic('Debtor Activation')
 @allure.feature('Activation')
