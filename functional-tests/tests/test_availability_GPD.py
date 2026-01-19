@@ -14,7 +14,7 @@ from utils.dataset_debt_position_update import generate_debt_position_update_pay
 @pytest.mark.happy_path
 def test_create_debt_position(gpd_test_data, environment):
     """
-        Verify that a debt position can be created and published successfully.
+    Verify that a debt position can be created and published successfully.
     """
     allure.dynamic.title(f"Happy path: a debt position is created and published in {environment['name']} environment")
 
@@ -36,12 +36,12 @@ def test_create_debt_position(gpd_test_data, environment):
 @allure.epic('GPD Availability')
 @allure.feature('Delete Debt Positions happy path')
 @allure.story('Delete Debt Position')
-@allure.tag('debt_positions', 'happy_path, availability')
+@allure.tag('debt_positions', 'happy_path', 'availability')
 @pytest.mark.debt_positions
 @pytest.mark.happy_path
 def test_delete_debt_position(gpd_test_data, environment):
     """
-        Verify that a debt position can be deleted successfully.
+    Verify that a debt position can be deleted successfully.
     """
     allure.dynamic.title(f"Happy path: a debt position is deleted in {environment['name']} environment")
 
