@@ -84,11 +84,11 @@ def test_delete_debt_position(gpd_test_data, environment):
 @pytest.mark.happy_path
 def test_update_debt_position(gpd_test_data, environment):
     """
-        Verify that a debt position can be updated successfully.
+    Verify that a debt position can be updated successfully.
     """
     allure.dynamic.title(f"Happy path: a debt position is updated in {environment['name']} environment")
 
-    payload = generate_debt_position_create_payload(
+    create_payload = generate_debt_position_create_payload(
         debtor_fc=gpd_test_data.debtor_fc,
         iupd=gpd_test_data.iupd,
         iuv=gpd_test_data.iuv
@@ -97,7 +97,7 @@ def test_update_debt_position(gpd_test_data, environment):
     create_response = environment['create_function'](
         gpd_test_data.subscription_key,
         gpd_test_data.organization_id,
-        payload,
+        create_payload,
         to_publish=True
     )
     assert create_response.status_code == 201, f'Expected 201 but got {create_response.status_code}'
@@ -114,13 +114,14 @@ def test_update_debt_position(gpd_test_data, environment):
     update_payload = generate_debt_position_update_payload(
         iupd=gpd_test_data.iupd,
         debtor_fc=gpd_test_data.debtor_fc,
-        iuv=gpd_test_data.iuv
+        original_iuv=gpd_test_data.iuv
     )
 
     update_response = environment['update_function'](
         gpd_test_data.subscription_key,
         gpd_test_data.organization_id,
         gpd_test_data.iupd,
-        update_payload
+        update_payload,
+        to_publish=True
     )
     assert update_response.status_code == 200, f'Expected 200 but got {update_response.status_code}'

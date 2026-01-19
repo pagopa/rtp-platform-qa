@@ -37,7 +37,7 @@ def generate_debt_position_create_payload(debtor_fc=None, iupd=None, iuv=None):
         'iupd': iupd,
         'type': 'F',
         'fiscalCode': debtor_fc,
-        'fullName': 'John Doe',
+        'fullName': 'ANTONELLO MUSTO',
         'streetName': 'streetName',
         'civicNumber': '11',
         'postalCode': '00100',
@@ -54,7 +54,7 @@ def generate_debt_position_create_payload(debtor_fc=None, iupd=None, iuv=None):
             {
                 'iuv': iuv,
                 'amount': 10000,
-                'description': 'Canone Unico Patrimoniale - CORPORATE - TEST',
+                'description': 'Canone Unico Patrimoniale - CORPORATE',
                 'isPartialPayment': False,
                 'dueDate': due_date,
                 'retentionDate': retention_date,
@@ -64,9 +64,9 @@ def generate_debt_position_create_payload(debtor_fc=None, iupd=None, iuv=None):
                         'idTransfer': '1',
                         'amount': 10000,
                         'remittanceInformation': 'remittanceInformation 1',
-                        'category': '9/0201102IM/',
+                        'category': '9/0201133IM/',
                         'organizationFiscalCode': org_fc,
-                        'iban': 'IT0000000000000000000000000000'
+                        'iban': 'IT0000000000000000000000000'
                     }
                 ]
             }
