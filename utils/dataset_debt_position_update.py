@@ -9,7 +9,7 @@ from .generators_utils import generate_iuv
 def generate_debt_position_update_payload(iupd, debtor_fc=None, iuv=None, original_iuv=None):
     """
     Generate a payload for debt position update.
-    
+
     Args:
         iupd: The IUPD from the original debt position (required)
         debtor_fc: Fiscal code (defaults to same as create if None)
@@ -18,8 +18,7 @@ def generate_debt_position_update_payload(iupd, debtor_fc=None, iuv=None, origin
     """
     if debtor_fc is None:
         debtor_fc = fake_fc()
-    
-    # Use original IUV if provided, otherwise use iuv param or generate new
+
     if original_iuv:
         iuv = original_iuv
     elif iuv is None:
