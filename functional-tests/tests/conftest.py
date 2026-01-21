@@ -341,11 +341,24 @@ def setup_data(environment: Dict[str, object]) -> Dict[str, object]:
 
 
 @pytest.fixture
-def gpd_test_data(setup_data: Dict[str, object]) -> SimpleNamespace:
+def gpd_test_data(setup_data: Dict[str, object], debtor_service_provider_token_a: str) -> SimpleNamespace:
     """
-    Convenience wrapper over setup_data that exposes fields as attributes:
+    Convenience wrapper over setup_data that exposes fields as attributes
+    and ensures the debtor is activated before GPD tests.
+
     e.g. gpd_test_data.debtor_fc, gpd_test_data.iupd, …
     """
+    debtor_fc = setup_data['debtor_fc']
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        debtor_fc,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+
+    assert activation_response.status_code == 201, \
+        f"Failed to activate debtor for GPD test: {activation_response.status_code} {activation_response.text}"
+
     return SimpleNamespace(**setup_data)
 
 
