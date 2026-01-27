@@ -111,3 +111,9 @@ debt_positions_dev_update_path: "/gpd/debt-positions-service/v1/organizations/{o
 # GPD MESSAGE PRODUCER
 # ============================
 producer_gpd_message_base_url: 'http://qa.internal.uat.cstar.pagopa.it'
+
+# ============================
+# SEND API 
+# ============================
+send_api_version: 'v1'
+send_gpd_message_path: 'gpd/message'

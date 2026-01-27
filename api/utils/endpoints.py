@@ -32,3 +32,5 @@ SERVICE_PROVIDER_MOCK_URL = config.mock_service_provider_url
 SERVICE_PROVIDERS_URL = config.rtp_creation_base_url_path + config.service_providers_registry
 TAKEOVER_URL = config.activation_base_url_path + config.activation_takeover
 TAKEOVER_NOTIFICATION_URL = config.takeover_notification_url
+LANDING_PAGE_URL = config.landing_page_path
+RTP_SENDER_GPD_MESSAGE_URL = config.rtp_creation_base_url_path + config.send_gpd_message_path
