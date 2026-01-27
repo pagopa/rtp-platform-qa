@@ -8,3 +8,4 @@ GET_RTP_VERSION = config.get_api_version
 PAYEES_VERSION = config.payees_registry_api_version
 SERVICE_PROVIDER_VERSION = config.service_providers_registry_api_version
 TAKEOVER_API_VERSION = config.takeover_api_version
+SEND_GPD_MESSAGE_VERSION = config.send_api_version
