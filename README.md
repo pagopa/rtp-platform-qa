@@ -235,6 +235,10 @@ This secret must be updated manually by admins when needed.
 `DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY` - GPD subscription key in DEV environment
 `DEBT_POSITIONS_DEV_ORGANIZATION_ID` - GPD organization ID in DEV environment
 
+### SENDER CONFIGURATION
+`RTP_CONSUMER_CLIENT_ID` - Client ID for consumer to authenticate to sender
+`RTP_CONSUMER_CLIENT_SECRET` Client Secret for consumer to authenticate to sender
+
 # Run it locally
 
 To run the tests locally you need to set up an .env file in the root project dir with all the vars that you can see above.
