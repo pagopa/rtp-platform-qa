@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","137146","test_send_rtp[POST /gpd/message]","contract-tests.tests","Tue Jan 27 14:19:32 UTC 2026","passed","Tue Jan 27 14:21:49 UTC 2026","","test_api_send_rtp","",""
+"","60330","test_activation[GET /activations/payer]","contract-tests.tests","Tue Jan 27 14:06:01 UTC 2026","passed","Tue Jan 27 14:07:01 UTC 2026","","test_activation","",""
+"","139151","test_send_rtp[POST /gpd/message]","contract-tests.tests","Tue Jan 27 14:12:08 UTC 2026","passed","Tue Jan 27 14:14:27 UTC 2026","","test_api_create_rtp","",""
