@@ -1,0 +1,137 @@
+import allure
+import pytest
+
+from api.RTP_callback_api import srtp_rfc_callback
+from api.RTP_cancel_api import cancel_rtp
+from api.RTP_get_api import get_rtp
+from api.RTP_send_api import send_rtp
+from utils.callback_builder import build_rfc_callback_with_original_msg_id
+from utils.dataset_callback_data_DS_12P_CNCL_compliant import generate_callback_data_DS_12P_CNCL_compliant
+from utils.dataset_RTP_data import generate_rtp_data
+
+
+@allure.epic('RTP Callback')
+@allure.feature('RTP Callback DS_12P')
+@allure.story('Service provider sends an RFC callback with CNCL status')
+@allure.title('An RFC callback DS12P CNCL is successfully received and RTP status is CANCEL')
+@allure.tag('functional', 'happy_path', 'rtp_callback', 'ds_12p_cncl_compliant', 'rfc')
+@pytest.mark.callback
+@pytest.mark.happy_path
+def test_receive_rfc_callback_DS_12P_CNCL_compliant(
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+    activate_payer,
+    debtor_sp_mock_cert_key,
+):
+    """
+    Test RFC callback DS12P with CNCL status.
+    
+    Flow:
+    1. Send an RTP
+    2. Cancel the RTP (RFC - Request for Cancellation)
+    3. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
+    4. Verify callback is accepted (200)
+    5. Verify RTP status is CANCEL
+    """
+
+    rtp_data = generate_rtp_data()
+
+    activation_response = activate_payer(rtp_data['payer']['payerId'])
+    assert activation_response.status_code == 201
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    resource_id = location.split('/')[-1]
+    original_msg_id = resource_id.replace('-', '')
+
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+
+    callback_data = build_rfc_callback_with_original_msg_id(
+        generate_callback_data_DS_12P_CNCL_compliant,
+        original_msg_id,
+    )
+
+    cert, key = debtor_sp_mock_cert_key
+
+    callback_response = srtp_rfc_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+    )
+    assert (
+        callback_response.status_code == 200
+    ), f"Error from callback, expected 200 got {callback_response.status_code}"
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    body = get_response.json()
+    assert body['status'] == 'CANCEL', f"Expected status CANCEL, got {body['status']}"
+
+
+@allure.epic('RTP Callback')
+@allure.feature('RTP Callback DS_12P')
+@allure.story('Service provider sends an RFC callback with CNCL status')
+@allure.title('Unauthorized RFC callback due to wrong certificate serial')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_12p_cncl_compliant', 'rfc')
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
+    debtor_sp_mock_cert_key,
+):
+    """
+    Test RFC callback DS12P with wrong certificate.
+    
+    Expected: 403 Forbidden
+    """
+
+    callback_data = generate_callback_data_DS_12P_CNCL_compliant(BIC='MOCKSP01')
+
+    cert, key = debtor_sp_mock_cert_key
+
+    callback_response = srtp_rfc_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+    )
+    assert (
+        callback_response.status_code == 403
+    ), f"Expecting error from callback, expected 403 got {callback_response.status_code}"
+
+
+@allure.epic('RTP Callback')
+@allure.feature('RTP Callback DS_12P')
+@allure.story('Service provider sends an RFC callback with CNCL status')
+@allure.title('Failed RFC callback for non existing Service Provider - DS-12P CNCL compliant')
+@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_12p_cncl_compliant', 'rfc')
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compliant(
+    debtor_sp_mock_cert_key,
+):
+    """
+    Test RFC callback DS12P with non-existing service provider.
+    
+    Expected: 400 Bad Request
+    """
+
+    callback_data = generate_callback_data_DS_12P_CNCL_compliant(BIC='MOCKSP99')
+
+    cert, key = debtor_sp_mock_cert_key
+
+    callback_response = srtp_rfc_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+    )
+    assert (
+        callback_response.status_code == 400
+    ), f"Expecting error from callback, expected 400 got {callback_response.status_code}"
