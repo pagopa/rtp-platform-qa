@@ -33,6 +33,7 @@ def generate_callback_data_DS_12N_RJCR_compliant(BIC: str = 'MOCKSP04') -> dict:
     message_id = str(uuid.uuid4()).replace('-', '')
     resource_id = str(uuid.uuid4())
     original_msg_id = str(uuid.uuid4()).replace('-', '')
+    original_pmt_inf_id = str(uuid.uuid4()).replace('-', '')
     cxl_sts_id = str(uuid.uuid4()).replace('-', '')
     original_end_to_end_id = f"302{generate_random_digits(15)}"
     original_instr_id = str(uuid.uuid4()).replace('-', '')
@@ -77,6 +78,9 @@ def generate_callback_data_DS_12N_RJCR_compliant(BIC: str = 'MOCKSP04') -> dict:
                     },
                     'CxlDtls': [
                         {
+                            'OrgnlPmtInfAndSts': {
+                                'OrgnlPmtInfId': original_pmt_inf_id
+                            },
                             'TxInfAndSts': [
                                 {
                                     'CxlStsId': cxl_sts_id,
