@@ -44,8 +44,6 @@ def test_send_gpd_message_update_scenarios(
 
     iuv = create_payload['iuv']
     msg_id = create_payload['id']
-    print(f"DEBUG: IUV from CREATE payload: {iuv}")
-    print(f"DEBUG: msg_id from CREATE payload: {msg_id}")
 
     update_payload = generate_gpd_message_payload(
         fiscal_code=random_fiscal_code,
@@ -54,8 +52,6 @@ def test_send_gpd_message_update_scenarios(
         iuv=iuv,
         msg_id=msg_id
     )
-    print(f"DEBUG: IUV in UPDATE payload: {update_payload['iuv']}")
-    print(f"DEBUG: msg_id in UPDATE payload: {update_payload['id']}")
 
     response_update = send_gpd_message(
         access_token=rtp_consumer_access_token,
