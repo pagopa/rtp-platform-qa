@@ -15,7 +15,7 @@ from utils.dataset_gpd_message import generate_gpd_message_payload
     'INVALID',
     'PAID',
     'EXPIRED',
-    'DRAFT' 
+    'DRAFT'
 ])
 def test_send_gpd_message_update_scenarios(
     rtp_consumer_access_token,
@@ -32,7 +32,7 @@ def test_send_gpd_message_update_scenarios(
         operation='CREATE',
         status='VALID'
     )
-    
+
     response_create = send_gpd_message(
         access_token=rtp_consumer_access_token,
         message_payload=create_payload
@@ -46,7 +46,7 @@ def test_send_gpd_message_update_scenarios(
     msg_id = create_payload['id']
     print(f"DEBUG: IUV from CREATE payload: {iuv}")
     print(f"DEBUG: msg_id from CREATE payload: {msg_id}")
-    
+
     update_payload = generate_gpd_message_payload(
         fiscal_code=random_fiscal_code,
         operation='UPDATE',
