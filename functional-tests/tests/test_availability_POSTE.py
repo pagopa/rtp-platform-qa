@@ -5,9 +5,9 @@ import pytest
 
 from api.auth_api import get_poste_access_token
 from api.debtor_service_provider_api import send_srtp_to_poste
+from config.configuration import secrets
 from utils.dataset_EPC_RTP_data import generate_epc_rtp_data
 from utils.dataset_RTP_data import generate_rtp_data
-from config.configuration import secrets
 
 
 @allure.epic('Poste Availability')
@@ -19,7 +19,7 @@ from config.configuration import secrets
 def test_get_poste_access_token(debtor_sp_mock_cert_key):
     """
     Tests the retrieval of an access token from the POSTE authentication endpoint using client credentials and mutual TLS.
-    
+
     :param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
     :type debtor_sp_mock_cert_key: Tuple[str, str]
     """
@@ -28,7 +28,7 @@ def test_get_poste_access_token(debtor_sp_mock_cert_key):
     token = get_poste_access_token(
         cert, key, secrets.poste_oauth.client_id, secrets.poste_oauth.client_secret)
 
-    assert isinstance(token, str) and token, "Failed to retrieve a valid access token from POSTE."
+    assert isinstance(token, str) and token, 'Failed to retrieve a valid access token from POSTE.'
 
 @allure.epic('POSTE Availability')
 @allure.feature('RTP Send')

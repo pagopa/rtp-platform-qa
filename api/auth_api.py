@@ -1,9 +1,9 @@
 import requests
 
 from api.utils.endpoints import CBI_AUTH_URL
-from api.utils.endpoints import POSTE_AUTH_URL
 from api.utils.endpoints import MC_SHARED_AUTH_URL
 from api.utils.endpoints import MC_SHARED_AUTH_URL_DEV
+from api.utils.endpoints import POSTE_AUTH_URL
 
 
 def get_valid_access_token(client_id: str, client_secret: str, access_token_function):
@@ -61,7 +61,7 @@ def get_cbi_access_token(cert_path: str, key_path: str, authorization: str):
 def get_poste_access_token(cert_path: str, key_path: str, client_id: str, client_secret: str):
     """
     Retrieves an access token from the POSTE authentication endpoint using client credentials and mutual TLS.
-    
+
     :param cert_path: Path to the client certificate file.
     :type cert_path: str
     :param key_path: Path to the client private key file.
