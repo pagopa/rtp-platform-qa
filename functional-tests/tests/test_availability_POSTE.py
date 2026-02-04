@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 
 import allure
 import pytest
@@ -38,12 +39,22 @@ def test_get_poste_access_token(debtor_sp_mock_cert_key):
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.poste
-def test_send_rtp_to_poste():
+def test_send_rtp_to_poste(debtor_sp_mock_cert_key: Tuple[str, str]):
+    """
+    Tests sending an RTP payload to the POSTE endpoint with valid data and authentication.
+
+    :param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+    :type debtor_sp_mock_cert_key: Tuple[str, str]
+    """
+    cert, key = debtor_sp_mock_cert_key
+
     amount = random.randint(100, 10000)
     rtp_data = generate_rtp_data(amount=amount)
     poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
+    token = get_poste_access_token(
+        cert, key, secrets.poste_oauth.client_id, secrets.poste_oauth.client_secret)
 
-    response = send_srtp_to_poste(poste_payload)
+    response = send_srtp_to_poste(token, poste_payload)
 
     assert response.status_code == 201
 
