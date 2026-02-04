@@ -120,10 +120,20 @@ def test_send_rtp_to_poste_over_limit_amount(debtor_sp_mock_cert_key: Tuple[str,
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.poste
-def test_send_rtp_to_poste_expired_date():
+def test_send_rtp_to_poste_expired_date(debtor_sp_mock_cert_key: Tuple[str, str]):
+    """
+    Tests that sending an RTP payload with an expired date to the POSTE endpoint results in a 400 Bad Request response.
+
+    :param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+    :type debtor_sp_mock_cert_key: Tuple[str, str]
+    """
+    cert, key = debtor_sp_mock_cert_key
+
     rtp_data = generate_rtp_data()
     rtp_data['paymentNotice']['expiryDate'] = '2020-01-01'
     poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
+    token = get_poste_access_token(
+        cert, key, secrets.poste_oauth.client_id, secrets.poste_oauth.client_secret)
 
-    response = send_srtp_to_poste(poste_payload)
+    response = send_srtp_to_poste(token, poste_payload)
     assert response.status_code == 400
