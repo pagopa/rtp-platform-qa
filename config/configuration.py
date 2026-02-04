@@ -88,6 +88,11 @@ secrets.rtp_consumer = Dynaconf(
     client_secret=os.getenv('RTP_CONSUMER_CLIENT_SECRET'),
 )
 
+secrets.read_rtp_activations = Dynaconf(
+    client_id=os.getenv('READ_RTP_ACTIVATIONS_CLIENT_ID'),
+    client_secret=os.getenv('READ_RTP_ACTIVATIONS_CLIENT_SECRET'),
+)
+
 # Direct attributes for backward compatibility
 secrets.CBI_client_id = os.getenv('CBI_CLIENT_ID')
 secrets.CBI_client_secret = os.getenv('CBI_CLIENT_SECRET')
