@@ -3,22 +3,19 @@ import pytest
 
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.response_assertions_utils import assert_body_presence
+from utils.response_assertions_utils import assert_response_code
+from utils.response_assertions_utils import get_response_body_safe
+from utils.test_expectations import CREATE_EXPECTED_CODES
+from utils.test_expectations import should_have_body
 
 @allure.epic('RTP GPD Message')
 @allure.feature('GPD Message API')
 @allure.story('Consumer sends RTP message to Sender with different statuses')
-@allure.title('A CREATE message with status {status} is successfully sent')
+@allure.title('A CREATE message with status {status} returns {expected_code}')
 @allure.tag('functional', 'gpd_message', 'rtp_send', 'create_parameterized')
 @pytest.mark.send
-@pytest.mark.parametrize('status', [
-    'VALID',
-    'INVALID',
-    'PARTIALLY_PAID',
-    'PAID',
-    'PUBLISHED',
-    'EXPIRED',
-    'DRAFT'
-])
+@pytest.mark.parametrize('status', list(CREATE_EXPECTED_CODES.keys()))
 def test_send_gpd_message_create_scenarios(
     rtp_consumer_access_token,
     random_fiscal_code,
@@ -40,6 +37,8 @@ def test_send_gpd_message_create_scenarios(
         message_payload=message_payload
     )
 
-    assert response.status_code == 200, (
-        f"Expected 200 for status {status}, got {response.status_code}. Response: {response.text}"
-    )
+    expected_code = CREATE_EXPECTED_CODES[status]
+    assert_response_code(response, expected_code, 'CREATE', status)
+
+    response_body = get_response_body_safe(response)
+    assert_body_presence(response_body, should_have_body(status), 'CREATE', status)
