@@ -19,11 +19,6 @@ def test_sp_b_cannot_get_activation_by_fiscal_code(
         payer_fiscal_code=debtor_fc
     )
 
-
-    if response.status_code != 404:
-        print(f"SECURITY INCIDENT: SP_B found activation for {debtor_fc} created by SP_A!")
-        print(f"Response Body: {response.text}")
-
     assert response.status_code == 404, \
         f"Expected 404 Not Found for SP_B accessing SP_A activation, but got {response.status_code}. Body: {response.text}"
 
@@ -44,10 +39,6 @@ def test_sp_b_cannot_get_activation_by_id(
         access_token=debtor_service_provider_token_b,
         activation_id=activation_id
     )
-
-    if response.status_code != 404:
-        print(f"SECURITY INCIDENT: SP_B found activation ID {activation_id} created by SP_A!")
-        print(f"Response Body: {response.text}")
 
     assert response.status_code == 404, \
         f"Expected 404 Not Found for SP_B accessing SP_A activation ID, but got {response.status_code}. Body: {response.text}"
