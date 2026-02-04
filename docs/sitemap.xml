@@ -2,30 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/features/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/features/activation/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/features/cancel_RTP/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/features/send_RTP_through_API/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/features/send_RTP_through_web_page/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
     <url>
          <loc>https://pagopa.github.io/rtp-platform-qa/components/features/takeover/</loc>
-         <lastmod>2026-02-02</lastmod>
+         <lastmod>2026-02-04</lastmod>
     </url>
 </urlset>
