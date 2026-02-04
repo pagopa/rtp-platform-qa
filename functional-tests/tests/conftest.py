@@ -381,8 +381,21 @@ def debtor_sp_mock_cert_key() -> Tuple[str, str]:
 
 
 # ============================================================
-# Acess token to access process GPD sender API
+# Access token to access process GPD sender API
 # ============================================================
+@pytest.fixture
+def sp_activations_read_all_token() -> str:
+    """
+    Access token for the RTP Activations Read All client.
+    Admin-like role that can read activations across all Service Providers.
+    """
+    return get_valid_access_token(
+        client_id=secrets.read_rtp_activations.client_id,
+        client_secret=secrets.read_rtp_activations.client_secret,
+        access_token_function=get_access_token,
+    )
+
+
 @pytest.fixture
 def rtp_consumer_access_token() -> str:
     """
