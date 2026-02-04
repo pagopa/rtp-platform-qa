@@ -10,9 +10,9 @@ from utils.dataset_RTP_data import generate_rtp_data
 from config.configuration import secrets
 
 
-@allure.epic('CBI Availability')
+@allure.epic('Poste Availability')
 @allure.feature('Authentication Token Retrieval')
-@allure.story('Client authenticates to CBI')
+@allure.story('Client authenticates to POSTE')
 @allure.title('Auth endpoint returns valid token')
 @allure.tag('functional', 'happy_path', 'authentication', 'poste_token')
 @pytest.mark.auth
