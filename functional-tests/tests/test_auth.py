@@ -34,6 +34,7 @@ def test_get_valid_token(debtor_service_provider_token_a):
         'rtp_reader_access_token',
         'pagopa_payee_registry_token',
         'pagopa_service_providers_registry_token',
+        'sp_activations_read_all_token',
     ],
 )
 def test_all_token_fixtures_return_bearer_tokens(request, token_fixture_name):
