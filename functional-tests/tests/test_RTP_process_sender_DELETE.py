@@ -61,7 +61,7 @@ def test_send_gpd_message_delete_after_create(
 
     if status == 'VALID':
         assert response_body, (
-            "Expected non-empty body for DELETE after CREATE with status VALID, got empty response"
+            'Expected non-empty body for DELETE after CREATE with status VALID, got empty response'
         )
     else:
         assert not response_body, (
