@@ -17,7 +17,7 @@ from utils.dataset_RTP_data import generate_rtp_data
 @allure.title('Auth endpoint returns valid token')
 @allure.tag('functional', 'happy_path', 'authentication', 'poste_token')
 @pytest.mark.auth
-def test_get_poste_access_token(debtor_sp_mock_cert_key):
+def test_get_poste_access_token(debtor_sp_mock_cert_key: Tuple[str, str]):
     """
     Tests the retrieval of an access token from the POSTE authentication endpoint using client credentials and mutual TLS.
 
