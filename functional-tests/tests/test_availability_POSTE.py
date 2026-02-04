@@ -92,12 +92,22 @@ def test_send_rtp_to_poste_invalid_amount(debtor_sp_mock_cert_key: Tuple[str, st
 @pytest.mark.send
 @pytest.mark.unhappy_path
 @pytest.mark.poste
-def test_send_rtp_to_poste_over_limit_amount():
+def test_send_rtp_to_poste_over_limit_amount(debtor_sp_mock_cert_key: Tuple[str, str]):
+    """
+    Tests that sending an RTP payload with an amount over the POSTE limit results in a 400 Bad Request response.
+
+    :param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+    :type debtor_sp_mock_cert_key: Tuple[str, str]
+    """
+    cert, key = debtor_sp_mock_cert_key
 
     over_limit_amount = 1_000_000_000_000
     rtp_data = generate_rtp_data(amount=over_limit_amount)
     poste_payload = generate_epc_rtp_data(rtp_data, bic='PPAYITR1XXX')
-    response = send_srtp_to_poste(poste_payload)
+    token = get_poste_access_token(
+        cert, key, secrets.poste_oauth.client_id, secrets.poste_oauth.client_secret)
+
+    response = send_srtp_to_poste(token, poste_payload)
 
     assert response.status_code == 400
 
