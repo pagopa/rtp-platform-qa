@@ -33,3 +33,26 @@ def generate_gpd_message_payload(fiscal_code: str, operation: str = 'CREATE', st
     }
 
     return payload
+
+
+def generate_gpd_delete_message_payload(msg_id: int):
+    """Generate a GPD DELETE message payload with all data fields set to null."""
+    now = datetime.now(timezone.utc)
+    timestamp = int(now.timestamp() * 1000)
+
+    return {
+        'id': msg_id,
+        'operation': 'DELETE',
+        'timestamp': timestamp,
+        'iuv': None,
+        'subject': None,
+        'description': None,
+        'ec_tax_code': None,
+        'debtor_tax_code': None,
+        'nav': None,
+        'due_date': None,
+        'amount': None,
+        'status': None,
+        'psp_code': None,
+        'psp_tax_code': None
+    }
