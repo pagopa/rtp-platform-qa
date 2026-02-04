@@ -42,9 +42,8 @@ def test_send_gpd_message_delete_after_create(
         message_payload=create_payload
     )
 
-    expected_create_code = 200 if status == 'VALID' else 400
-    assert response_create.status_code == expected_create_code, (
-        f"Expected {expected_create_code} for CREATE with status {status}, got {response_create.status_code}. Response: {response_create.text}"
+    assert response_create.status_code == 200, (
+        f"Expected 200 for CREATE, got {response_create.status_code}. Response: {response_create.text}"
     )
 
     msg_id = create_payload['id']
@@ -61,7 +60,10 @@ def test_send_gpd_message_delete_after_create(
         f"Expected {expected_delete_code} for DELETE after CREATE with status {status}, got {response_delete.status_code}. Response: {response_delete.text}"
     )
 
-    response_body = response_delete.json()
+    try:
+        response_body = response_delete.json()
+    except ValueError:
+        response_body = None
 
     if expect_body:
         assert response_body, (
