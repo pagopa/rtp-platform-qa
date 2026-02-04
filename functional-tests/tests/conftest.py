@@ -381,7 +381,7 @@ def debtor_sp_mock_cert_key() -> Tuple[str, str]:
 
 
 # ============================================================
-# Acess token to access process GPD sender API
+# Access token to access process GPD sender API
 # ============================================================
 @pytest.fixture
 def sp_activations_read_all_token() -> str:
