@@ -12,7 +12,7 @@ from utils.test_expectations import should_have_body
 @allure.epic('RTP GPD Message')
 @allure.feature('GPD Message API')
 @allure.story('Consumer sends RTP message to Sender with different statuses')
-@allure.title('A CREATE message with status {status} returns {expected_code}')
+@allure.title('A CREATE message with status {status}')
 @allure.tag('functional', 'gpd_message', 'rtp_send', 'create_parameterized')
 @pytest.mark.send
 @pytest.mark.parametrize('status', list(CREATE_EXPECTED_CODES.keys()))

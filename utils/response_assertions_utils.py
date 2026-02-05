@@ -78,12 +78,12 @@ def assert_body_presence(
     Assert that the response body is present or absent as expected.
     """
     if should_have_body:
-        assert body, (
+        assert body is not None, (
             f"Expected non-empty body for {operation} with status {status}, "
             f"got empty response"
         )
     else:
-        assert not body, (
+        assert body is None, (
             f"Expected empty body for {operation} with status {status}, "
             f"got: {body}"
         )

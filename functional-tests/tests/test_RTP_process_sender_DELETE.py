@@ -16,7 +16,7 @@ from utils.test_expectations import UPDATE_EXPECTED_CODES
 @allure.epic('RTP GPD Message')
 @allure.feature('GPD Message API')
 @allure.story('Consumer sends DELETE message to Sender after CREATE')
-@allure.title('A DELETE message after CREATE {status} returns {expected_delete_code}')
+@allure.title('A DELETE message after CREATE {status}')
 @allure.tag('functional', 'gpd_message', 'rtp_send', 'delete_parameterized')
 @pytest.mark.send
 @pytest.mark.parametrize('status', list(DELETE_AFTER_CREATE_CODES.keys()))
@@ -64,7 +64,7 @@ def test_send_gpd_message_delete_after_create(
 @allure.epic('RTP GPD Message')
 @allure.feature('GPD Message API')
 @allure.story('Consumer sends DELETE message to Sender after CREATE and UPDATE')
-@allure.title('A DELETE message after CREATE VALID + UPDATE {status} returns {expected_delete_code}')
+@allure.title('A DELETE message after CREATE VALID + UPDATE {status}')
 @allure.tag('functional', 'gpd_message', 'rtp_send', 'delete_parameterized')
 @pytest.mark.send
 @pytest.mark.parametrize('status', list(DELETE_AFTER_UPDATE_CODES.keys()))
