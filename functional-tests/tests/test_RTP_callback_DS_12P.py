@@ -100,7 +100,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     debtor_sp_mock_cert_key,
 ):
     """
-    Test RFC callback DS12P with wrong certificate.
+    Test RFC callback DS12P with wrong certificate identity.
 
     Flow:
     1. Get debtor service provider token
@@ -108,10 +108,11 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     3. Get creditor service provider token
     4. Send an RTP
     5. Cancel the RTP (RFC - Request for Cancellation)
-    6. Send DS12P callback with wrong BIC (MOCKSP01 instead of MOCKSP04)
+    6. Send DS12P callback with assignee_bic='MOCKSP01' which doesn't match the certificate's identity (MOCKSP04)
     7. Verify callback is rejected with 403 (certificate mismatch)
 
-    Expected: 403 Forbidden
+    Expected: 403 Forbidden - The server should reject the callback because the BIC in the 
+    Assgne field doesn't match the identity in the client certificate.
     """
 
     rtp_data = generate_rtp_data()
@@ -138,7 +139,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
 
     callback_data = build_rfc_callback_with_original_msg_id(
         lambda resource_id=None, original_msg_id=None: generate_callback_data_DS_12P_CNCL_compliant(
-            BIC='MOCKSP01', resource_id=resource_id, original_msg_id=original_msg_id
+            resource_id=resource_id, original_msg_id=original_msg_id, assignee_bic='MOCKSP01'
         ),
         original_msg_id,
         resource_id,
