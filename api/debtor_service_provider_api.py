@@ -15,6 +15,14 @@ from utils.type_utils import JsonType
 
 
 def send_srtp_to_cbi(access_token: str, rtp_payload: JsonType):
+    """
+    Sends an RTP payload to the CBI endpoint.
+
+    :param access_token: Bearer access token for authorization.
+    :type access_token: str
+    :param rtp_payload: RTP payload in JSON format.
+    :type rtp_payload: JsonType
+    """
     idempotency_key = generate_idempotency_key(CREATE_RTP_OPERATION, rtp_payload['resourceId'])
     return requests.post(
         headers={
