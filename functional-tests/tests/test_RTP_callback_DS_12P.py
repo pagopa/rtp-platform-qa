@@ -207,7 +207,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
 
     callback_data = build_rfc_callback_with_original_msg_id(
         lambda resource_id=None, original_msg_id=None: generate_callback_data_DS_12P_CNCL_compliant(
-            BIC='MOCKSP99', resource_id=resource_id, original_msg_id=original_msg_id
+            resource_id=resource_id, original_msg_id=original_msg_id, assignee_bic='MOCKSP99'
         ),
         original_msg_id,
         resource_id,

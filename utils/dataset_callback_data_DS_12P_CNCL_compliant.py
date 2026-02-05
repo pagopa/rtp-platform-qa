@@ -10,7 +10,7 @@ from .datetime_utils import generate_create_time
 from .datetime_utils import generate_execution_date
 
 
-def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04', resource_id: str = None, original_msg_id: str = None) -> dict:
+def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04', resource_id: str = None, original_msg_id: str = None, assignee_bic: str = None) -> dict:
     """Generate a DS-12P CNCL compliant RFC callback payload.
 
     The payload simulates a SEPA Request-to-Pay Cancellation Response
@@ -18,9 +18,10 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04', resource
     cancellation request has been accepted and the RTP is cancelled.
 
     Args:
-        BIC: Bank Identifier Code of the initiating party (default: 'MOCKSP04').
+        BIC: Bank Identifier Code of the debtor agent (default: 'MOCKSP04').
         resource_id: The resource ID of the RTP being cancelled (optional, generates random if not provided).
         original_msg_id: The original message ID without dashes (optional, generates random if not provided).
+        assignee_bic: Bank Identifier Code of the assignee (default: 'MOCKSP04'). Used for certificate verification.
 
     Returns:
         dict: JSON-serializable DS-12P CNCL compliant callback payload with:
@@ -28,6 +29,8 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04', resource
             - ``SepaRequestToPayCancellationResponse``: nested SEPA structure
               containing resolution of investigation with CNCL status.
     """
+    if assignee_bic is None:
+        assignee_bic = 'MOCKSP04'
     message_id = original_msg_id if original_msg_id else str(uuid.uuid4()).replace('-', '')
     resource_id = resource_id if resource_id else str(uuid.uuid4())
     original_pmt_inf_id = resource_id
@@ -48,7 +51,7 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04', resource
                         'Assgne': {
                             'Agt': {
                                 'FinInstnId': {
-                                    'BICFI': 'MOCKSP04'
+                                    'BICFI': assignee_bic
                                 }
                             }
                         },
