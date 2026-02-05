@@ -1,6 +1,7 @@
 from config.configuration import config
 
 CALLBACK_VERSION = config.callback_api_version
+RFC_CALLBACK_VERSION = config.rfc_callback_api_version
 ACTIVATION_VERSION = config.activation_api_version
 CANCEL_VERSION = config.cancel_api_version
 DEACTIVATION_VERSION = config.deactivation_api_version

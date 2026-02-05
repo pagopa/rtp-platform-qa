@@ -1,6 +1,6 @@
 import requests
 
-from api.utils.api_version import CALLBACK_VERSION
+from api.utils.api_version import CALLBACK_VERSION, RFC_CALLBACK_VERSION
 from api.utils.endpoints import CALLBACK_URL, RFC_CALLBACK_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 
@@ -42,7 +42,7 @@ def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload):
         ),
         url=RFC_CALLBACK_URL,
         headers={
-            'Version': CALLBACK_VERSION
+            'Version': RFC_CALLBACK_VERSION
         },
         json=rtp_payload,
         timeout=HTTP_TIMEOUT

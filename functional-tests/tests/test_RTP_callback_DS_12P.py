@@ -7,7 +7,6 @@ from api.RTP_cancel_api import cancel_rtp
 from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
-from utils.callback_builder import build_rfc_callback_with_original_msg_id
 from utils.dataset_callback_data_DS_12P_CNCL_compliant import generate_callback_data_DS_12P_CNCL_compliant
 from utils.dataset_RTP_data import generate_rtp_data
 
@@ -36,7 +35,7 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
     5. Cancel the RTP (RFC - Request for Cancellation)
     6. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
     7. Verify callback is accepted (200)
-    8. Verify RTP status is CANCEL
+    8. Verify RTP status is CANCELLED
     """
 
     rtp_data = generate_rtp_data()
@@ -61,10 +60,9 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
-    callback_data = build_rfc_callback_with_original_msg_id(
-        generate_callback_data_DS_12P_CNCL_compliant,
-        original_msg_id,
-        resource_id,
+    callback_data = generate_callback_data_DS_12P_CNCL_compliant(
+        resource_id=resource_id,
+        original_msg_id=original_msg_id,
     )
 
     cert, key = debtor_sp_mock_cert_key
@@ -137,12 +135,10 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
-    callback_data = build_rfc_callback_with_original_msg_id(
-        lambda resource_id=None, original_msg_id=None: generate_callback_data_DS_12P_CNCL_compliant(
-            resource_id=resource_id, original_msg_id=original_msg_id, assignee_bic='MOCKSP01'
-        ),
-        original_msg_id,
-        resource_id,
+    callback_data = generate_callback_data_DS_12P_CNCL_compliant(
+        resource_id=resource_id,
+        original_msg_id=original_msg_id,
+        assignee_bic='MOCKSP01',
     )
 
     cert, key = debtor_sp_mock_cert_key
@@ -206,12 +202,10 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
-    callback_data = build_rfc_callback_with_original_msg_id(
-        lambda resource_id=None, original_msg_id=None: generate_callback_data_DS_12P_CNCL_compliant(
-            resource_id=resource_id, original_msg_id=original_msg_id, assignee_bic='MOCKSP99'
-        ),
-        original_msg_id,
-        resource_id,
+    callback_data = generate_callback_data_DS_12P_CNCL_compliant(
+        resource_id=resource_id,
+        original_msg_id=original_msg_id,
+        assignee_bic='MOCKSP99',
     )
 
     cert, key = debtor_sp_mock_cert_key
