@@ -23,11 +23,11 @@ def send_srtp_to_cbi(access_token: str, rtp_payload: JsonType):
     :type rtp_payload: JsonType
     """
     idempotency_key = generate_idempotency_key(CREATE_RTP_OPERATION, rtp_payload['resourceId'])
-    full_bearer_token = _create_bearer_token(access_token)
+    bearer_token = _create_bearer_token(access_token)
 
     return requests.post(
         headers={
-            'Authorization': f'{full_bearer_token}',
+            'Authorization': f'{bearer_token}',
             'Idempotency-key': idempotency_key,
             'X-Request-ID': str(uuid.uuid4())
         },
@@ -48,11 +48,11 @@ def send_srtp_to_poste(access_token: str, rtp_payload: JsonType):
     :type rtp_payload: JsonType
     """
     idempotency_key = generate_idempotency_key(CREATE_RTP_OPERATION, rtp_payload['resourceId'])
-    full_bearer_token = _create_bearer_token(access_token)
+    bearer_token = _create_bearer_token(access_token)
 
     return requests.post(
         headers={
-            'Authorization': f'{full_bearer_token}',
+            'Authorization': f'{bearer_token}',
             'Idempotency-key': idempotency_key,
             'X-Request-ID': str(uuid.uuid4())
         },
