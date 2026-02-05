@@ -60,7 +60,7 @@ def send_srtp_to_poste(access_token: str, rtp_payload: JsonType):
     )
 
 
-def send_srtp_to_iccrea(rtp_payload):
+def send_srtp_to_iccrea(rtp_payload: JsonType):
     idempotency_key = generate_idempotency_key(CREATE_RTP_OPERATION, rtp_payload['resourceId'])
     return requests.post(
         headers={
