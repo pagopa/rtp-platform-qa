@@ -8,6 +8,7 @@ ACTIVATION_BY_ID_URL = config.activation_base_url_path + config.activation_by_id
 MC_SHARED_AUTH_URL = config.mcshared_auth_url
 MC_SHARED_AUTH_URL_DEV = config.mcshared_auth_url_dev
 CBI_AUTH_URL = config.cbi_auth_url
+POSTE_AUTH_URL = config.poste_auth_url
 CALLBACK_URL = config.callback_url
 RFC_CALLBACK_URL = config.rfc_callback_url
 CANCEL_RTP_OPERATION = config.cancel

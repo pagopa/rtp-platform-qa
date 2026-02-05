@@ -78,6 +78,7 @@ send_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehu
 mcshared_auth_url: 'https://api-mcshared.uat.cstar.pagopa.it/auth/token'
 mcshared_auth_url_dev: 'https://api-mcshared.dev.cstar.pagopa.it/auth/token'
 cbi_auth_url: 'https://stgcbiglobeopenbankingapigateway.nexi.it/nexi/oauth/v2/token'
+poste_auth_url: 'https://login.microsoftonline.com/08b638e8-0676-45cc-b677-5c038b17d28a/oauth2/v2.0/token'
 
 # ============================
 # SEND ENDPOINTS (CBI / POSTE / ICCREA)
