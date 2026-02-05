@@ -109,7 +109,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     6. Send DS12P callback with assignee_bic='MOCKSP01' which doesn't match the certificate's identity (MOCKSP04)
     7. Verify callback is rejected with 403 (certificate mismatch)
 
-    Expected: 403 Forbidden - The server should reject the callback because the BIC in the 
+    Expected: 403 Forbidden - The server should reject the callback because the BIC in the
     Assgne field doesn't match the identity in the client certificate.
     """
 

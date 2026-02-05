@@ -13,6 +13,3 @@ def build_callback_with_original_msg_id(generator_fn, original_msg_id: str, is_d
 
     root['CdtrPmtActvtnReqStsRpt']['OrgnlGrpInfAndSts']['OrgnlMsgId'] = original_msg_id
     return callback_data
-
-
-

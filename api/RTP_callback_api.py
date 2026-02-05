@@ -1,7 +1,9 @@
 import requests
 
-from api.utils.api_version import CALLBACK_VERSION, RFC_CALLBACK_VERSION
-from api.utils.endpoints import CALLBACK_URL, RFC_CALLBACK_URL
+from api.utils.api_version import CALLBACK_VERSION
+from api.utils.api_version import RFC_CALLBACK_VERSION
+from api.utils.endpoints import CALLBACK_URL
+from api.utils.endpoints import RFC_CALLBACK_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 
 
