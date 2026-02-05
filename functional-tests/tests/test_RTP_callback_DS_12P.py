@@ -95,15 +95,54 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
     debtor_sp_mock_cert_key,
 ):
     """
     Test RFC callback DS12P with wrong certificate.
-    
+
+    Flow:
+    1. Get debtor service provider token
+    2. Activate payer to get fiscal code
+    3. Get creditor service provider token
+    4. Send an RTP
+    5. Cancel the RTP (RFC - Request for Cancellation)
+    6. Send DS12P callback with wrong BIC (MOCKSP01 instead of MOCKSP04)
+    7. Verify callback is rejected with 403 (certificate mismatch)
+
     Expected: 403 Forbidden
     """
 
-    callback_data = generate_callback_data_DS_12P_CNCL_compliant(BIC='MOCKSP01')
+    rtp_data = generate_rtp_data()
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data['payer']['payerId'],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code == 201
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    resource_id = location.split('/')[-1]
+    original_msg_id = resource_id.replace('-', '')
+
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+
+    callback_data = build_rfc_callback_with_original_msg_id(
+        lambda resource_id=None, original_msg_id=None: generate_callback_data_DS_12P_CNCL_compliant(
+            BIC='MOCKSP01', resource_id=resource_id, original_msg_id=original_msg_id
+        ),
+        original_msg_id,
+        resource_id,
+    )
 
     cert, key = debtor_sp_mock_cert_key
 
@@ -125,15 +164,54 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compliant(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
     debtor_sp_mock_cert_key,
 ):
     """
     Test RFC callback DS12P with non-existing service provider.
-    
+
+    Flow:
+    1. Get debtor service provider token
+    2. Activate payer to get fiscal code
+    3. Get creditor service provider token
+    4. Send an RTP
+    5. Cancel the RTP (RFC - Request for Cancellation)
+    6. Send DS12P callback with non-existing BIC (MOCKSP99)
+    7. Verify callback is rejected with 400 (service provider not found)
+
     Expected: 400 Bad Request
     """
 
-    callback_data = generate_callback_data_DS_12P_CNCL_compliant(BIC='MOCKSP99')
+    rtp_data = generate_rtp_data()
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data['payer']['payerId'],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code == 201
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    resource_id = location.split('/')[-1]
+    original_msg_id = resource_id.replace('-', '')
+
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+
+    callback_data = build_rfc_callback_with_original_msg_id(
+        lambda resource_id=None, original_msg_id=None: generate_callback_data_DS_12P_CNCL_compliant(
+            BIC='MOCKSP99', resource_id=resource_id, original_msg_id=original_msg_id
+        ),
+        original_msg_id,
+        resource_id,
+    )
 
     cert, key = debtor_sp_mock_cert_key
 
