@@ -4,28 +4,27 @@ import pytest
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_delete_message_payload
 from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.response_assertions_utils import assert_body_presence
+from utils.response_assertions_utils import assert_response_code
+from utils.response_assertions_utils import get_response_body_safe
+from utils.test_expectations import DELETE_AFTER_CREATE_CODES
+from utils.test_expectations import DELETE_AFTER_UPDATE_CODES
+from utils.test_expectations import get_create_expected_code
+from utils.test_expectations import should_have_body
+from utils.test_expectations import UPDATE_EXPECTED_CODES
 
 @allure.epic('RTP GPD Message')
 @allure.feature('GPD Message API')
 @allure.story('Consumer sends DELETE message to Sender after CREATE')
-@allure.title('A DELETE message after CREATE {status} returns {expected_delete_code}')
+@allure.title('A DELETE message after CREATE {status}')
 @allure.tag('functional', 'gpd_message', 'rtp_send', 'delete_parameterized')
 @pytest.mark.send
-@pytest.mark.parametrize('status,expected_delete_code,expect_body', [
-    ('VALID', 200, True),
-    ('INVALID', 422, False),
-    ('PAID', 422, False),
-    ('PUBLISHED', 422, False),
-    ('EXPIRED', 422, False),
-    ('DRAFT', 422, False),
-], ids=['VALID', 'INVALID', 'PAID', 'PUBLISHED', 'EXPIRED', 'DRAFT'])
+@pytest.mark.parametrize('status', list(DELETE_AFTER_CREATE_CODES.keys()))
 def test_send_gpd_message_delete_after_create(
     rtp_consumer_access_token,
     random_fiscal_code,
     activate_payer,
-    status,
-    expected_delete_code,
-    expect_body
+    status
 ):
     """Test sending a DELETE operation message via GPD message API after a CREATE"""
 
@@ -42,9 +41,8 @@ def test_send_gpd_message_delete_after_create(
         message_payload=create_payload
     )
 
-    assert response_create.status_code == 200, (
-        f"Expected 200 for CREATE, got {response_create.status_code}. Response: {response_create.text}"
-    )
+    expected_create_code = get_create_expected_code(status)
+    assert_response_code(response_create, expected_create_code, 'CREATE', status)
 
     msg_id = create_payload['id']
     iuv = create_payload['iuv']
@@ -56,44 +54,25 @@ def test_send_gpd_message_delete_after_create(
         message_payload=delete_payload
     )
 
-    assert response_delete.status_code == expected_delete_code, (
-        f"Expected {expected_delete_code} for DELETE after CREATE with status {status}, got {response_delete.status_code}. Response: {response_delete.text}"
-    )
+    expected_delete_code = DELETE_AFTER_CREATE_CODES[status]
+    assert_response_code(response_delete, expected_delete_code, 'DELETE after CREATE', status)
 
-    try:
-        response_body = response_delete.json()
-    except ValueError:
-        response_body = None
-
-    if expect_body:
-        assert response_body, (
-            f"Expected non-empty body for DELETE after CREATE with status {status}, got empty response"
-        )
-    else:
-        assert not response_body, (
-            f"Expected empty body for DELETE after CREATE with status {status}, got: {response_body}"
-        )
+    response_body = get_response_body_safe(response_delete)
+    assert_body_presence(response_body, should_have_body(status), 'DELETE after CREATE', status)
 
 
 @allure.epic('RTP GPD Message')
 @allure.feature('GPD Message API')
 @allure.story('Consumer sends DELETE message to Sender after CREATE and UPDATE')
-@allure.title('A DELETE message after CREATE VALID + UPDATE {status} returns {expected_delete_code}')
+@allure.title('A DELETE message after CREATE VALID + UPDATE {status}')
 @allure.tag('functional', 'gpd_message', 'rtp_send', 'delete_parameterized')
 @pytest.mark.send
-@pytest.mark.parametrize('status,expected_delete_code', [
-    ('VALID', 200),
-    ('INVALID', 422),
-    ('PAID', 422),
-    ('EXPIRED', 422),
-    ('DRAFT', 422),
-], ids=['VALID', 'INVALID', 'PAID', 'EXPIRED', 'DRAFT'])
+@pytest.mark.parametrize('status', list(DELETE_AFTER_UPDATE_CODES.keys()))
 def test_send_gpd_message_delete_after_create_and_update(
     rtp_consumer_access_token,
     random_fiscal_code,
     activate_payer,
-    status,
-    expected_delete_code
+    status
 ):
     """Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE"""
 
@@ -110,9 +89,7 @@ def test_send_gpd_message_delete_after_create_and_update(
         message_payload=create_payload
     )
 
-    assert response_create.status_code == 200, (
-        f"Expected 200 for CREATE, got {response_create.status_code}. Response: {response_create.text}"
-    )
+    assert_response_code(response_create, 200, 'CREATE', 'VALID')
 
     msg_id = create_payload['id']
     iuv = create_payload['iuv']
@@ -130,9 +107,8 @@ def test_send_gpd_message_delete_after_create_and_update(
         message_payload=update_payload
     )
 
-    assert response_update.status_code == 200, (
-        f"Expected 200 for UPDATE with status {status}, got {response_update.status_code}. Response: {response_update.text}"
-    )
+    expected_update_code = UPDATE_EXPECTED_CODES[status]
+    assert_response_code(response_update, expected_update_code, 'UPDATE', status)
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=msg_id, iuv=iuv)
 
@@ -141,6 +117,5 @@ def test_send_gpd_message_delete_after_create_and_update(
         message_payload=delete_payload
     )
 
-    assert response_delete.status_code == expected_delete_code, (
-        f"Expected {expected_delete_code} for DELETE after UPDATE with status {status}, got {response_delete.status_code}. Response: {response_delete.text}"
-    )
+    expected_delete_code = DELETE_AFTER_UPDATE_CODES[status]
+    assert_response_code(response_delete, expected_delete_code, 'DELETE after UPDATE', status)
