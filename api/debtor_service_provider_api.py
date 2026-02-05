@@ -23,9 +23,11 @@ def send_srtp_to_cbi(access_token: str, rtp_payload: JsonType):
     :type rtp_payload: JsonType
     """
     idempotency_key = generate_idempotency_key(CREATE_RTP_OPERATION, rtp_payload['resourceId'])
+    full_bearer_token = _create_bearer_token(access_token)
+
     return requests.post(
         headers={
-            'Authorization': f'{access_token}',
+            'Authorization': f'{full_bearer_token}',
             'Idempotency-key': idempotency_key,
             'X-Request-ID': str(uuid.uuid4())
         },
@@ -46,9 +48,11 @@ def send_srtp_to_poste(access_token: str, rtp_payload: JsonType):
     :type rtp_payload: JsonType
     """
     idempotency_key = generate_idempotency_key(CREATE_RTP_OPERATION, rtp_payload['resourceId'])
+    full_bearer_token = _create_bearer_token(access_token)
+
     return requests.post(
         headers={
-            'Authorization': f'{access_token}',
+            'Authorization': f'{full_bearer_token}',
             'Idempotency-key': idempotency_key,
             'X-Request-ID': str(uuid.uuid4())
         },
@@ -78,3 +82,15 @@ def send_srtp_to_iccrea(rtp_payload: JsonType):
         cert=(CERT_PATH, KEY_PATH),
         timeout=HTTP_TIMEOUT,
     )
+
+
+def _create_bearer_token(access_token: str) -> str:
+    """
+    Ensures that the access token is in the correct format for the Authorization header.
+
+    :param access_token: The raw access token.
+    :type access_token: str
+    :return: A properly formatted Bearer token.
+    :rtype: str
+    """
+    return f'Bearer {access_token}' if not access_token.startswith('Bearer ') else access_token
