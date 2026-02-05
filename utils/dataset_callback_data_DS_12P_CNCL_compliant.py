@@ -8,13 +8,9 @@ import uuid
 
 from .datetime_utils import generate_create_time
 from .datetime_utils import generate_execution_date
-from .datetime_utils import generate_future_time
-from .generators_utils import generate_random_digits
-from .iban_utils import generate_sepa_iban
-from utils.text_utils import fake
 
 
-def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
+def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04', resource_id: str = None, original_msg_id: str = None) -> dict:
     """Generate a DS-12P CNCL compliant RFC callback payload.
 
     The payload simulates a SEPA Request-to-Pay Cancellation Response
@@ -23,6 +19,8 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
 
     Args:
         BIC: Bank Identifier Code of the initiating party (default: 'MOCKSP04').
+        resource_id: The resource ID of the RTP being cancelled (optional, generates random if not provided).
+        original_msg_id: The original message ID without dashes (optional, generates random if not provided).
 
     Returns:
         dict: JSON-serializable DS-12P CNCL compliant callback payload with:
@@ -30,20 +28,17 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
             - ``SepaRequestToPayCancellationResponse``: nested SEPA structure
               containing resolution of investigation with CNCL status.
     """
-    message_id = str(uuid.uuid4()).replace('-', '')
-    resource_id = str(uuid.uuid4())
-    original_msg_id = str(uuid.uuid4()).replace('-', '')
-    original_pmt_inf_id = str(uuid.uuid4()).replace('-', '')
+    message_id = original_msg_id if original_msg_id else str(uuid.uuid4()).replace('-', '')
+    resource_id = resource_id if resource_id else str(uuid.uuid4())
+    original_pmt_inf_id = resource_id
     cxl_sts_id = str(uuid.uuid4()).replace('-', '')
-    original_end_to_end_id = f"302{generate_random_digits(15)}"
-    original_instr_id = str(uuid.uuid4()).replace('-', '')
+    original_end_to_end_id = f"302{'0' * 15}"
 
     create_time = generate_create_time()
-    original_time = generate_future_time(1)
     execution_date = generate_execution_date(1, 15)
 
     amount = 130.00
-    creditor_id = generate_random_digits(11)
+    creditor_id = '15376371009'
 
     return {
         'SepaRequestToPayCancellationResponse': {
@@ -53,7 +48,7 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
                         'Assgne': {
                             'Agt': {
                                 'FinInstnId': {
-                                    'BICFI': 'PPAYITR1XXX'
+                                    'BICFI': 'MOCKSP04'
                                 }
                             }
                         },
@@ -78,11 +73,9 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
                     },
                     'CxlDtls': [
                         {
-                            'OrgnlPmtInfAndSts': {
-                                'OrgnlPmtInfId': original_pmt_inf_id
-                            },
-                            'TxInfAndSts': [
+                            'OrgnlPmtInfAndSts': [
                                 {
+                                    'OrgnlPmtInfId': original_pmt_inf_id,
                                     'CxlStsId': cxl_sts_id,
                                     'CxlStsRsnInf': [
                                         {
@@ -92,53 +85,25 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
                                             'Orgtr': {
                                                 'Id': {
                                                     'OrgId': {
-                                                        'AnyBIC': BIC
+                                                        'AnyBIC': 'PPAYITR1XXX'
                                                     }
                                                 }
                                             }
                                         }
                                     ],
                                     'OrgnlEndToEndId': original_end_to_end_id,
-                                    'OrgnlGrpInf': {
-                                        'OrgnlCreDtTm': original_time,
-                                        'OrgnlMsgId': original_msg_id,
-                                        'OrgnlMsgNmId': 'pain.013.001.10'
-                                    },
-                                    'OrgnlInstrId': original_instr_id,
                                     'OrgnlTxRef': {
                                         'Amt': {
                                             'InstdAmt': amount
                                         },
                                         'Cdtr': {
                                             'Pty': {
-                                                'Id': {
-                                                    'OrgId': {
-                                                        'Othr': [
-                                                            {
-                                                                'Id': creditor_id,
-                                                                'SchmeNm': {
-                                                                    'Cd': 'BOID'
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                },
                                                 'Nm': 'PagoPA'
                                             }
                                         },
                                         'CdtrAcct': {
                                             'Id': {
-                                                'IBAN': generate_sepa_iban()
-                                            }
-                                        },
-                                        'CdtrAgt': {
-                                            'FinInstnId': {
-                                                'Othr': {
-                                                    'Id': creditor_id,
-                                                    'SchmeNm': {
-                                                        'Cd': 'BOID'
-                                                    }
-                                                }
+                                                'IBAN': 'IT96K999999999900SRTPPAGOPA'
                                             }
                                         },
                                         'DbtrAgt': {
@@ -146,39 +111,9 @@ def generate_callback_data_DS_12P_CNCL_compliant(BIC: str = 'MOCKSP04') -> dict:
                                                 'BICFI': BIC
                                             }
                                         },
-                                        'PmtTpInf': {
-                                            'LclInstrm': {
-                                                'Prtry': 'PAGOPA'
-                                            },
-                                            'SvcLvl': [
-                                                {
-                                                    'Cd': 'SRTP'
-                                                }
-                                            ]
-                                        },
                                         'ReqdExctnDt': {
                                             'Dt': f'{execution_date}Z'
-                                        },
-                                        'RmtInf': {
-                                            'Ustrd': [
-                                                fake.sentence()
-                                            ]
                                         }
-                                    },
-                                    'RsltnRltdInf': {
-                                        'Chrgs': [
-                                            {
-                                                'Agt': {
-                                                    'FinInstnId': {
-                                                        'BICFI': BIC
-                                                    }
-                                                },
-                                                'Amt': {
-                                                    'ActiveOrHistoricCurrencyAndAmount': amount,
-                                                    'Ccy': 'EUR'
-                                                }
-                                            }
-                                        ]
                                     }
                                 }
                             ]

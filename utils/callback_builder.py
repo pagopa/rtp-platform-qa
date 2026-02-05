@@ -15,24 +15,19 @@ def build_callback_with_original_msg_id(generator_fn, original_msg_id: str, is_d
     return callback_data
 
 
-def build_rfc_callback_with_original_msg_id(generator_fn, original_msg_id: str):
+def build_rfc_callback_with_original_msg_id(generator_fn, original_msg_id: str, resource_id: str = None):
     """
     Helper to build an RFC callback payload with the given OrgnlMsgId.
-    
+
     This is specifically for DS12P/DS12N callbacks using the
     SepaRequestToPayCancellationResponse structure.
-    
+
     Parameters:
-    - generator_fn: function that generates the RFC callback 
+    - generator_fn: function that generates the RFC callback
                    (e.g., generate_callback_data_DS_12P_CNCL_compliant)
-    - original_msg_id: value to set in OrgnlMsgId (the ID of the original RTP)
+    - original_msg_id: value to set in OrgnlMsgId (the ID of the original RTP without dashes)
+    - resource_id: optional resource ID (with dashes) to set in resourceId field
     """
-    callback_data = generator_fn()
-    
-    rfc_root = callback_data['SepaRequestToPayCancellationResponse']['Document']['RsltnOfInvstgtn']
-    
-    rfc_root['Assgnmt']['Id'] = original_msg_id
-    
-    rfc_root['CxlDtls'][0]['TxInfAndSts'][0]['OrgnlGrpInf']['OrgnlMsgId'] = original_msg_id
-    
+    callback_data = generator_fn(resource_id=resource_id, original_msg_id=original_msg_id)
+
     return callback_data

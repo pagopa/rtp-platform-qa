@@ -23,15 +23,15 @@ def srtp_callback(cert_path: str, key_path: str, rtp_payload):
 def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload):
     """
     Send RFC (Request for Cancellation) callback.
-    
+
     This is used for DS12P and DS12N callbacks which use a different endpoint
     than regular RTP callbacks.
-    
+
     Args:
         cert_path: Path to the certificate file
         key_path: Path to the key file
         rtp_payload: The RFC callback payload (DS12P or DS12N)
-    
+
     Returns:
         Response object from the callback request
     """

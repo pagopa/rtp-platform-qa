@@ -1,10 +1,12 @@
 import allure
 import pytest
 
+from api.debtor_activation_api import activate
 from api.RTP_callback_api import srtp_rfc_callback
 from api.RTP_cancel_api import cancel_rtp
 from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
+from config.configuration import secrets
 from utils.callback_builder import build_rfc_callback_with_original_msg_id
 from utils.dataset_callback_data_DS_12N_RJCR_compliant import generate_callback_data_DS_12N_RJCR_compliant
 from utils.dataset_RTP_data import generate_rtp_data
@@ -18,25 +20,32 @@ from utils.dataset_RTP_data import generate_rtp_data
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rfc_callback_DS_12N_RJCR_compliant(
+    debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
-    activate_payer,
     debtor_sp_mock_cert_key,
 ):
     """
     Test RFC callback DS12N with RJCR status.
-    
+
     Flow:
-    1. Send an RTP
-    2. Cancel the RTP (RFC - Request for Cancellation)
-    3. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
-    4. Verify callback is accepted (200)
-    5. Verify RTP status is ERROR_CANCEL
+    1. Get debtor service provider token
+    2. Activate payer to get fiscal code
+    3. Get creditor service provider token
+    4. Send an RTP
+    5. Cancel the RTP (RFC - Request for Cancellation)
+    6. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+    7. Verify callback is accepted (200)
+    8. Verify RTP status is ERROR_CANCEL
     """
 
     rtp_data = generate_rtp_data()
 
-    activation_response = activate_payer(rtp_data['payer']['payerId'])
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data['payer']['payerId'],
+        secrets.debtor_service_provider.service_provider_id,
+    )
     assert activation_response.status_code == 201
 
     send_response = send_rtp(
@@ -55,6 +64,7 @@ def test_receive_rfc_callback_DS_12N_RJCR_compliant(
     callback_data = build_rfc_callback_with_original_msg_id(
         generate_callback_data_DS_12N_RJCR_compliant,
         original_msg_id,
+        resource_id,
     )
 
     cert, key = debtor_sp_mock_cert_key
@@ -93,7 +103,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
     Expected: 403 Forbidden
     """
 
-    callback_data = generate_callback_data_DS_12N_RJCR_compliant(BIC='MOCKSP01')
+    callback_data = generate_callback_data_DS_12N_RJCR_compliant(BIC='MOCKSP04')
 
     cert, key = debtor_sp_mock_cert_key
 
