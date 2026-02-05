@@ -9,7 +9,6 @@ from api.utils.endpoints import POSTE_SEND_URL
 from api.utils.http_utils import CERT_PATH
 from api.utils.http_utils import HTTP_TIMEOUT
 from api.utils.http_utils import KEY_PATH
-from config.configuration import config
 from utils.idempotency_key_utils import generate_idempotency_key
 from utils.type_utils import JsonType
 
