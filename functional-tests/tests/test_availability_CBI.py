@@ -44,7 +44,7 @@ def test_send_rtp_to_cbi(debtor_sp_mock_cert_key):
     cert, key = debtor_sp_mock_cert_key
 
     cbi_token = get_cbi_access_token(cert, key, auth)
-    response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
+    response = send_srtp_to_cbi(cbi_token, cbi_payload)
     assert response.status_code == 201
 
 @allure.epic('CBI Availability')
@@ -68,7 +68,7 @@ def test_send_rtp_to_cbi_invalid_amount(debtor_sp_mock_cert_key):
 
     cbi_token = get_cbi_access_token(cert, key, auth)
 
-    response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
+    response = send_srtp_to_cbi(cbi_token, cbi_payload)
     assert response.status_code == 400
 
 @allure.epic('CBI Availability')
@@ -91,5 +91,5 @@ def test_send_rtp_to_cbi_expired_date(debtor_sp_mock_cert_key):
 
     cbi_token = get_cbi_access_token(cert, key, auth)
 
-    response = send_srtp_to_cbi(f"Bearer {cbi_token}", cbi_payload)
+    response = send_srtp_to_cbi(cbi_token, cbi_payload)
     assert response.status_code == 400
