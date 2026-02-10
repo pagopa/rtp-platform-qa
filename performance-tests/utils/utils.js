@@ -3,33 +3,39 @@ import {activationConfig, callbackConfig, senderConfig} from '../config/config.j
 
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 
 export const ActorCredentials = {
   DEBTOR_SERVICE_PROVIDER: 'DEBTOR_SERVICE_PROVIDER',
   CREDITOR_SERVICE_PROVIDER: 'CREDITOR_SERVICE_PROVIDER',
   SERVICE_REGISTRY_READER: 'SERVICE_REGISTRY_READER',
-  PAGOPA_INTEGRATION_PAYEE_REGISTRY: 'PAGOPA_INTEGRATION_PAYEE_REGISTRY'
+  PAGOPA_INTEGRATION_PAYEE_REGISTRY: 'PAGOPA_INTEGRATION_PAYEE_REGISTRY',
+  RTP_CONSUMER: "RTP_CONSUMER"
 };
 
 
 const ACTOR_CREDENTIALS_MAP = {
-	[ActorCredentials.DEBTOR_SERVICE_PROVIDER]: {
-		clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
-		clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
-	},
-	[ActorCredentials.CREDITOR_SERVICE_PROVIDER]: {
-		clientId: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_ID,
-		clientSecret: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET,
-	},
-	[ActorCredentials.SERVICE_REGISTRY_READER]: {
-		clientId: __ENV.SERVICE_REGISTRY_READER_CLIENT_ID,
-		clientSecret: __ENV.SERVICE_REGISTRY_READER_CLIENT_SECRET,
-	},
+  [ActorCredentials.DEBTOR_SERVICE_PROVIDER]: {
+    clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
+    clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
+  },
+  [ActorCredentials.CREDITOR_SERVICE_PROVIDER]: {
+    clientId: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_ID,
+    clientSecret: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_SECRET,
+  },
+  [ActorCredentials.SERVICE_REGISTRY_READER]: {
+    clientId: __ENV.SERVICE_REGISTRY_READER_CLIENT_ID,
+    clientSecret: __ENV.SERVICE_REGISTRY_READER_CLIENT_SECRET,
+  },
   [ActorCredentials.PAGOPA_INTEGRATION_PAYEE_REGISTRY]: {
-		clientId: __ENV.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID,
-		clientSecret: __ENV.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET,
-	},
+    clientId: __ENV.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID,
+    clientSecret: __ENV.PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET,
+  },
+  [ActorCredentials.RTP_CONSUMER]: {
+    clientId: __ENV.RTP_CONSUMER_CLIENT_ID,
+    clientSecret: __ENV.RTP_CONSUMER_CLIENT_SECRET,
+  }
 };
 
 
@@ -291,6 +297,7 @@ export const endpoints = {
   sendRtp: `${senderConfig.sender_base}/rtps`,
   callbackSend : `${callbackConfig.callback_base}/cb/send`,
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
+  gpdMessage: `${senderConfig.sender_base}/gpd/message`,
 };
 
 /**
@@ -319,4 +326,20 @@ export function getOptions(scenarioName, execFunction) {
     },
     thresholds: progressiveOptions.thresholds
   };
+}
+
+export function generatePositiveLong(){
+  const min = 1;
+  const max = Number.MAX_SAFE_INTEGER;
+
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function generateIuv(len = 17) {
+  let s = '';
+  for (let i = 0; i < len; i++) {
+    const d = i === 0 ? randomIntBetween(1, 9) : randomIntBetween(0, 9);
+    s += String(d);
+  }
+  return s;
 }
