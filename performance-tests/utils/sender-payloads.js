@@ -1,4 +1,4 @@
-import {randomNoticeNumber, replaceUuidWithoutDashes} from "./utils.js";
+import {generateIuv, randomNoticeNumber, replaceUuidWithoutDashes} from "./utils.js";
 
 /**
  * Build the payload JSON for sending an RTP (Request To Pay).
@@ -91,4 +91,26 @@ export function buildCallbackPayload(resourceId) {
             }
         }
     };
+}
+
+export function buildGpdMessagePayload(debtorFiscalCode, operationId, operation, status ){
+    const timestamp = Date.now();
+    const iuv = generateIuv();
+
+    return {
+        "id": operationId,
+        "operation": operation,
+        "timestamp": timestamp,
+        "iuv": iuv,
+        "subject": "remittanceInformation 1",
+        "description": "Canone Unico Patrimoniale - CORPORATE - TEST",
+        "ec_tax_code": "80015010723",
+        "debtor_tax_code": debtorFiscalCode,
+        "nav": "397704563415785664",
+        "due_date": 1761815347153000,
+        "amount": 30000,
+        "status": status,
+        "psp_code": null,
+        "psp_tax_code": null
+    }
 }
