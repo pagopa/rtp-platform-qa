@@ -136,14 +136,4 @@ case "$FORMAT" in
     ;;
 esac
 
-JSON_FILE="json-file/rtp-activator/activations.json"
-
-if [ -f "$JSON_FILE" ]; then
-  echo "🧹 Cleaning up activations file: $JSON_FILE"
-  rm -f "$JSON_FILE"
-  echo "✅ activations.json removed successfully"
-else
-  echo "ℹ️ No activations.json file found at $JSON_FILE (skipping cleanup)"
-fi
-
 exit 0

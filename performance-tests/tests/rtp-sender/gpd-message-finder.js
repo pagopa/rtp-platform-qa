@@ -8,19 +8,27 @@ import {
   endpoints,
   generatePositiveLong,
   getOptions,
-  randomFiscalCode,
   setupAuth
 } from "../../utils/utils.js";
 import {buildGpdMessagePayload} from "../../utils/sender-payloads.js";
 import {uuidv4} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import {createHandleSummary} from "../../utils/summary-utils.js";
 
 const START_TIME = Date.now();
 
-const DEBTOR_SERVICE_PROVIDER_ID = String(__ENV.DEBTOR_SERVICE_PROVIDER_ID);
 const VU_COUNT = Number(__ENV.VU_COUNT_SET) || 10;
+
 const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
+
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
+
+const activationFiscalCodes = Array.from(new Set(
+    JSON.parse(open('../../json-file/rtp-activator/activations.json'))
+    .map(r => r?.fiscalCode)
+    .filter(fc => fc != null && fc !== '')
+)).map(String);
+
+const wrappedActivations = activationFiscalCodes.map(
+    fiscalCode => ({fiscalCode}));
 
 const {
   currentRPS,
@@ -28,10 +36,9 @@ const {
   successCounter,
   responseTimeTrend
 } = createStandardMetrics();
-const testCompletedRef = {value: false};
 
-if (!__ENV.DEBTOR_SERVICE_PROVIDER_ID) {
-  throw new Error("❌ DEBTOR_SERVICE_PROVIDER_ID cannot be null or undefined");
+function randomItem(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 
 export const options = {
@@ -50,27 +57,11 @@ export const options = {
 };
 
 export function setup() {
-  const debtorAuth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
-  const activationHeaders = buildHeaders(debtorAuth.access_token);
-
-  const activationPayload = {
-    payer: {
-      fiscalCode: randomFiscalCode(),
-      rtpSpId: DEBTOR_SERVICE_PROVIDER_ID
-    }
-  };
-
-  const activation = http.post(endpoints.activations,
-      JSON.stringify(activationPayload), {headers: activationHeaders});
-
-  check(activation, {'activation 201': r => r.status === 201});
-
   const consumerAuth = setupAuth(ActorCredentials.RTP_CONSUMER);
 
   return {
-    debtorFiscalCode: activationPayload.payer.fiscalCode,
     consumerToken: consumerAuth.access_token
-  };
+  }
 }
 
 export function sendMessage(data) {
@@ -89,7 +80,10 @@ export function sendMessage(data) {
     "Idempotency-Key": uuidv4()
   };
 
-  const payload = buildGpdMessagePayload(data.debtorFiscalCode,
+  const picked = randomItem(wrappedActivations);
+  const fiscalCode = picked?.fiscalCode;
+
+  const payload = buildGpdMessagePayload(fiscalCode,
       generatePositiveLong(), "CREATE", "VALID");
 
   const start = Date.now();
@@ -116,16 +110,4 @@ export function sendMessage(data) {
   if (SLEEP_ITER > 0) {
     sleep(SLEEP_ITER);
   }
-}
-
-export const handleSummary = (opts) => {
-  testCompletedRef.value = true;
-  return createHandleSummary({
-    START_TIME,
-    testName: 'GPD MESSAGE STRESS TEST',
-    countTag: 'successes',
-    reportPrefix: 'gpdMessage',
-    VU_COUNT,
-    testCompletedRef
-  })(opts);
 }
