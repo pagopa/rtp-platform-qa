@@ -93,6 +93,18 @@ export function buildCallbackPayload(resourceId) {
     };
 }
 
+/**
+ * Builds the payload for a GPD message request.
+ *
+ * Generates a timestamp and a random IUV internally.
+ * Used to simulate CREATE/UPDATE/DELETE operations during stress tests.
+ *
+ * @param {string} debtorFiscalCode - Fiscal code of the debtor
+ * @param {number|string} operationId - Unique operation identifier
+ * @param {string} operation - Operation type (e.g. "CREATE")
+ * @param {string} status - Message status (e.g. "VALID")
+ * @returns {Object} GPD message payload body
+ */
 export function buildGpdMessagePayload(debtorFiscalCode, operationId, operation, status ){
     const timestamp = Date.now();
     const iuv = generateIuv();

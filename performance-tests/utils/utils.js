@@ -328,6 +328,13 @@ export function getOptions(scenarioName, execFunction) {
   };
 }
 
+/**
+ * Generates a random positive long integer.
+ *
+ * The value is between 1 and Number.MAX_SAFE_INTEGER (inclusive).
+ *
+ * @returns {number} Random positive integer
+ */
 export function generatePositiveLong(){
   const min = 1;
   const max = Number.MAX_SAFE_INTEGER;
@@ -335,6 +342,15 @@ export function generatePositiveLong(){
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+/**
+ * Generates a numeric IUV string of fixed length.
+ *
+ * The first digit is guaranteed to be non-zero.
+ * Remaining digits can range from 0 to 9.
+ *
+ * @param {number} [len=17] - Desired IUV length
+ * @returns {string} Generated numeric IUV
+ */
 export function generateIuv(len = 17) {
   let s = '';
   for (let i = 0; i < len; i++) {
