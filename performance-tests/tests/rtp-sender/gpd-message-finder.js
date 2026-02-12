@@ -86,13 +86,13 @@ function randomItem(arr) {
  */
 export const options = {
   ...getOptions('stress_test_fixed_user', 'sendMessage'),
-  setupTimeout: '5m',
+  setupTimeout: '2m',
   scenarios: {
     stress_test_fixed_user: {
       executor: 'shared-iterations',
       vus: VU_COUNT,
       iterations: ITERATIONS,
-      maxDuration: '30m',
+      maxDuration: '240m',
       gracefulStop: '30s',
       exec: 'sendMessage'
     }
