@@ -16,18 +16,38 @@ import {uuidv4} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 const START_TIME = Date.now();
 
 const VU_COUNT = Number(__ENV.VU_COUNT_SET) || 10;
-
 const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
-
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
+
+const REFRESH_EVERY_MS = 15 * 60 * 1000;
+const SKEW_MS = 15 * 1000;
+
+let consumerToken = null;
+let nextRefreshAt = 0;
+
+function ensureToken() {
+  const now = Date.now();
+
+  if (!consumerToken || now >= nextRefreshAt) {
+    const auth = setupAuth(ActorCredentials.RTP_CONSUMER);
+
+    consumerToken = auth.access_token;
+
+    if (auth.expires_in) {
+      nextRefreshAt = now + (auth.expires_in * 1000) - SKEW_MS;
+    } else {
+      nextRefreshAt = now + REFRESH_EVERY_MS - SKEW_MS;
+    }
+  }
+
+  return consumerToken;
+}
 
 const activationFiscalCodes = Array.from(new Set(
     JSON.parse(open('../../json-file/rtp-activator/activations.json'))
     .map(r => r?.fiscalCode)
     .filter(fc => fc != null && fc !== '')
 )).map(String);
-
-let consumerToken;
 
 const {
   currentRPS,
@@ -42,13 +62,13 @@ function randomItem(arr) {
 
 export const options = {
   ...getOptions('stress_test_fixed_user', 'sendMessage'),
-  setupTimeout: '2m',
+  setupTimeout: '5m',
   scenarios: {
     stress_test_fixed_user: {
       executor: 'shared-iterations',
       vus: VU_COUNT,
       iterations: ITERATIONS,
-      maxDuration: '240m',
+      maxDuration: '30m',
       gracefulStop: '30s',
       exec: 'sendMessage'
     }
@@ -56,16 +76,9 @@ export const options = {
 };
 
 export function setup() {
-
   const wrappedActivations = activationFiscalCodes.map(
       fiscalCode => ({fiscalCode}));
-
-  consumerToken = setupAuth(ActorCredentials.RTP_CONSUMER)
-
-  return {
-    fiscalCodes: wrappedActivations,
-    consumerToken
-  }
+  return {fiscalCodes: wrappedActivations};
 }
 
 export function sendMessage(data) {
@@ -79,20 +92,25 @@ export function sendMessage(data) {
 
   currentRPS.add(1, tags);
 
+  const token = ensureToken();
+
   const headers = {
-    ...buildHeaders(data.consumerToken),
+    ...buildHeaders(token),
     "Idempotency-Key": uuidv4()
   };
 
   const picked = randomItem(data.fiscalCodes);
   const fiscalCode = picked?.fiscalCode;
 
-  const payload = buildGpdMessagePayload(fiscalCode,
-      generatePositiveLong(), "CREATE", "VALID");
+  const payload = buildGpdMessagePayload(
+      fiscalCode,
+      generatePositiveLong(),
+      "CREATE",
+      "VALID"
+  );
 
   const start = Date.now();
-  const res = http.post(endpoints.gpdMessage, JSON.stringify(payload),
-      {headers: headers});
+  let res = http.post(endpoints.gpdMessage, JSON.stringify(payload), {headers});
   const duration = Date.now() - start;
 
   responseTimeTrend.add(duration, tags);
@@ -101,10 +119,8 @@ export function sendMessage(data) {
     successCounter.add(1, tags);
   } else {
     failureCounter.add(1, tags);
-    if (Math.random() < 0.1) {
-      console.error(
-          `❌ VU #${__VU}: Failed send gpd message — Status ${res.status}`);
-    }
+    console.error(
+        `❌ VU #${__VU}: Failed send gpd message — Status ${res.status}`);
   }
 
   check(res, {
