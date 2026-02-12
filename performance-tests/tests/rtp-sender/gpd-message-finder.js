@@ -19,29 +19,9 @@ const VU_COUNT = Number(__ENV.VU_COUNT_SET) || 10;
 const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
-const REFRESH_EVERY_MS = 15 * 60 * 1000;
-const SKEW_MS = 15 * 1000;
-
 let consumerToken = null;
-let nextRefreshAt = 0;
-
-function ensureToken() {
-  const now = Date.now();
-
-  if (!consumerToken || now >= nextRefreshAt) {
-    const auth = setupAuth(ActorCredentials.RTP_CONSUMER);
-
-    consumerToken = auth.access_token;
-
-    if (auth.expires_in) {
-      nextRefreshAt = now + (auth.expires_in * 1000) - SKEW_MS;
-    } else {
-      nextRefreshAt = now + REFRESH_EVERY_MS - SKEW_MS;
-    }
-  }
-
-  return consumerToken;
-}
+let tokenCreatedAt = 0;
+const TOKEN_TTL = 15 * 60 * 1000;
 
 const activationFiscalCodes = Array.from(new Set(
     JSON.parse(open('../../json-file/rtp-activator/activations.json'))
@@ -92,10 +72,16 @@ export function sendMessage(data) {
 
   currentRPS.add(1, tags);
 
-  const token = ensureToken();
+  if (!consumerToken || (Date.now() - tokenCreatedAt) > TOKEN_TTL) {
+    const auth = setupAuth(ActorCredentials.RTP_CONSUMER);
+    consumerToken = auth.access_token;
+    tokenCreatedAt = Date.now();
+    console.log(`🔄 VU ${__VU} refreshed token`);
+  }
+
 
   const headers = {
-    ...buildHeaders(token),
+    ...buildHeaders(consumerToken),
     "Idempotency-Key": uuidv4()
   };
 
