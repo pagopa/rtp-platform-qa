@@ -27,8 +27,7 @@ const activationFiscalCodes = Array.from(new Set(
     .filter(fc => fc != null && fc !== '')
 )).map(String);
 
-const wrappedActivations = activationFiscalCodes.map(
-    fiscalCode => ({fiscalCode}));
+let consumerToken;
 
 const {
   currentRPS,
@@ -43,13 +42,13 @@ function randomItem(arr) {
 
 export const options = {
   ...getOptions('stress_test_fixed_user', 'sendMessage'),
-  setupTimeout: '5m',
+  setupTimeout: '2m',
   scenarios: {
     stress_test_fixed_user: {
       executor: 'shared-iterations',
       vus: VU_COUNT,
       iterations: ITERATIONS,
-      maxDuration: '30m',
+      maxDuration: '240m',
       gracefulStop: '30s',
       exec: 'sendMessage'
     }
@@ -57,10 +56,15 @@ export const options = {
 };
 
 export function setup() {
-  const consumerAuth = setupAuth(ActorCredentials.RTP_CONSUMER);
+
+  const wrappedActivations = activationFiscalCodes.map(
+      fiscalCode => ({fiscalCode}));
+
+  consumerToken = setupAuth(ActorCredentials.RTP_CONSUMER)
 
   return {
-    consumerToken: consumerAuth.access_token
+    fiscalCodes: wrappedActivations,
+    consumerToken
   }
 }
 
@@ -80,7 +84,7 @@ export function sendMessage(data) {
     "Idempotency-Key": uuidv4()
   };
 
-  const picked = randomItem(wrappedActivations);
+  const picked = randomItem(data.fiscalCodes);
   const fiscalCode = picked?.fiscalCode;
 
   const payload = buildGpdMessagePayload(fiscalCode,
