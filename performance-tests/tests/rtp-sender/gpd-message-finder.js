@@ -25,6 +25,12 @@ const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
 /** Optional sleep between iterations (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
+/** Creditor entity tax code. */
+const EC_TAX_CODE = String(__ENV.EC_TAX_CODE);
+
+/** Optional PSP tax code. If not provided, the value defaults to null. */
+const PSP_TAX_CODE = String(__ENVPSP_TAX_CODE) || null;
+
 /**
  * Per-VU authentication token management.
  * Each VU keeps its own token instance and refresh timestamp.
@@ -155,7 +161,9 @@ export function sendMessage(data) {
       fiscalCode,
       generatePositiveLong(),
       "CREATE",
-      "VALID"
+      "VALID",
+      EC_TAX_CODE,
+      PSP_TAX_CODE
   );
 
   const start = Date.now();

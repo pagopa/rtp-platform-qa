@@ -1,4 +1,4 @@
-import {generateIuv, randomNoticeNumber, replaceUuidWithoutDashes} from "./utils.js";
+import {addDays, generateNumericString, randomNoticeNumber, replaceUuidWithoutDashes} from "./utils.js";
 
 /**
  * Build the payload JSON for sending an RTP (Request To Pay).
@@ -94,35 +94,71 @@ export function buildCallbackPayload(resourceId) {
 }
 
 /**
- * Builds the payload for a GPD message request.
+ * Builds a GPD message payload used for stress test executions.
  *
- * Generates a timestamp and a random IUV internally.
- * Used to simulate CREATE/UPDATE/DELETE operations during stress tests.
+ * This helper is designed for performance testing scenarios and produces
+ * synthetic, non-production data.
  *
- * @param {string} debtorFiscalCode - Fiscal code of the debtor
- * @param {number|string} operationId - Unique operation identifier
- * @param {string} operation - Operation type (e.g. "CREATE")
- * @param {string} status - Message status (e.g. "VALID")
- * @returns {Object} GPD message payload body
+ * @example
+ * const payload = buildGpdMessagePayload(
+ *   "RSSMRA80A01H501U",      // debtorFiscalCode
+ *   generatePositiveLong(), // operationId
+ *   "CREATE",               // operation
+ *   "VALID",                // status
+ *   "80015010723",          // ecTaxCode
+ *   "12345678901"           // optional pspTaxCode
+ * );
+ *
+ * @param {string} debtorFiscalCode
+ *  Fiscal code of the debtor. Mapped to `debtor_tax_code` in the payload.
+ *
+ * @param {number|string} operationId
+ *  Unique identifier of the operation. Used as the `id` field and typically
+ *  generated per request to ensure idempotency during stress tests.
+ *
+ * @param {string} operation
+ *  Type of operation to be simulated (e.g. "CREATE", "UPDATE", "DELETE").
+ *
+ * @param {string} status
+ *  Business status of the message (e.g. "VALID").
+ *
+ * @param {string} ecTaxCode
+ *  Creditor entity tax code.
+ *
+ * @param {string} [psp_tax_code]
+ *  Optional PSP tax code. If not provided, the value defaults to null.
+ *
+ * @returns {Object}
+ *  Fully constructed GPD message payload ready to be serialized and sent.
  */
-export function buildGpdMessagePayload(debtorFiscalCode, operationId, operation, status ){
+
+export function buildGpdMessagePayload(
+    debtorFiscalCode,
+    operationId,
+    operation,
+    status,
+    ecTaxCode,
+    psp_tax_code) {
+
     const timestamp = Date.now();
-    const iuv = generateIuv();
+    const iuv = generateNumericString(17);
+    const dueDate = addDays(timestamp, 30);
+    const nav = generateNumericString(18);
 
     return {
         "id": operationId,
         "operation": operation,
         "timestamp": timestamp,
         "iuv": iuv,
-        "subject": "remittanceInformation 1",
-        "description": "Canone Unico Patrimoniale - CORPORATE - TEST",
-        "ec_tax_code": "80015010723",
+        "subject": "GPD Stress Test Remittance",
+        "description": "Automated stress test message - non production data",
+        "ec_tax_code": ecTaxCode,
         "debtor_tax_code": debtorFiscalCode,
-        "nav": "397704563415785664",
-        "due_date": 1761815347153000,
+        "nav": nav,
+        "due_date": dueDate,
         "amount": 30000,
         "status": status,
         "psp_code": null,
-        "psp_tax_code": null
+        "psp_tax_code": psp_tax_code ?? null
     }
 }

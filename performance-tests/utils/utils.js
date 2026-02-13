@@ -336,26 +336,33 @@ export function getOptions(scenarioName, execFunction) {
  * @returns {number} Random positive integer
  */
 export function generatePositiveLong(){
-  const min = 1;
-  const max = Number.MAX_SAFE_INTEGER;
-
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return randomIntBetween(1, Number.MAX_SAFE_INTEGER)
 }
 
 /**
- * Generates a numeric IUV string of fixed length.
+ * Generates a numeric string of fixed length.
  *
- * The first digit is guaranteed to be non-zero.
- * Remaining digits can range from 0 to 9.
+ * By default, the first digit is guaranteed to be non-zero.
  *
- * @param {number} [len=17] - Desired IUV length
- * @returns {string} Generated numeric IUV
+ * @param {number} len - Desired length
+ * @returns {string} Generated numeric string
  */
-export function generateIuv(len = 17) {
+export function generateNumericString(len) {
   let s = '';
   for (let i = 0; i < len; i++) {
     const d = i === 0 ? randomIntBetween(1, 9) : randomIntBetween(0, 9);
     s += String(d);
   }
   return s;
+}
+
+/**
+ * Adds days to an epoch timestamp expressed in milliseconds.
+ *
+ * @param {number} epochMs - Epoch timestamp in milliseconds
+ * @param {number} days - Days to add
+ * @returns {number} New epoch timestamp in milliseconds
+ */
+export function addDays(epochMs, days) {
+  return epochMs + (days * 24 * 60 * 60 * 1000);
 }
