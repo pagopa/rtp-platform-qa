@@ -196,3 +196,6 @@ allure-results/
 allure-report/
 allure-report/**
 aggregate/
+
+# EPC standard documentation PDFs
+EPC*.pdf
