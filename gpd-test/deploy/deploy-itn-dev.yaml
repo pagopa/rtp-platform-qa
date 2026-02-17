@@ -36,7 +36,7 @@ spec:
             - name: KEYVAULT_NAME
               value: cstar-d-itn-srtp-kv
             - name: EVENTHUB_SECRET_NAME
-              value: gdp-eventhub-connection-string
+              value: gpd-eventhub-connection-string
             - name: EVENTHUB_NAMESPACE
               value: pagopa-d-itn-gps-rtp-integration-evh
             - name: EVENTHUB_TOPIC

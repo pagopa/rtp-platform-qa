@@ -38,7 +38,6 @@ def generate_rfc_callback_data(
         assignee_bic = 'MOCKSP04'
     message_id = original_msg_id if original_msg_id else str(uuid.uuid4()).replace('-', '')
     resource_id = resource_id if resource_id else str(uuid.uuid4())
-    original_pmt_inf_id = resource_id
     cxl_sts_id = str(uuid.uuid4()).replace('-', '')
     original_end_to_end_id = f"302{'0' * 15}"
 
@@ -79,54 +78,109 @@ def generate_rfc_callback_data(
                         'CreDtTm': create_time,
                         'Id': message_id
                     },
-                    'CxlDtls': [
-                        {
-                            'OrgnlPmtInfAndSts': [
-                                {
-                                    'OrgnlPmtInfId': original_pmt_inf_id,
-                                    'CxlStsId': cxl_sts_id,
-                                    'CxlStsRsnInf': [
-                                        {
-                                            'AddtlInf': [
-                                                f'ATS005/ {execution_date}'
-                                            ],
-                                            'Orgtr': {
-                                                'Id': {
-                                                    'OrgId': {
-                                                        'AnyBIC': 'PPAYITR1XXX'
-                                                    }
+                    'CxlDtls': {
+                        'TxInfAndSts': [
+                            {
+                                'CxlStsId': cxl_sts_id,
+                                'CxlStsRsnInf': [
+                                    {
+                                        'AddtlInf': [
+                                            f'ATS005/ {execution_date}'
+                                        ],
+                                        'Orgtr': {
+                                            'Id': {
+                                                'OrgId': {
+                                                    'AnyBIC': BIC
                                                 }
                                             }
                                         }
-                                    ],
-                                    'OrgnlEndToEndId': original_end_to_end_id,
-                                    'OrgnlTxRef': {
-                                        'Amt': {
-                                            'InstdAmt': amount
-                                        },
-                                        'Cdtr': {
-                                            'Pty': {
-                                                'Nm': 'PagoPA'
-                                            }
-                                        },
-                                        'CdtrAcct': {
-                                            'Id': {
-                                                'IBAN': 'IT96K999999999900SRTPPAGOPA'
-                                            }
-                                        },
-                                        'DbtrAgt': {
-                                            'FinInstnId': {
-                                                'BICFI': BIC
-                                            }
-                                        },
-                                        'ReqdExctnDt': {
-                                            'Dt': f'{execution_date}Z'
-                                        }
                                     }
+                                ],
+                                'OrgnlEndToEndId': original_end_to_end_id,
+                                'OrgnlGrpInf': {
+                                    'OrgnlCreDtTm': create_time,
+                                    'OrgnlMsgId': message_id,
+                                    'OrgnlMsgNmId': 'pain.013.001.10'
+                                },
+                                'OrgnlInstrId': message_id,
+                                'OrgnlTxRef': {
+                                    'Amt': {
+                                        'InstdAmt': amount
+                                    },
+                                    'Cdtr': {
+                                        'Pty': {
+                                            'Id': {
+                                                'OrgId': {
+                                                    'Othr': [
+                                                        {
+                                                            'Id': creditor_id,
+                                                            'SchmeNm': {
+                                                                'Cd': 'BOID'
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            },
+                                            'Nm': 'PagoPA'
+                                        }
+                                    },
+                                    'CdtrAcct': {
+                                        'Id': {
+                                            'IBAN': 'IT96K999999999900SRTPPAGOPA'
+                                        }
+                                    },
+                                    'CdtrAgt': {
+                                        'FinInstnId': {
+                                            'Othr': {
+                                                'Id': creditor_id,
+                                                'SchmeNm': {
+                                                    'Cd': 'BOID'
+                                                }
+                                            }
+                                        }
+                                    },
+                                    'DbtrAgt': {
+                                        'FinInstnId': {
+                                            'BICFI': BIC
+                                        }
+                                    },
+                                    'PmtTpInf': {
+                                        'LclInstrm': {
+                                            'Prtry': 'PAGOPA'
+                                        },
+                                        'SvcLvl': [
+                                            {
+                                                'Cd': 'SRTP'
+                                            }
+                                        ]
+                                    },
+                                    'ReqdExctnDt': {
+                                        'Dt': f'{execution_date}Z'
+                                    },
+                                    'RmtInf': {
+                                        'Ustrd': [
+                                            'TEST IS 12'
+                                        ]
+                                    }
+                                },
+                                'RsltnRltdInf': {
+                                    'Chrgs': [
+                                        {
+                                            'Agt': {
+                                                'FinInstnId': {
+                                                    'BICFI': BIC
+                                                }
+                                            },
+                                            'Amt': {
+                                                'ActiveOrHistoricCurrencyAndAmount': amount,
+                                                'Ccy': 'EUR'
+                                            }
+                                        }
+                                    ]
                                 }
-                            ]
-                        }
-                    ],
+                            }
+                        ]
+                    },
                     'Sts': {
                         'Conf': status
                     }
