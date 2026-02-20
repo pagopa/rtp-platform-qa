@@ -220,8 +220,10 @@ This secret must be updated manually by admins when needed.
 `CREDITOR_AGENT_ID`- Creditor agent ID
 
 ### Mock Service Provider Configuration
-`DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64` - Base64 encoded PFX certificate for mock debtor service provider testing  
-`DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64` - Base64 encoded password for the mock debtor service provider PFX certificate  
+`DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64` - Base64 encoded PFX certificate for mock debtor service provider testing
+`DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64` - Base64 encoded password for the mock debtor service provider PFX certificate
+`MOCK_ACTC_FISCAL_CODE` - Fiscal code that triggers a synchronous ACTC (accepted) response from the mock (DS-05 scenario)
+`MOCK_RJCT_FISCAL_CODE` - Fiscal code that triggers a synchronous RJCT (rejected) response from the mock (DS-08P N scenario)
 
 ### Poste Configuration
 `POSTE_ACTIVATED_FISCAL_CODE` - Fiscal code for activated Poste Italiane services
