@@ -26,6 +26,7 @@ POSTE_SEND_URL = config.poste_send_url
 ICCREA_SEND_URL = config.iccrea_send_url
 GET_RTP_URL = config.rtp_creation_base_url_path + config.get_rtp_path
 GET_RTP_BY_NOTICE_NUMBER_URL = config.rtp_creation_base_url_path + config.get_rtp_by_notice_number_path
+GET_RTP_DELIVERY_STATUS_URL = config.rtp_creation_base_url_path + config.get_rtp_delivery_status_path
 LANDING_PAGE_URL = config.landing_page_path
 PAYEES_URL = config.rtp_creation_base_url_path + config.payees_registry_path
 PRODUCER_GPD_MESSAGE_URL = config.producer_gpd_message_base_url + config.send_gpd_message
