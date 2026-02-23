@@ -6,6 +6,7 @@ This module provides helper functions for interacting with RTP-related
 Functions:
     - get_rtp: Fetch an RTP resource by its RTP ID.
     - get_rtp_by_notice_number: Fetch an RTP resource by its notice number.
+    - get_rtp_delivery_status: Check the PD delivery status for a given notice number and payee ID.
 """
 import uuid
 
@@ -13,6 +14,7 @@ import requests
 
 from api.utils.api_version import GET_RTP_VERSION
 from api.utils.endpoints import GET_RTP_BY_NOTICE_NUMBER_URL
+from api.utils.endpoints import GET_RTP_DELIVERY_STATUS_URL
 from api.utils.endpoints import GET_RTP_URL
 from api.utils.http_utils import APPLICATION_JSON_HEADER
 from api.utils.http_utils import HTTP_TIMEOUT
@@ -67,6 +69,45 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str):
 
     resp = requests.get(
         url=GET_RTP_BY_NOTICE_NUMBER_URL,
+        params=params,
+        headers=headers,
+        timeout=HTTP_TIMEOUT,
+    )
+    return resp
+
+
+def get_rtp_delivery_status(access_token: str, notice_number: str, payee_id: str):
+    """
+    Check the PD delivery status for a given notice number and payee ID.
+
+    This endpoint always returns HTTP 200. The delivery outcome is encoded in the
+    response body:
+    - ``PD_RTP_DELIVERED``: an RTP with status SENT and no ERROR_SEND_RTP events
+      was found for the given noticeNumber/payeeId pair.
+    - ``PD_RTP_NOT_DELIVERED``: the notice number does not exist in the database,
+      the payeeId does not match, or the RTP was not successfully delivered.
+
+    Args:
+        access_token (str): Bearer token with the ``payee_read_rtp`` role.
+        notice_number (str): The NAV (notice number) identifying the debt position.
+        payee_id (str): The creditor entity identifier (e.g. EC fiscal code).
+
+    Returns:
+        requests.Response: The HTTP response object returned by the API.
+    """
+    headers = {
+        'Authorization': access_token,
+        'Version': GET_RTP_VERSION,
+        'RequestId': str(uuid.uuid4()),
+        **APPLICATION_JSON_HEADER,
+    }
+    params = {
+        'noticeNumber': notice_number,
+        'payeeId': payee_id,
+    }
+
+    resp = requests.get(
+        url=GET_RTP_DELIVERY_STATUS_URL,
         params=params,
         headers=headers,
         timeout=HTTP_TIMEOUT,

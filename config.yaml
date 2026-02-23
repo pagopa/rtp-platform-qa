@@ -42,6 +42,7 @@ cancel_rtp_path: "rtps/{rtp_id}/cancel"
 cancel_api_version: 'v1'
 get_rtp_path: "rtps/{rtpId}"
 get_rtp_by_notice_number_path: "rtps"
+get_rtp_delivery_status_path: "rtps/delivery-status"
 get_api_version: 'v1'
 
 # ============================
