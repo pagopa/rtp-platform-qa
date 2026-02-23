@@ -1,3 +1,4 @@
+import re
 import time
 
 import allure
@@ -13,6 +14,10 @@ from utils.generators_utils import generate_notice_number
 from utils.generators_utils import generate_random_organization_id
 
 _SEND_PROCESSING_WAIT_S = 5
+
+_PROCESSING_DATE_RE = re.compile(
+    r'^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$'
+)
 
 @allure.epic('RTP Get')
 @allure.feature('RTP Delivery Status')
@@ -71,8 +76,27 @@ def test_get_delivery_status_sent_rtp(
     assert body.get('status') == 'PD_RTP_DELIVERED', (
         f"Expected status='PD_RTP_DELIVERED', got status='{body.get('status')}'"
     )
-    assert body.get('processingDate') is not None, (
+
+    processing_date_str: str = body.get('processingDate')
+    assert processing_date_str is not None, (
         "Expected 'processingDate' to be non-null for a delivered RTP"
+    )
+    assert _PROCESSING_DATE_RE.match(processing_date_str), (
+        f"'processingDate' does not match ISO 8601 format: '{processing_date_str}'"
+    )
+
+    send_rtp_event = next(
+        (e for e in send_response.json().get('events', []) if e.get('triggerEvent') == 'SEND_RTP'),
+        None,
+    )
+    assert send_rtp_event is not None, (
+        'No SEND_RTP event found in the gpd message response events'
+    )
+
+    event_ts_ms = re.sub(r'(\.\d{3})\d*', r'\1', send_rtp_event['timestamp'])
+    assert processing_date_str == event_ts_ms, (
+        f"'processingDate' {processing_date_str!r} does not match "
+        f"SEND_RTP event timestamp {send_rtp_event['timestamp']!r}"
     )
 
 @allure.epic('RTP Get')
@@ -102,6 +126,9 @@ def test_get_delivery_status_notice_number_not_found(
     )
 
     body = delivery_response.json()
+    assert set(body.keys()) <= {'status', 'processingDate'}, (
+        f"Unexpected fields in response: {set(body.keys()) - {'status', 'processingDate'}}"
+    )
 
     assert body.get('status') == 'PD_RTP_NOT_DELIVERED', (
         f"Expected status='PD_RTP_NOT_DELIVERED', got status='{body.get('status')}'"
@@ -162,6 +189,9 @@ def test_get_delivery_status_wrong_payee_id(
     )
 
     body = delivery_response.json()
+    assert set(body.keys()) <= {'status', 'processingDate'}, (
+        f"Unexpected fields in response: {set(body.keys()) - {'status', 'processingDate'}}"
+    )
 
     assert body.get('status') == 'PD_RTP_NOT_DELIVERED', (
         f"Expected status='PD_RTP_NOT_DELIVERED', got status='{body.get('status')}'"
