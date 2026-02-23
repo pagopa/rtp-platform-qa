@@ -2,6 +2,7 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
+from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from config.configuration import config
 from config.configuration import secrets
@@ -108,3 +109,79 @@ def test_cannot_send_rtp_not_activated_user(creditor_service_provider_token_a):
         access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
     )
     assert send_response.status_code == 404
+
+
+@allure.epic('RTP Send')
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP with synchronous ACTC response')
+@allure.title('An RTP sent with synchronous acceptance is in status ACCEPTED - DS-05 ACTC')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'ds_05_actc')
+@pytest.mark.send
+@pytest.mark.happy_path
+def test_send_rtp_sync_accepted_ds05_actc(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    rtp_data = generate_rtp_data(payer_id=secrets.mock_actc_fiscal_code)
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data['payer']['payerId'],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), 'Error activating debtor'
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers['Location']
+    resource_id = location.split('/')[-1]
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    assert get_response.json()['status'] == 'ACCEPTED'
+
+
+@allure.epic('RTP Send')
+@allure.feature('RTP Send')
+@allure.story('Service provider sends an RTP with synchronous RJCT response')
+@allure.title('An RTP sent with synchronous rejection is in status REJECTED - DS-08P N')
+@allure.tag('functional', 'happy_path', 'rtp_send', 'ds_08p_n')
+@pytest.mark.send
+@pytest.mark.happy_path
+def test_send_rtp_sync_rejected_ds08p_n(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    rtp_data = generate_rtp_data(payer_id=secrets.mock_rjct_fiscal_code)
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data['payer']['payerId'],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), 'Error activating debtor'
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 422
+
+    location = send_response.headers['Location']
+    resource_id = location.split('/')[-1]
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    assert get_response.json()['status'] == 'REJECTED'
