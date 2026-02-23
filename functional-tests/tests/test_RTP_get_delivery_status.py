@@ -15,6 +15,9 @@ from utils.generators_utils import generate_random_organization_id
 
 _SEND_PROCESSING_WAIT_S = 5
 
+_STATUS_DELIVERED = 'PD_RTP_DELIVERED'
+_STATUS_NOT_DELIVERED = 'PD_RTP_NOT_DELIVERED'
+
 _PROCESSING_DATE_RE = re.compile(
     r'^((?:(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2}(?:\.\d+)?))(Z|[\+-]\d{2}:\d{2})?)$'
 )
@@ -35,8 +38,9 @@ def test_get_delivery_status_sent_rtp(
     when the rtp-sender processes it and the RTP reaches status SENT,
     when the payee queries the delivery-status endpoint with the correct noticeNumber
     (nav) and payeeId (ec_tax_code),
-    then the response body must contain status=PD_RTP_DELIVERED and a non-null
-    processingDate.
+    then the response body must contain status=PD_RTP_DELIVERED, a non-null processingDate
+    in ISO 8601 format, and processingDate must match the SEND_RTP event timestamp from
+    the GPD message response (truncated to millisecond precision).
     """
     fiscal_code: str = fake_fc()
 
@@ -73,8 +77,8 @@ def test_get_delivery_status_sent_rtp(
 
     body = delivery_response.json()
 
-    assert body.get('status') == 'PD_RTP_DELIVERED', (
-        f"Expected status='PD_RTP_DELIVERED', got status='{body.get('status')}'"
+    assert body.get('status') == _STATUS_DELIVERED, (
+        f"Expected status='{_STATUS_DELIVERED}', got status='{body.get('status')}'"
     )
 
     processing_date_str: str = body.get('processingDate')
@@ -102,7 +106,7 @@ def test_get_delivery_status_sent_rtp(
 @allure.epic('RTP Get')
 @allure.feature('RTP Delivery Status')
 @allure.story('Payee checks whether an RTP was delivered')
-@allure.title('Non-existent noticeNumber → PD_RTP_NOT_DELIVERED (non processata)')
+@allure.title('Non-existent noticeNumber → PD_RTP_NOT_DELIVERED')
 @allure.tag('functional', 'unhappy_path', 'get', 'rtp_get')
 @pytest.mark.get
 @pytest.mark.unhappy_path
@@ -112,8 +116,8 @@ def test_get_delivery_status_notice_number_not_found(
     """
     Given a noticeNumber that does not correspond to any RTP in the database,
     when the payee queries the delivery-status endpoint,
-    then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED and no
-    processingDate (the debt position is considered "non processata").
+    then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED and
+    processingDate absent or null.
     """
     delivery_response = get_rtp_delivery_status(
         access_token=debtor_service_provider_token_a,
@@ -130,8 +134,8 @@ def test_get_delivery_status_notice_number_not_found(
         f"Unexpected fields in response: {set(body.keys()) - {'status', 'processingDate'}}"
     )
 
-    assert body.get('status') == 'PD_RTP_NOT_DELIVERED', (
-        f"Expected status='PD_RTP_NOT_DELIVERED', got status='{body.get('status')}'"
+    assert body.get('status') == _STATUS_NOT_DELIVERED, (
+        f"Expected status='{_STATUS_NOT_DELIVERED}', got status='{body.get('status')}'"
     )
     assert body.get('processingDate') is None, (
         f"Expected 'processingDate' to be null or absent, got '{body.get('processingDate')}'"
@@ -193,8 +197,8 @@ def test_get_delivery_status_wrong_payee_id(
         f"Unexpected fields in response: {set(body.keys()) - {'status', 'processingDate'}}"
     )
 
-    assert body.get('status') == 'PD_RTP_NOT_DELIVERED', (
-        f"Expected status='PD_RTP_NOT_DELIVERED', got status='{body.get('status')}'"
+    assert body.get('status') == _STATUS_NOT_DELIVERED, (
+        f"Expected status='{_STATUS_NOT_DELIVERED}', got status='{body.get('status')}'"
     )
     assert body.get('processingDate') is None, (
         f"Expected 'processingDate' to be null or absent, got '{body.get('processingDate')}'"
