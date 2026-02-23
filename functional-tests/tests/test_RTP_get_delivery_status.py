@@ -5,9 +5,10 @@ import pytest
 
 from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp_delivery_status
-from api.RTP_send_api import send_rtp
+from api.RTP_process_sender import send_gpd_message
 from config.configuration import secrets
-from utils.dataset_RTP_data import generate_rtp_data
+from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.fiscal_code_utils import fake_fc
 from utils.generators_utils import generate_notice_number
 from utils.generators_utils import generate_random_organization_id
 
@@ -16,49 +17,49 @@ _SEND_PROCESSING_WAIT_S = 5
 @allure.epic('RTP Get')
 @allure.feature('RTP Delivery Status')
 @allure.story('Payee checks whether an RTP was delivered')
-@allure.title('RTP with status SENT → PD_RTP_DELIVERED with processingDate')
+@allure.title('GPD message sent → RTP SENT → PD_RTP_DELIVERED with processingDate')
 @allure.tag('functional', 'happy_path', 'get', 'rtp_get')
 @pytest.mark.get
 @pytest.mark.happy_path
 def test_get_delivery_status_sent_rtp(
     debtor_service_provider_token_a: str,
-    creditor_service_provider_token_a: str,
+    rtp_consumer_access_token: str,
 ) -> None:
     """
-    Given a debtor is activated and an RTP is sent successfully (status SENT),
-    when the payee queries the delivery-status endpoint with the correct
-    noticeNumber and payeeId,
+    Given a debtor is activated and a GPD message (CREATE) is sent via POST /gpd/message,
+    when the rtp-sender processes it and the RTP reaches status SENT,
+    when the payee queries the delivery-status endpoint with the correct noticeNumber
+    (nav) and payeeId (ec_tax_code),
     then the response body must contain status=PD_RTP_DELIVERED and a non-null
     processingDate.
     """
-    rtp_data = generate_rtp_data()
-    payer_id: str = rtp_data['payer']['payerId']
-    notice_number: str = rtp_data['paymentNotice']['noticeNumber']
-    payee_id: str = rtp_data['payee']['payeeId']
+    fiscal_code: str = fake_fc()
 
     activation_response = activate(
         debtor_service_provider_token_a,
-        payer_id,
+        fiscal_code,
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201, (
         f'Debtor activation failed: {activation_response.status_code} {activation_response.text}'
     )
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
+    message_payload = generate_gpd_message_payload(fiscal_code, 'CREATE')
+
+    send_response = send_gpd_message(
+        access_token=rtp_consumer_access_token,
+        message_payload=message_payload,
     )
-    assert send_response.status_code == 201, (
-        f'RTP send failed: {send_response.status_code} {send_response.text}'
+    assert send_response.status_code == 200, (
+        f'GPD message send failed: {send_response.status_code} {send_response.text}'
     )
 
     time.sleep(_SEND_PROCESSING_WAIT_S)
 
     delivery_response = get_rtp_delivery_status(
         access_token=debtor_service_provider_token_a,
-        notice_number=notice_number,
-        payee_id=payee_id,
+        notice_number=message_payload['nav'],
+        payee_id=message_payload['ec_tax_code'],
     )
 
     assert delivery_response.status_code == 200, (
@@ -73,7 +74,6 @@ def test_get_delivery_status_sent_rtp(
     assert body.get('processingDate') is not None, (
         "Expected 'processingDate' to be non-null for a delivered RTP"
     )
-
 
 @allure.epic('RTP Get')
 @allure.feature('RTP Delivery Status')
@@ -91,13 +91,10 @@ def test_get_delivery_status_notice_number_not_found(
     then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED and no
     processingDate (the debt position is considered "non processata").
     """
-    unknown_notice_number: str = generate_notice_number()
-    any_payee_id: str = generate_random_organization_id()
-
     delivery_response = get_rtp_delivery_status(
         access_token=debtor_service_provider_token_a,
-        notice_number=unknown_notice_number,
-        payee_id=any_payee_id,
+        notice_number=generate_notice_number(),
+        payee_id=generate_random_organization_id(),
     )
 
     assert delivery_response.status_code == 200, (
@@ -113,7 +110,6 @@ def test_get_delivery_status_notice_number_not_found(
         f"Expected 'processingDate' to be null or absent, got '{body.get('processingDate')}'"
     )
 
-
 @allure.epic('RTP Get')
 @allure.feature('RTP Delivery Status')
 @allure.story('Payee checks whether an RTP was delivered')
@@ -123,7 +119,7 @@ def test_get_delivery_status_notice_number_not_found(
 @pytest.mark.unhappy_path
 def test_get_delivery_status_wrong_payee_id(
     debtor_service_provider_token_a: str,
-    creditor_service_provider_token_a: str,
+    rtp_consumer_access_token: str,
 ) -> None:
     """
     Given an RTP is sent successfully (status SENT) for a given noticeNumber + payeeId,
@@ -132,35 +128,33 @@ def test_get_delivery_status_wrong_payee_id(
     then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED, verifying
     that the endpoint filters on both fields.
     """
-    rtp_data = generate_rtp_data()
-    payer_id: str = rtp_data['payer']['payerId']
-    notice_number: str = rtp_data['paymentNotice']['noticeNumber']
+    fiscal_code: str = fake_fc()
 
     activation_response = activate(
         debtor_service_provider_token_a,
-        payer_id,
+        fiscal_code,
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201, (
         f'Debtor activation failed: {activation_response.status_code} {activation_response.text}'
     )
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
+    message_payload = generate_gpd_message_payload(fiscal_code, 'CREATE')
+
+    send_response = send_gpd_message(
+        access_token=rtp_consumer_access_token,
+        message_payload=message_payload,
     )
-    assert send_response.status_code == 201, (
-        f'RTP send failed: {send_response.status_code} {send_response.text}'
+    assert send_response.status_code == 200, (
+        f'GPD message send failed: {send_response.status_code} {send_response.text}'
     )
 
     time.sleep(_SEND_PROCESSING_WAIT_S)
 
-    wrong_payee_id: str = generate_random_organization_id()
-
     delivery_response = get_rtp_delivery_status(
         access_token=debtor_service_provider_token_a,
-        notice_number=notice_number,
-        payee_id=wrong_payee_id,
+        notice_number=message_payload['nav'],
+        payee_id=generate_random_organization_id(),
     )
 
     assert delivery_response.status_code == 200, (
