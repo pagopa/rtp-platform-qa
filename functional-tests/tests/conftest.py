@@ -13,6 +13,7 @@ from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
 from api.auth_api import get_access_token
+from api.auth_api import get_keycloak_access_token
 from api.auth_api import get_valid_access_token
 from api.debtor_activation_api import activate
 from api.GPD_debt_position_api import create_debt_position
@@ -135,6 +136,94 @@ def pagopa_service_providers_registry_token() -> str:
         client_secret=secrets.pagopa_integration_service_registry.client_secret,
         access_token_function=get_access_token,
     )
+
+# ============================================================
+#  Keycloak access token fixtures
+# ============================================================
+
+@pytest.fixture
+def kc_debtor_service_provider_token_a() -> str:
+    """
+    Keycloak access token for Debtor Service Provider A.
+    """
+    return get_valid_access_token(
+        client_id=secrets.debtor_service_provider.client_id,
+        client_secret=secrets.debtor_service_provider.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def kc_debtor_service_provider_token_b() -> str:
+    """
+    Keycloak access token for Debtor Service Provider B.
+    """
+    return get_valid_access_token(
+        client_id=secrets.debtor_service_provider_B.client_id,
+        client_secret=secrets.debtor_service_provider_B.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def kc_creditor_service_provider_token_a() -> str:
+    """
+    Keycloak access token for Creditor Service Provider A.
+    """
+    return get_valid_access_token(
+        client_id=secrets.creditor_service_provider.client_id,
+        client_secret=secrets.creditor_service_provider.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def kc_rtp_reader_access_token() -> str:
+    """
+    Keycloak access token for RTP Reader client.
+    """
+    return get_valid_access_token(
+        client_id=secrets.rtp_reader.client_id,
+        client_secret=secrets.rtp_reader.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def kc_pagopa_payee_registry_token() -> str:
+    """
+    Keycloak access token for pagoPA payees registry client.
+    """
+    return get_valid_access_token(
+        client_id=secrets.pagopa_integration_payee_registry.client_id,
+        client_secret=secrets.pagopa_integration_payee_registry.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def kc_pagopa_service_providers_registry_token() -> str:
+    """
+    Keycloak access token for pagoPA service providers registry client.
+    """
+    return get_valid_access_token(
+        client_id=secrets.pagopa_integration_service_registry.client_id,
+        client_secret=secrets.pagopa_integration_service_registry.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def kc_sp_activations_read_all_token() -> str:
+    """
+    Keycloak access token for the RTP Activations Read All client.
+    """
+    return get_valid_access_token(
+        client_id=secrets.read_rtp_activations.client_id,
+        client_secret=secrets.read_rtp_activations.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
 
 # ============================================================
 #  Activation fixtures (create activation, cursor helpers)
