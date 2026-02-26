@@ -2,6 +2,7 @@ import allure
 import pytest
 
 from api.auth_api import get_access_token
+from api.auth_api import get_keycloak_access_token
 from config.configuration import secrets
 
 @allure.epic('Authentication')
@@ -73,4 +74,68 @@ def test_get_token_with_invalid_client_secret():
     invalid_client_secret = '000000000000000000000000000000000000'
     token_response = get_access_token(client_id=secrets.creditor_service_provider.client_id,
                                       client_secret=invalid_client_secret)
+    assert token_response.status_code == 401
+
+
+# ============================================================
+#  Keycloak token tests
+# ============================================================
+
+@allure.epic('Authentication')
+@allure.feature('Keycloak Authentication Token Retrieval')
+@allure.story('Service Provider Keycloak authentication')
+@allure.title('All Keycloak auth fixtures expose a valid Bearer token format')
+@allure.tag('functional', 'happy_path', 'authentication', 'keycloak', 'authentication_token')
+@pytest.mark.auth
+@pytest.mark.keycloak
+@pytest.mark.happy_path
+@pytest.mark.parametrize(
+    'token_fixture_name',
+    [
+        'kc_debtor_service_provider_token_a',
+        'kc_debtor_service_provider_token_b',
+        'kc_creditor_service_provider_token_a',
+        'kc_rtp_reader_access_token',
+        'kc_pagopa_payee_registry_token',
+        'kc_pagopa_service_providers_registry_token',
+        'kc_sp_activations_read_all_token',
+    ],
+)
+def test_all_kc_token_fixtures_return_bearer_tokens(request, token_fixture_name):
+    token = request.getfixturevalue(token_fixture_name)
+
+    assert isinstance(token, str), f'{token_fixture_name} must be a string'
+    assert token.startswith('Bearer '), f'{token_fixture_name} must start with "Bearer "'
+    assert len(token) > 7, f'{token_fixture_name} should not be empty after "Bearer "'
+
+
+@allure.epic('Authentication')
+@allure.feature('Keycloak Authentication Token Retrieval')
+@allure.story('Service Provider Keycloak authentication')
+@allure.title('A Service Provider with invalid client ID is not authenticated on Keycloak')
+@allure.tag('functional', 'unhappy_path', 'authentication', 'keycloak', 'authentication_token')
+@pytest.mark.auth
+@pytest.mark.keycloak
+@pytest.mark.unhappy_path
+def test_kc_get_token_with_invalid_client_id():
+
+    invalid_client_id = '00000000-0000-0000-0000-000000000000'
+    token_response = get_keycloak_access_token(client_id=invalid_client_id,
+                                               client_secret=secrets.creditor_service_provider.client_secret)
+    assert token_response.status_code == 401
+
+
+@allure.epic('Authentication')
+@allure.feature('Keycloak Authentication Token Retrieval')
+@allure.story('Service Provider Keycloak authentication')
+@allure.title('A Service Provider with invalid client secret is not authenticated on Keycloak')
+@allure.tag('functional', 'unhappy_path', 'authentication', 'keycloak', 'authentication_token')
+@pytest.mark.auth
+@pytest.mark.keycloak
+@pytest.mark.unhappy_path
+def test_kc_get_token_with_invalid_client_secret():
+
+    invalid_client_secret = '000000000000000000000000000000000000'
+    token_response = get_keycloak_access_token(client_id=secrets.creditor_service_provider.client_id,
+                                               client_secret=invalid_client_secret)
     assert token_response.status_code == 401
