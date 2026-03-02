@@ -246,7 +246,7 @@ def test_receive_rfc_callback_DS_12N_invalid(
     5. Cancel the RTP (RFC - Request for Cancellation)
     6. Send DS12N callback with CxlStsId INVALID (Invalid Cancellation Request)
     7. Verify callback is rejected with 400
-    8. Verify RTP status is still SENT
+    8. Verify RTP status is still RFC_SENT
     """
 
     rtp_data = generate_rtp_data()
@@ -293,4 +293,4 @@ def test_receive_rfc_callback_DS_12N_invalid(
     )
     assert get_response.status_code == 200
     body = get_response.json()
-    assert body['status'] == 'SENT', f"Expected status SENT, got {body['status']}"
+    assert body['status'] == 'RFC_SENT', f"Expected status RFC_SENT, got {body['status']}"
