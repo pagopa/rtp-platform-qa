@@ -15,9 +15,13 @@ from .generators_utils import generate_random_string
 from .iban_utils import generate_sepa_iban
 from .text_utils import generate_transaction_id
 from utils.text_utils import fake
+from utils.type_utils import JsonType
 
 
-def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
+RJCT_STATUS = 'RJCT'
+
+
+def generate_callback_data_DS_08N_compliant(bic: str = 'MOCKSP04') -> JsonType:
     """Generate a DS-08N compliant callback payload.
 
     The payload simulates an asynchronous SEPA Request-to-Pay response
@@ -26,13 +30,14 @@ def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
     links.
 
     Args:
-        BIC: Bank Identifier Code of the initiating party
+        bic: Bank Identifier Code of the initiating party
             (defaults to ``'MOCKSP04'``).
 
     Returns:
-        dict: JSON-serializable DS-08N compliant callback payload, ready
+        JsonType: JSON-serializable DS-08N compliant callback payload, ready
         to be used in tests.
     """
+
     message_id = str(uuid.uuid4())
     resource_id = f"TestRtpMessage{generate_random_string(16)}"
     original_msg_id = f"TestRtpMessage{generate_random_string(20)}"
@@ -55,7 +60,7 @@ def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
                     'GrpHdr': {
                         'MsgId': message_id,
                         'CreDtTm': create_time,
-                        'InitgPty': {'Id': {'OrgId': {'AnyBIC': BIC}}},
+                        'InitgPty': {'Id': {'OrgId': {'AnyBIC': bic}}},
                     },
                     'OrgnlGrpInfAndSts': {
                         'OrgnlMsgId': original_msg_id,
@@ -69,9 +74,9 @@ def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
                                 'StsId': message_id,
                                 'OrgnlInstrId': f"TestRtpMessage{generate_random_string(20)}",
                                 'OrgnlEndToEndId': generate_random_digits(18),
-                                'TxSts': 'RJCT',
+                                'TxSts': RJCT_STATUS,
                                 'StsRsnInf': {
-                                    'Orgtr': {'Id': {'OrgId': {'AnyBIC': BIC}}}
+                                    'Orgtr': {'Id': {'OrgId': {'AnyBIC': bic}}}
                                 },
                                 'OrgnlTxRef': {
                                     'PmtTpInf': {
@@ -100,8 +105,8 @@ def generate_callback_data_DS_08N_compliant(BIC: str = 'MOCKSP04') -> dict:
                                             }
                                         }
                                     },
-                                    'DbtrAgt': {'FinInstnId': {'BICFI': BIC}},
-                                    'CdtrAgt': {'FinInstnId': {'BICFI': BIC}},
+                                    'DbtrAgt': {'FinInstnId': {'BICFI': bic}},
+                                    'CdtrAgt': {'FinInstnId': {'BICFI': bic}},
                                     'CdtrAcct': {'Id': {'IBAN': generate_sepa_iban()}},
                                     'Amt': {'InstdAmt': amount},
                                     'ReqdExctnDt': {'Dt': f"{execution_date}Z"},
