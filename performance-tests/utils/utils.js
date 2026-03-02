@@ -238,7 +238,7 @@ progressiveOptions.scenarios.spike_test_fixed_user = {
  * Builds standard headers for API requests.
  * Includes authorization, content type, version, and request ID.
  *
- * @param {string} token - Access token for Bearer authentication
+ * @param {{access_token: string}} token - Access token for Bearer authentication
  * @returns {Object} Headers object for HTTP requests
  */
 export function buildHeaders(token) {
