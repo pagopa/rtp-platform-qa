@@ -33,7 +33,7 @@ def generate_invalid_callback_data_DS_08P(bic: str = 'MOCKSP04') -> JsonType:
         bic: Bank Identifier Code of the initiating party (default: 'MOCKSP04').
 
     Returns:
-        JsonType: JSON-serializable DS-08N compliant callback payload with:
+        JsonType: JSON-serializable DS-08P compliant callback payload with:
             - ``resourceId``: unique identifier of the RTP message.
             - ``AsynchronousSepaRequestToPayResponse``: nested SEPA structure
               containing group header, original message info and status.
