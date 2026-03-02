@@ -22,29 +22,24 @@ def sanitize_text(text: str) -> str:
     if not isinstance(text, str):
         return text
 
-    # Pattern 1: Bearer tokens (any length >= 20 chars)
     text = re.sub(
         r'Bearer\s+[A-Za-z0-9_\-\.]{20,}',
         'Bearer ***REDACTED***',
         text
     )
 
-    # Pattern 2: JWT tokens (header.payload.signature format)
-    # Matches eyJ... (base64 header) followed by .eyJ... (base64 payload)
     text = re.sub(
         r'eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-\.]{10,}',
         '***REDACTED_JWT***',
         text
     )
 
-    # Pattern 3: Standalone eyJ... patterns (JWT fragments)
     text = re.sub(
         r'\beyJ[A-Za-z0-9_\-\.]{20,}',
         '***REDACTED_JWT***',
         text
     )
 
-    # Pattern 4: Authorization header values
     text = re.sub(
         r'(Authorization["\']?\s*:\s*["\']?)([A-Za-z0-9_\-\.]{30,})',
         r'\1***REDACTED***',
