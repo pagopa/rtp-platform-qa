@@ -3,6 +3,7 @@
 Script to sanitize bearer tokens and JWT patterns from Allure JSON results.
 This is run as a post-processing step before publishing reports to gh-pages.
 """
+import argparse
 import json
 import re
 import sys
@@ -23,25 +24,25 @@ def sanitize_text(text: str) -> str:
         return text
 
     text = re.sub(
-        r'Bearer\s+[A-Za-z0-9_\-\.]{20,}',
+        r'Bearer\s+([\w-]*\.[\w-]*\.[\w-]*)',
         'Bearer ***REDACTED***',
         text
     )
 
     text = re.sub(
-        r'eyJ[A-Za-z0-9_\-]{10,}\.eyJ[A-Za-z0-9_\-\.]{10,}',
+        r'eyJ[\w-]*\.eyJ[\w-]*\.[\w-]*',
         '***REDACTED_JWT***',
         text
     )
 
     text = re.sub(
-        r'\beyJ[A-Za-z0-9_\-\.]{20,}',
+        r'\beyJ([\w-]*\.[\w-]*\.[\w-]*)',
         '***REDACTED_JWT***',
         text
     )
 
     text = re.sub(
-        r'(Authorization["\']?\s*:\s*["\']?)([A-Za-z0-9_\-\.]{30,})',
+        r'(Authorization["\']?\s*:\s*["\']?)([\w-]*\.[\w-]*\.[\w-]*)',
         r'\1***REDACTED***',
         text
     )
@@ -97,10 +98,11 @@ def main():
     """
     Main function to sanitize all JSON files in allure-results directory.
     """
-    if len(sys.argv) > 1:
-        allure_results_dir = Path(sys.argv[1])
-    else:
-        allure_results_dir = Path('allure-results')
+    parser = argparse.ArgumentParser(description='Sanitize bearer tokens and JWTs from Allure JSON results.')
+    parser.add_argument('results_dir', nargs='?', default='allure-results', help='Path to allure-results directory (default: allure-results)')
+    args = parser.parse_args()
+
+    allure_results_dir = Path(args.results_dir)
 
     if not allure_results_dir.exists():
         print(f"❌ Error: Directory {allure_results_dir} does not exist")

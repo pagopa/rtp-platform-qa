@@ -5,8 +5,8 @@ def sanitize_bearer_token(text: str) -> str:
     if not text or not isinstance(text, str):
         return text
 
-    text = re.sub(r'Bearer\s+[A-Za-z0-9_\-\.]{20,}', 'Bearer ***REDACTED***', text)
+    text = re.sub(r'Bearer\s+([\w-]*\.[\w-]*\.[\w-]*)', 'Bearer ***REDACTED***', text)
 
-    text = re.sub(r'\beyJ[A-Za-z0-9_\-\.]{20,}', '***REDACTED_JWT***', text)
+    text = re.sub(r'\beyJ([\w-]*\.[\w-]*\.[\w-]*)', '***REDACTED_JWT***', text)
 
     return text
