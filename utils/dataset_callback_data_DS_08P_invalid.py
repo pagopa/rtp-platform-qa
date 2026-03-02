@@ -1,7 +1,7 @@
-"""Utility to generate DS-08P compliant callback payloads for tests.
+"""Utility to generate DS-08P invalid callback payloads for tests.
 
 The generated payload mimics the callback sent for an asynchronous SEPA
-Request-to-Pay response with a rejected transaction status.
+Request-to-Pay response with an invalid transaction status.
 """
 import random
 import uuid
