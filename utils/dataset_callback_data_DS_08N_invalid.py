@@ -1,7 +1,7 @@
 """Utility to generate DS-08N compliant callback payloads for tests.
 
 The generated payload mimics the callback sent for an asynchronous SEPA
-Request-to-Pay response with a rejected transaction status.
+Request-to-Pay response with an invalid transaction status.
 """
 import random
 import uuid
@@ -18,14 +18,14 @@ from utils.text_utils import fake
 from utils.type_utils import JsonType
 
 
-RJCT_STATUS = 'RJCT'
+INVALID_STATUS = 'INVALID'
 
 
-def generate_callback_data_DS_08N_compliant(bic: str = 'MOCKSP04') -> JsonType:
-    """Generate a DS-08N compliant callback payload.
+def generate_invalid_callback_data_DS_08N(bic: str = 'MOCKSP04') -> JsonType:
+    """Generate a DS-08N non compliant callback payload.
 
     The payload simulates an asynchronous SEPA Request-to-Pay response
-    with a rejected transaction status (``TxSts: RJCT``), including group
+    with an invalid transaction status (``TxSts: INVALID``), including group
     header, original message information, payment details and HAL-style
     links.
 
@@ -74,7 +74,7 @@ def generate_callback_data_DS_08N_compliant(bic: str = 'MOCKSP04') -> JsonType:
                                 'StsId': message_id,
                                 'OrgnlInstrId': f"TestRtpMessage{generate_random_string(20)}",
                                 'OrgnlEndToEndId': generate_random_digits(18),
-                                'TxSts': RJCT_STATUS,
+                                'TxSts': INVALID_STATUS,
                                 'StsRsnInf': {
                                     'Orgtr': {'Id': {'OrgId': {'AnyBIC': bic}}}
                                 },
