@@ -109,6 +109,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest functional-tests/tests/ --alluredir allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save functional test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_functional_test_results
@@ -166,6 +170,10 @@ jobs:
         continue-on-error: true
         run: |
           behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save BDD test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_bdd_test_results
@@ -226,6 +234,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest ux-tests/tests/ --alluredir allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save UX test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_ux_test_results
@@ -283,6 +295,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest contract-tests/ --disable-warnings --alluredir allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save contract test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_contract_test_results
