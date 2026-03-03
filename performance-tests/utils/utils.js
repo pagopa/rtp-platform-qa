@@ -83,7 +83,7 @@ function retrieveActorClientCredentials(actor) {
 /**
  * Sets up authentication for API requests using environment variables related to given actor.
  *
- * @param {ActorCredentials} actor - The actor to fetch credentials for
+ * @param {string} actor - The actor to fetch credentials for
  * @returns {Object} Object containing the access_token
  * @throws {Error} If required environment variables are missing
  */
