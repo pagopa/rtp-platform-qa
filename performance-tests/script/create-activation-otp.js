@@ -49,12 +49,12 @@ export function setup(){
   for (let i = 0; i < TARGET_REQUESTS; i++) {
 
     const fiscalCode = randomFiscalCode();
-    let headers = { ...buildHeaders(fakeSpToken), 'Content-Type': 'application/json' };
+    let headers = { ...buildHeaders(fakeSpToken)};
     let payload = { payer: {fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_FAKE}};
     let res = http.post(url, JSON.stringify(payload), { headers });
 
     if (res.status === 201){
-      headers = { ...buildHeaders(mockSpToken), 'Content-Type': 'application/json' };
+      headers = { ...buildHeaders(mockSpToken)};
       payload = { payer: {fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_MOCK}};
       res = http.post(url, JSON.stringify(payload), {headers});
 
