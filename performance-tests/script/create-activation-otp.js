@@ -7,63 +7,84 @@ import {
   setupAuth
 } from "../utils/utils.js";
 
-const DEBTOR_SERVICE_PROVIDER_ID_MOCK = __ENV.DEBTOR_SERVICE_PROVIDER_ID_MOCK;
 const DEBTOR_SERVICE_PROVIDER_ID_FAKE = __ENV.DEBTOR_SERVICE_PROVIDER_ID_FAKE;
+const DEBTOR_SERVICE_PROVIDER_ID_MOCK = __ENV.DEBTOR_SERVICE_PROVIDER_ID_MOCK;
 
 const TARGET_REQUESTS = Number(__ENV.TARGET_REQUESTS) || 1000;
 const FILE_PATH = 'json-file/rtp-activator/activation-otps.json';
 
+let fakeSpToken = null;
+let fakeSpTokenCreatedAt = 0;
+
+let mockSpToken = null;
+let mockSpTokenCreatedAt = 0;
+
+const TOKEN_TTL = 4 * 60 * 1000;
+
 let otps = [];
 
 export const options = {
-  vus: 1,
-  iterations: TARGET_REQUESTS,
   setupTimeout: "30m",
 };
 
-export function setup() {
-  const DEBTOR_TOKEN_MOCK = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
-  const DEBTOR_TOKEN_FAKE = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+export function setup(){
 
-  return { DEBTOR_TOKEN_MOCK, DEBTOR_TOKEN_FAKE };
-}
+  if (!fakeSpToken || (Date.now() - fakeSpTokenCreatedAt) > TOKEN_TTL) {
+    const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER_FAKESP);
+    fakeSpToken = auth.access_token;
+    fakeSpTokenCreatedAt = Date.now();
+    console.log(`🔄 VU ${__VU} refreshed token`);
+  }
 
-export default function createActivationOtp(data) {
-  const { DEBTOR_TOKEN_MOCK, DEBTOR_TOKEN_FAKE } = data;
-
-  let headers = { ...buildHeaders(DEBTOR_TOKEN_FAKE), 'Content-Type': 'application/json' };
-  const fiscalCode = randomFiscalCode();
-
-  let payload = {
-    payer: { fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_FAKE }
-  };
+  if (!mockSpToken || (Date.now() - mockSpTokenCreatedAt) > TOKEN_TTL) {
+    const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+    mockSpToken = auth.access_token;
+    mockSpTokenCreatedAt = Date.now();
+    console.log(`🔄 VU ${__VU} refreshed token`);
+  }
 
   const url = endpoints.activations;
-  let res = http.post(url, JSON.stringify(payload), { headers });
+  const otps = [];
 
-  if (res.status !== 201) return;
+  for (let i = 0; i < TARGET_REQUESTS; i++) {
 
-  headers = { ...buildHeaders(DEBTOR_TOKEN_MOCK), 'Content-Type': 'application/json' };
-  payload = {
-    payer: { fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_MOCK }
-  };
+    const fiscalCode = randomFiscalCode();
+    let headers = { ...buildHeaders(fakeSpToken), 'Content-Type': 'application/json' };
+    let payload = { payer: {fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_FAKE}};
+    let res = http.post(url, JSON.stringify(payload), { headers });
 
-  res = http.post(url, JSON.stringify(payload), { headers });
+    if (res.status === 201){
+      headers = { ...buildHeaders(mockSpToken), 'Content-Type': 'application/json' };
+      payload = { payer: {fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_MOCK}};
+      res = http.post(url, JSON.stringify(payload), {headers});
 
-  if (res.status === 409) {
-    const location = res.headers['Location'] || res.headers['location'];
-    if (!location) {
-      console.warn('409 without Location header');
-      return;
+      if (res.status === 409) {
+        const location = res.headers['Location'] || res.headers['location'];
+        if (!location) {
+          console.warn(`409 without location. Body: ${res.body}`);
+          return;
+        }
+        const otp = location.split('/').pop();
+        otps.push(otp);
+      }
+      else {
+        console.error(`Second call: expected 409, got ${res.status}`);
+      }
+
     }
-    const otp = location.split('/').pop();
-    otps.push(otp);
+    else {
+      console.error(`First call: expected 201, got ${res.status}`);
+    }
   }
+
+  console.log(`✅ Generated OTPs: ${otps.length}/${TARGET_REQUESTS}`);
+  return otps;
 }
 
-export function handleSummary(summaryData) {
+export default function () {}
+
+export function handleSummary(data) {
+  const otps = data.setup_data || [];
   console.log(`💾 Saving ${otps.length} OTPs to file: ${FILE_PATH}`);
-  return {
-    [FILE_PATH]: JSON.stringify(otps, null, 2),
-  };
+  return { [FILE_PATH]: JSON.stringify(otps, null, 2) };
 }

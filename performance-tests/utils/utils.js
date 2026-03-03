@@ -8,6 +8,7 @@ import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 export const ActorCredentials = {
   DEBTOR_SERVICE_PROVIDER: 'DEBTOR_SERVICE_PROVIDER',
+  DEBTOR_SERVICE_PROVIDER_FAKESP: "DEBTOR_SERVICE_PROVIDER_FAKESP",
   CREDITOR_SERVICE_PROVIDER: 'CREDITOR_SERVICE_PROVIDER',
   SERVICE_REGISTRY_READER: 'SERVICE_REGISTRY_READER',
   PAGOPA_INTEGRATION_PAYEE_REGISTRY: 'PAGOPA_INTEGRATION_PAYEE_REGISTRY',
@@ -19,6 +20,10 @@ const ACTOR_CREDENTIALS_MAP = {
   [ActorCredentials.DEBTOR_SERVICE_PROVIDER]: {
     clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
     clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
+  },
+  [ActorCredentials.DEBTOR_SERVICE_PROVIDER_FAKESP]: {
+    clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID_FAKESP,
+    clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET_FAKESP,
   },
   [ActorCredentials.CREDITOR_SERVICE_PROVIDER]: {
     clientId: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_ID,
@@ -238,7 +243,7 @@ progressiveOptions.scenarios.spike_test_fixed_user = {
  * Builds standard headers for API requests.
  * Includes authorization, content type, version, and request ID.
  *
- * @param {{access_token: string}} token - Access token for Bearer authentication
+ * @param {string} token - Access token for Bearer authentication
  * @returns {Object} Headers object for HTTP requests
  */
 export function buildHeaders(token) {
