@@ -1,1 +1,0 @@
-[{"uid":"2307d080077be12b","name":"Whitespaces is allowed in description and company name field","time":{"start":1772175374955,"stop":1772175375704,"duration":749},"status":"passed","severity":"normal"},{"uid":"24560de6f4915356","name":"RTP form is filled and submitted","time":{"start":1772175365389,"stop":1772175374913,"duration":9524},"status":"failed","severity":"normal"}]

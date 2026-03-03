@@ -1,1 +1,393 @@
-{"uid":"727dd30da39d97d8","name":"Test Takeover Fails with Wrong SP Token","fullName":"functional-tests.tests.test_debtor_takeover#test_takeover_with_token_of_wrong_sp_forbidden","historyId":"7ac88e32e7f012f23f5ab9c9d3ee8793","time":{"start":1772529965395,"stop":1772529966769,"duration":1374},"description":"Authenticated but not authorized: token of SP A tries to use OTP issued for SP B","descriptionHtml":"<p>Authenticated but not authorized: token of SP A tries to use OTP issued for SP B</p>\n","status":"passed","flaky":false,"newFailed":false,"newBroken":false,"newPassed":false,"retriesCount":0,"retriesStatusChange":false,"beforeStages":[{"name":"_session_faker","time":{"start":1772529698830,"stop":1772529698923,"duration":93},"status":"passed","steps":[],"attachments":[],"parameters":[],"stepsCount":0,"shouldDisplayMessage":false,"attachmentsCount":0,"hasContent":false,"attachmentStep":false},{"name":"debtor_service_provider_token_a","time":{"start":1772529964540,"stop":1772529964978,"duration":438},"status":"passed","steps":[],"attachments":[],"parameters":[],"stepsCount":0,"shouldDisplayMessage":false,"attachmentsCount":0,"hasContent":false,"attachmentStep":false},{"name":"random_fiscal_code","time":{"start":1772529964540,"stop":1772529964540,"duration":0},"status":"passed","steps":[],"attachments":[],"parameters":[],"stepsCount":0,"shouldDisplayMessage":false,"attachmentsCount":0,"hasContent":false,"attachmentStep":false},{"name":"debtor_service_provider_token_b","time":{"start":1772529964978,"stop":1772529965395,"duration":417},"status":"passed","steps":[],"attachments":[],"parameters":[],"stepsCount":0,"shouldDisplayMessage":false,"attachmentsCount":0,"hasContent":false,"attachmentStep":false}],"afterStages":[],"labels":[{"name":"epic","value":"Debtor Takeover"},{"name":"story","value":"Takeover fails because of wrong SP token"},{"name":"tag","value":"activation"},{"name":"tag","value":"takeover"},{"name":"tag","value":"functional"},{"name":"feature","value":"Takeover unhappy path"},{"name":"tag","value":"unhappy_path"},{"name":"tag","value":"unhappy_path"},{"name":"tag","value":"functional"},{"name":"parentSuite","value":"functional-tests.tests"},{"name":"suite","value":"test_debtor_takeover"},{"name":"host","value":"runnervmnay03"},{"name":"thread","value":"2695-MainThread"},{"name":"framework","value":"pytest"},{"name":"language","value":"cpython3"},{"name":"package","value":"functional-tests.tests.test_debtor_takeover"},{"name":"resultFormat","value":"allure2"}],"parameters":[],"links":[],"hidden":false,"retry":false,"extra":{"severity":"normal","retries":[],"categories":[],"history":{"statistic":{"failed":3,"broken":0,"skipped":0,"passed":141,"unknown":0,"total":144},"items":[{"uid":"4a5e38368551a64e","reportUrl":"https://pagopa.github.io/rtp-platform-qa/846/#testresult/4a5e38368551a64e","status":"passed","time":{"start":1772520465052,"stop":1772520466286,"duration":1234}},{"uid":"3fb0979dd265f6eb","reportUrl":"https://pagopa.github.io/rtp-platform-qa/845/#testresult/3fb0979dd265f6eb","status":"passed","time":{"start":1772467376865,"stop":1772467378669,"duration":1804}},{"uid":"36a7ef777f8da3a7","reportUrl":"https://pagopa.github.io/rtp-platform-qa/844/#testresult/36a7ef777f8da3a7","status":"passed","time":{"start":1772466778302,"stop":1772466779800,"duration":1498}},{"uid":"7fa6459cfa111e24","reportUrl":"https://pagopa.github.io/rtp-platform-qa/843/#testresult/7fa6459cfa111e24","status":"passed","time":{"start":1772460074621,"stop":1772460076584,"duration":1963}},{"uid":"ee51e00975da9cc7","reportUrl":"https://pagopa.github.io/rtp-platform-qa/842/#testresult/ee51e00975da9cc7","status":"failed","statusDetails":"AssertionError: assert 503 == 201\n +  where 503 = <Response [503]>.status_code\n +    where <Response [503]> = activate_with_sp_a('Bearer eyJraWQiOiJiM2MxOWIxODA0ODg0ZGFjOGViYjY3NDhlODcyZDE0ZS83ZjFkZWQzZWQ4OTA0MzEyOTYwMjU5MDIxZjY3Y2I0MCIsImFsZyI6Il...4EkHNTVqZkMLAF8nFJ1TqYZPSY2BJzlv-7sTAY_SFtf0O9OA8bNvn3oEVWyDj33CgWVwG9I4qUDa6sUPllatmhPQW-VGtzyP89OlNyrRpz2oU9hGA4OD14', 'BDNDRA20E11X000N')","time":{"start":1772434388033,"stop":1772434388403,"duration":370}},{"uid":"6e8aeb630a224d8b","reportUrl":"https://pagopa.github.io/rtp-platform-qa/841/#testresult/6e8aeb630a224d8b","status":"failed","statusDetails":"AssertionError: assert 503 == 201\n +  where 503 = <Response [503]>.status_code\n +    where <Response [503]> = activate_with_sp_a('Bearer eyJraWQiOiJiM2MxOWIxODA0ODg0ZGFjOGViYjY3NDhlODcyZDE0ZS83ZjFkZWQzZWQ4OTA0MzEyOTYwMjU5MDIxZjY3Y2I0MCIsImFsZyI6Il...fH3ek8KJ5ip5JJBAcCGo35GDhlTwopTTrFD7EEejuDPkX_5n3UdAv7IzeEbXNZfl-6WD3hvfdeYRv3xaDc40K9c__Fo-ft6mirv5GoQifteCjBqZ43wG6c', 'GNSGCB66P46X000L')","time":{"start":1772347347083,"stop":1772347347458,"duration":375}},{"uid":"987a8d5964dff100","reportUrl":"https://pagopa.github.io/rtp-platform-qa/840/#testresult/987a8d5964dff100","status":"failed","statusDetails":"AssertionError: assert 503 == 201\n +  where 503 = <Response [503]>.status_code\n +    where <Response [503]> = activate_with_sp_a('Bearer eyJraWQiOiJiM2MxOWIxODA0ODg0ZGFjOGViYjY3NDhlODcyZDE0ZS83ZjFkZWQzZWQ4OTA0MzEyOTYwMjU5MDIxZjY3Y2I0MCIsImFsZyI6Il...PfdINUk5lTb4mIMMlgNLqL9LpoHKRNtR4Fs5cV6-E9Xfan-jVL-sqtjb2nFS63Ygr6XcNu-u0KuAon_WVEYL7oQWFo4LRaqemWmKb4q-2kcq6hoZtvBdYg', 'SCHGSI92P60X000L')","time":{"start":1772260412102,"stop":1772260412550,"duration":448}},{"uid":"ec9eb5a5c67b4acc","reportUrl":"https://pagopa.github.io/rtp-platform-qa/839/#testresult/ec9eb5a5c67b4acc","status":"passed","time":{"start":1772175043138,"stop":1772175044690,"duration":1552}},{"uid":"3be49edfa16426e6","reportUrl":"https://pagopa.github.io/rtp-platform-qa/838/#testresult/3be49edfa16426e6","status":"passed","time":{"start":1772089105634,"stop":1772089106845,"duration":1211}},{"uid":"690bd861698e0cba","reportUrl":"https://pagopa.github.io/rtp-platform-qa/837/#testresult/690bd861698e0cba","status":"passed","time":{"start":1772002936442,"stop":1772002937994,"duration":1552}},{"uid":"2a2b40a19dac1fcd","reportUrl":"https://pagopa.github.io/rtp-platform-qa/836/#testresult/2a2b40a19dac1fcd","status":"passed","time":{"start":1771916348364,"stop":1771916349912,"duration":1548}},{"uid":"b8ad2eda1f347a28","reportUrl":"https://pagopa.github.io/rtp-platform-qa/835/#testresult/b8ad2eda1f347a28","status":"passed","time":{"start":1771865564594,"stop":1771865566550,"duration":1956}},{"uid":"d5d924d9acc2a45f","reportUrl":"https://pagopa.github.io/rtp-platform-qa/834/#testresult/d5d924d9acc2a45f","status":"passed","time":{"start":1771830118947,"stop":1771830120818,"duration":1871}},{"uid":"2a83f62715c3e2a3","reportUrl":"https://pagopa.github.io/rtp-platform-qa/833/#testresult/2a83f62715c3e2a3","status":"passed","time":{"start":1771742765097,"stop":1771742766753,"duration":1656}},{"uid":"336234dba20e572c","reportUrl":"https://pagopa.github.io/rtp-platform-qa/832/#testresult/336234dba20e572c","status":"passed","time":{"start":1771656074584,"stop":1771656076321,"duration":1737}},{"uid":"a608c86fa57e02f","reportUrl":"https://pagopa.github.io/rtp-platform-qa/831/#testresult/a608c86fa57e02f","status":"passed","time":{"start":1771594746428,"stop":1771594747730,"duration":1302}},{"uid":"d6cc7d204aa12908","reportUrl":"https://pagopa.github.io/rtp-platform-qa/830/#testresult/d6cc7d204aa12908","status":"passed","time":{"start":1771570410256,"stop":1771570411424,"duration":1168}},{"uid":"678683f54eeec027","reportUrl":"https://pagopa.github.io/rtp-platform-qa/829/#testresult/678683f54eeec027","status":"passed","time":{"start":1771484299095,"stop":1771484300533,"duration":1438}},{"uid":"3f4944f3ab2cfadc","reportUrl":"https://pagopa.github.io/rtp-platform-qa/828/#testresult/3f4944f3ab2cfadc","status":"passed","time":{"start":1771398053011,"stop":1771398054541,"duration":1530}},{"uid":"c091b2cb5e849220","reportUrl":"https://pagopa.github.io/rtp-platform-qa/827/#testresult/c091b2cb5e849220","status":"passed","time":{"start":1771316112185,"stop":1771316114722,"duration":2537}}]},"tags":["functional","takeover","activation","unhappy_path"]},"source":"727dd30da39d97d8.json","parameterValues":[]}
+{
+  "uid": "727dd30da39d97d8",
+  "name": "Test Takeover Fails with Wrong SP Token",
+  "fullName": "functional-tests.tests.test_debtor_takeover#test_takeover_with_token_of_wrong_sp_forbidden",
+  "historyId": "7ac88e32e7f012f23f5ab9c9d3ee8793",
+  "time": {
+    "start": 1772529965395,
+    "stop": 1772529966769,
+    "duration": 1374
+  },
+  "description": "Authenticated but not authorized: token of SP A tries to use OTP issued for SP B",
+  "descriptionHtml": "<p>Authenticated but not authorized: token of SP A tries to use OTP issued for SP B</p>\n",
+  "status": "passed",
+  "flaky": false,
+  "newFailed": false,
+  "newBroken": false,
+  "newPassed": false,
+  "retriesCount": 0,
+  "retriesStatusChange": false,
+  "beforeStages": [
+    {
+      "name": "_session_faker",
+      "time": {
+        "start": 1772529698830,
+        "stop": 1772529698923,
+        "duration": 93
+      },
+      "status": "passed",
+      "steps": [],
+      "attachments": [],
+      "parameters": [],
+      "stepsCount": 0,
+      "shouldDisplayMessage": false,
+      "attachmentsCount": 0,
+      "hasContent": false,
+      "attachmentStep": false
+    },
+    {
+      "name": "debtor_service_provider_token_a",
+      "time": {
+        "start": 1772529964540,
+        "stop": 1772529964978,
+        "duration": 438
+      },
+      "status": "passed",
+      "steps": [],
+      "attachments": [],
+      "parameters": [],
+      "stepsCount": 0,
+      "shouldDisplayMessage": false,
+      "attachmentsCount": 0,
+      "hasContent": false,
+      "attachmentStep": false
+    },
+    {
+      "name": "random_fiscal_code",
+      "time": {
+        "start": 1772529964540,
+        "stop": 1772529964540,
+        "duration": 0
+      },
+      "status": "passed",
+      "steps": [],
+      "attachments": [],
+      "parameters": [],
+      "stepsCount": 0,
+      "shouldDisplayMessage": false,
+      "attachmentsCount": 0,
+      "hasContent": false,
+      "attachmentStep": false
+    },
+    {
+      "name": "debtor_service_provider_token_b",
+      "time": {
+        "start": 1772529964978,
+        "stop": 1772529965395,
+        "duration": 417
+      },
+      "status": "passed",
+      "steps": [],
+      "attachments": [],
+      "parameters": [],
+      "stepsCount": 0,
+      "shouldDisplayMessage": false,
+      "attachmentsCount": 0,
+      "hasContent": false,
+      "attachmentStep": false
+    }
+  ],
+  "afterStages": [],
+  "labels": [
+    {
+      "name": "epic",
+      "value": "Debtor Takeover"
+    },
+    {
+      "name": "story",
+      "value": "Takeover fails because of wrong SP token"
+    },
+    {
+      "name": "tag",
+      "value": "activation"
+    },
+    {
+      "name": "tag",
+      "value": "takeover"
+    },
+    {
+      "name": "tag",
+      "value": "functional"
+    },
+    {
+      "name": "feature",
+      "value": "Takeover unhappy path"
+    },
+    {
+      "name": "tag",
+      "value": "unhappy_path"
+    },
+    {
+      "name": "tag",
+      "value": "unhappy_path"
+    },
+    {
+      "name": "tag",
+      "value": "functional"
+    },
+    {
+      "name": "parentSuite",
+      "value": "functional-tests.tests"
+    },
+    {
+      "name": "suite",
+      "value": "test_debtor_takeover"
+    },
+    {
+      "name": "host",
+      "value": "runnervmnay03"
+    },
+    {
+      "name": "thread",
+      "value": "2695-MainThread"
+    },
+    {
+      "name": "framework",
+      "value": "pytest"
+    },
+    {
+      "name": "language",
+      "value": "cpython3"
+    },
+    {
+      "name": "package",
+      "value": "functional-tests.tests.test_debtor_takeover"
+    },
+    {
+      "name": "resultFormat",
+      "value": "allure2"
+    }
+  ],
+  "parameters": [],
+  "links": [],
+  "hidden": false,
+  "retry": false,
+  "extra": {
+    "severity": "normal",
+    "retries": [],
+    "categories": [],
+    "history": {
+      "statistic": {
+        "failed": 3,
+        "broken": 0,
+        "skipped": 0,
+        "passed": 141,
+        "unknown": 0,
+        "total": 144
+      },
+      "items": [
+        {
+          "uid": "4a5e38368551a64e",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/846/#testresult/4a5e38368551a64e",
+          "status": "passed",
+          "time": {
+            "start": 1772520465052,
+            "stop": 1772520466286,
+            "duration": 1234
+          }
+        },
+        {
+          "uid": "3fb0979dd265f6eb",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/845/#testresult/3fb0979dd265f6eb",
+          "status": "passed",
+          "time": {
+            "start": 1772467376865,
+            "stop": 1772467378669,
+            "duration": 1804
+          }
+        },
+        {
+          "uid": "36a7ef777f8da3a7",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/844/#testresult/36a7ef777f8da3a7",
+          "status": "passed",
+          "time": {
+            "start": 1772466778302,
+            "stop": 1772466779800,
+            "duration": 1498
+          }
+        },
+        {
+          "uid": "7fa6459cfa111e24",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/843/#testresult/7fa6459cfa111e24",
+          "status": "passed",
+          "time": {
+            "start": 1772460074621,
+            "stop": 1772460076584,
+            "duration": 1963
+          }
+        },
+        {
+          "uid": "ee51e00975da9cc7",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/842/#testresult/ee51e00975da9cc7",
+          "status": "failed",
+          "statusDetails": "AssertionError: assert 503 == 201\n +  where 503 = <Response [503]>.status_code\n +    where <Response [503]> = activate_with_sp_a('Bearer ***REDACTED***', 'BDNDRA20E11X000N')",
+          "time": {
+            "start": 1772434388033,
+            "stop": 1772434388403,
+            "duration": 370
+          }
+        },
+        {
+          "uid": "6e8aeb630a224d8b",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/841/#testresult/6e8aeb630a224d8b",
+          "status": "failed",
+          "statusDetails": "AssertionError: assert 503 == 201\n +  where 503 = <Response [503]>.status_code\n +    where <Response [503]> = activate_with_sp_a('Bearer ***REDACTED***', 'GNSGCB66P46X000L')",
+          "time": {
+            "start": 1772347347083,
+            "stop": 1772347347458,
+            "duration": 375
+          }
+        },
+        {
+          "uid": "987a8d5964dff100",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/840/#testresult/987a8d5964dff100",
+          "status": "failed",
+          "statusDetails": "AssertionError: assert 503 == 201\n +  where 503 = <Response [503]>.status_code\n +    where <Response [503]> = activate_with_sp_a('Bearer ***REDACTED***', 'SCHGSI92P60X000L')",
+          "time": {
+            "start": 1772260412102,
+            "stop": 1772260412550,
+            "duration": 448
+          }
+        },
+        {
+          "uid": "ec9eb5a5c67b4acc",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/839/#testresult/ec9eb5a5c67b4acc",
+          "status": "passed",
+          "time": {
+            "start": 1772175043138,
+            "stop": 1772175044690,
+            "duration": 1552
+          }
+        },
+        {
+          "uid": "3be49edfa16426e6",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/838/#testresult/3be49edfa16426e6",
+          "status": "passed",
+          "time": {
+            "start": 1772089105634,
+            "stop": 1772089106845,
+            "duration": 1211
+          }
+        },
+        {
+          "uid": "690bd861698e0cba",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/837/#testresult/690bd861698e0cba",
+          "status": "passed",
+          "time": {
+            "start": 1772002936442,
+            "stop": 1772002937994,
+            "duration": 1552
+          }
+        },
+        {
+          "uid": "2a2b40a19dac1fcd",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/836/#testresult/2a2b40a19dac1fcd",
+          "status": "passed",
+          "time": {
+            "start": 1771916348364,
+            "stop": 1771916349912,
+            "duration": 1548
+          }
+        },
+        {
+          "uid": "b8ad2eda1f347a28",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/835/#testresult/b8ad2eda1f347a28",
+          "status": "passed",
+          "time": {
+            "start": 1771865564594,
+            "stop": 1771865566550,
+            "duration": 1956
+          }
+        },
+        {
+          "uid": "d5d924d9acc2a45f",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/834/#testresult/d5d924d9acc2a45f",
+          "status": "passed",
+          "time": {
+            "start": 1771830118947,
+            "stop": 1771830120818,
+            "duration": 1871
+          }
+        },
+        {
+          "uid": "2a83f62715c3e2a3",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/833/#testresult/2a83f62715c3e2a3",
+          "status": "passed",
+          "time": {
+            "start": 1771742765097,
+            "stop": 1771742766753,
+            "duration": 1656
+          }
+        },
+        {
+          "uid": "336234dba20e572c",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/832/#testresult/336234dba20e572c",
+          "status": "passed",
+          "time": {
+            "start": 1771656074584,
+            "stop": 1771656076321,
+            "duration": 1737
+          }
+        },
+        {
+          "uid": "a608c86fa57e02f",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/831/#testresult/a608c86fa57e02f",
+          "status": "passed",
+          "time": {
+            "start": 1771594746428,
+            "stop": 1771594747730,
+            "duration": 1302
+          }
+        },
+        {
+          "uid": "d6cc7d204aa12908",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/830/#testresult/d6cc7d204aa12908",
+          "status": "passed",
+          "time": {
+            "start": 1771570410256,
+            "stop": 1771570411424,
+            "duration": 1168
+          }
+        },
+        {
+          "uid": "678683f54eeec027",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/829/#testresult/678683f54eeec027",
+          "status": "passed",
+          "time": {
+            "start": 1771484299095,
+            "stop": 1771484300533,
+            "duration": 1438
+          }
+        },
+        {
+          "uid": "3f4944f3ab2cfadc",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/828/#testresult/3f4944f3ab2cfadc",
+          "status": "passed",
+          "time": {
+            "start": 1771398053011,
+            "stop": 1771398054541,
+            "duration": 1530
+          }
+        },
+        {
+          "uid": "c091b2cb5e849220",
+          "reportUrl": "https://pagopa.github.io/rtp-platform-qa/827/#testresult/c091b2cb5e849220",
+          "status": "passed",
+          "time": {
+            "start": 1771316112185,
+            "stop": 1771316114722,
+            "duration": 2537
+          }
+        }
+      ]
+    },
+    "tags": [
+      "functional",
+      "takeover",
+      "activation",
+      "unhappy_path"
+    ]
+  },
+  "source": "727dd30da39d97d8.json",
+  "parameterValues": []
+}

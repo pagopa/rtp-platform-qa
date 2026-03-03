@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","8976","RTP form is filled and submitted","ux-tests.tests","Thu Feb 26 07:03:28 UTC 2026","failed","Thu Feb 26 07:03:37 UTC 2026","","test_RTP_submission","",""
-"","1227","Whitespaces is allowed in description and company name field","ux-tests.tests","Thu Feb 26 07:03:37 UTC 2026","passed","Thu Feb 26 07:03:38 UTC 2026","","test_RTP_submission","",""
