@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 
-_MULTI_SEGMENT_TOKEN = r'(?:[\w-]+\.[\w-]+\.[\w-]+|[\w-]+\.\.\.[\w-]+)$'
+_MULTI_SEGMENT_TOKEN = r'[\w-]+(?:\.+[\w-]+)+'
 
 
 def sanitize_text(text: str) -> str:
@@ -27,7 +27,7 @@ def sanitize_text(text: str) -> str:
         return text
 
     text = re.sub(
-        r'^Bearer\s+' + _MULTI_SEGMENT_TOKEN,
+        r'Bearer\s+' + _MULTI_SEGMENT_TOKEN,
         'Bearer ***REDACTED***',
         text
     )
