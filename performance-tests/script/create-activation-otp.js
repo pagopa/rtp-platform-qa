@@ -114,6 +114,7 @@ export function setup(){
         const location = res.headers['Location'] || res.headers['location'];
         if (!location) {
           console.warn(`409 without location.`);
+          continue;
         }
         const otp = location.split('/').pop();
         otps.push(otp);
