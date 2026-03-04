@@ -1,9 +1,11 @@
 import http from 'k6/http';
-import { check, sleep } from 'k6';
+import {check, sleep} from 'k6';
 import {createStandardMetrics} from "../../utils/metrics-utils.js";
 import {
-  ActorCredentials, buildHeaders,
-  determineStage, endpoints,
+  ActorCredentials,
+  buildHeaders,
+  determineStage,
+  endpoints,
   getOptions,
   setupAuth
 } from "../../utils/utils.js";
@@ -13,20 +15,27 @@ import {
  *
  * @description
  * Executes takeover operations for previously generated RTP activation OTPs.
- * The OTPs are loaded from a JSON file and distributed across Virtual Users
- * using the `shared-iterations` executor.
+ * OTPs are loaded from a JSON file and distributed across Virtual Users using
+ * the `shared-iterations` executor.
  *
- * Each iteration processes exactly one OTP, ensuring no duplication
- * during the test execution.
+ * This script authenticates once during the k6 `setup()` phase and passes the
+ * access token to all VUs via `setup_data` (the `data` parameter in `takeover()`),
+ * avoiding token refresh during execution.
+ *
+ * Each iteration processes exactly one OTP, ensuring no duplication during a run.
  *
  * ## Environment Variables
  * - `VU_COUNT_SET` (optional, default: 10): Number of Virtual Users.
  * - `SLEEP_ITER` (optional, seconds, default: 0): Sleep time between iterations.
  *
+ * ## Input
+ * - File: `json-file/rtp-activator/activation-otps.json`
+ * - Format: JSON array of OTP strings
+ *
  * ## Execution Strategy
  * - Executor: `shared-iterations`
- * - Iterations: Equal to number of OTPs loaded from file
- * - Each iteration processes one unique OTP
+ * - Iterations: equals the number of OTPs loaded from file
+ * - OTP mapping: `activationOtps[__ITER]` (1 OTP per iteration)
  */
 
 /** Timestamp (ms) marking the start of the test run. */
@@ -37,15 +46,6 @@ const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 10;
 
 /** Optional per-iteration sleep time (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
-
-/** Cached access token for authenticated requests. */
-let token = null;
-
-/** Timestamp (ms) when the token was generated. */
-let tokenCreatedAt = 0;
-
-/** Token time-to-live (4 minutes). */
-const TOKEN_TTL = 4 * 60 * 1000;
 
 /**
  * Loads activation OTPs from file.
@@ -84,18 +84,35 @@ export const options = {
 };
 
 /**
+ * k6 `setup()` lifecycle function.
+ *
+ * Authenticates once as `DEBTOR_SERVICE_PROVIDER` and returns the access token.
+ * The returned object is available to the scenario function as the `data` parameter.
+ *
+ * @returns {{ token: string }} Object containing the access token used for takeover requests.
+ */
+export function setup(){
+
+  const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+  return {token : auth.access_token};
+}
+
+/**
  * k6 scenario function.
  *
  * Performs a takeover operation for one activation OTP.
- * Each iteration:
- * - Selects one unique OTP
- * - Ensures a valid authentication token
- * - Executes POST takeover request
- * - Records metrics and validation checks
  *
+ * Flow per iteration:
+ * - Derives tags for metrics (timeWindow, stage, vu)
+ * - Picks an OTP using the global iteration index (`__ITER`)
+ * - Calls takeover endpoint with the token provided by `setup()`
+ * - Records response time and success/failure metrics
+ * - Optionally sleeps between iterations
+ *
+ * @param {{ token: string }} data Data returned by `setup()` (available as `setup_data`).
  * @returns {void}
  */
-export function takeover(){
+export function takeover(data){
 
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
 
@@ -107,12 +124,7 @@ export function takeover(){
 
   currentRPS.add(1, tags);
 
-  if (!token || (Date.now() - tokenCreatedAt) > TOKEN_TTL) {
-    const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
-    token = auth.access_token;
-    tokenCreatedAt = Date.now();
-    console.log(`🔄 VU ${__VU} refreshed token`);
-  }
+  const token = data.token;
 
   const otp = activationOtps[__ITER];
 
