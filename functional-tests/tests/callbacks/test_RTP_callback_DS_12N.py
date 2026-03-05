@@ -12,11 +12,11 @@ from utils.dataset_callback_data_DS_12N_RJCR_compliant import generate_callback_
 from utils.dataset_RTP_data import generate_rtp_data
 
 
-@allure.epic('RTP Callback')
-@allure.feature('RTP Callback DS_12N')
-@allure.story('Service provider sends an RFC callback with RJCR status')
-@allure.title('An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL')
-@allure.tag('functional', 'happy_path', 'rtp_callback', 'ds_12n_rjcr_compliant', 'rfc')
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_12N")
+@allure.story("Service provider sends an RFC callback with RJCR status")
+@allure.title("An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL")
+@allure.tag("functional", "happy_path", "rtp_callback", "ds_12n_rjcr_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rfc_callback_DS_12N_RJCR_compliant(
@@ -43,7 +43,7 @@ def test_receive_rfc_callback_DS_12N_RJCR_compliant(
 
     activation_response = activate(
         debtor_service_provider_token_a,
-        rtp_data['payer']['payerId'],
+        rtp_data["payer"]["payerId"],
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201
@@ -54,9 +54,9 @@ def test_receive_rfc_callback_DS_12N_RJCR_compliant(
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers['Location']
-    resource_id = location.split('/')[-1]
-    original_msg_id = resource_id.replace('-', '')
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+    original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
@@ -73,9 +73,9 @@ def test_receive_rfc_callback_DS_12N_RJCR_compliant(
         cert_path=cert,
         key_path=key,
     )
-    assert (
-        callback_response.status_code == 200
-    ), f"Error from callback, expected 200 got {callback_response.status_code}"
+    assert callback_response.status_code == 200, (
+        f"Error from callback, expected 200 got {callback_response.status_code}"
+    )
 
     get_response = get_rtp(
         access_token=rtp_reader_access_token,
@@ -83,14 +83,14 @@ def test_receive_rfc_callback_DS_12N_RJCR_compliant(
     )
     assert get_response.status_code == 200
     body = get_response.json()
-    assert body['status'] == 'ERROR_CANCEL', f"Expected status ERROR_CANCEL, got {body['status']}"
+    assert body["status"] == "ERROR_CANCEL", f"Expected status ERROR_CANCEL, got {body['status']}"
 
 
-@allure.epic('RTP Callback')
-@allure.feature('RTP Callback DS_12N')
-@allure.story('Service provider sends an RFC callback with RJCR status')
-@allure.title('Unauthorized RFC callback due to wrong certificate serial')
-@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_12n_rjcr_compliant', 'rfc')
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_12N")
+@allure.story("Service provider sends an RFC callback with RJCR status")
+@allure.title("Unauthorized RFC callback due to wrong certificate serial")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "ds_12n_rjcr_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
@@ -118,7 +118,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
 
     activation_response = activate(
         debtor_service_provider_token_a,
-        rtp_data['payer']['payerId'],
+        rtp_data["payer"]["payerId"],
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201
@@ -129,9 +129,9 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers['Location']
-    resource_id = location.split('/')[-1]
-    original_msg_id = resource_id.replace('-', '')
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+    original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
@@ -139,7 +139,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
         original_msg_id=original_msg_id,
-        assignee_bic='MOCKSP01',
+        assignee_bic="MOCKSP01",
     )
 
     cert, key = debtor_sp_mock_cert_key
@@ -149,16 +149,16 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
         cert_path=cert,
         key_path=key,
     )
-    assert (
-        callback_response.status_code == 403
-    ), f"Expecting error from callback, expected 403 got {callback_response.status_code}"
+    assert callback_response.status_code == 403, (
+        f"Expecting error from callback, expected 403 got {callback_response.status_code}"
+    )
 
 
-@allure.epic('RTP Callback')
-@allure.feature('RTP Callback DS_12N')
-@allure.story('Service provider sends an RFC callback with RJCR status')
-@allure.title('Failed RFC callback for non existing Service Provider - DS-12N RJCR compliant')
-@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_12n_rjcr_compliant', 'rfc')
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_12N")
+@allure.story("Service provider sends an RFC callback with RJCR status")
+@allure.title("Failed RFC callback for non existing Service Provider - DS-12N RJCR compliant")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "ds_12n_rjcr_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compliant(
@@ -185,7 +185,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compli
 
     activation_response = activate(
         debtor_service_provider_token_a,
-        rtp_data['payer']['payerId'],
+        rtp_data["payer"]["payerId"],
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201
@@ -196,9 +196,9 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compli
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers['Location']
-    resource_id = location.split('/')[-1]
-    original_msg_id = resource_id.replace('-', '')
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+    original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
@@ -206,7 +206,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compli
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
         original_msg_id=original_msg_id,
-        assignee_bic='MOCKSP99',
+        assignee_bic="MOCKSP99",
     )
 
     cert, key = debtor_sp_mock_cert_key
@@ -216,20 +216,19 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compli
         cert_path=cert,
         key_path=key,
     )
-    assert (
-        callback_response.status_code == 400
-    ), f"Expecting error from callback, expected 400 got {callback_response.status_code}"
+    assert callback_response.status_code == 400, (
+        f"Expecting error from callback, expected 400 got {callback_response.status_code}"
+    )
 
 
-@allure.epic('RTP Callback')
-@allure.feature('RTP Callback DS_12N')
-@allure.story('Service provider sends an RFC callback with INVALID status')
-@allure.title('An RFC callback DS12N INVALID is rejected with 400')
-@allure.tag('functional', 'unhappy_path', 'rtp_callback', 'ds_12n_invalid', 'rfc')
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_12N")
+@allure.story("Service provider sends an RFC callback with INVALID status")
+@allure.title("An RFC callback DS12N INVALID is rejected with 400")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "ds_12n_invalid", "rfc")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_rfc_callback_DS_12N_invalid(
-
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
@@ -253,7 +252,7 @@ def test_receive_rfc_callback_DS_12N_invalid(
 
     activation_response = activate(
         debtor_service_provider_token_a,
-        rtp_data['payer']['payerId'],
+        rtp_data["payer"]["payerId"],
         secrets.debtor_service_provider.service_provider_id,
     )
     assert activation_response.status_code == 201
@@ -264,9 +263,9 @@ def test_receive_rfc_callback_DS_12N_invalid(
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers['Location']
-    resource_id = location.split('/')[-1]
-    original_msg_id = resource_id.replace('-', '')
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+    original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
@@ -283,9 +282,9 @@ def test_receive_rfc_callback_DS_12N_invalid(
         cert_path=cert,
         key_path=key,
     )
-    assert (
-        callback_response.status_code == 400
-    ), f"Error from callback, expected 400 got {callback_response.status_code}"
+    assert callback_response.status_code == 400, (
+        f"Error from callback, expected 400 got {callback_response.status_code}"
+    )
 
     get_response = get_rtp(
         access_token=rtp_reader_access_token,
@@ -293,4 +292,4 @@ def test_receive_rfc_callback_DS_12N_invalid(
     )
     assert get_response.status_code == 200
     body = get_response.json()
-    assert body['status'] == 'RFC_SENT', f"Expected status RFC_SENT, got {body['status']}"
+    assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"

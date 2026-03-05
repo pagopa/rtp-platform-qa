@@ -2,17 +2,16 @@ import allure
 import pytest
 
 from api.RTP_send_api import send_rtp
-from config.configuration import config
-from config.configuration import secrets
+from config.configuration import config, secrets
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.regex_utils import uuidv4_pattern
 
 
-@allure.epic('RTP Send')
-@allure.feature('RTP Send')
-@allure.story('Service provider sends an RTP to a provider')
-@allure.title('An RTP is sent to ICCREA service with activated fiscal code')
-@allure.tag('functional', 'happy_path', 'rtp_send', 'iccrea')
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP to a provider")
+@allure.title("An RTP is sent to ICCREA service with activated fiscal code")
+@allure.tag("functional", "happy_path", "rtp_send", "iccrea")
 @pytest.mark.send
 @pytest.mark.happy_path
 @pytest.mark.real_integration
@@ -21,15 +20,10 @@ def test_send_rtp_to_iccrea(creditor_service_provider_token_a):
 
     rtp_data = generate_rtp_data(payer_id=secrets.iccrea_activated_fiscal_code)
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a, rtp_payload=rtp_data
-    )
+    send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
     assert send_response.status_code == 201
 
-    location = send_response.headers['Location']
-    location_split = location.split('/')
-    assert (
-        '/'.join(location_split[:-1])
-        == config.rtp_creation_base_url_path + config.send_rtp_path
-    )
+    location = send_response.headers["Location"]
+    location_split = location.split("/")
+    assert "/".join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))

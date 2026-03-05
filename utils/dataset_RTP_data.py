@@ -1,13 +1,14 @@
 import random
 
-from .datetime_utils import generate_expiry_date
-from .fiscal_code_utils import fake_fc
-from .generators_utils import generate_notice_number
-from .generators_utils import random_payee_id
-from .text_utils import generate_random_description
 from utils.constants_text_helper import TEST_PAYEE_COMPANY_NAME
 
-def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amount: int = None) -> dict:
+from .datetime_utils import generate_expiry_date
+from .fiscal_code_utils import fake_fc
+from .generators_utils import generate_notice_number, random_payee_id
+from .text_utils import generate_random_description
+
+
+def generate_rtp_data(payer_id: str = "", payee_id: str = "", bic: str = "", amount: int = None) -> dict:
     """Generate RTP (Request to Pay) data for testing.
 
     Args:
@@ -33,24 +34,24 @@ def generate_rtp_data(payer_id: str = '', payee_id: str = '', bic: str = '', amo
         payee_id = random_payee_id()
 
     payee = {
-        'payeeId': payee_id,
-        'name': TEST_PAYEE_COMPANY_NAME,
-        'payTrxRef': 'ABC/124',
+        "payeeId": payee_id,
+        "name": TEST_PAYEE_COMPANY_NAME,
+        "payTrxRef": "ABC/124",
     }
 
-    payer = {'name': 'Test Name', 'payerId': payer_id}
+    payer = {"name": "Test Name", "payerId": payer_id}
 
     payment_notice = {
-        'noticeNumber': notice_number,
-        'amount': amount,
-        'description': description,
-        'subject': 'Test payment notice',
-        'expiryDate': expiry_date,
+        "noticeNumber": notice_number,
+        "amount": amount,
+        "description": description,
+        "subject": "Test payment notice",
+        "expiryDate": expiry_date,
     }
 
-    rtp_data = {'payee': payee, 'payer': payer, 'paymentNotice': payment_notice}
+    rtp_data = {"payee": payee, "payer": payer, "paymentNotice": payment_notice}
 
     if bic:
-        rtp_data['bic'] = bic
+        rtp_data["bic"] = bic
 
     return rtp_data

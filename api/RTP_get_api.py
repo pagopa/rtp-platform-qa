@@ -8,16 +8,15 @@ Functions:
     - get_rtp_by_notice_number: Fetch an RTP resource by its notice number.
     - get_rtp_delivery_status: Check the PD delivery status for a given notice number and payee ID.
 """
+
 import uuid
 
 import requests
 
 from api.utils.api_version import GET_RTP_VERSION
-from api.utils.endpoints import GET_RTP_BY_NOTICE_NUMBER_URL
-from api.utils.endpoints import GET_RTP_DELIVERY_STATUS_URL
-from api.utils.endpoints import GET_RTP_URL
-from api.utils.http_utils import APPLICATION_JSON_HEADER
-from api.utils.http_utils import HTTP_TIMEOUT
+from api.utils.endpoints import GET_RTP_BY_NOTICE_NUMBER_URL, GET_RTP_DELIVERY_STATUS_URL, GET_RTP_URL
+from api.utils.http_utils import APPLICATION_JSON_HEADER, HTTP_TIMEOUT
+
 
 def get_rtp(access_token: str, rtp_id: str):
     """
@@ -32,10 +31,10 @@ def get_rtp(access_token: str, rtp_id: str):
     """
     url = GET_RTP_URL.format(rtpId=rtp_id)
     headers = {
-        'Authorization': access_token,
-        'Version': GET_RTP_VERSION,
-        'RequestId': str(uuid.uuid4()),
-        **APPLICATION_JSON_HEADER
+        "Authorization": access_token,
+        "Version": GET_RTP_VERSION,
+        "RequestId": str(uuid.uuid4()),
+        **APPLICATION_JSON_HEADER,
     }
 
     resp = requests.get(url=url, headers=headers, timeout=HTTP_TIMEOUT)
@@ -54,17 +53,17 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str):
         requests.Response: The HTTP response object returned by the API.
     """
     if not access_token:
-        raise ValueError('access_token cannot be None')
+        raise ValueError("access_token cannot be None")
 
     if not notice_number:
-        raise ValueError('notice_number cannot be None')
+        raise ValueError("notice_number cannot be None")
 
-    params = {'noticeNumber': notice_number}
+    params = {"noticeNumber": notice_number}
     headers = {
-        'Authorization': access_token,
-        'Version': GET_RTP_VERSION,
-        'RequestId': str(uuid.uuid4()),
-        **APPLICATION_JSON_HEADER
+        "Authorization": access_token,
+        "Version": GET_RTP_VERSION,
+        "RequestId": str(uuid.uuid4()),
+        **APPLICATION_JSON_HEADER,
     }
 
     resp = requests.get(
@@ -96,14 +95,14 @@ def get_rtp_delivery_status(access_token: str, notice_number: str, payee_id: str
         requests.Response: The HTTP response object returned by the API.
     """
     headers = {
-        'Authorization': access_token,
-        'Version': GET_RTP_VERSION,
-        'RequestId': str(uuid.uuid4()),
+        "Authorization": access_token,
+        "Version": GET_RTP_VERSION,
+        "RequestId": str(uuid.uuid4()),
         **APPLICATION_JSON_HEADER,
     }
     params = {
-        'noticeNumber': notice_number,
-        'payeeId': payee_id,
+        "noticeNumber": notice_number,
+        "payeeId": payee_id,
     }
 
     resp = requests.get(

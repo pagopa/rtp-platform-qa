@@ -1,35 +1,33 @@
+from collections.abc import Mapping
 from types import SimpleNamespace
-from typing import Dict
-from typing import Mapping
 
 import pytest
 from _pytest.fixtures import SubRequest
 
-from api.auth_api import get_access_token
-from api.auth_api import get_valid_access_token
 from api.debtor_activation_api import activate
-from api.GPD_debt_position_api import create_debt_position
-from api.GPD_debt_position_api import delete_debt_position
-from api.GPD_debt_position_api import get_debt_position
-from api.GPD_debt_position_api import update_debt_position
+from api.GPD_debt_position_api import (
+    create_debt_position,
+    delete_debt_position,
+    get_debt_position,
+    update_debt_position,
+)
 from config.configuration import secrets
 from utils.fiscal_code_utils import fake_fc
-from utils.generators_utils import generate_iupd
-from utils.generators_utils import generate_iuv
-
+from utils.generators_utils import generate_iupd, generate_iuv
 
 # ============================================================
 #  Environment fixture (UAT / DEV) + Debt Position helpers
 # ============================================================
 
+
 @pytest.fixture(
     params=[
-        {'name': 'UAT', 'is_dev': False},
-        {'name': 'DEV', 'is_dev': True},
+        {"name": "UAT", "is_dev": False},
+        {"name": "DEV", "is_dev": True},
     ],
-    ids=['environment_uat', 'environment_dev'],
+    ids=["environment_uat", "environment_dev"],
 )
-def environment(request: SubRequest) -> Dict[str, object]:
+def environment(request: SubRequest) -> dict[str, object]:
     """
     Parametrized environment fixture.
 
@@ -41,9 +39,9 @@ def environment(request: SubRequest) -> Dict[str, object]:
     - subscription_key, organization_id: env-specific settings
     """
 
-    env: Dict[str, object] = dict(request.param)
+    env: dict[str, object] = dict(request.param)
 
-    is_dev = bool(env['is_dev'])
+    is_dev = bool(env["is_dev"])
 
     def _create_function(
         subscription_key: str,
@@ -100,24 +98,20 @@ def environment(request: SubRequest) -> Dict[str, object]:
         )
 
     subscription_key: str = (
-        secrets.debt_positions_dev.subscription_key
-        if is_dev
-        else secrets.debt_positions.subscription_key
+        secrets.debt_positions_dev.subscription_key if is_dev else secrets.debt_positions.subscription_key
     )
     organization_id: str = (
-        secrets.debt_positions_dev.organization_id
-        if is_dev
-        else secrets.debt_positions.organization_id
+        secrets.debt_positions_dev.organization_id if is_dev else secrets.debt_positions.organization_id
     )
 
     env.update(
         {
-            'create_function': _create_function,
-            'get_function': _get_function,
-            'delete_function': _delete_function,
-            'update_function': _update_function,
-            'subscription_key': subscription_key,
-            'organization_id': organization_id,
+            "create_function": _create_function,
+            "get_function": _get_function,
+            "delete_function": _delete_function,
+            "update_function": _update_function,
+            "subscription_key": subscription_key,
+            "organization_id": organization_id,
         }
     )
 
@@ -128,8 +122,9 @@ def environment(request: SubRequest) -> Dict[str, object]:
 #  GPD data setup fixtures (Debt Position preconditions)
 # ============================================================
 
+
 @pytest.fixture
-def setup_data(environment: Dict[str, object]) -> Dict[str, object]:
+def setup_data(environment: dict[str, object]) -> dict[str, object]:
     """
     Prepare base test data for GPD / debt position tests:
     - generates synthetic IUPD and IUV
@@ -140,27 +135,27 @@ def setup_data(environment: Dict[str, object]) -> Dict[str, object]:
     iupd: str = generate_iupd()
     iuv: str = generate_iuv()
 
-    subscription_key = str(environment['subscription_key'])
-    organization_id = str(environment['organization_id'])
+    subscription_key = str(environment["subscription_key"])
+    organization_id = str(environment["organization_id"])
 
     return {
-        'debtor_fc': debtor_fc,
-        'iupd': iupd,
-        'iuv': iuv,
-        'subscription_key': subscription_key,
-        'organization_id': organization_id,
+        "debtor_fc": debtor_fc,
+        "iupd": iupd,
+        "iuv": iuv,
+        "subscription_key": subscription_key,
+        "organization_id": organization_id,
     }
 
 
 @pytest.fixture
-def gpd_test_data(setup_data: Dict[str, object], debtor_service_provider_token_a: str) -> SimpleNamespace:
+def gpd_test_data(setup_data: dict[str, object], debtor_service_provider_token_a: str) -> SimpleNamespace:
     """
     Convenience wrapper over setup_data that exposes fields as attributes
     and ensures the debtor is activated before GPD tests.
 
     e.g. gpd_test_data.debtor_fc, gpd_test_data.iupd, …
     """
-    debtor_fc = setup_data['debtor_fc']
+    debtor_fc = setup_data["debtor_fc"]
 
     activation_response = activate(
         debtor_service_provider_token_a,
@@ -168,7 +163,8 @@ def gpd_test_data(setup_data: Dict[str, object], debtor_service_provider_token_a
         secrets.debtor_service_provider.service_provider_id,
     )
 
-    assert activation_response.status_code == 201, \
+    assert activation_response.status_code == 201, (
         f"Failed to activate debtor for GPD test: {activation_response.status_code} {activation_response.text}"
+    )
 
     return SimpleNamespace(**setup_data)

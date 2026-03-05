@@ -1,7 +1,6 @@
 import random
 from typing import Final
 
-
 MIN_PAGE_SIZE: Final[int] = 1
 MAX_PAGE_SIZE: Final[int] = 128
 

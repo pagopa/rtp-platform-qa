@@ -1,18 +1,12 @@
-from typing import Callable
-from typing import Generator
-from typing import MutableMapping
-from typing import Optional
-from typing import Tuple
+from collections.abc import Callable, Generator, MutableMapping
 
 import pytest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from api.auth_api import get_access_token
-from api.auth_api import get_valid_access_token
+from api.auth_api import get_access_token, get_valid_access_token
 from api.debtor_activation_api import activate
-from config.configuration import config
-from config.configuration import secrets
+from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.fiscal_code_utils import fake_fc
@@ -38,16 +32,17 @@ def pytest_runtest_makereport(
     if report.longrepr:
         report.longrepr = sanitize_bearer_token(str(report.longrepr))
 
-    if hasattr(item, 'callspec') and hasattr(item.callspec, 'params'):
+    if hasattr(item, "callspec") and hasattr(item.callspec, "params"):
         params: MutableMapping[str, object] = item.callspec.params
         for key, value in list(params.items()):
-            if isinstance(value, str) and 'Bearer' in value:
+            if isinstance(value, str) and "Bearer" in value:
                 params[key] = sanitize_bearer_token(value)
 
 
 # ============================================================
 #  Access token fixtures for Debtor Service Providers
 # ============================================================
+
 
 @pytest.fixture
 def debtor_service_provider_token_a() -> str:
@@ -126,19 +121,22 @@ def pagopa_service_providers_registry_token() -> str:
         access_token_function=get_access_token,
     )
 
+
 # ============================================================
 #  Activation fixtures (create activation, cursor helpers)
 # ============================================================
 
+
 @pytest.fixture
 def make_activation(
     debtor_service_provider_token_a: str,
-) -> Callable[[], Tuple[str, str]]:
+) -> Callable[[], tuple[str, str]]:
     """
     Factory fixture:
     creates a debtor activation and returns (activation_id, debtor_fc).
     """
-    def _create() -> Tuple[str, str]:
+
+    def _create() -> tuple[str, str]:
         debtor_fc: str = fake_fc()
         res = activate(
             debtor_service_provider_token_a,
@@ -147,14 +145,14 @@ def make_activation(
         )
 
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
-        activation_id = res.headers['Location'].rstrip('/').split('/')[-1]
+        activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
         return activation_id, debtor_fc
 
     return _create
 
 
 @pytest.fixture
-def next_cursor() -> Callable[[str], Optional[str]]:
+def next_cursor() -> Callable[[str], str | None]:
     """
     Helper used in activation listing tests to extract the next activation id
     (cursor) from API responses.
@@ -180,6 +178,7 @@ def activate_payer(
         # or:
         activation_id = activate_payer(payer_id, return_id=True)
     """
+
     def _activate(payer_id: str, return_id: bool = False) -> object:
         res = activate(
             debtor_service_provider_token_a,
@@ -188,20 +187,23 @@ def activate_payer(
         )
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
 
-        if not return_id: return res
+        if not return_id:
+            return res
 
-        location = res.headers.get('Location', '').rstrip('/')
-        activation_id: Optional[str] = location.split('/')[-1] if location else None
+        location = res.headers.get("Location", "").rstrip("/")
+        activation_id: str | None = location.split("/")[-1] if location else None
         return activation_id
 
     return _activate
+
 
 # ============================================================
 # Debtor Service Provider mock PFX certificate fixture
 # ============================================================
 
+
 @pytest.fixture
-def debtor_sp_mock_cert_key() -> Tuple[str, str]:
+def debtor_sp_mock_cert_key() -> tuple[str, str]:
     """
     Returns (cert_path, key_path) for the debtor service provider mock PFX.
     """

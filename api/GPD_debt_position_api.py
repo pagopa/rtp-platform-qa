@@ -1,13 +1,15 @@
 import requests
 
-from api.utils.endpoints import DEBT_POSITIONS_DELETE_URL
-from api.utils.endpoints import DEBT_POSITIONS_DELETE_URL_DEV
-from api.utils.endpoints import DEBT_POSITIONS_UPDATE_URL
-from api.utils.endpoints import DEBT_POSITIONS_UPDATE_URL_DEV
-from api.utils.endpoints import DEBT_POSITIONS_URL
-from api.utils.endpoints import DEBT_POSITIONS_URL_DEV
-from api.utils.http_utils import APPLICATION_JSON_HEADER
-from api.utils.http_utils import HTTP_TIMEOUT
+from api.utils.endpoints import (
+    DEBT_POSITIONS_DELETE_URL,
+    DEBT_POSITIONS_DELETE_URL_DEV,
+    DEBT_POSITIONS_UPDATE_URL,
+    DEBT_POSITIONS_UPDATE_URL_DEV,
+    DEBT_POSITIONS_URL,
+    DEBT_POSITIONS_URL_DEV,
+)
+from api.utils.http_utils import APPLICATION_JSON_HEADER, HTTP_TIMEOUT
+
 
 def create_debt_position(
     subscription_key: str, organization_id: str, payload: dict, to_publish: bool = True, is_dev: bool = False
@@ -32,13 +34,14 @@ def create_debt_position(
     return requests.post(
         url=url.format(organizationId=organization_id),
         headers={
-            'ocp-apim-subscription-key': subscription_key,
+            "ocp-apim-subscription-key": subscription_key,
             **APPLICATION_JSON_HEADER,
         },
-        params={'toPublish': to_publish},
+        params={"toPublish": to_publish},
         json=payload,
         timeout=HTTP_TIMEOUT,
     )
+
 
 def delete_debt_position(
     subscription_key: str, organization_id: str, iupd: str, is_dev: bool = False
@@ -60,20 +63,13 @@ def delete_debt_position(
         url = DEBT_POSITIONS_DELETE_URL
     url = url.format(organizationId=organization_id, iupd=iupd)
 
-    headers = {
-        'ocp-apim-subscription-key': subscription_key,
-        **APPLICATION_JSON_HEADER
-    }
+    headers = {"ocp-apim-subscription-key": subscription_key, **APPLICATION_JSON_HEADER}
 
     return requests.delete(url, headers=headers, timeout=HTTP_TIMEOUT)
 
+
 def update_debt_position(
-    subscription_key: str,
-    organization_id: str,
-    iupd: str,
-    payload: dict,
-    to_publish: bool = True,
-    is_dev: bool = False
+    subscription_key: str, organization_id: str, iupd: str, payload: dict, to_publish: bool = True, is_dev: bool = False
 ) -> requests.Response:
     """
     API to update an existing debt position.
@@ -93,12 +89,11 @@ def update_debt_position(
         url = DEBT_POSITIONS_UPDATE_URL_DEV.format(organizationId=organization_id, iupd=iupd)
     else:
         url = DEBT_POSITIONS_UPDATE_URL.format(organizationId=organization_id, iupd=iupd)
-    headers = {
-        'ocp-apim-subscription-key': subscription_key,
-        **APPLICATION_JSON_HEADER
-    }
+    headers = {"ocp-apim-subscription-key": subscription_key, **APPLICATION_JSON_HEADER}
 
-    return requests.put(url, headers=headers, json=payload, timeout=HTTP_TIMEOUT, params={'toPublish': to_publish})
+    return requests.put(url, headers=headers, json=payload, timeout=HTTP_TIMEOUT, params={"toPublish": to_publish})
+
+
 def get_debt_position(
     subscription_key: str, organization_id: str, iupd: str, is_dev: bool = False
 ) -> requests.Response:
@@ -123,20 +118,28 @@ def get_debt_position(
     return requests.get(
         url=url,
         headers={
-            'ocp-apim-subscription-key': subscription_key,
+            "ocp-apim-subscription-key": subscription_key,
             **APPLICATION_JSON_HEADER,
         },
         timeout=HTTP_TIMEOUT,
     )
 
-def create_debt_position_dev(subscription_key: str, organization_id: str, payload: dict, to_publish: bool = True) -> requests.Response:
+
+def create_debt_position_dev(
+    subscription_key: str, organization_id: str, payload: dict, to_publish: bool = True
+) -> requests.Response:
     return create_debt_position(subscription_key, organization_id, payload, to_publish, is_dev=True)
+
 
 def delete_debt_position_dev(subscription_key: str, organization_id: str, iupd: str) -> requests.Response:
     return delete_debt_position(subscription_key, organization_id, iupd, is_dev=True)
 
-def update_debt_position_dev(subscription_key: str, organization_id: str, iupd: str, payload: dict, to_publish: bool = True) -> requests.Response:
+
+def update_debt_position_dev(
+    subscription_key: str, organization_id: str, iupd: str, payload: dict, to_publish: bool = True
+) -> requests.Response:
     return update_debt_position(subscription_key, organization_id, iupd, payload, to_publish, is_dev=True)
+
 
 def get_debt_position_dev(subscription_key: str, organization_id: str, iupd: str) -> requests.Response:
     return get_debt_position(subscription_key, organization_id, iupd, is_dev=True)

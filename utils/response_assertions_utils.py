@@ -1,5 +1,4 @@
 from typing import Any
-from typing import Optional
 
 from requests import Response
 
@@ -17,7 +16,7 @@ def is_empty_response(res: Response) -> bool:
             }
         }
     """
-    raw = res.text or ''
+    raw = res.text or ""
     if not raw.strip():
         return True
 
@@ -29,19 +28,19 @@ def is_empty_response(res: Response) -> bool:
     if not isinstance(body, dict):
         return False
 
-    activations = body.get('activations')
-    metadata = body.get('metadata')
+    activations = body.get("activations")
+    metadata = body.get("metadata")
 
     return (
-        activations == [] and
-        isinstance(metadata, dict) and
-        'nextActivationId' in metadata and
-        metadata['nextActivationId'] is None and
-        'size' in metadata
+        activations == []
+        and isinstance(metadata, dict)
+        and "nextActivationId" in metadata
+        and metadata["nextActivationId"] is None
+        and "size" in metadata
     )
 
 
-def get_response_body_safe(response: Response) -> Optional[Any]:
+def get_response_body_safe(response: Response) -> Any | None:
     """
     Safely parse JSON response body.
     Returns the parsed JSON or None if the response is not valid JSON.
@@ -52,12 +51,7 @@ def get_response_body_safe(response: Response) -> Optional[Any]:
         return None
 
 
-def assert_response_code(
-    response: Response,
-    expected_code: int,
-    operation: str,
-    status: str
-) -> None:
+def assert_response_code(response: Response, expected_code: int, operation: str, status: str) -> None:
     """
     Assert that the response has the expected status code.
     Provides a detailed error message if the assertion fails.
@@ -68,22 +62,11 @@ def assert_response_code(
     )
 
 
-def assert_body_presence(
-    body: Optional[Any],
-    should_have_body: bool,
-    operation: str,
-    status: str
-) -> None:
+def assert_body_presence(body: Any | None, should_have_body: bool, operation: str, status: str) -> None:
     """
     Assert that the response body is present or absent as expected.
     """
     if should_have_body:
-        assert body is not None, (
-            f"Expected non-empty body for {operation} with status {status}, "
-            f"got empty response"
-        )
+        assert body is not None, f"Expected non-empty body for {operation} with status {status}, got empty response"
     else:
-        assert body is None, (
-            f"Expected empty body for {operation} with status {status}, "
-            f"got: {body}"
-        )
+        assert body is None, f"Expected empty body for {operation} with status {status}, got: {body}"

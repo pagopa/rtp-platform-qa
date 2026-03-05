@@ -100,3 +100,21 @@ markers = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["api", "config", "utils"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "F",   # pyflakes
+  "I",   # isort
+  "UP",  # pyupgrade
+]
+ignore = [
+  "E501", # line too long (handled by ruff-format)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["api", "config", "utils"]

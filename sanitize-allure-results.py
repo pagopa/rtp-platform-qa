@@ -3,15 +3,15 @@
 Script to sanitize bearer tokens and JWT patterns from Allure JSON results.
 This is run as a post-processing step before publishing reports to gh-pages.
 """
+
 import argparse
 import json
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
-
-_MULTI_SEGMENT_TOKEN = r'[\w-]+(?:\.+[\w-]+)+'
+_MULTI_SEGMENT_TOKEN = r"[\w-]+(?:\.+[\w-]+)+"
 
 
 def sanitize_text(text: str) -> str:
@@ -26,29 +26,13 @@ def sanitize_text(text: str) -> str:
     if not isinstance(text, str):
         return text
 
-    text = re.sub(
-        r'Bearer\s+' + _MULTI_SEGMENT_TOKEN,
-        'Bearer ***REDACTED***',
-        text
-    )
+    text = re.sub(r"Bearer\s+" + _MULTI_SEGMENT_TOKEN, "Bearer ***REDACTED***", text)
 
-    text = re.sub(
-        r'eyJ' + _MULTI_SEGMENT_TOKEN,
-        '***REDACTED_JWT***',
-        text
-    )
+    text = re.sub(r"eyJ" + _MULTI_SEGMENT_TOKEN, "***REDACTED_JWT***", text)
 
-    text = re.sub(
-        r'\beyJ' + _MULTI_SEGMENT_TOKEN,
-        '***REDACTED_JWT***',
-        text
-    )
+    text = re.sub(r"\beyJ" + _MULTI_SEGMENT_TOKEN, "***REDACTED_JWT***", text)
 
-    text = re.sub(
-        r'(Authorization["\']?\s*:\s*["\']?)' + _MULTI_SEGMENT_TOKEN,
-        r'\1***REDACTED***',
-        text
-    )
+    text = re.sub(r'(Authorization["\']?\s*:\s*["\']?)' + _MULTI_SEGMENT_TOKEN, r"\1***REDACTED***", text)
 
     return text
 
@@ -73,7 +57,7 @@ def sanitize_json_file(file_path: Path) -> bool:
     Returns True if file was modified, False otherwise.
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             data = json.load(f)
 
         sanitized_data = sanitize_dict(data)
@@ -83,7 +67,7 @@ def sanitize_json_file(file_path: Path) -> bool:
         sanitized_json = json.dumps(sanitized_data, sort_keys=True)
 
         if original_json != sanitized_json:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with open(file_path, "w", encoding="utf-8") as f:
                 json.dump(sanitized_data, f, ensure_ascii=False, indent=2)
             return True
 
@@ -101,8 +85,13 @@ def main():
     """
     Main function to sanitize all JSON files in allure-results directory.
     """
-    parser = argparse.ArgumentParser(description='Sanitize bearer tokens and JWTs from Allure JSON results.')
-    parser.add_argument('results_dir', nargs='?', default='allure-results', help='Path to allure-results directory (default: allure-results)')
+    parser = argparse.ArgumentParser(description="Sanitize bearer tokens and JWTs from Allure JSON results.")
+    parser.add_argument(
+        "results_dir",
+        nargs="?",
+        default="allure-results",
+        help="Path to allure-results directory (default: allure-results)",
+    )
     args = parser.parse_args()
 
     allure_results_dir = Path(args.results_dir)
@@ -113,7 +102,7 @@ def main():
 
     print(f"🔍 Scanning {allure_results_dir} for JSON files...")
 
-    json_files = list(allure_results_dir.rglob('*.json'))
+    json_files = list(allure_results_dir.rglob("*.json"))
 
     if not json_files:
         print(f"⚠️  No JSON files found in {allure_results_dir}")
@@ -131,5 +120,5 @@ def main():
         print(f"\n✅ All {len(json_files)} file(s) are clean (no tokens found)")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

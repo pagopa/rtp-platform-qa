@@ -4,19 +4,19 @@ The generated payload mimics the callback that the callback-broker would
 send for an asynchronous SEPA Request-to-Pay response with a rejected
 transaction.
 """
+
 import uuid
 
-from .datetime_utils import generate_create_time
-from .datetime_utils import generate_future_time
-from .generators_utils import generate_random_string
 from utils.type_utils import JsonType
 
+from .datetime_utils import generate_create_time, generate_future_time
+from .generators_utils import generate_random_string
 
-RJCT_STATUS = 'RJCT'
-INVALID_STATUS = 'INVALID'
+RJCT_STATUS = "RJCT"
+INVALID_STATUS = "INVALID"
 
 
-def generate_callback_data_DS_04b_compliant(bic: str = 'MOCKSP04') -> JsonType:
+def generate_callback_data_DS_04b_compliant(bic: str = "MOCKSP04") -> JsonType:
     """Generate a DS-04b compliant callback payload.
 
     The payload simulates an asynchronous SEPA Request-to-Pay response
@@ -36,8 +36,7 @@ def generate_callback_data_DS_04b_compliant(bic: str = 'MOCKSP04') -> JsonType:
     return _create_DS_04_data_with_status(bic, RJCT_STATUS)
 
 
-
-def generate_non_compliant_callback_data_DS_04b(bic: str = 'MOCKSP04') -> JsonType:
+def generate_non_compliant_callback_data_DS_04b(bic: str = "MOCKSP04") -> JsonType:
     """Generate a non compiant DS-04b callback payload.
 
     The payload simulates an asynchronous SEPA Request-to-Pay response
@@ -55,7 +54,6 @@ def generate_non_compliant_callback_data_DS_04b(bic: str = 'MOCKSP04') -> JsonTy
             - ``_links.initialSepaRequestToPayUri.href``: URL of the initial request.
     """
     return _create_DS_04_data_with_status(bic, INVALID_STATUS)
-
 
 
 def _create_DS_04_data_with_status(bic: str, status: str) -> JsonType:
@@ -77,26 +75,26 @@ def _create_DS_04_data_with_status(bic: str, status: str) -> JsonType:
     original_time = generate_future_time(1)
 
     return {
-        'resourceId': resource_id,
-        'AsynchronousSepaRequestToPayResponse': {
-            'CdtrPmtActvtnReqStsRpt': {
-                'GrpHdr': {
-                    'MsgId': message_id,
-                    'CreDtTm': create_time,
-                    'InitgPty': {'Id': {'OrgId': {'AnyBIC': bic}}},
+        "resourceId": resource_id,
+        "AsynchronousSepaRequestToPayResponse": {
+            "CdtrPmtActvtnReqStsRpt": {
+                "GrpHdr": {
+                    "MsgId": message_id,
+                    "CreDtTm": create_time,
+                    "InitgPty": {"Id": {"OrgId": {"AnyBIC": bic}}},
                 },
-                'OrgnlGrpInfAndSts': {
-                    'OrgnlMsgId': original_msg_id,
-                    'OrgnlMsgNmId': 'pain.013.001.08',
-                    'OrgnlCreDtTm': original_time,
+                "OrgnlGrpInfAndSts": {
+                    "OrgnlMsgId": original_msg_id,
+                    "OrgnlMsgNmId": "pain.013.001.08",
+                    "OrgnlCreDtTm": original_time,
                 },
-                'OrgnlPmtInfAndSts': [{'TxInfAndSts': {'TxSts': [status]}}],
+                "OrgnlPmtInfAndSts": [{"TxInfAndSts": {"TxSts": [status]}}],
             }
         },
-        '_links': {
-            'initialSepaRequestToPayUri': {
-                'href': f"https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/{resource_id}",
-                'templated': False,
+        "_links": {
+            "initialSepaRequestToPayUri": {
+                "href": f"https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/requests/{resource_id}",
+                "templated": False,
             }
         },
     }
