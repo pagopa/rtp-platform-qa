@@ -1,6 +1,4 @@
-from typing import Callable
-from typing import Generator
-from typing import MutableMapping
+from collections.abc import Callable, Generator, MutableMapping
 
 import pytest
 from _pytest.nodes import Item
@@ -8,8 +6,7 @@ from _pytest.reports import TestReport
 
 from api.auth_api import get_access_token, get_valid_access_token
 from api.debtor_activation_api import activate
-from config.configuration import config
-from config.configuration import secrets
+from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.fiscal_code_utils import fake_fc
