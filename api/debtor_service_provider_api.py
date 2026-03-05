@@ -42,6 +42,13 @@ def send_srtp_to_poste(access_token: str, rtp_payload: JsonType):
     """
     Sends an RTP payload to the POSTE endpoint.
 
+    .. warning::
+        SSL verification is disabled (``verify=False``) because the POSTE test environment
+        uses a certificate issued by a private/internal CA that
+        is not present in the default system trust store. This causes ``requests`` to raise
+        an ``SSLError`` when verification is enabled. This is acceptable **only** in this
+        non-production QA context. Do NOT carry this flag into any production code path.
+
     :param access_token: Bearer access token for authorization.
     :type access_token: str
     :param rtp_payload: RTP payload in JSON format.
