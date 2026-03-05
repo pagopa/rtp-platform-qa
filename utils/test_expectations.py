@@ -4,44 +4,44 @@ Defines expected status codes and body presence for different operations and sta
 """
 
 CREATE_EXPECTED_CODES = {
-    'VALID': 200,
-    'INVALID': 400,
-    'PAID': 400,
-    'PUBLISHED': 400,
-    'EXPIRED': 400,
-    'DRAFT': 400,
+    "VALID": 200,
+    "INVALID": 400,
+    "PAID": 400,
+    "PUBLISHED": 400,
+    "EXPIRED": 400,
+    "DRAFT": 400,
 }
 
 UPDATE_EXPECTED_CODES = {
-    'VALID': 200,
-    'INVALID': 200,
-    'PAID': 200,
-    'EXPIRED': 200,
-    'DRAFT': 200,
-    'PARTIALLY_PAID': 422,
-    'PUBLISHED': 422,
+    "VALID": 200,
+    "INVALID": 200,
+    "PAID": 200,
+    "EXPIRED": 200,
+    "DRAFT": 200,
+    "PARTIALLY_PAID": 422,
+    "PUBLISHED": 422,
 }
 
 DELETE_AFTER_CREATE_CODES = {
-    'VALID': 200,
-    'INVALID': 422,
-    'PAID': 422,
-    'PUBLISHED': 422,
-    'EXPIRED': 422,
-    'DRAFT': 422,
+    "VALID": 200,
+    "INVALID": 422,
+    "PAID": 422,
+    "PUBLISHED": 422,
+    "EXPIRED": 422,
+    "DRAFT": 422,
 }
 
 DELETE_AFTER_UPDATE_CODES = {
-    'VALID': 200,
-    'INVALID': 422,
-    'PAID': 422,
-    'EXPIRED': 422,
-    'DRAFT': 422,
-    'PARTIALLY_PAID': 422,
-    'PUBLISHED': 422,
+    "VALID": 200,
+    "INVALID": 422,
+    "PAID": 422,
+    "EXPIRED": 422,
+    "DRAFT": 422,
+    "PARTIALLY_PAID": 422,
+    "PUBLISHED": 422,
 }
 
-STATUSES_WITH_BODY = {'VALID'}
+STATUSES_WITH_BODY = {"VALID"}
 
 
 def should_have_body(status: str) -> bool:

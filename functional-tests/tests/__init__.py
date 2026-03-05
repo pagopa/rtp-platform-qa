@@ -1,1 +1,1 @@
-PACKAGE_NAME = 'tests'
+PACKAGE_NAME = "tests"

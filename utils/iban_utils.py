@@ -10,11 +10,7 @@ def generate_random_iban() -> str:
     Returns:
         Compact IBAN string
     """
-    return IBAN.generate(
-        'IT',
-        bank_code='00000',
-        account_code=str(round(random.random() * pow(10, 12)))
-    ).compact
+    return IBAN.generate("IT", bank_code="00000", account_code=str(round(random.random() * pow(10, 12)))).compact
 
 
 def generate_sepa_iban() -> str:
@@ -23,9 +19,5 @@ def generate_sepa_iban() -> str:
     Returns:
         Compact IBAN string with specific format for SEPA
     """
-    account_code = str(round(random.random() * math.pow(10, 10))) + '99'
-    return IBAN.generate(
-        'IT',
-        bank_code='00000',
-        account_code=account_code
-    ).compact
+    account_code = str(round(random.random() * math.pow(10, 10))) + "99"
+    return IBAN.generate("IT", bank_code="00000", account_code=account_code).compact

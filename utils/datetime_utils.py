@@ -1,6 +1,5 @@
 import random
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 
 def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
@@ -13,7 +12,7 @@ def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
     Returns:
         Date string in YYYY-MM-DD format
     """
-    return (datetime.now() + timedelta(days=random.randint(min_days, max_days))).strftime('%Y-%m-%d')
+    return (datetime.now() + timedelta(days=random.randint(min_days, max_days))).strftime("%Y-%m-%d")
 
 
 def generate_execution_date(min_days: int = 1, max_days: int = 15) -> str:
@@ -26,7 +25,7 @@ def generate_execution_date(min_days: int = 1, max_days: int = 15) -> str:
     Returns:
         Date string in YYYY-MM-DD format
     """
-    return (datetime.now() + timedelta(days=random.randint(min_days, max_days))).strftime('%Y-%m-%d')
+    return (datetime.now() + timedelta(days=random.randint(min_days, max_days))).strftime("%Y-%m-%d")
 
 
 def generate_create_time() -> str:
@@ -35,7 +34,7 @@ def generate_create_time() -> str:
     Returns:
         Timestamp string in ISO format with microseconds
     """
-    return datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    return datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
 def generate_future_time(minutes: int = 1) -> str:
@@ -47,4 +46,4 @@ def generate_future_time(minutes: int = 1) -> str:
     Returns:
         Timestamp string in ISO format
     """
-    return (datetime.now() + timedelta(minutes=minutes)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    return (datetime.now() + timedelta(minutes=minutes)).strftime("%Y-%m-%dT%H:%M:%SZ")

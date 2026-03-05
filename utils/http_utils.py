@@ -7,4 +7,4 @@ def extract_id_from_location(location: str | None) -> str | None:
     """
     if not location:
         return None
-    return location.rstrip('/').split('/')[-1] or None
+    return location.rstrip("/").split("/")[-1] or None

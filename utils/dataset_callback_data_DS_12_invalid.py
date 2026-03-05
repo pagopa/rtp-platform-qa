@@ -3,18 +3,16 @@
 The generated payload mimics the callback that the callback-broker would
 send for a SEPA Request-to-Pay Cancellation Response with an invalid status.
 """
-from .dataset_callback_data_DS_12_base import generate_rfc_callback_data
+
 from utils.type_utils import JsonType
 
+from .dataset_callback_data_DS_12_base import generate_rfc_callback_data
 
-INVALID_STATUS = 'INVALID'
+INVALID_STATUS = "INVALID"
 
 
 def generate_callback_data_DS_12_invalid(
-    bic: str = 'MOCKSP04',
-    resource_id: str = None,
-    original_msg_id: str = None,
-    assignee_bic: str = None
+    bic: str = "MOCKSP04", resource_id: str = None, original_msg_id: str = None, assignee_bic: str = None
 ) -> JsonType:
     """Generate a DS-12 invalid RFC callback payload.
 
@@ -38,5 +36,5 @@ def generate_callback_data_DS_12_invalid(
         bic=bic,
         resource_id=resource_id,
         original_msg_id=original_msg_id,
-        assignee_bic=assignee_bic
+        assignee_bic=assignee_bic,
     )

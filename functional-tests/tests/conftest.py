@@ -1,31 +1,24 @@
+from collections.abc import Callable, Generator, Mapping, MutableMapping
 from types import SimpleNamespace
-from typing import Callable
-from typing import Dict
-from typing import Generator
-from typing import Mapping
-from typing import MutableMapping
-from typing import Optional
-from typing import Tuple
 
 import pytest
 from _pytest.fixtures import SubRequest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from api.auth_api import get_access_token
-from api.auth_api import get_valid_access_token
+from api.auth_api import get_access_token, get_valid_access_token
 from api.debtor_activation_api import activate
-from api.GPD_debt_position_api import create_debt_position
-from api.GPD_debt_position_api import delete_debt_position
-from api.GPD_debt_position_api import get_debt_position
-from api.GPD_debt_position_api import update_debt_position
-from config.configuration import config
-from config.configuration import secrets
+from api.GPD_debt_position_api import (
+    create_debt_position,
+    delete_debt_position,
+    get_debt_position,
+    update_debt_position,
+)
+from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.fiscal_code_utils import fake_fc
-from utils.generators_utils import generate_iupd
-from utils.generators_utils import generate_iuv
+from utils.generators_utils import generate_iupd, generate_iuv
 from utils.log_sanitizer_helper import sanitize_bearer_token
 
 # ============================================================
@@ -48,16 +41,17 @@ def pytest_runtest_makereport(
     if report.longrepr:
         report.longrepr = sanitize_bearer_token(str(report.longrepr))
 
-    if hasattr(item, 'callspec') and hasattr(item.callspec, 'params'):
+    if hasattr(item, "callspec") and hasattr(item.callspec, "params"):
         params: MutableMapping[str, object] = item.callspec.params
         for key, value in list(params.items()):
-            if isinstance(value, str) and 'Bearer' in value:
+            if isinstance(value, str) and "Bearer" in value:
                 params[key] = sanitize_bearer_token(value)
 
 
 # ============================================================
 #  Access token fixtures for Debtor Service Providers
 # ============================================================
+
 
 @pytest.fixture
 def debtor_service_provider_token_a() -> str:
@@ -136,19 +130,22 @@ def pagopa_service_providers_registry_token() -> str:
         access_token_function=get_access_token,
     )
 
+
 # ============================================================
 #  Activation fixtures (create activation, cursor helpers)
 # ============================================================
 
+
 @pytest.fixture
 def make_activation(
     debtor_service_provider_token_a: str,
-) -> Callable[[], Tuple[str, str]]:
+) -> Callable[[], tuple[str, str]]:
     """
     Factory fixture:
     creates a debtor activation and returns (activation_id, debtor_fc).
     """
-    def _create() -> Tuple[str, str]:
+
+    def _create() -> tuple[str, str]:
         debtor_fc: str = fake_fc()
         res = activate(
             debtor_service_provider_token_a,
@@ -157,14 +154,14 @@ def make_activation(
         )
 
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
-        activation_id = res.headers['Location'].rstrip('/').split('/')[-1]
+        activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
         return activation_id, debtor_fc
 
     return _create
 
 
 @pytest.fixture
-def next_cursor() -> Callable[[str], Optional[str]]:
+def next_cursor() -> Callable[[str], str | None]:
     """
     Helper used in activation listing tests to extract the next activation id
     (cursor) from API responses.
@@ -190,6 +187,7 @@ def activate_payer(
         # or:
         activation_id = activate_payer(payer_id, return_id=True)
     """
+
     def _activate(payer_id: str, return_id: bool = False) -> object:
         res = activate(
             debtor_service_provider_token_a,
@@ -198,26 +196,29 @@ def activate_payer(
         )
         assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
 
-        if not return_id: return res
+        if not return_id:
+            return res
 
-        location = res.headers.get('Location', '').rstrip('/')
-        activation_id: Optional[str] = location.split('/')[-1] if location else None
+        location = res.headers.get("Location", "").rstrip("/")
+        activation_id: str | None = location.split("/")[-1] if location else None
         return activation_id
 
     return _activate
+
 
 # ============================================================
 #  Environment fixture (UAT / DEV) + Debt Position helpers
 # ============================================================
 
+
 @pytest.fixture(
     params=[
-        {'name': 'UAT', 'is_dev': False},
-        {'name': 'DEV', 'is_dev': True},
+        {"name": "UAT", "is_dev": False},
+        {"name": "DEV", "is_dev": True},
     ],
-    ids=['environment_uat', 'environment_dev'],
+    ids=["environment_uat", "environment_dev"],
 )
-def environment(request: SubRequest) -> Dict[str, object]:
+def environment(request: SubRequest) -> dict[str, object]:
     """
     Parametrized environment fixture.
 
@@ -229,9 +230,9 @@ def environment(request: SubRequest) -> Dict[str, object]:
     - subscription_key, organization_id: env-specific settings
     """
 
-    env: Dict[str, object] = dict(request.param)
+    env: dict[str, object] = dict(request.param)
 
-    is_dev = bool(env['is_dev'])
+    is_dev = bool(env["is_dev"])
 
     def _create_function(
         subscription_key: str,
@@ -288,24 +289,20 @@ def environment(request: SubRequest) -> Dict[str, object]:
         )
 
     subscription_key: str = (
-        secrets.debt_positions_dev.subscription_key
-        if is_dev
-        else secrets.debt_positions.subscription_key
+        secrets.debt_positions_dev.subscription_key if is_dev else secrets.debt_positions.subscription_key
     )
     organization_id: str = (
-        secrets.debt_positions_dev.organization_id
-        if is_dev
-        else secrets.debt_positions.organization_id
+        secrets.debt_positions_dev.organization_id if is_dev else secrets.debt_positions.organization_id
     )
 
     env.update(
         {
-            'create_function': _create_function,
-            'get_function': _get_function,
-            'delete_function': _delete_function,
-            'update_function': _update_function,
-            'subscription_key': subscription_key,
-            'organization_id': organization_id,
+            "create_function": _create_function,
+            "get_function": _get_function,
+            "delete_function": _delete_function,
+            "update_function": _update_function,
+            "subscription_key": subscription_key,
+            "organization_id": organization_id,
         }
     )
 
@@ -316,8 +313,9 @@ def environment(request: SubRequest) -> Dict[str, object]:
 #  GPD data setup fixtures (Debt Position preconditions)
 # ============================================================
 
+
 @pytest.fixture
-def setup_data(environment: Dict[str, object]) -> Dict[str, object]:
+def setup_data(environment: dict[str, object]) -> dict[str, object]:
     """
     Prepare base test data for GPD / debt position tests:
     - generates synthetic IUPD and IUV
@@ -328,27 +326,27 @@ def setup_data(environment: Dict[str, object]) -> Dict[str, object]:
     iupd: str = generate_iupd()
     iuv: str = generate_iuv()
 
-    subscription_key = str(environment['subscription_key'])
-    organization_id = str(environment['organization_id'])
+    subscription_key = str(environment["subscription_key"])
+    organization_id = str(environment["organization_id"])
 
     return {
-        'debtor_fc': debtor_fc,
-        'iupd': iupd,
-        'iuv': iuv,
-        'subscription_key': subscription_key,
-        'organization_id': organization_id,
+        "debtor_fc": debtor_fc,
+        "iupd": iupd,
+        "iuv": iuv,
+        "subscription_key": subscription_key,
+        "organization_id": organization_id,
     }
 
 
 @pytest.fixture
-def gpd_test_data(setup_data: Dict[str, object], debtor_service_provider_token_a: str) -> SimpleNamespace:
+def gpd_test_data(setup_data: dict[str, object], debtor_service_provider_token_a: str) -> SimpleNamespace:
     """
     Convenience wrapper over setup_data that exposes fields as attributes
     and ensures the debtor is activated before GPD tests.
 
     e.g. gpd_test_data.debtor_fc, gpd_test_data.iupd, …
     """
-    debtor_fc = setup_data['debtor_fc']
+    debtor_fc = setup_data["debtor_fc"]
 
     activation_response = activate(
         debtor_service_provider_token_a,
@@ -356,8 +354,9 @@ def gpd_test_data(setup_data: Dict[str, object], debtor_service_provider_token_a
         secrets.debtor_service_provider.service_provider_id,
     )
 
-    assert activation_response.status_code == 201, \
+    assert activation_response.status_code == 201, (
         f"Failed to activate debtor for GPD test: {activation_response.status_code} {activation_response.text}"
+    )
 
     return SimpleNamespace(**setup_data)
 
@@ -366,8 +365,9 @@ def gpd_test_data(setup_data: Dict[str, object], debtor_service_provider_token_a
 # Debtor Service Provider mock PFX certificate fixture
 # ============================================================
 
+
 @pytest.fixture
-def debtor_sp_mock_cert_key() -> Tuple[str, str]:
+def debtor_sp_mock_cert_key() -> tuple[str, str]:
     """
     Returns (cert_path, key_path) for the debtor service provider mock PFX.
     """

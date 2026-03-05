@@ -28,7 +28,9 @@ repos:
         args: [ --pytest-test-first ]
       - id: requirements-txt-fixer
 
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: e77caa8 #v3.13.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.4
     hooks:
-      - id: reorder-python-imports
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format

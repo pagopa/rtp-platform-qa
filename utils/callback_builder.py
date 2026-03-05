@@ -7,9 +7,9 @@ def build_callback_with_original_msg_id(generator_fn, original_msg_id: str, is_d
     - is_document: True if the path includes 'Document' (DS_08N / DS_05_ACTC)
     """
     callback_data = generator_fn()
-    root = callback_data['AsynchronousSepaRequestToPayResponse']
+    root = callback_data["AsynchronousSepaRequestToPayResponse"]
     if is_document:
-        root = root['Document']
+        root = root["Document"]
 
-    root['CdtrPmtActvtnReqStsRpt']['OrgnlGrpInfAndSts']['OrgnlMsgId'] = original_msg_id
+    root["CdtrPmtActvtnReqStsRpt"]["OrgnlGrpInfAndSts"]["OrgnlMsgId"] = original_msg_id
     return callback_data

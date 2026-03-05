@@ -1,6 +1,7 @@
 import asyncio
 import time
 
+
 class TokenBucketLimiter:
     def __init__(self, rate: float, capacity: float | None = None):
         self.capacity = capacity or rate

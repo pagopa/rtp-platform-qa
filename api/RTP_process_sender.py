@@ -17,23 +17,18 @@ def send_gpd_message(access_token: str, message_payload: dict):
     :rtype: requests.Response
     """
 
-    msg_id = str(message_payload.get('id', ''))
+    msg_id = str(message_payload.get("id", ""))
     resource_uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, msg_id))
 
-    operation = message_payload.get('operation', 'CREATE')
+    operation = message_payload.get("operation", "CREATE")
 
     idempotency_key = generate_idempotency_key(operation, resource_uuid)
 
     headers = {
-        'Authorization': f'{access_token}',
-        'Version': SEND_GPD_MESSAGE_VERSION,
-        'RequestId': str(uuid.uuid4()),
-        'Idempotency-Key': idempotency_key
+        "Authorization": f"{access_token}",
+        "Version": SEND_GPD_MESSAGE_VERSION,
+        "RequestId": str(uuid.uuid4()),
+        "Idempotency-Key": idempotency_key,
     }
 
-    return requests.post(
-        headers=headers,
-        url=RTP_SENDER_GPD_MESSAGE_URL,
-        json=message_payload,
-        timeout=HTTP_TIMEOUT
-    )
+    return requests.post(headers=headers, url=RTP_SENDER_GPD_MESSAGE_URL, json=message_payload, timeout=HTTP_TIMEOUT)
