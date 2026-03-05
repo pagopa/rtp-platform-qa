@@ -11,6 +11,9 @@ from pathlib import Path
 from typing import Any, Dict
 
 
+_MULTI_SEGMENT_TOKEN = r'[\w-]+(?:\.+[\w-]+)+'
+
+
 def sanitize_text(text: str) -> str:
     """
     Remove sensitive tokens from text.
@@ -24,25 +27,25 @@ def sanitize_text(text: str) -> str:
         return text
 
     text = re.sub(
-        r'Bearer\s+([\w-]*\.[\w-]*\.[\w-]*)',
+        r'Bearer\s+' + _MULTI_SEGMENT_TOKEN,
         'Bearer ***REDACTED***',
         text
     )
 
     text = re.sub(
-        r'eyJ[\w-]*\.eyJ[\w-]*\.[\w-]*',
+        r'eyJ' + _MULTI_SEGMENT_TOKEN,
         '***REDACTED_JWT***',
         text
     )
 
     text = re.sub(
-        r'\beyJ([\w-]*\.[\w-]*\.[\w-]*)',
+        r'\beyJ' + _MULTI_SEGMENT_TOKEN,
         '***REDACTED_JWT***',
         text
     )
 
     text = re.sub(
-        r'(Authorization["\']?\s*:\s*["\']?)([\w-]*\.[\w-]*\.[\w-]*)',
+        r'(Authorization["\']?\s*:\s*["\']?)' + _MULTI_SEGMENT_TOKEN,
         r'\1***REDACTED***',
         text
     )

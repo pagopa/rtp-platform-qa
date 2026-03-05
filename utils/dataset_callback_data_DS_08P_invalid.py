@@ -1,7 +1,7 @@
-"""Utility to generate DS-08N compliant callback payloads for tests.
+"""Utility to generate DS-08P invalid callback payloads for tests.
 
 The generated payload mimics the callback sent for an asynchronous SEPA
-Request-to-Pay response with a rejected transaction status.
+Request-to-Pay response with an invalid transaction status.
 """
 import random
 import uuid
@@ -18,24 +18,25 @@ from utils.text_utils import fake
 from utils.type_utils import JsonType
 
 
-RJCT_STATUS = 'RJCT'
+INVALID_STATUS = 'INVALID'
 
 
-def generate_callback_data_DS_08N_compliant(bic: str = 'MOCKSP04') -> JsonType:
-    """Generate a DS-08N compliant callback payload.
+def generate_invalid_callback_data_DS_08P(bic: str = 'MOCKSP04') -> JsonType:
+    """Generate a non compliant DS-08P callback payload.
 
     The payload simulates an asynchronous SEPA Request-to-Pay response
-    with a rejected transaction status (``TxSts: RJCT``), including group
+    with an invalid transaction status (`TxSts: INVALID`), including group
     header, original message information, payment details and HAL-style
     links.
 
     Args:
-        bic: Bank Identifier Code of the initiating party
-            (defaults to ``'MOCKSP04'``).
+        bic: Bank Identifier Code of the initiating party (default: 'MOCKSP04').
 
     Returns:
-        JsonType: JSON-serializable DS-08N compliant callback payload, ready
-        to be used in tests.
+        JsonType: JSON-serializable DS-08P compliant callback payload with:
+            - ``resourceId``: unique identifier of the RTP message.
+            - ``AsynchronousSepaRequestToPayResponse``: nested SEPA structure
+              containing group header, original message info and status.
     """
 
     message_id = str(uuid.uuid4())
@@ -46,7 +47,6 @@ def generate_callback_data_DS_08N_compliant(bic: str = 'MOCKSP04') -> JsonType:
     create_time = generate_create_time()
     original_time = generate_future_time(1)
 
-    # amount = random.randint(0, 999999999)
     amount = round(random.uniform(1, 999999), 2)
     expiry_date = generate_expiry_date(1, 30)
     execution_date = generate_execution_date(1, 15)
@@ -74,7 +74,7 @@ def generate_callback_data_DS_08N_compliant(bic: str = 'MOCKSP04') -> JsonType:
                                 'StsId': message_id,
                                 'OrgnlInstrId': f"TestRtpMessage{generate_random_string(20)}",
                                 'OrgnlEndToEndId': generate_random_digits(18),
-                                'TxSts': RJCT_STATUS,
+                                'TxSts': INVALID_STATUS,
                                 'StsRsnInf': {
                                     'Orgtr': {'Id': {'OrgId': {'AnyBIC': bic}}}
                                 },

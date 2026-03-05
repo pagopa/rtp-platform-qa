@@ -7,15 +7,16 @@ import uuid
 
 from .datetime_utils import generate_create_time
 from .datetime_utils import generate_execution_date
+from utils.type_utils import JsonType
 
 
 def generate_rfc_callback_data(
     status: str,
-    BIC: str = 'MOCKSP04',
+    bic: str = 'MOCKSP04',
     resource_id: str = None,
     original_msg_id: str = None,
     assignee_bic: str = None
-) -> dict:
+) -> JsonType:
     """Generate an RFC callback payload with the specified status.
 
     This is a base function that generates SEPA Request-to-Pay Cancellation
@@ -23,13 +24,13 @@ def generate_rfc_callback_data(
 
     Args:
         status: Cancellation status code ('CNCL' for cancelled, 'RJCR' for rejected, etc.).
-        BIC: Bank Identifier Code of the debtor agent (default: 'MOCKSP04').
+        bic: Bank Identifier Code of the debtor agent (default: 'MOCKSP04').
         resource_id: The resource ID of the RTP being cancelled (optional, generates random if not provided).
         original_msg_id: The original message ID without dashes (optional, generates random if not provided).
         assignee_bic: Bank Identifier Code of the assignee (default: 'MOCKSP04'). Used for certificate verification.
 
     Returns:
-        dict: JSON-serializable RFC callback payload with:
+        JsonType: JSON-serializable RFC callback payload with:
             - ``resourceId``: unique identifier of the RTP message.
             - ``SepaRequestToPayCancellationResponse``: nested SEPA structure
               containing resolution of investigation with the specified status.
@@ -90,7 +91,7 @@ def generate_rfc_callback_data(
                                         'Orgtr': {
                                             'Id': {
                                                 'OrgId': {
-                                                    'AnyBIC': BIC
+                                                    'AnyBIC': bic
                                                 }
                                             }
                                         }
@@ -141,7 +142,7 @@ def generate_rfc_callback_data(
                                     },
                                     'DbtrAgt': {
                                         'FinInstnId': {
-                                            'BICFI': BIC
+                                            'BICFI': bic
                                         }
                                     },
                                     'PmtTpInf': {
@@ -168,7 +169,7 @@ def generate_rfc_callback_data(
                                         {
                                             'Agt': {
                                                 'FinInstnId': {
-                                                    'BICFI': BIC
+                                                    'BICFI': bic
                                                 }
                                             },
                                             'Amt': {
