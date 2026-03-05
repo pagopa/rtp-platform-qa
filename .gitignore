@@ -184,6 +184,7 @@ config/.secrets.yaml
 
 # K6 temporary and activation JSON inputs
 **/json-file/rtp-activator/activations.json
+**/json-file/rtp-activator/activation-otps.json
 **/json-file/rtp-sender/resourceIds.json
 
 #gpd-massive
