@@ -70,8 +70,16 @@ def test_send_gpd_message_update_paid_unhappy_path(
         msg_id=create_payload["id"],
         psp_tax_code=None,
     )
-    response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=update_payload)
-    assert_response_code(response, 200, "CREATE", "VALID")
-    body = response.json()
+    assert_response_code(
+        send_gpd_message(access_token=rtp_consumer_access_token, message_payload=update_payload), 200, "UPDATE", "PAID"
+    )
+
+    time.sleep(_UPDATE_PROCESSING_WAIT_S)
+
+    get_response = get_rtp_by_notice_number(access_token=rtp_reader_access_token, notice_number=create_payload["nav"])
+    assert get_response.status_code == 200, (
+        f"Expected 200 from get_rtp_by_notice_number, got {get_response.status_code}. Response: {get_response.text}"
+    )
+    body = get_response.json()
     assert len(body) > 0, f"Expected non-empty list from get_rtp_by_notice_number. Response: {body}"
     assert body[0]["status"] == "RFC_SENT", f"Expected RTP state 'RFC_SENT', got '{body[0]['status']}'"
