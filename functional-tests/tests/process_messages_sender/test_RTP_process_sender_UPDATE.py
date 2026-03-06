@@ -1,10 +1,15 @@
+import time
+
 import allure
 import pytest
 
+from api.RTP_get_api import get_rtp_by_notice_number
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.response_assertions_utils import assert_response_code
 from utils.test_expectations import UPDATE_EXPECTED_CODES
+
+_UPDATE_PROCESSING_WAIT_S = 5
 
 
 @allure.epic("RTP GPD Message")
@@ -36,3 +41,45 @@ def test_send_gpd_message_update_scenarios(rtp_consumer_access_token, random_fis
 
     expected_code = UPDATE_EXPECTED_CODES[status]
     assert_response_code(response_update, expected_code, "UPDATE", status)
+
+
+@allure.epic("RTP GPD Message")
+@allure.feature("GPD Message API")
+@allure.story("Consumer sends RTP message to Sender with PAID status and invalid PSP tax code")
+@allure.title("An UPDATE PAID message with an invalid PSP results in RFC_SENT state")
+@allure.tag("functional", "unhappy_path", "gpd_message", "rtp_send", "update_paid")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_gpd_message_update_paid_unhappy_path(
+    rtp_consumer_access_token, rtp_reader_access_token, random_fiscal_code, activate_payer
+):
+    """UPDATE PAID with psp_tax_code=None (invalid PSP) results in RTP state RFC_SENT"""
+
+    activate_payer(random_fiscal_code)
+
+    create_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
+    assert_response_code(
+        send_gpd_message(access_token=rtp_consumer_access_token, message_payload=create_payload), 200, "CREATE", "VALID"
+    )
+
+    update_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code,
+        operation="UPDATE",
+        status="PAID",
+        iuv=create_payload["iuv"],
+        msg_id=create_payload["id"],
+        psp_tax_code=None,
+    )
+    assert_response_code(
+        send_gpd_message(access_token=rtp_consumer_access_token, message_payload=update_payload), 200, "UPDATE", "PAID"
+    )
+
+    time.sleep(_UPDATE_PROCESSING_WAIT_S)
+
+    get_response = get_rtp_by_notice_number(access_token=rtp_reader_access_token, notice_number=create_payload["nav"])
+    assert get_response.status_code == 200, (
+        f"Expected 200 from get_rtp_by_notice_number, got {get_response.status_code}. Response: {get_response.text}"
+    )
+    body = get_response.json()
+    assert len(body) > 0, f"Expected non-empty list from get_rtp_by_notice_number. Response: {body}"
+    assert body[0]["status"] == "RFC_SENT", f"Expected RTP state 'RFC_SENT', got '{body[0]['status']}'"
