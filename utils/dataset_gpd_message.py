@@ -4,7 +4,12 @@ from utils.generators_utils import generate_random_digits
 
 
 def generate_gpd_message_payload(
-    fiscal_code: str, operation: str = "CREATE", status: str = "VALID", iuv: str = None, msg_id: int = None
+    fiscal_code: str,
+    operation: str = "CREATE",
+    status: str = "VALID",
+    iuv: str = None,
+    msg_id: int = None,
+    psp_tax_code: str | None = "Mock04-tax-code",
 ):
     """Generate a valid GPD message payload with dynamic values"""
     now = datetime.now(UTC)
@@ -30,7 +35,7 @@ def generate_gpd_message_payload(
         "amount": 30000,
         "status": status,
         "psp_code": None,
-        "psp_tax_code": None,
+        "psp_tax_code": psp_tax_code,
     }
 
     return payload
