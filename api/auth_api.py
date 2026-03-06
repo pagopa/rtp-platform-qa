@@ -5,6 +5,7 @@ from api.utils.endpoints import KC_AUTH_URL
 from api.utils.endpoints import MC_SHARED_AUTH_URL
 from api.utils.endpoints import MC_SHARED_AUTH_URL_DEV
 from api.utils.endpoints import POSTE_AUTH_URL
+from api.utils.endpoints import CBI_AUTH_URL, MC_SHARED_AUTH_URL, MC_SHARED_AUTH_URL_DEV, POSTE_AUTH_URL
 
 
 def get_valid_access_token(client_id: str, client_secret: str, access_token_function):
@@ -18,10 +19,10 @@ def get_access_token(client_id: str, client_secret: str):
     token_response = requests.post(
         MC_SHARED_AUTH_URL,
         data={
-            'grant_type': 'client_credentials',
-            'client_id': client_id,
-            'client_secret': client_secret,
-        }
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        },
     )
 
     return token_response
@@ -44,10 +45,10 @@ def get_access_token_dev(client_id: str, client_secret: str):
     token_response = requests.post(
         MC_SHARED_AUTH_URL_DEV,
         data={
-            'grant_type': 'client_credentials',
-            'client_id': client_id,
-            'client_secret': client_secret,
-        }
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        },
     )
 
     return token_response
@@ -56,21 +57,15 @@ def get_access_token_dev(client_id: str, client_secret: str):
 def get_cbi_access_token(cert_path: str, key_path: str, authorization: str):
     token_response = requests.post(
         CBI_AUTH_URL,
-        cert=(
-            cert_path,
-            key_path
-        ),
+        cert=(cert_path, key_path),
         headers={
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': authorization,
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Authorization": authorization,
         },
-        data={
-            'grant_type': 'client_credentials',
-            'scope': 'srtp'
-        }
+        data={"grant_type": "client_credentials", "scope": "srtp"},
     )
 
-    return token_response.json()['access_token']
+    return token_response.json()["access_token"]
 
 
 def get_poste_access_token(cert_path: str, key_path: str, client_id: str, client_secret: str):
@@ -88,19 +83,14 @@ def get_poste_access_token(cert_path: str, key_path: str, client_id: str, client
     """
     token_response = requests.post(
         POSTE_AUTH_URL,
-        cert=(
-            cert_path,
-            key_path
-        ),
-        headers={
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        cert=(cert_path, key_path),
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
-            'client_id': client_id,
-            'client_secret': client_secret,
-            'grant_type': 'client_credentials',
-            'scope': 'fd1d2688-49fe-40f8-9238-4aec86c48eef/.default'
-        }
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "grant_type": "client_credentials",
+            "scope": "fd1d2688-49fe-40f8-9238-4aec86c48eef/.default",
+        },
     )
 
-    return token_response.json()['access_token']
+    return token_response.json()["access_token"]

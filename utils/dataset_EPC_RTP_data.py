@@ -1,14 +1,13 @@
 import uuid
-from datetime import datetime
-from datetime import timezone
+from datetime import UTC, datetime
+
+from utils.text_utils import fake
 
 from .constants_config_helper import CALLBACK_URL
-from .constants_secrets_helper import CBI_PAYEE_ID
-from .constants_secrets_helper import CREDITOR_AGENT_ID
+from .constants_secrets_helper import CBI_PAYEE_ID, CREDITOR_AGENT_ID
 from .dataset_RTP_data import generate_rtp_data
 from .generators_utils import generate_random_organization_id
 from .iban_utils import generate_random_iban
-from utils.text_utils import fake
 
 
 def generate_epc_rtp_data(
@@ -32,13 +31,13 @@ def generate_epc_rtp_data(
         payee_id = CBI_PAYEE_ID
 
     if bic:
-        rtp_data['bic'] = bic
+        rtp_data["bic"] = bic
 
     if not creditor_agent_id:
         creditor_agent_id = CREDITOR_AGENT_ID
 
     resource_id = str(uuid.uuid4())
-    sanitized_id = resource_id.replace('-', '')
+    sanitized_id = resource_id.replace("-", "")
 
     initiating_party_id = generate_random_organization_id()
     organization_name = fake.company()
@@ -47,107 +46,97 @@ def generate_epc_rtp_data(
     debtor_bic = bic
 
     return {
-        'resourceId': resource_id,
-        'Document': {
-            'CdtrPmtActvtnReq': {
-                'GrpHdr': {
-                    'MsgId': sanitized_id,
-                    'CreDtTm': datetime.now(timezone.utc)
-                    .astimezone()
-                    .isoformat(timespec='milliseconds'),
-                    'NbOfTxs': '1',
-                    'InitgPty': {
-                        'Nm': organization_name,
-                        'Id': {
-                            'OrgId': {
-                                'Othr': [
+        "resourceId": resource_id,
+        "Document": {
+            "CdtrPmtActvtnReq": {
+                "GrpHdr": {
+                    "MsgId": sanitized_id,
+                    "CreDtTm": datetime.now(UTC).astimezone().isoformat(timespec="milliseconds"),
+                    "NbOfTxs": "1",
+                    "InitgPty": {
+                        "Nm": organization_name,
+                        "Id": {
+                            "OrgId": {
+                                "Othr": [
                                     {
-                                        'Id': initiating_party_id,
-                                        'SchmeNm': {'Cd': 'BOID'},
+                                        "Id": initiating_party_id,
+                                        "SchmeNm": {"Cd": "BOID"},
                                     }
                                 ]
                             }
                         },
                     },
                 },
-                'PmtInf': [
+                "PmtInf": [
                     {
-                        'PmtInfId': rtp_data['paymentNotice']['noticeNumber'],
-                        'PmtMtd': 'TRF',
-                        'ReqdExctnDt': {'Dt': rtp_data['paymentNotice']['expiryDate']},
-                        'XpryDt': {'Dt': rtp_data['paymentNotice']['expiryDate']},
-                        'Dbtr': {
-                            'Nm': rtp_data['payer']['name'],
-                            'Id': {
-                                'PrvtId': {
-                                    'Othr': [
+                        "PmtInfId": rtp_data["paymentNotice"]["noticeNumber"],
+                        "PmtMtd": "TRF",
+                        "ReqdExctnDt": {"Dt": rtp_data["paymentNotice"]["expiryDate"]},
+                        "XpryDt": {"Dt": rtp_data["paymentNotice"]["expiryDate"]},
+                        "Dbtr": {
+                            "Nm": rtp_data["payer"]["name"],
+                            "Id": {
+                                "PrvtId": {
+                                    "Othr": [
                                         {
-                                            'Id': rtp_data['payer']['payerId'],
-                                            'SchmeNm': {'Cd': 'POID'},
+                                            "Id": rtp_data["payer"]["payerId"],
+                                            "SchmeNm": {"Cd": "POID"},
                                         }
                                     ]
                                 }
                             },
                         },
-                        'DbtrAgt': {'FinInstnId': {'BICFI': debtor_bic}},
-                        'CdtTrfTx': [
+                        "DbtrAgt": {"FinInstnId": {"BICFI": debtor_bic}},
+                        "CdtTrfTx": [
                             {
-                                'PmtId': {
-                                    'InstrId': sanitized_id,
-                                    'EndToEndId': rtp_data['paymentNotice'][
-                                        'noticeNumber'
-                                    ],
+                                "PmtId": {
+                                    "InstrId": sanitized_id,
+                                    "EndToEndId": rtp_data["paymentNotice"]["noticeNumber"],
                                 },
-                                'PmtTpInf': {
-                                    'SvcLvl': {'Cd': 'SRTP'},
-                                    'LclInstrm': {'Prtry': 'PAGOPA'},
+                                "PmtTpInf": {
+                                    "SvcLvl": {"Cd": "SRTP"},
+                                    "LclInstrm": {"Prtry": "PAGOPA"},
                                 },
-                                'Amt': {
-                                    'InstdAmt': float(
-                                        rtp_data['paymentNotice']['amount']
-                                    )
-                                },
-                                'ChrgBr': 'SLEV',
-                                'CdtrAgt': {
-                                    'FinInstnId': {
-                                        'Othr': {
-                                            'Id': creditor_agent_id,
-                                            'SchmeNm': {'Cd': 'BOID'},
+                                "Amt": {"InstdAmt": float(rtp_data["paymentNotice"]["amount"])},
+                                "ChrgBr": "SLEV",
+                                "CdtrAgt": {
+                                    "FinInstnId": {
+                                        "Othr": {
+                                            "Id": creditor_agent_id,
+                                            "SchmeNm": {"Cd": "BOID"},
                                         }
                                     }
                                 },
-                                'Cdtr': {
-                                    'Nm': rtp_data['payee']['name'],
-                                    'Id': {
-                                        'OrgId': {
-                                            'Othr': [
+                                "Cdtr": {
+                                    "Nm": rtp_data["payee"]["name"],
+                                    "Id": {
+                                        "OrgId": {
+                                            "Othr": [
                                                 {
-                                                    'Id': payee_id,
-                                                    'SchmeNm': {'Cd': 'BOID'},
+                                                    "Id": payee_id,
+                                                    "SchmeNm": {"Cd": "BOID"},
                                                 }
                                             ]
                                         }
                                     },
                                 },
-                                'CdtrAcct': {'Id': {'IBAN': creditor_iban}},
-                                'InstrForCdtrAgt': [
-                                    {
-                                        'InstrInf': f"ATR113/{rtp_data['payee']['payTrxRef']}"
-                                    },
-                                    {'InstrInf': 'flgConf'},
+                                "CdtrAcct": {"Id": {"IBAN": creditor_iban}},
+                                "InstrForCdtrAgt": [
+                                    {"InstrInf": f"ATR113/{rtp_data['payee']['payTrxRef']}"},
+                                    {"InstrInf": "flgConf"},
                                 ],
-                                'RmtInf': {
-                                    'Ustrd': [
+                                "RmtInf": {
+                                    "Ustrd": [
                                         f"{rtp_data['paymentNotice']['subject']}/{rtp_data['paymentNotice']['noticeNumber']}",
                                         f"ATS001/{rtp_data['paymentNotice']['description']}",
                                     ]
                                 },
-                                'NclsdFile': [],
+                                "NclsdFile": [],
                             }
                         ],
                     }
                 ],
             }
         },
-        'callbackUrl': CALLBACK_URL
+        "callbackUrl": CALLBACK_URL,
     }

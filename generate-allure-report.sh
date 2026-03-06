@@ -27,6 +27,9 @@ pytest contract-tests -q --alluredir="$RESULTS_DIR"
 
 echo "[INFO] All tests finished."
 
+echo "[INFO] Sanitizing allure results..."
+python "$ROOT_DIR/sanitize-allure-results.py" "$RESULTS_DIR"
+
 if ! command -v allure >/dev/null 2>&1; then
   echo "[ERROR] 'allure' CLI not found. Install it first, e.g.:"
   echo "  brew install allure"

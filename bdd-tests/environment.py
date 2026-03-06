@@ -1,16 +1,11 @@
-from typing import Dict
-
 import allure
 
-from api.auth_api import get_access_token
-from api.auth_api import get_valid_access_token
-from config.configuration import config
-from config.configuration import secrets
+from api.auth_api import get_access_token, get_valid_access_token
+from config.configuration import config, secrets
 from utils.fiscal_code_utils import fake_fc
 
 
-def _init_access_tokens() -> Dict[str, str]:
-
+def _init_access_tokens() -> dict[str, str]:
     """
     Align token management with what is done in functional tests
     (see functional-tests/tests/conftest.py).
@@ -21,22 +16,22 @@ def _init_access_tokens() -> Dict[str, str]:
     - creditor:  Creditor Service Provider A (if needed in RTP scenarios)
     """
 
-    tokens: Dict[str, str] = {}
+    tokens: dict[str, str] = {}
 
-    tokens['debtor'] = get_valid_access_token(
+    tokens["debtor"] = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
         access_token_function=get_access_token,
     )
 
-    tokens['debtor_b'] = get_valid_access_token(
+    tokens["debtor_b"] = get_valid_access_token(
         client_id=secrets.debtor_service_provider_B.client_id,
         client_secret=secrets.debtor_service_provider_B.client_secret,
         access_token_function=get_access_token,
     )
 
-    if getattr(secrets, 'creditor_service_provider', None):
-        tokens['creditor'] = get_valid_access_token(
+    if getattr(secrets, "creditor_service_provider", None):
+        tokens["creditor"] = get_valid_access_token(
             client_id=secrets.creditor_service_provider.client_id,
             client_secret=secrets.creditor_service_provider.client_secret,
             access_token_function=get_access_token,
@@ -46,7 +41,6 @@ def _init_access_tokens() -> Dict[str, str]:
 
 
 def before_all(context) -> None:
-
     """
     Global Behave hook executed once at the start of the BDD suite.
     Initialize:
@@ -63,7 +57,6 @@ def before_all(context) -> None:
 
 
 def before_scenario(context, scenario) -> None:
-
     """
     Behave hook executed before each scenario.
 
@@ -83,5 +76,5 @@ def before_scenario(context, scenario) -> None:
     context.latest_rtp_resource_id = None
     context.otp = None
 
-    allure.dynamic.label('package', 'bdd-tests')
-    allure.dynamic.label('test_type', 'bdd')
+    allure.dynamic.label("package", "bdd-tests")
+    allure.dynamic.label("test_type", "bdd")

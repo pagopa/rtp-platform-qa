@@ -8,6 +8,7 @@ import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 export const ActorCredentials = {
   DEBTOR_SERVICE_PROVIDER: 'DEBTOR_SERVICE_PROVIDER',
+  DEBTOR_SERVICE_PROVIDER_FAKESP: "DEBTOR_SERVICE_PROVIDER_FAKESP",
   CREDITOR_SERVICE_PROVIDER: 'CREDITOR_SERVICE_PROVIDER',
   SERVICE_REGISTRY_READER: 'SERVICE_REGISTRY_READER',
   PAGOPA_INTEGRATION_PAYEE_REGISTRY: 'PAGOPA_INTEGRATION_PAYEE_REGISTRY',
@@ -19,6 +20,10 @@ const ACTOR_CREDENTIALS_MAP = {
   [ActorCredentials.DEBTOR_SERVICE_PROVIDER]: {
     clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID,
     clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET,
+  },
+  [ActorCredentials.DEBTOR_SERVICE_PROVIDER_FAKESP]: {
+    clientId: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_ID_FAKESP,
+    clientSecret: __ENV.DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET_FAKESP,
   },
   [ActorCredentials.CREDITOR_SERVICE_PROVIDER]: {
     clientId: __ENV.CREDITOR_SERVICE_PROVIDER_CLIENT_ID,
@@ -78,7 +83,7 @@ function retrieveActorClientCredentials(actor) {
 /**
  * Sets up authentication for API requests using environment variables related to given actor.
  *
- * @param {ActorCredentials} actor - The actor to fetch credentials for
+ * @param {string} actor - The actor to fetch credentials for
  * @returns {Object} Object containing the access_token
  * @throws {Error} If required environment variables are missing
  */
@@ -294,6 +299,7 @@ export const stages = [
 export const endpoints = {
   activations: `${activationConfig.activation_base}/activations`,
   deactivations: `${activationConfig.activation_base}/activations`,
+  takeover: `${activationConfig.activation_base}/activations/takeover`,
   sendRtp: `${senderConfig.sender_base}/rtps`,
   callbackSend : `${callbackConfig.callback_base}/cb/send`,
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,

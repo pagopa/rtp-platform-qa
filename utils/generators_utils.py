@@ -2,6 +2,7 @@ import random
 import string
 import uuid
 
+
 def generate_random_string(length: int) -> str:
     """Generate a random string of specified length with letters and digits.
 
@@ -11,7 +12,7 @@ def generate_random_string(length: int) -> str:
     Returns:
         Random string containing letters and digits
     """
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+    return "".join(random.choices(string.ascii_letters + string.digits, k=length))
 
 
 def generate_random_organization_id() -> str:
@@ -20,7 +21,7 @@ def generate_random_organization_id() -> str:
     Returns:
         String containing 11 random digits
     """
-    return ''.join([str(random.randint(0, 9)) for _ in range(11)])
+    return "".join([str(random.randint(0, 9)) for _ in range(11)])
 
 
 def random_payee_id() -> str:
@@ -29,7 +30,7 @@ def random_payee_id() -> str:
     Returns:
         String containing 11 or 16 random digits
     """
-    return ''.join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))])
+    return "".join([str(random.randint(0, 9)) for _ in range(random.choice([11, 16]))])
 
 
 def generate_notice_number() -> str:
@@ -38,7 +39,7 @@ def generate_notice_number() -> str:
     Returns:
         String containing 18 random digits
     """
-    return ''.join([str(random.randint(0, 9)) for _ in range(18)])
+    return "".join([str(random.randint(0, 9)) for _ in range(18)])
 
 
 def generate_random_digits(length: int) -> str:
@@ -50,7 +51,8 @@ def generate_random_digits(length: int) -> str:
     Returns:
         String containing random digits
     """
-    return ''.join(random.choices('0123456789', k=length))
+    return "".join(random.choices("0123456789", k=length))
+
 
 def generate_iuv():
     """
@@ -59,7 +61,8 @@ def generate_iuv():
     Returns:
         str: A random 17-digit number as string
     """
-    return ''.join(random.choices('0123456789', k=17))
+    return "".join(random.choices("0123456789", k=17))
+
 
 def generate_iupd():
     """

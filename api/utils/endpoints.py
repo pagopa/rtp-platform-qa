@@ -1,6 +1,5 @@
 from config.configuration import config
 
-
 ACTIVATION_URL = config.activation_base_url_path + config.activation_path
 ACTIVATION_URL_DEV = config.activation_base_url_path_dev + config.activation_path
 ACTIVATION_LIST_URL = config.activation_base_url_path + config.activation_list_path

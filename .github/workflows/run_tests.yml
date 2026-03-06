@@ -109,6 +109,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest functional-tests/tests/ --alluredir allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save functional test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_functional_test_results
@@ -133,6 +137,10 @@ jobs:
           allure_history: allure-history
           subfolder: functional
           keep_reports: 30
+      - name: Sanitize allure history
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-history
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -166,6 +174,10 @@ jobs:
         continue-on-error: true
         run: |
           behave bdd-tests/ --format allure_behave.formatter:AllureFormatter -o allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save BDD test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_bdd_test_results
@@ -190,6 +202,10 @@ jobs:
           allure_history: allure-history
           subfolder: bdd
           keep_reports: 30
+      - name: Sanitize allure history
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-history
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -226,6 +242,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest ux-tests/tests/ --alluredir allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save UX test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_ux_test_results
@@ -250,6 +270,10 @@ jobs:
           allure_history: allure-history
           subfolder: ux
           keep_reports: 30
+      - name: Sanitize allure history
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-history
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -283,6 +307,10 @@ jobs:
         continue-on-error: true
         run: |
           pytest contract-tests/ --disable-warnings --alluredir allure-results
+      - name: Sanitize allure results
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-results
       - name: Save contract test results
         uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         id: upload_contract_test_results
@@ -307,6 +335,10 @@ jobs:
           allure_history: allure-history
           subfolder: contract
           keep_reports: 30
+      - name: Sanitize allure history
+        if: always()
+        run: |
+          python sanitize-allure-results.py allure-history
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()
@@ -325,6 +357,13 @@ jobs:
     needs: Contract_Tests
     if: always()
     steps:
+      - name: Checkout sanitize script
+        uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 #v4.2.0
+        with:
+          sparse-checkout: |
+            sanitize-allure-results.py
+          sparse-checkout-cone-mode: false
+          path: source
       - name: Copy functional results
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
@@ -366,6 +405,10 @@ jobs:
           allure_report: allure-report
           allure_history: allure-history
           keep_reports: 30
+      - name: Sanitize allure history
+        if: always()
+        run: |
+          python source/sanitize-allure-results.py allure-history
       - name: Publish test report
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         if: always()

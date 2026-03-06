@@ -7,15 +7,12 @@ from typing import Any
 
 from core.rate_limit import TokenBucketLimiter
 from core.utils import iter_file_lines
-from fastapi import HTTPException
-from fastapi import UploadFile
-from models.dto import FileError
-from models.dto import FileSendResult
-from models.dto import RTPMessage
-from models.dto import SendStatus
+from fastapi import HTTPException, UploadFile
+from models.dto import FileError, FileSendResult, RTPMessage, SendStatus
+
 from services.producer import ProducerService
 
-logger = logging.getLogger('gpd-producer')
+logger = logging.getLogger("gpd-producer")
 
 
 async def send_message(
@@ -28,15 +25,17 @@ async def send_message(
         try:
             _ = RTPMessage(**payload)
         except Exception as e:
-            logger.warning('Validation failed: %s', e)
-            raise HTTPException(status_code=422, detail={'status': 'error', 'message': f"Payload validation failed: {e}"})
+            logger.warning("Validation failed: %s", e)
+            raise HTTPException(
+                status_code=422, detail={"status": "error", "message": f"Payload validation failed: {e}"}
+            )
 
     try:
         await producer_service.send_json(topic, payload)
-        return SendStatus(status='success')
+        return SendStatus(status="success")
     except Exception as e:
-        logger.exception('Error sending message: %s', e)
-        raise HTTPException(status_code=500, detail={'status': 'error', 'message': str(e)})
+        logger.exception("Error sending message: %s", e)
+        raise HTTPException(status_code=500, detail={"status": "error", "message": str(e)})
 
 
 async def send_file(
@@ -49,7 +48,7 @@ async def send_file(
     async def process_line(line_no: int, text: str):
         nonlocal sent, failed
         stripped = text.strip()
-        if not stripped or stripped.startswith('#'):
+        if not stripped or stripped.startswith("#"):
             return
         try:
             payload: dict[str, Any] = json.loads(stripped)
@@ -72,7 +71,7 @@ async def send_file(
             failed += 1
             err = FileError(type=type(e).__name__, message=str(e))
             errors_map[err.type] = err
-            logger.debug('Failed to send line %s due to %s', line_no, err.type)
+            logger.debug("Failed to send line %s due to %s", line_no, err.type)
 
     sent: int = 0
     failed: int = 0
