@@ -318,3 +318,16 @@ def sp_activations_read_all_token() -> str:
         client_secret=secrets.read_rtp_activations.client_secret,
         access_token_function=get_keycloak_access_token,
     )
+
+
+@pytest.fixture
+def rtp_consumer_access_token() -> str:
+    """
+    Access token for RTP Consumer client.
+    Used to send messages directly to the GPD sender service.
+    """
+    return get_valid_access_token(
+        client_id=secrets.rtp_consumer.client_id,
+        client_secret=secrets.rtp_consumer.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
