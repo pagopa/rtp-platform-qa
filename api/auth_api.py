@@ -2,10 +2,7 @@ import requests
 
 from api.utils.endpoints import CBI_AUTH_URL
 from api.utils.endpoints import KC_AUTH_URL
-from api.utils.endpoints import MC_SHARED_AUTH_URL
-from api.utils.endpoints import MC_SHARED_AUTH_URL_DEV
 from api.utils.endpoints import POSTE_AUTH_URL
-from api.utils.endpoints import CBI_AUTH_URL, MC_SHARED_AUTH_URL, MC_SHARED_AUTH_URL_DEV, POSTE_AUTH_URL
 
 
 def get_valid_access_token(client_id: str, client_secret: str, access_token_function):
@@ -14,18 +11,6 @@ def get_valid_access_token(client_id: str, client_secret: str, access_token_func
 
     return f"Bearer {token_response.json()['access_token']}"
 
-
-def get_access_token(client_id: str, client_secret: str):
-    token_response = requests.post(
-        MC_SHARED_AUTH_URL,
-        data={
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret,
-        },
-    )
-
-    return token_response
 
 def get_keycloak_access_token(client_id: str, client_secret: str):
     token_response = requests.post(
@@ -36,19 +21,6 @@ def get_keycloak_access_token(client_id: str, client_secret: str):
             'client_id': client_id,
             'client_secret': client_secret,
         }
-    )
-
-    return token_response
-
-
-def get_access_token_dev(client_id: str, client_secret: str):
-    token_response = requests.post(
-        MC_SHARED_AUTH_URL_DEV,
-        data={
-            "grant_type": "client_credentials",
-            "client_id": client_id,
-            "client_secret": client_secret,
-        },
     )
 
     return token_response
