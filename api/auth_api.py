@@ -1,8 +1,6 @@
 import requests
 
-from api.utils.endpoints import CBI_AUTH_URL
-from api.utils.endpoints import KC_AUTH_URL
-from api.utils.endpoints import POSTE_AUTH_URL
+from api.utils.endpoints import CBI_AUTH_URL, KC_AUTH_URL, POSTE_AUTH_URL
 
 
 def get_valid_access_token(client_id: str, client_secret: str, access_token_function):
@@ -15,12 +13,12 @@ def get_valid_access_token(client_id: str, client_secret: str, access_token_func
 def get_keycloak_access_token(client_id: str, client_secret: str):
     token_response = requests.post(
         KC_AUTH_URL,
-        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
-            'grant_type': 'client_credentials',
-            'client_id': client_id,
-            'client_secret': client_secret,
-        }
+            "grant_type": "client_credentials",
+            "client_id": client_id,
+            "client_secret": client_secret,
+        },
     )
 
     return token_response

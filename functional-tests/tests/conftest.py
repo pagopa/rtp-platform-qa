@@ -126,6 +126,7 @@ def pagopa_service_providers_registry_token() -> str:
 #  Keycloak access token fixtures
 # ============================================================
 
+
 @pytest.fixture
 def kc_debtor_service_provider_token_a() -> str:
     """

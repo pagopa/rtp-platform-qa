@@ -46,7 +46,6 @@ def test_all_token_fixtures_return_bearer_tokens(request, token_fixture_name):
     assert len(token) > 7, f'{token_fixture_name} should not be empty after "Bearer "'
 
 
-
 @allure.epic("Authentication")
 @allure.feature("Authentication Token Retrieval")
 @allure.story("Keycloak Service Provider authentication")
