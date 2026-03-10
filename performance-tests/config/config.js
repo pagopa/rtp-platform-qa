@@ -1,4 +1,4 @@
-const ACCESS_TOKEN_URL = 'https://api-mcshared.uat.cstar.pagopa.it/auth/token';
+const ACCESS_TOKEN_URL = 'https://api-mcshared.uat.cstar.pagopa.it/auth-itn/realms/srtp/protocol/openid-connect/token';
 
 export const activationConfig = {
   access_token_url: ACCESS_TOKEN_URL,

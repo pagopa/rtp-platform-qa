@@ -4,7 +4,7 @@ import pytest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from api.auth_api import get_access_token, get_valid_access_token
+from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from api.debtor_activation_api import activate
 from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
@@ -53,7 +53,7 @@ def debtor_service_provider_token_a() -> str:
     return get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
 
@@ -66,7 +66,7 @@ def debtor_service_provider_token_b() -> str:
     return get_valid_access_token(
         client_id=secrets.debtor_service_provider_B.client_id,
         client_secret=secrets.debtor_service_provider_B.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
 
@@ -79,7 +79,7 @@ def creditor_service_provider_token_a() -> str:
     return get_valid_access_token(
         client_id=secrets.creditor_service_provider.client_id,
         client_secret=secrets.creditor_service_provider.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
 
@@ -92,7 +92,7 @@ def rtp_reader_access_token() -> str:
     return get_valid_access_token(
         client_id=secrets.rtp_reader.client_id,
         client_secret=secrets.rtp_reader.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
 
@@ -105,7 +105,7 @@ def pagopa_payee_registry_token() -> str:
     return get_valid_access_token(
         client_id=secrets.pagopa_integration_payee_registry.client_id,
         client_secret=secrets.pagopa_integration_payee_registry.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
 
@@ -118,7 +118,7 @@ def pagopa_service_providers_registry_token() -> str:
     return get_valid_access_token(
         client_id=secrets.pagopa_integration_service_registry.client_id,
         client_secret=secrets.pagopa_integration_service_registry.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
 
@@ -228,5 +228,18 @@ def sp_activations_read_all_token() -> str:
     return get_valid_access_token(
         client_id=secrets.read_rtp_activations.client_id,
         client_secret=secrets.read_rtp_activations.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
+def rtp_consumer_access_token() -> str:
+    """
+    Access token for RTP Consumer client.
+    Used to send messages directly to the GPD sender service.
+    """
+    return get_valid_access_token(
+        client_id=secrets.rtp_consumer.client_id,
+        client_secret=secrets.rtp_consumer.client_secret,
+        access_token_function=get_keycloak_access_token,
     )

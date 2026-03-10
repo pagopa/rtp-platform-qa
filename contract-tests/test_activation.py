@@ -5,7 +5,7 @@ import requests
 import schemathesis
 from schemathesis import Case
 
-from api.auth_api import get_access_token, get_valid_access_token
+from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from config.configuration import config, secrets
 
 SPEC_URL = config.activation_api_specification
@@ -16,7 +16,7 @@ schema = schemathesis.openapi.from_url(SPEC_URL)
 ACCESS_TOKEN = get_valid_access_token(
     client_id=secrets.debtor_service_provider.client_id,
     client_secret=secrets.debtor_service_provider.client_secret,
-    access_token_function=get_access_token,
+    access_token_function=get_keycloak_access_token,
 )
 
 

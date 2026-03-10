@@ -1,6 +1,6 @@
 import allure
 
-from api.auth_api import get_access_token, get_valid_access_token
+from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from config.configuration import config, secrets
 from utils.fiscal_code_utils import fake_fc
 
@@ -21,20 +21,20 @@ def _init_access_tokens() -> dict[str, str]:
     tokens["debtor"] = get_valid_access_token(
         client_id=secrets.debtor_service_provider.client_id,
         client_secret=secrets.debtor_service_provider.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
     tokens["debtor_b"] = get_valid_access_token(
         client_id=secrets.debtor_service_provider_B.client_id,
         client_secret=secrets.debtor_service_provider_B.client_secret,
-        access_token_function=get_access_token,
+        access_token_function=get_keycloak_access_token,
     )
 
     if getattr(secrets, "creditor_service_provider", None):
         tokens["creditor"] = get_valid_access_token(
             client_id=secrets.creditor_service_provider.client_id,
             client_secret=secrets.creditor_service_provider.client_secret,
-            access_token_function=get_access_token,
+            access_token_function=get_keycloak_access_token,
         )
 
     return tokens

@@ -45,9 +45,7 @@ def test_send_gpd_message_update_scenarios(rtp_consumer_access_token, random_fis
 @allure.tag("functional", "unhappy_path", "gpd_message", "rtp_send", "update_paid")
 @pytest.mark.send
 @pytest.mark.unhappy_path
-def test_send_gpd_message_update_paid_unhappy_path(
-    rtp_consumer_access_token, random_fiscal_code, activate_payer
-):
+def test_send_gpd_message_update_paid_unhappy_path(rtp_consumer_access_token, random_fiscal_code, activate_payer):
     """UPDATE PAID with psp_tax_code=None (invalid PSP) results in RTP state RFC_SENT"""
 
     activate_payer(random_fiscal_code)

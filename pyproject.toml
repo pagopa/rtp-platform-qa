@@ -80,6 +80,7 @@ markers = [
   "need_fix: tests that fails and need a fix",
   "landing_page: tests on dummy landing page",
   "auth: tests on authentication service",
+  "keycloak: tests on Keycloak authentication service",
   "activation: tests on activation service",
   "send: Tests for RTP send",
   "cbi: CBI specific tests",

@@ -54,7 +54,7 @@ def send_srtp_to_poste(access_token: str, rtp_payload: JsonType):
         url=POSTE_SEND_URL,
         json=rtp_payload,
         cert=(CERT_PATH, KEY_PATH),
-        timeout=HTTP_TIMEOUT
+        timeout=HTTP_TIMEOUT,
     )
 
 

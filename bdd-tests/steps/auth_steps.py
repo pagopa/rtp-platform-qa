@@ -1,6 +1,6 @@
 from behave import given, when
 
-from api.auth_api import get_access_token, get_valid_access_token
+from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from config.configuration import secrets
 
 
@@ -21,7 +21,7 @@ def given_ec_on_page(context, role):
         client_id = secrets.creditor_service_provider.client_id
         client_secret = secrets.creditor_service_provider.client_secret
     access_token = get_valid_access_token(
-        client_id=client_id, client_secret=client_secret, access_token_function=get_access_token
+        client_id=client_id, client_secret=client_secret, access_token_function=get_keycloak_access_token
     )
     context.access_tokens[role] = access_token
 
@@ -46,7 +46,7 @@ def given_sp_b_authenticated(context, role):
         client_secret = secrets.creditor_service_provider_B.client_secret
 
     access_token = get_valid_access_token(
-        client_id=client_id, client_secret=client_secret, access_token_function=get_access_token
+        client_id=client_id, client_secret=client_secret, access_token_function=get_keycloak_access_token
     )
     context.access_tokens["debtor_b"] = access_token
 
