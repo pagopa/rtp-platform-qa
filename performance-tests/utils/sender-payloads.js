@@ -15,7 +15,7 @@ export function buildSendPayload(payerId) {
         },
         payer: {
             name: 'Pigrolo',
-            payerId,
+            payerId: payerId,
         },
         paymentNotice: {
             noticeNumber,

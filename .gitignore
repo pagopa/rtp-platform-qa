@@ -186,6 +186,7 @@ config/.secrets.yaml
 **/json-file/rtp-activator/activations.json
 **/json-file/rtp-activator/activation-otps.json
 **/json-file/rtp-sender/resourceIds.json
+**/json-file/rtp-sender/resourceIds-cancel.json
 
 #gpd-massive
 gpd-massive/out/*.ndjson
