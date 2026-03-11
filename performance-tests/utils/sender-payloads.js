@@ -94,6 +94,47 @@ export function buildCallbackPayload(resourceId) {
 }
 
 /**
+ * Builds the payload for an RTP callback cancel response.
+ *
+ * @param {string} resourceId Original RTP message identifier.
+ * @param {string} rtpSpId RTP Service Provider BIC identifier.
+ * @returns {Object} Callback cancel payload to send to the RTP callback endpoint.
+ */
+export function buildCallbackCancelPayload(resourceId, rtpSpId) {
+    return {
+        SepaRequestToPayCancellationResponse: {
+            Document: {
+                RsltnOfInvstgtn: {
+                    Assgnmt: {
+                        Assgne: {
+                            Agt: {
+                                FinInstnId: {
+                                    BICFI: rtpSpId
+                                }
+                            }
+                        }
+                    },
+                    CxlDtls:
+                        {
+                            TxInfAndSts: [
+                                {
+                                    OrgnlGrpInf: {
+                                        OrgnlMsgId: resourceId
+                                    }
+                                }
+                            ]
+                        }
+                    ,
+                    Sts: {
+                        Conf: "CNCL"
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
  * Builds a GPD message payload used for stress test executions.
  *
  * This helper is designed for performance testing scenarios and produces
