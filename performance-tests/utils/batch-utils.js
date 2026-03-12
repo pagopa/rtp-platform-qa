@@ -2,6 +2,7 @@ import http from 'k6/http';
 import { sleep } from 'k6';
 import {randomFiscalCode, buildHeaders, endpoints} from './utils.js';
 import {buildSendPayload} from "./sender-payloads.js";
+import {senderConfig} from "../config/config.js";
 
 /**
  * Create a batch of activations for testing purposes.
@@ -62,7 +63,7 @@ export function createActivationsInBatch({
             const body = JSON.parse(res.body);
             activationId = body.activationId || null;
           } catch (e) {
-            console.warn(`⚠️ Failed to parse response body for fiscalCode: ${batchFiscalCodes[index]}`);
+            console.warn(`⚠️ Failed to parse response body for fiscalCode: ${batchFiscalCodes[index]}, ex: ${e}`);
           }
         }
 
@@ -93,95 +94,154 @@ export function createActivationsInBatch({
 }
 
 /**
- * Send a batch of RTP (Request To Pay) requests for testing purposes.
+ * Sends RTP requests in batches using HTTP batch calls.
  *
- * @param {Object} params - Function parameters
- * @param {string} params.accessToken - Access token for the API
- * @param {number} params.targetRequests - Total number of RTP requests to send
- * @param {number} params.batchSize - Size of each batch of requests (default: 50)
- * @param {number} params.delayBetweenBatches - Seconds to wait between batches (default: 2)
- * @param {string} params.payerId - Fiscal code or identifier of the payer
- * @returns {Array} Array of RTP request objects with id, payerId, and sent status
+ * @param {Object} params - Function parameters.
+ * @param {string} params.accessToken - Access token used to authorize the requests.
+ * @param {number} params.targetRequests - Total number of RTP requests to send.
+ * @param {number} [params.batchSize=50] - Number of requests per batch.
+ * @param {number} [params.delayBetweenBatches=2] - Delay (in seconds) between batches.
+ * @param {string} params.debtorFiscalCode - Debtor fiscal code used in the request payload.
+ *
+ * @returns {Array<{id: string, debtorFiscalCode: string}>} List of successfully created RTP request IDs.
  */
-export function createSendInBatch({
-                                      accessToken,
-                                      targetRequests,
-                                      batchSize = 50,
-                                      delayBetweenBatches = 2,
-                                      payerId,
-                                  }) {
-    console.log(`Sending ${targetRequests} RTP requests in batches of ${batchSize}...`);
+export function sendRtpInBatch({
+  accessToken,
+  targetRequests,
+  batchSize = 50,
+  delayBetweenBatches = 2,
+  debtorFiscalCode,
+}) {
+  console.log(`Sending ${targetRequests} RTP requests in batches of ${batchSize}...`);
 
-    const headers = buildHeaders(accessToken);
-    const requestIds = [];
+  if (!debtorFiscalCode) {
+    throw new Error("❌ debtorFiscalCode cannot be null");
+  }
 
-    for (let batch = 0; batch < Math.ceil(targetRequests / batchSize); batch++) {
-        const batchRequests = [];
+  const headers = buildHeaders(accessToken);
+  const requestIds = [];
+  let totalSuccess = 0;
+  let totalFailure = 0;
 
-        for (let i = 0; i < batchSize && (batch * batchSize + i) < targetRequests; i++) {
-            const payload = buildSendPayload(payerId);
+  for (let batch = 0; batch < Math.ceil(targetRequests / batchSize); batch++) {
+    const batchRequests = [];
 
-            batchRequests.push({
-                method: 'POST',
-                url: endpoints.sendRtp,
-                body: JSON.stringify(payload),
-                params: { headers, tags: { batchId: batch, itemId: i } },
-            });
-        }
+    for (let i = 0; i < batchSize && (batch * batchSize + i) < targetRequests; i++) {
+      const payload = buildSendPayload(debtorFiscalCode);
 
-        const responses = http.batch(batchRequests);
-
-        let successCount = 0;
-        let failureCount = 0;
-
-        responses.forEach((res, index) => {
-            if (res.status >= 200 && res.status < 300) {
-                successCount++;
-
-                let resourceId = null;
-
-                if (res.headers && res.headers['Location']) {
-                    resourceId = res.headers['Location'].split('/').pop();
-                }
-
-                if (!resourceId) {
-                    try {
-                        const body = res.json();
-                        resourceId = body?.resourceId || body?.resourceID || body?.id || null;
-                    } catch (_) {
-                        try {
-                            const body = JSON.parse(res.body);
-                            resourceId = body.resourceId || body.resourceID || body.id || null;
-                        } catch (e) {
-                            console.warn(`⚠️ Failed to parse response body for request index: ${index}`);
-                        }
-                    }
-                }
-
-                if (resourceId) {
-                    requestIds.push({
-                        id: resourceId,
-                        payerId,
-                        processed: false,
-                    });
-                } else {
-                    console.error(`⚠️ Request successful but no ID found for index: ${index}`);
-                }
-            } else {
-                failureCount++;
-                console.error(`❌ Failed RTP request (batch ${batch}, item ${index}): Status ${res.status}`);
-            }
-        });
-
-        console.log(`Batch ${batch + 1}: ${successCount} RTP requests sent (${failureCount} failed), total: ${requestIds.length}`);
-
-        if (batch < Math.ceil(targetRequests / batchSize) - 1) {
-            sleep(delayBetweenBatches);
-        }
+      batchRequests.push({
+        method: 'POST',
+        url: endpoints.sendRtp,
+        body: JSON.stringify(payload),
+        params: { headers },
+      });
     }
 
-    console.log(`Batch send completed: ${requestIds.length} RTP requests ready`);
-    return requestIds;
+    const responses = http.batch(batchRequests);
+    let batchSuccess = 0;
+
+    responses.forEach((res) => {
+      if (res.status >= 200 && res.status < 300) {
+        batchSuccess++;
+
+        let resourceId = null;
+        if (res.headers?.['Location']) {
+          resourceId = res.headers['Location'].split('/').pop();
+        }
+        if (!resourceId) {
+          try {
+            const body = JSON.parse(res.body);
+            resourceId = body?.resourceId || body?.id || null;
+          } catch (e) {
+            console.warn(`⚠️ Failed to parse response body. ex: ${e}`);
+          }
+        }
+
+        if (resourceId) {
+          requestIds.push({
+            id: resourceId,
+            debtorFiscalCode,
+          });
+        }
+      }
+    });
+
+    totalSuccess += batchSuccess;
+    totalFailure += (responses.length - batchSuccess);
+
+    console.log(`Batch ${batch + 1}: ${batchSuccess} RTP requests sent (${responses.length - batchSuccess} failed), total: ${requestIds.length}`);
+
+    if (batch < Math.ceil(targetRequests / batchSize) - 1) {
+      sleep(delayBetweenBatches);
+    }
+  }
+
+  console.log(`Batch send completed: ${requestIds.length} RTP requests ready (${totalSuccess} success, ${totalFailure} failed)`);
+  return requestIds;
+}
+
+/**
+ * Cancels RTP requests in batches using HTTP batch calls.
+ *
+ * @param {Object} params - Function parameters.
+ * @param {string} params.accessToken - Access token used to authorize the requests.
+ * @param {Array<{id: string, payerId?: string}>} params.resourceIds - List of RTP resource IDs to cancel.
+ * @param {number} [params.batchSize=50] - Number of cancel requests per batch.
+ * @param {number} [params.delayBetweenBatches=1] - Delay (in seconds) between batches.
+ *
+ * @returns {Array<{id: string, payerId?: string}>} List of successfully canceled RTP requests.
+ */
+export function cancelRtpInBatch({
+  accessToken,
+  resourceIds,
+  batchSize = 50,
+  delayBetweenBatches = 1,
+}) {
+
+  console.log(`Cancelling ${resourceIds.length} RTP requests in batches of ${batchSize}...`);
+
+  const headers = buildHeaders(accessToken);
+  const basePath = `${senderConfig.sender_base}/rtps`;
+  const cancelledIds = [];
+  let successCount = 0;
+  let failureCount = 0;
+
+  for (let batch = 0; batch < Math.ceil(resourceIds.length / batchSize); batch++) {
+    const batchRequests = [];
+
+    for (let i = 0; i < batchSize && (batch * batchSize + i) < resourceIds.length; i++) {
+      const resourceId = resourceIds[batch * batchSize + i].id;
+      const fullUrl = `${basePath}/${resourceId}/cancel`;
+
+      batchRequests.push({
+        method: 'POST',
+        url: fullUrl,
+        params: { headers },
+      });
+    }
+
+    const responses = http.batch(batchRequests);
+
+    let batchSuccess = 0;
+    responses.forEach((res, index) => {
+      if (res.status >= 200 && res.status < 300) {
+        batchSuccess++;
+        cancelledIds.push(resourceIds[batch * batchSize + index]);
+      }
+    });
+
+    successCount += batchSuccess;
+    failureCount += (responses.length - batchSuccess);
+
+    console.log(`Batch ${batch + 1}: ${batchSuccess} RTP requests cancelled (${responses.length - batchSuccess} failed), total: ${cancelledIds.length}`);
+
+    if (batch < Math.ceil(resourceIds.length / batchSize) - 1) {
+      sleep(delayBetweenBatches);
+    }
+  }
+
+  console.log(`Batch cancel completed: ${cancelledIds.length} RTP requests cancelled (${successCount} success, ${failureCount} failed)`);
+  return cancelledIds;
 }
 
 /**
