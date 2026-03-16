@@ -1,7 +1,6 @@
 # ============================
-# SECRETS & CERTIFICATES
+# CERTIFICATES
 # ============================
-SECRET_PATH: "config/.secrets.yaml"
 cert_path: "config/cert.pem"
 key_path: "config/key.pem"
 
