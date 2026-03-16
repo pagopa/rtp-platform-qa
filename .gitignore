@@ -183,10 +183,7 @@ config/.secrets.yaml
 **/deactivation-report.txt
 
 # K6 temporary and activation JSON inputs
-**/json-file/rtp-activator/activations.json
-**/json-file/rtp-activator/activation-otps.json
-**/json-file/rtp-sender/resourceIds.json
-**/json-file/rtp-sender/resourceIds-cancel.json
+**/json-file/**/*.json
 
 #gpd-massive
 gpd-massive/out/*.ndjson
