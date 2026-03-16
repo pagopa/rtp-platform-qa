@@ -302,6 +302,7 @@ export const endpoints = {
   takeover: `${activationConfig.activation_base}/activations/takeover`,
   sendRtp: `${senderConfig.sender_base}/rtps`,
   callbackSend : `${callbackConfig.callback_base}/cb/send`,
+  callbackCancel: `${callbackConfig.callback_base}/cb/cancel`,
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
   gpdMessage: `${senderConfig.sender_base}/gpd/message`,
 };

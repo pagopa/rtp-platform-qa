@@ -15,7 +15,7 @@ export function buildSendPayload(payerId) {
         },
         payer: {
             name: 'Pigrolo',
-            payerId,
+            payerId: payerId,
         },
         paymentNotice: {
             noticeNumber,
@@ -91,6 +91,47 @@ export function buildCallbackPayload(resourceId) {
             }
         }
     };
+}
+
+/**
+ * Builds the payload for an RTP callback cancel response.
+ *
+ * @param {string} resourceId Original RTP message identifier.
+ * @param {string} rtpSpId RTP Service Provider BIC identifier.
+ * @returns {Object} Callback cancel payload to send to the RTP callback endpoint.
+ */
+export function buildCallbackCancelPayload(resourceId, rtpSpId) {
+    return {
+        SepaRequestToPayCancellationResponse: {
+            Document: {
+                RsltnOfInvstgtn: {
+                    Assgnmt: {
+                        Assgne: {
+                            Agt: {
+                                FinInstnId: {
+                                    BICFI: rtpSpId
+                                }
+                            }
+                        }
+                    },
+                    CxlDtls:
+                        {
+                            TxInfAndSts: [
+                                {
+                                    OrgnlGrpInf: {
+                                        OrgnlMsgId: resourceId
+                                    }
+                                }
+                            ]
+                        }
+                    ,
+                    Sts: {
+                        Conf: "CNCL"
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**

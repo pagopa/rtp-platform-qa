@@ -1,5 +1,5 @@
 import { ActorCredentials, setupAuth } from "../utils/utils.js";
-import { createSendInBatch } from "../utils/batch-utils.js";
+import { sendRtpInBatch} from "../utils/batch-utils.js";
 
 /**
  * @file RTP Sender – Batch setup (k6)
@@ -8,106 +8,95 @@ import { createSendInBatch } from "../utils/batch-utils.js";
  * only the resulting `resourceId`s to a JSON file via `handleSummary()`.
  *
  * ## Inputs
- * - Environment variables:
- * - `SERVICE_PROVIDER_ID` (required): Creditor Service Provider identifier used as `payerId`.
- * - `TARGET_REQUESTS` (number, optional, default: 2000): total RTPs to send.
- * - `BATCH_SIZE` (number, optional, default: 50): requests per batch.
- * - `DELAY_BETWEEN_BATCHES` (number, seconds, optional, default: 1): delay between batches.
+ * Environment variables:
+ * - `DEBTOR_FISCAL_CODE` (required): Fiscal code of the debtor used in RTP payloads.
+ * - `TARGET_REQUESTS` (number, optional, default: 10000): Total RTPs to send.
+ * - `BATCH_SIZE` (number, optional, default: 1000): Requests per batch.
+ * - `DELAY_BETWEEN_BATCHES` (number, seconds, optional, default: 1): Delay between batches.
  *
  * ## Outputs
- * - JSON file: `json-file/rtp-sender/resourceIds.json` containing an array of `resourceId` strings.
+ * - JSON file: `json-file/rtp-sender/resourceIds.json`
+ *   containing an array of RTP `resourceId` strings.
  */
 
-/** Debtor/Creditor Service Provider ID from environment. */
-const SERVICE_PROVIDER_ID = __ENV.SERVICE_PROVIDER_ID;
+/** Debtor fiscal code from `DEBTOR_FISCAL_CODE` env variable. @type {string} */
+const DEBTOR_FISCAL_CODE = String(__ENV.DEBTOR_FISCAL_CODE);
 
-/** Destination file for collected resource IDs. */
+/** Total RTP requests to generate (`TARGET_REQUESTS`, default: 10000). @type {number} */
+const TARGET_REQUESTS = Number(__ENV.TARGET_REQUESTS) || 10000;
+
+/** Requests per batch (`BATCH_SIZE`, default: 1000). @type {number} */
+const BATCH_SIZE = Number(__ENV.BATCH_SIZE) || 1000;
+
+/** Delay in seconds between batches (`DELAY_BETWEEN_BATCHES`, default: 1). @type {number} */
+const DELAY_BETWEEN_BATCHES = Number(__ENV.DELAY_BETWEEN_BATCHES) || 1;
+
+/** Cached OAuth access token. @type {string|null} */
+let token = null;
+
+/** Timestamp when the token was created (ms). @type {number} */
+let tokenCreatedAt = 0;
+
+/** Token TTL in milliseconds (4 minutes). @type {number} */
+const TOKEN_TTL = 4 * 60 * 1000;
+
+/** Output file path for generated RTP resource IDs. @type {string} */
 const FILE_PATH = 'json-file/rtp-sender/resourceIds.json';
 
 /**
- * k6 options. We extend the setup timeout to accommodate large batch runs.
+ * k6 test options.
+ * Extends the setup timeout to allow large batch executions.
+ *
  * @type {{ setupTimeout: string }}
  */
-export let options = {
-    setupTimeout: '30m',
+export const options = {
+    setupTimeout: '60m',
 };
-
-/**
- * Runtime configuration derived from environment variables.
- * @typedef {Object} Config
- * @property {string} serviceProviderId Creditor Service Provider ID (required).
- * @property {number} targetRequests Total number of RTP send requests to perform.
- * @property {number} batchSize Number of requests per batch.
- * @property {number} delayBetweenBatches Delay in seconds between batches.
- */
-
-
-/**
- * Reads and validates configuration from environment variables, applying defaults.
- *
- * @returns {Config} Normalized configuration object.
- * @throws {Error} If `SERVICE_PROVIDER_ID` is not provided.
- */
-function getConfig() {
-    if (!SERVICE_PROVIDER_ID) {
-        throw new Error("❌ SERVICE_PROVIDER_ID cannot be null");
-    }
-
-    return {
-        serviceProviderId: SERVICE_PROVIDER_ID,
-        targetRequests: Number(__ENV.TARGET_REQUESTS) || 2000,
-        batchSize: Number(__ENV.BATCH_SIZE) || 50,
-        delayBetweenBatches: Number(__ENV.DELAY_BETWEEN_BATCHES) || 1,
-    };
-}
-
-let savedResourceIds = [];
 
 /**
  * k6 `setup()` lifecycle function.
  *
- * Authenticates as a Creditor Service Provider, then sends RTP requests in batches using
- * `createSendInBatch`. Returns the array of items produced by the batch utility so they are
- * available as `setup_data` to `handleSummary()`.
+ * Authenticates as a Creditor Service Provider and sends RTP requests
+ * in batches using `sendRtpInBatch`. The returned data is passed to
+ * `handleSummary()` as `setup_data`.
  *
- * @returns {Array<{ id?: string, resourceId?: string }>} Array of batch results (each containing an id/resourceId).
+ * @returns {Array<{ id: string, payerId: string }>} List of successfully created RTP requests.
  */
 export function setup() {
-    try {
-        const config = getConfig();
-        console.log("⚙️ Configuration:", config);
-
+    if (!token || (Date.now() - tokenCreatedAt) > TOKEN_TTL) {
         const auth = setupAuth(ActorCredentials.CREDITOR_SERVICE_PROVIDER);
-
-        const resourceIds = createSendInBatch({
-            accessToken: auth.access_token,
-            targetRequests: config.targetRequests,
-            batchSize: config.batchSize,
-            delayBetweenBatches: config.delayBetweenBatches,
-            payerId: config.serviceProviderId,
-        });
-
-        console.log("✅ Number of RTP sent:", resourceIds.length);
-        return resourceIds;
-    } catch (err) {
-        console.error("❌ Error while creating RTP:", err.message);
-        return [];
+        token = auth.access_token;
+        tokenCreatedAt = Date.now();
+        console.log(`🔄 VU ${__VU} refreshed token`);
     }
+
+    return sendRtpInBatch({
+        accessToken: token,
+        targetRequests: TARGET_REQUESTS,
+        batchSize: BATCH_SIZE,
+        delayBetweenBatches: DELAY_BETWEEN_BATCHES,
+        debtorFiscalCode: DEBTOR_FISCAL_CODE,
+    });
 }
 
 /**
- * Default k6 test function (not used). The logic runs entirely in `setup()`.
+ * Default k6 test function (not used).
+ * The logic runs entirely in `setup()`.
  */
-export default function () {}
+export default function createRtp () {
+    // intentionally empty: only setup() + handleSummary()
+}
 
 /**
  * k6 `handleSummary()` lifecycle function.
  *
- * Extracts only the resource identifiers from `setup_data` and writes them to a JSON file
- * for later consumption.
+ * Extracts only the RTP resource identifiers from `setup_data`
+ * and writes them to a JSON file for later consumption.
  *
- * @param {{ setup_data?: Array<{ id?: string, resourceId?: string }> }} data Object carrying setup output.
- * @returns {Record<string, string>} Map of output filenames to serialized file contents.
+ * @param {{ setup_data?: Array<{ id: string, payerId: string }> }} data
+ * Object containing the output returned by `setup()`.
+ *
+ * @returns {Record<string, string>} Map of output file paths to serialized contents.
  */
 export function handleSummary(data) {
     const idsOnly = (data.setup_data || [])
