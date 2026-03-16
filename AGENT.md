@@ -44,8 +44,6 @@ rtp-platform-qa/
 │   ├── service_registry/         # Payee registry and service provider registry
 │   ├── takeover/                 # Debtor takeover scenarios
 │   └── conftest.py               # Shared fixtures (tokens, activation factory)
-├── gpd-test/tests/               # Standalone GPD debt-position tests
-├── load-tests/                   # k6 load test scripts (JavaScript)
 ├── performance-tests/            # k6 performance test scripts (JavaScript)
 ├── ux-tests/tests/               # Playwright browser automation tests
 ├── utils/                        # Shared utilities (40+ modules)
@@ -67,9 +65,7 @@ rtp-platform-qa/
 | BDD | `bdd-tests/` | Behave + allure-behave | `make test-bdd` |
 | UX | `ux-tests/tests/` | pytest + Playwright | `make test-ux` |
 | Contract | `contract-tests/` | Schemathesis + pytest | `make test-contract` |
-| GPD | `gpd-test/tests/` | pytest | `pytest gpd-test/tests/` |
 | Performance | `performance-tests/` | k6 (JavaScript) | `k6 run ...` |
-| Load | `load-tests/` | k6 (JavaScript) | `k6 run ...` |
 
 ### Functional test directory layout
 
@@ -534,6 +530,7 @@ Each API domain has a corresponding pytest marker defined in `pyproject.toml`. W
 ### What NOT to recommend
 
 - Do NOT recommend `gpd-test/` for general changes — it requires a running GPD environment and is triggered separately via a manual workflow.
+- Do NOT recommend `load-tests/` for general changes — load tests target specific performance scenarios and are run on dedicated infrastructure.
 - Do NOT recommend provider-specific tests (e.g. `-m cbi`) when the change is provider-agnostic — use the domain marker instead (e.g. `-m send`).
 
 ---
