@@ -46,7 +46,11 @@ def test_send_gpd_message_update_valid_before_create_rtp_exists(
     response_update = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=update_payload)
     assert_response_code(response_update, 200, "UPDATE before CREATE", "VALID")
 
-    resource_id = response_update.json()["resourceID"]
+    response_update_json = response_update.json()
+    assert "resourceID" in response_update_json, (
+        f"Expected 'resourceID' in response body, got: {response_update.text}"
+    )
+    resource_id = response_update_json["resourceID"]
 
     get_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
     assert get_response.status_code == 200, f"Expected RTP to exist in DB, got {get_response.status_code}"
