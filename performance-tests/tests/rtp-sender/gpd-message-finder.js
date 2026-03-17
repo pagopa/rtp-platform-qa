@@ -31,8 +31,10 @@ const EC_TAX_CODE = String(__ENV.EC_TAX_CODE);
 /** Optional PSP tax code. If not provided, the value defaults to null. */
 const PSP_TAX_CODE = String(__ENV.PSP_TAX_CODE) || null;
 
+/** Gpd message Operation. If not provided, the value defaults to CREATE. */
 const OPERATION = String(__ENV.OPERATION) || "CREATE";
 
+/** Gpd message Status. If not provided, the value defaults to VALID. */
 const STATUS = String(__ENV.STATUS) || "VALID";
 
 /**
@@ -103,15 +105,25 @@ export const options = {
  * Executed once before the test starts.
  * Prepares and wraps fiscal codes to be shared across VUs.
  *
- * @returns {{ fiscalCodes: Array<{fiscalCode: string}> }}
+ * @returns {{ fiscalCodes: Array<{fiscalCode: string}>, consumerToken: string }}
  */
 export function setup() {
-  const auth = setupAuth(ActorCredentials.RTP_CONSUMER)
+  const auth = String(setupAuth(ActorCredentials.RTP_CONSUMER))
   const wrappedActivations = activationFiscalCodes.map(fiscalCode => ({fiscalCode}));
 
   return {fiscalCodes: wrappedActivations, consumerToken: auth};
 }
 
+/**
+ * Main stress test scenario function.
+ *
+ * For each iteration:
+ *  - Calculates time-based tags for metrics
+ *  - Sends a GPD message request
+ *  - Tracks success/failure and response time
+ *
+ * @param {{ fiscalCodes: Array<{fiscalCode: string}> , consumerToken: string}} data - Shared setup data
+ */
 export function sendMessage(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
 
