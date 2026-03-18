@@ -16,13 +16,16 @@ from utils.regex_utils import uuidv4_pattern
 @pytest.mark.happy_path
 @pytest.mark.real_integration
 @pytest.mark.cbi
-def test_send_rtp_to_cbi(creditor_service_provider_token_a):
+def test_send_rtp_to_cbi(webpage_token):
 
     fiscal_code = secrets.cbi_activated_fiscal_code
     payee_id = secrets.cbi_payee_id
     rtp_data = generate_rtp_data(payer_id=fiscal_code, payee_id=str(payee_id))
 
-    send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
+    print(f"\n[rtp_data] {rtp_data}")
+
+    send_response = send_rtp(access_token=webpage_token, rtp_payload=rtp_data)
+    print(f"[send_rtp] status={send_response.status_code}, body={send_response.text}")
 
     assert send_response.status_code == 201
 
