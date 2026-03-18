@@ -203,3 +203,31 @@ export function buildGpdMessagePayload(
         "psp_tax_code": psp_tax_code ?? null
     }
 }
+
+/**
+ * Builds the payload for deleting a GPD message.
+ *
+ * @param {string} operationId Identifier of the GPD message to delete.
+ * @returns {Object} GPD delete message payload.
+ */
+export function buildDeleteGpdMessagePayload(operationId){
+
+    const timestamp = Date.now();
+
+    return {
+        "id": operationId,
+        "operation": "DELETE",
+        "timestamp": timestamp,
+        "iuv": null,
+        "subject": null,
+        "description": null,
+        "ec_tax_code": null,
+        "debtor_tax_code": null,
+        "nav": null,
+        "due_date": null,
+        "amount": null,
+        "status": null,
+        "psp_code": null,
+        "psp_tax_code": null
+    }
+}
