@@ -22,10 +22,7 @@ def test_send_rtp_to_cbi(webpage_token):
     payee_id = secrets.cbi_payee_id
     rtp_data = generate_rtp_data(payer_id=fiscal_code, payee_id=str(payee_id))
 
-    print(f"\n[rtp_data] {rtp_data}")
-
     send_response = send_rtp(access_token=webpage_token, rtp_payload=rtp_data)
-    print(f"[send_rtp] status={send_response.status_code}, body={send_response.text}")
 
     assert send_response.status_code == 201
 
