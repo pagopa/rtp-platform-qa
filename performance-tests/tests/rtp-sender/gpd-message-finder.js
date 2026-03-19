@@ -29,19 +29,13 @@ const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 const EC_TAX_CODE = String(__ENV.EC_TAX_CODE);
 
 /** Optional PSP tax code. If not provided, the value defaults to null. */
-const PSP_TAX_CODE = String(__ENVPSP_TAX_CODE) || null;
+const PSP_TAX_CODE = String(__ENV.PSP_TAX_CODE) || null;
 
-/**
- * Per-VU authentication token management.
- * Each VU keeps its own token instance and refresh timestamp.
- */
-let consumerToken = null;
-let tokenCreatedAt = 0;
+/** Gpd message Operation. If not provided, the value defaults to CREATE. */
+const OPERATION = String(__ENV.OPERATION) || "CREATE";
 
-/**
- * Token time-to-live in milliseconds (15 minutes).
- */
-const TOKEN_TTL = 15 * 60 * 1000;
+/** Gpd message Status. If not provided, the value defaults to VALID. */
+const STATUS = String(__ENV.STATUS) || "VALID";
 
 /**
  * Loads activation fiscal codes from external JSON file.
@@ -111,12 +105,13 @@ export const options = {
  * Executed once before the test starts.
  * Prepares and wraps fiscal codes to be shared across VUs.
  *
- * @returns {{ fiscalCodes: Array<{fiscalCode: string}> }}
+ * @returns {{ fiscalCodes: Array<{fiscalCode: string}>, consumerToken: string }}
  */
 export function setup() {
-  const wrappedActivations = activationFiscalCodes.map(
-      fiscalCode => ({fiscalCode}));
-  return {fiscalCodes: wrappedActivations};
+  const auth = String(setupAuth(ActorCredentials.RTP_CONSUMER))
+  const wrappedActivations = activationFiscalCodes.map(fiscalCode => ({fiscalCode}));
+
+  return {fiscalCodes: wrappedActivations, consumerToken: auth};
 }
 
 /**
@@ -124,11 +119,10 @@ export function setup() {
  *
  * For each iteration:
  *  - Calculates time-based tags for metrics
- *  - Refreshes the authentication token every TOKEN_TTL
  *  - Sends a GPD message request
  *  - Tracks success/failure and response time
  *
- * @param {{ fiscalCodes: Array<{fiscalCode: string}> }} data - Shared setup data
+ * @param {{ fiscalCodes: Array<{fiscalCode: string}> , consumerToken: string}} data - Shared setup data
  */
 export function sendMessage(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
@@ -141,16 +135,8 @@ export function sendMessage(data) {
 
   currentRPS.add(1, tags);
 
-  if (!consumerToken || (Date.now() - tokenCreatedAt) > TOKEN_TTL) {
-    const auth = setupAuth(ActorCredentials.RTP_CONSUMER);
-    consumerToken = auth.access_token;
-    tokenCreatedAt = Date.now();
-    console.log(`🔄 VU ${__VU} refreshed token`);
-  }
-
-
   const headers = {
-    ...buildHeaders(consumerToken),
+    ...buildHeaders(data.consumerToken),
     "Idempotency-Key": uuidv4()
   };
 
@@ -160,8 +146,8 @@ export function sendMessage(data) {
   const payload = buildGpdMessagePayload(
       fiscalCode,
       generatePositiveLong(),
-      "CREATE",
-      "VALID",
+      OPERATION,
+      STATUS,
       EC_TAX_CODE,
       PSP_TAX_CODE
   );
@@ -176,8 +162,7 @@ export function sendMessage(data) {
     successCounter.add(1, tags);
   } else {
     failureCounter.add(1, tags);
-    console.error(
-        `❌ VU #${__VU}: Failed send gpd message — Status ${res.status}`);
+    console.error(`❌ VU #${__VU}: Failed send gpd message — Status ${res.status}`);
   }
 
   check(res, {
