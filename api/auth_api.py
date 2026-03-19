@@ -24,6 +24,21 @@ def get_keycloak_access_token(client_id: str, client_secret: str):
     return token_response
 
 
+def get_keycloak_password_token(client_id: str, username: str, password: str):
+    token_response = requests.post(
+        KC_AUTH_URL,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        data={
+            "grant_type": "password",
+            "client_id": client_id,
+            "username": username,
+            "password": password,
+            "scope": "offline_access",
+        },
+    )
+    return token_response
+
+
 def get_cbi_access_token(cert_path: str, key_path: str, authorization: str):
     token_response = requests.post(
         CBI_AUTH_URL,
