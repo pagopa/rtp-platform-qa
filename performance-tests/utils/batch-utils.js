@@ -1,8 +1,14 @@
 import http from 'k6/http';
 import { sleep } from 'k6';
-import {randomFiscalCode, buildHeaders, endpoints} from './utils.js';
-import {buildSendPayload} from "./sender-payloads.js";
+import {
+  randomFiscalCode,
+  buildHeaders,
+  endpoints,
+  generatePositiveLong
+} from './utils.js';
+import {buildGpdMessagePayload, buildSendPayload} from "./sender-payloads.js";
 import {senderConfig} from "../config/config.js";
+import {uuidv4} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 
 /**
  * Create a batch of activations for testing purposes.
@@ -242,6 +248,122 @@ export function cancelRtpInBatch({
 
   console.log(`Batch cancel completed: ${cancelledIds.length} RTP requests cancelled (${successCount} success, ${failureCount} failed)`);
   return cancelledIds;
+}
+
+/**
+ * Creates GPD messages in batches and returns the successful operation IDs.
+ *
+ * @param {Object} params - Function parameters.
+ * @param {string} params.accessToken - Access token used to authorize the requests.
+ * @param {number} params.targetRequests - Total number of GPD messages to create.
+ * @param {number} [params.batchSize=100] - Number of requests per batch.
+ * @param {number} [params.delayBetweenBatches=2] - Delay (in seconds) between batches.
+ * @param {string} params.debtorFiscalCode - Debtor fiscal code used in the payload.
+ * @param {string} params.operation - GPD operation type.
+ * @param {string} params.status - GPD message status.
+ * @param {string} params.ecTaxCode - Entity creditor tax code.
+ * @param {string|null} [params.psp_tax_code] - PSP tax code.
+ * @returns {string[]} List of successful operation IDs.
+ */
+export function createGpdMessageInBatch({
+  accessToken,
+  targetRequests,
+  batchSize = 100,
+  delayBetweenBatches = 2,
+  debtorFiscalCode,
+  operation,
+  status,
+  ecTaxCode,
+  psp_tax_code,
+}) {
+  console.log(`Sending ${targetRequests} GpdMessage requests in batches of ${batchSize}...`);
+
+  if (!accessToken){
+    throw new Error("❌ accessToken cannot be null");
+  }
+
+  if (!debtorFiscalCode) {
+    throw new Error("❌ debtorFiscalCode cannot be null");
+  }
+
+  if (!operation) {
+    throw new Error("❌ operation cannot be null");
+  }
+
+  if (!status) {
+    throw new Error("❌ status cannot be null");
+  }
+
+  if (!ecTaxCode) {
+    throw new Error("❌ ecTaxCode cannot be null");
+  }
+
+  const operationIds = [];
+  let totalSuccess = 0;
+  let totalFailure = 0;
+
+  for (let batch = 0; batch < Math.ceil(targetRequests / batchSize); batch++) {
+    const batchRequests = [];
+    const batchOperationIds = [];
+
+    for (let i = 0; i < batchSize && (batch * batchSize + i) < targetRequests; i++) {
+      const operationId = String(generatePositiveLong());
+
+      const payload = buildGpdMessagePayload(
+          debtorFiscalCode,
+          operationId,
+          operation,
+          status,
+          ecTaxCode,
+          psp_tax_code
+      );
+
+      batchOperationIds.push(operationId);
+
+      batchRequests.push({
+        method: 'POST',
+        url: endpoints.gpdMessage,
+        body: JSON.stringify(payload),
+        params: {
+          headers: {
+            ...buildHeaders(accessToken),
+            "Idempotency-Key": uuidv4(),
+          },
+        },
+      });
+    }
+
+    const responses = http.batch(batchRequests);
+    let batchSuccess = 0;
+
+    responses.forEach((res, index) => {
+      if (res.status >= 200 && res.status < 300) {
+        batchSuccess++;
+        operationIds.push(batchOperationIds[index]);
+      } else {
+        console.error(
+            `❌ GpdMessage create failed: ${res.status}`
+        );
+      }
+    });
+
+    totalSuccess += batchSuccess;
+    totalFailure += (responses.length - batchSuccess);
+
+    console.log(
+        `Batch ${batch + 1}: ${batchSuccess} GpdMessage requests sent (${responses.length - batchSuccess} failed), total: ${operationIds.length}`
+    );
+
+    if (batch < Math.ceil(targetRequests / batchSize) - 1) {
+      sleep(delayBetweenBatches);
+    }
+  }
+
+  console.log(
+      `Batch send completed: ${operationIds.length} GpdMessage ready (${totalSuccess} success, ${totalFailure} failed)`
+  );
+
+  return operationIds;
 }
 
 /**
