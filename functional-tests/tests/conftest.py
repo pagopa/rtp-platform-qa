@@ -4,7 +4,7 @@ import pytest
 from _pytest.nodes import Item
 from _pytest.reports import TestReport
 
-from api.auth_api import get_keycloak_access_token, get_valid_access_token
+from api.auth_api import get_keycloak_access_token, get_keycloak_password_token, get_valid_access_token
 from api.debtor_activation_api import activate
 from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
@@ -81,6 +81,21 @@ def creditor_service_provider_token_a() -> str:
         client_secret=secrets.creditor_service_provider.client_secret,
         access_token_function=get_keycloak_access_token,
     )
+
+
+@pytest.fixture
+def webpage_token() -> str:
+    """
+    Access token for the webform user (password grant).
+    Used by tests that need to act as the webpage user.
+    """
+    token_response = get_keycloak_password_token(
+        client_id=secrets.webpage.client_id,
+        username=secrets.webpage.username,
+        password=secrets.webpage.password,
+    )
+    token_response.raise_for_status()
+    return f"Bearer {token_response.json()['access_token']}"
 
 
 @pytest.fixture

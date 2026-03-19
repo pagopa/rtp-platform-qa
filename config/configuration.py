@@ -67,6 +67,7 @@ secrets.pagopa_integration_service_registry = Dynaconf(
 secrets.webpage = Dynaconf(
     username=os.getenv("WEBPAGE_USERNAME"),
     password=os.getenv("WEBPAGE_PASSWORD"),
+    client_id=os.getenv("WEBPAGE_CLIENT_ID"),
 )
 
 secrets.debt_positions = Dynaconf(

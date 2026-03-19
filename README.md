@@ -286,6 +286,7 @@ Secrets must be updated manually by admins when rotated.
 |----------|-------------|
 | `WEBPAGE_USERNAME` | Username for web application login |
 | `WEBPAGE_PASSWORD` | Password for web application login |
+| `WEBPAGE_CLIENT_ID` | Client ID for web application authentication |
 
 ### CBI Configuration
 
