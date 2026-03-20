@@ -1,7 +1,7 @@
 import allure
 import pytest
 
-from api.RTP_get_api import get_rtp
+from api.RTP_get_api import get_rtp_by_notice_number
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_message_payload
 
@@ -24,10 +24,10 @@ def test_send_gpd_message_create_idempotency(
 
     Expectations:
     - Both calls return HTTP 200 (idempotent, not an error).
-    - The resourceID in both responses is identical, proving that only one RTP
-      record was created in the database.
-    - The record is retrievable from the DB via the GET endpoint, confirming
-      it was persisted and not just returned from a response cache.
+    - The resourceID in both responses is identical, proving the API returned
+      the cached response and did not process the message twice.
+    - Querying by notice number returns exactly one RTP, confirming that only
+      one record was written to the database.
     """
 
     activate_payer(random_fiscal_code)
@@ -50,17 +50,20 @@ def test_send_gpd_message_create_idempotency(
     assert "resourceID" in body_first, f"Expected 'resourceID' in first response body, got: {response_first.text}"
     assert "resourceID" in body_second, f"Expected 'resourceID' in second response body, got: {response_second.text}"
 
-    resource_id = body_first["resourceID"]
-
-    assert body_second["resourceID"] == resource_id, (
+    assert body_first["resourceID"] == body_second["resourceID"], (
         f"Expected both calls to return the same resourceID (idempotency), "
-        f"but got '{resource_id}' and '{body_second['resourceID']}'"
+        f"but got '{body_first['resourceID']}' and '{body_second['resourceID']}'"
     )
 
-    get_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert get_response.status_code == 200, (
-        f"Expected RTP '{resource_id}' to exist in DB, got {get_response.status_code}: {get_response.text}"
+    by_notice = get_rtp_by_notice_number(
+        access_token=rtp_reader_access_token,
+        notice_number=message_payload["nav"],
     )
-    assert get_response.json()["resourceID"] == resource_id, (
-        f"DB record resourceID mismatch: expected '{resource_id}', got '{get_response.json().get('resourceID')}'"
+    assert by_notice.status_code == 200, (
+        f"Expected 200 from getByNoticeNumber, got {by_notice.status_code}: {by_notice.text}"
+    )
+
+    results = by_notice.json()
+    assert len(results) == 1, (
+        f"Expected exactly 1 RTP in DB for notice number '{message_payload['nav']}', found {len(results)}"
     )
