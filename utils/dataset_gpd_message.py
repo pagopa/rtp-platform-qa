@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+from utils.constants_secrets_helper import EC_TAX_CODE
 from utils.generators_utils import generate_random_digits
 
 
@@ -28,7 +29,7 @@ def generate_gpd_message_payload(
         "iuv": iuv,
         "subject": "remittanceInformation 1",
         "description": "Canone Unico Patrimoniale - CORPORATE - TEST",
-        "ec_tax_code": "80015010723",
+        "ec_tax_code": EC_TAX_CODE,
         "debtor_tax_code": fiscal_code,
         "nav": f"3{iuv}",
         "due_date": due_date,

@@ -5,3 +5,4 @@ DEBTOR_SERVICE_PROVIDER_B_ID = secrets.debtor_service_provider_B.service_provide
 CBI_PAYEE_ID = secrets.cbi_payee_id
 CREDITOR_AGENT_ID = secrets.creditor_agent_id
 DEBT_POSITIONS_ORGANIZATION_ID = secrets.debt_positions.organization_id
+EC_TAX_CODE = secrets.ec_tax_code
