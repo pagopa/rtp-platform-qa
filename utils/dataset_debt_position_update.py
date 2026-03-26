@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+from .constants_secrets_helper import EC_TAX_CODE
 from .fiscal_code_utils import fake_fc
 from .generators_utils import generate_iuv
 
@@ -60,7 +61,7 @@ def generate_debt_position_update_payload(iupd, debtor_fc=None, iuv=None, origin
                     {
                         "idTransfer": "1",
                         "amount": 30000,
-                        "organizationFiscalCode": "80015010723",
+                        "organizationFiscalCode": EC_TAX_CODE,
                         "remittanceInformation": "remittanceInformation 1",
                         "category": "9/0201133IM/",
                         "iban": "IT0000000000000000000000000",

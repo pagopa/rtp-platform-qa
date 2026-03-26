@@ -324,6 +324,7 @@ Secrets must be updated manually by admins when rotated.
 | `DEBT_POSITIONS_ORGANIZATION_ID` | GPD organization ID (UAT) |
 | `DEBT_POSITIONS_DEV_SUBSCRIPTION_KEY` | GPD subscription key (DEV) |
 | `DEBT_POSITIONS_DEV_ORGANIZATION_ID` | GPD organization ID (DEV) |
+| `EC_TAX_CODE` | EC fiscal code used in GPD message payloads and debt position updates |
 
 ### RTP Consumer / Sender
 
