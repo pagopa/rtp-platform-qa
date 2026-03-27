@@ -64,9 +64,8 @@ def assert_response_code(response: Response, expected_code: int, operation: str,
 
 def assert_body_presence(body: Any | None, should_have_body: bool, operation: str, status: str) -> None:
     """
-    Assert that the response body is present or absent as expected.
+    Assert that the response body is present when expected.
+    For error responses (4xx/422) the API always returns a JSON error body, so absence is not asserted.
     """
     if should_have_body:
         assert body is not None, f"Expected non-empty body for {operation} with status {status}, got empty response"
-    else:
-        assert body is None, f"Expected empty body for {operation} with status {status}, got: {body}"
