@@ -1,0 +1,332 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","609","An RTP is sent through API","functional-tests.tests.send_rtp","Sun Mar 29 07:03:34 UTC 2026","passed","Sun Mar 29 07:03:35 UTC 2026","","test_RTP_send_MOCK","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1145","An UPDATE message with status EXPIRED before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:11 UTC 2026","passed","Sun Mar 29 07:03:12 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","2552","A DELETE message after CREATE DRAFT","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:19 UTC 2026","passed","Sun Mar 29 07:01:22 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1784","A DELETE message after CREATE INVALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:05 UTC 2026","passed","Sun Mar 29 07:01:07 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","572","malformed rtp_id → 400 Bad Request","functional-tests.tests.get_rtp","Sun Mar 29 06:59:54 UTC 2026","passed","Sun Mar 29 06:59:55 UTC 2026","","test_RTP_get","",""
+"","545","Failed callback for non existing Service Provider - DS-08P compliant","functional-tests.tests.callbacks","Sun Mar 29 06:58:56 UTC 2026","passed","Sun Mar 29 06:58:57 UTC 2026","","test_RTP_callback_DS_08","",""
+"","1283","Get a page of activations","functional-tests.tests.activation","Sun Mar 29 06:57:58 UTC 2026","passed","Sun Mar 29 06:57:59 UTC 2026","","test_debtor_activation_list","",""
+"","1184","A debtor is deactivated by an authenticated service provider","functional-tests.tests.activation","Sun Mar 29 06:58:08 UTC 2026","passed","Sun Mar 29 06:58:09 UTC 2026","","test_debtor_deactivation","",""
+"","562","Invalid NextActivationId format returns 400","functional-tests.tests.activation","Sun Mar 29 06:58:04 UTC 2026","passed","Sun Mar 29 06:58:04 UTC 2026","","test_debtor_activation_list","",""
+"","2431","An RTP callback is successfully received","functional-tests.tests.callbacks","Sun Mar 29 06:58:31 UTC 2026","failed","Sun Mar 29 06:58:33 UTC 2026","","test_RTP_callback_DS_04","",""
+"","660","An RTP is sent through CBI API","functional-tests.tests.availability","Sun Mar 29 06:58:20 UTC 2026","broken","Sun Mar 29 06:58:20 UTC 2026","","test_availability_CBI","",""
+"","589","Cannot send RTP with invalid amount","functional-tests.tests.availability","Sun Mar 29 06:58:20 UTC 2026","broken","Sun Mar 29 06:58:21 UTC 2026","","test_availability_CBI","",""
+"","858","An RTP is sent to a CBI service with activated fiscal code","functional-tests.tests.send_rtp","Sun Mar 29 07:03:23 UTC 2026","failed","Sun Mar 29 07:03:24 UTC 2026","","test_RTP_send_CBI","",""
+"","545","Unauthorized request returns 401","functional-tests.tests.activation","Sun Mar 29 06:58:03 UTC 2026","passed","Sun Mar 29 06:58:03 UTC 2026","","test_debtor_activation_list","",""
+"
+Tests that sending an RTP payload with an expired date to the POSTE endpoint results in a 400 Bad Request response.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","1182","Cannot send RTP with expired date","functional-tests.tests.availability","Sun Mar 29 06:58:28 UTC 2026","failed","Sun Mar 29 06:58:29 UTC 2026","","test_availability_POSTE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2477","A DELETE message after CREATE VALID + UPDATE PARTIALLY_PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:27 UTC 2026","passed","Sun Mar 29 07:01:29 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","1117","A CREATE message with status PUBLISHED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:56 UTC 2026","passed","Sun Mar 29 07:00:57 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1779","An UPDATE message with status PAID after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:19 UTC 2026","passed","Sun Mar 29 07:02:21 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"","2934","Failed callback for non compliant DS-04b payload","functional-tests.tests.callbacks","Sun Mar 29 06:58:36 UTC 2026","passed","Sun Mar 29 06:58:39 UTC 2026","","test_RTP_callback_DS_04","",""
+"
+Verify that a debt position can be deleted successfully.
+","2716","Happy path: a debt position is deleted in UAT environment","functional-tests.tests.gpd_availability","Sun Mar 29 07:00:18 UTC 2026","passed","Sun Mar 29 07:00:21 UTC 2026","","test_availability_GPD","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1184","An UPDATE message with status PAID before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:09 UTC 2026","passed","Sun Mar 29 07:03:10 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Availability probe for takeover notification mock endpoint: expects 204 No Content","515","Test Takeover Notification Endpoint","functional-tests.tests.takeover","Sun Mar 29 07:03:52 UTC 2026","passed","Sun Mar 29 07:03:53 UTC 2026","","test_debtor_takeover","",""
+"","540","Retrieving activation without valid token returns 401","functional-tests.tests.activation","Sun Mar 29 06:57:54 UTC 2026","passed","Sun Mar 29 06:57:55 UTC 2026","","test_debtor_activation_get","",""
+"Test sending a CREATE operation message via GPD message API","1205","A CREATE message is successfully sent through GPD message API","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:42 UTC 2026","passed","Sun Mar 29 07:00:43 UTC 2026","","test_RTP_process_sender","",""
+"","1201","A second service provider triggers takeover when debtor is already active on another service provider","functional-tests.tests.activation","Sun Mar 29 06:57:47 UTC 2026","passed","Sun Mar 29 06:57:48 UTC 2026","","test_debtor_activation_create","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1141","An UPDATE message with status PUBLISHED before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:18 UTC 2026","passed","Sun Mar 29 07:03:19 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1122","An UPDATE message with status PARTIALLY_PAID before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:16 UTC 2026","passed","Sun Mar 29 07:03:17 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","2381","An UPDATE message with status PAID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:41 UTC 2026","passed","Sun Mar 29 07:02:43 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1143","An UPDATE message with status DRAFT before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:13 UTC 2026","passed","Sun Mar 29 07:03:14 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","1122","A CREATE message with status PARTIALLY_PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:51 UTC 2026","passed","Sun Mar 29 07:00:52 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"","560","Find by payer id request must contain lower case fiscal code","functional-tests.tests.activation","Sun Mar 29 06:57:52 UTC 2026","passed","Sun Mar 29 06:57:52 UTC 2026","","test_debtor_activation_create","",""
+"","564","inexistent RTP -> empty body","functional-tests.tests.get_rtp","Sun Mar 29 06:59:53 UTC 2026","passed","Sun Mar 29 06:59:54 UTC 2026","","test_RTP_get","",""
+"","1782","RTP is successfully retrieved","functional-tests.tests.get_rtp","Sun Mar 29 06:59:51 UTC 2026","passed","Sun Mar 29 06:59:53 UTC 2026","","test_RTP_get","",""
+"","2250","An RTP is sent to ICCREA service with activated fiscal code","functional-tests.tests.send_rtp","Sun Mar 29 07:03:25 UTC 2026","failed","Sun Mar 29 07:03:27 UTC 2026","","test_RTP_send_ICCREA","",""
+"
+Verify that a debt position can be deleted successfully.
+","2674","Happy path: a debt position is deleted in DEV environment","functional-tests.tests.gpd_availability","Sun Mar 29 07:00:22 UTC 2026","passed","Sun Mar 29 07:00:25 UTC 2026","","test_availability_GPD","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1909","A DELETE message after standalone UPDATE DRAFT","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:05 UTC 2026","passed","Sun Mar 29 07:02:07 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","570","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:17 UTC 2026","passed","Sun Mar 29 06:58:17 UTC 2026","","test_auth","",""
+"","540","missing token → 401 Unauthorized","functional-tests.tests.get_rtp","Sun Mar 29 06:59:55 UTC 2026","passed","Sun Mar 29 06:59:56 UTC 2026","","test_RTP_get","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","2632","A CREATE message with status VALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:44 UTC 2026","passed","Sun Mar 29 07:00:47 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"","274","An RTP is sent through ICCREA API","functional-tests.tests.availability","Sun Mar 29 06:58:22 UTC 2026","broken","Sun Mar 29 06:58:22 UTC 2026","","test_availability_ICCREA","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","3249","An UPDATE message with status PARTIALLY_PAID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:52 UTC 2026","passed","Sun Mar 29 07:02:55 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"","565","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:13 UTC 2026","passed","Sun Mar 29 06:58:14 UTC 2026","","test_auth","",""
+"","1136","The response body contains a comprehensible error message","functional-tests.tests.send_rtp","Sun Mar 29 07:03:33 UTC 2026","passed","Sun Mar 29 07:03:34 UTC 2026","","test_RTP_send_MOCK","",""
+"","2309","An RTP callback is received with invalid status","functional-tests.tests.callbacks","Sun Mar 29 06:59:07 UTC 2026","passed","Sun Mar 29 06:59:10 UTC 2026","","test_RTP_callback_DS_08","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1675","A DELETE message after CREATE PARTIALLY_PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:08 UTC 2026","passed","Sun Mar 29 07:01:10 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"
+Tests sending an RTP payload to the POSTE endpoint with valid data and authentication.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","1367","An RTP is sent through POSTE API","functional-tests.tests.availability","Sun Mar 29 06:58:24 UTC 2026","passed","Sun Mar 29 06:58:25 UTC 2026","","test_availability_POSTE","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1811","A DELETE message after standalone UPDATE VALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:48 UTC 2026","passed","Sun Mar 29 07:01:50 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","562","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:14 UTC 2026","passed","Sun Mar 29 06:58:15 UTC 2026","","test_auth","",""
+"","1765","An RTP callback with status REJECTED is successfully received","functional-tests.tests.callbacks","Sun Mar 29 06:59:04 UTC 2026","failed","Sun Mar 29 06:59:06 UTC 2026","","test_RTP_callback_DS_08","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","2367","An UPDATE message with status VALID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:34 UTC 2026","passed","Sun Mar 29 07:02:36 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"","794","Cannot send RTP with expired date","functional-tests.tests.availability","Sun Mar 29 06:58:21 UTC 2026","broken","Sun Mar 29 06:58:22 UTC 2026","","test_availability_CBI","",""
+"Takeover with syntactically valid but nonsensical body should fail","1782","Test Takeover Fails with Nonsensical Body","functional-tests.tests.takeover","Sun Mar 29 07:04:14 UTC 2026","passed","Sun Mar 29 07:04:16 UTC 2026","","test_debtor_takeover","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1851","An UPDATE message with status EXPIRED after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:22 UTC 2026","passed","Sun Mar 29 07:02:24 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1708","A DELETE message after CREATE PUBLISHED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:14 UTC 2026","passed","Sun Mar 29 07:01:16 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","1137","SP_ACTIVATIONS_READ_ALL can retrieve activation by Activation ID created by SP_A","functional-tests.tests.activation","Sun Mar 29 06:57:42 UTC 2026","passed","Sun Mar 29 06:57:44 UTC 2026","","test_RTP_activation_security","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2520","A DELETE message after CREATE VALID + UPDATE PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:37 UTC 2026","passed","Sun Mar 29 07:01:40 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"
+Given an RTP is sent successfully (status SENT) for a given noticeNumber + payeeId,
+when the payee queries the delivery-status endpoint with the correct noticeNumber
+but a different payeeId,
+then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED, verifying
+that the endpoint filters on both fields.
+","6834","Existing noticeNumber with wrong payeeId → PD_RTP_NOT_DELIVERED","functional-tests.tests.get_rtp","Sun Mar 29 07:00:07 UTC 2026","passed","Sun Mar 29 07:00:13 UTC 2026","","test_RTP_get_delivery_status","",""
+"","658","An RTP is sent to Poste service with activated fiscal code","functional-tests.tests.send_rtp","Sun Mar 29 07:03:43 UTC 2026","passed","Sun Mar 29 07:03:43 UTC 2026","","test_RTP_send_POSTE","",""
+"","780","Get paginated list of payees successfully","functional-tests.tests.service_registry","Sun Mar 29 07:03:44 UTC 2026","passed","Sun Mar 29 07:03:45 UTC 2026","","test_service_registry_payees_registry","",""
+"","562","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:15 UTC 2026","passed","Sun Mar 29 06:58:16 UTC 2026","","test_auth","",""
+"","2254","An RTP sent with synchronous rejection is in status REJECTED - DS-08P N","functional-tests.tests.send_rtp","Sun Mar 29 07:03:40 UTC 2026","broken","Sun Mar 29 07:03:42 UTC 2026","","test_RTP_send_MOCK","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","2060","An UPDATE message with status PUBLISHED after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:31 UTC 2026","passed","Sun Mar 29 07:02:33 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"UPDATE VALID before any CREATE creates a new RTP; the RTP must be retrievable from the database","1843","An UPDATE VALID before CREATE creates the RTP in the database","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:21 UTC 2026","passed","Sun Mar 29 07:03:23 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"","2874","An RTP callback with status ACWC is successfully received","functional-tests.tests.callbacks","Sun Mar 29 06:58:59 UTC 2026","passed","Sun Mar 29 06:59:02 UTC 2026","","test_RTP_callback_DS_08","",""
+"
+Given a debtor is activated and a GPD message (CREATE) is sent via POST /gpd/message,
+when the rtp-sender processes it and the RTP reaches status SENT,
+when the payee queries the delivery-status endpoint with the correct noticeNumber
+(nav) and payeeId (ec_tax_code),
+then the response body must contain status=PD_RTP_DELIVERED, a non-null processingDate
+in ISO 8601 format, and processingDate must match the SEND_RTP event timestamp from
+the GPD message response (truncated to millisecond precision).
+","7346","GPD message sent → RTP SENT → PD_RTP_DELIVERED with processingDate","functional-tests.tests.get_rtp","Sun Mar 29 06:59:57 UTC 2026","passed","Sun Mar 29 07:00:04 UTC 2026","","test_RTP_get_delivery_status","",""
+"","537","Missing Version header returns 200","functional-tests.tests.activation","Sun Mar 29 06:58:06 UTC 2026","passed","Sun Mar 29 06:58:07 UTC 2026","","test_debtor_activation_list","",""
+"","1133","Deactivation fails for activation by another service provider","functional-tests.tests.activation","Sun Mar 29 06:58:12 UTC 2026","passed","Sun Mar 29 06:58:13 UTC 2026","","test_debtor_deactivation","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","3159","An UPDATE message with status PUBLISHED after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:56 UTC 2026","passed","Sun Mar 29 07:02:59 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"
+Given a noticeNumber that does not correspond to any RTP in the database,
+when the payee queries the delivery-status endpoint,
+then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED and
+processingDate absent or null.
+","925","Non-existent noticeNumber → PD_RTP_NOT_DELIVERED","functional-tests.tests.get_rtp","Sun Mar 29 07:00:05 UTC 2026","passed","Sun Mar 29 07:00:05 UTC 2026","","test_RTP_get_delivery_status","",""
+"","544","Failed callback for non existing Service Provider - DS-04b compliant","functional-tests.tests.callbacks","Sun Mar 29 06:58:34 UTC 2026","passed","Sun Mar 29 06:58:34 UTC 2026","","test_RTP_callback_DS_04","",""
+"","1831","An RTP sent with synchronous acceptance is in status ACCEPTED - DS-05 ACTC","functional-tests.tests.send_rtp","Sun Mar 29 07:03:36 UTC 2026","passed","Sun Mar 29 07:03:38 UTC 2026","","test_RTP_send_MOCK","",""
+"","523","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks","Sun Mar 29 06:58:33 UTC 2026","failed","Sun Mar 29 06:58:34 UTC 2026","","test_RTP_callback_DS_04","",""
+"Test that takeover fails when an invalid OTP is provided","1683","Test Takeover Fails with Invalid OTP","functional-tests.tests.takeover","Sun Mar 29 07:03:54 UTC 2026","passed","Sun Mar 29 07:03:55 UTC 2026","","test_debtor_takeover","",""
+"","1126","Debtor fiscal code must be lower case during RTP send","functional-tests.tests.send_rtp","Sun Mar 29 07:03:30 UTC 2026","passed","Sun Mar 29 07:03:31 UTC 2026","","test_RTP_send_MOCK","",""
+"
+Test RFC callback DS12N with INVALID status.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12N callback with CxlStsId INVALID (Invalid Cancellation Request)
+7. Verify callback is rejected with 400
+8. Verify RTP status is still RFC_SENT
+","2914","An RFC callback DS12N INVALID is rejected with 400","functional-tests.tests.callbacks","Sun Mar 29 06:59:26 UTC 2026","passed","Sun Mar 29 06:59:29 UTC 2026","","test_RTP_callback_DS_12N","",""
+"","533","Get payees with invalid authorization","functional-tests.tests.service_registry","Sun Mar 29 07:03:47 UTC 2026","passed","Sun Mar 29 07:03:47 UTC 2026","","test_service_registry_service_providers","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1257","An UPDATE message with status VALID before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:04 UTC 2026","passed","Sun Mar 29 07:03:05 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"","545","The service returns the mocked server error","functional-tests.tests.availability","Sun Mar 29 06:58:22 UTC 2026","passed","Sun Mar 29 06:58:23 UTC 2026","","test_availability_MOCK","",""
+"
+Test RFC callback DS12P with CNCL status.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
+7. Verify callback is accepted (200)
+8. Verify RTP status is CANCELLED
+","2333","An RFC callback DS12P CNCL is successfully received and RTP status is CANCEL","functional-tests.tests.callbacks","Sun Mar 29 06:59:31 UTC 2026","failed","Sun Mar 29 06:59:33 UTC 2026","","test_RTP_callback_DS_12P","",""
+"","576","Retrieving non-existent activation returns 404","functional-tests.tests.activation","Sun Mar 29 06:57:55 UTC 2026","passed","Sun Mar 29 06:57:56 UTC 2026","","test_debtor_activation_get","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1670","A DELETE message after standalone UPDATE PARTIALLY_PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:54 UTC 2026","passed","Sun Mar 29 07:01:55 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","2641","An UPDATE message with status VALID after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:12 UTC 2026","passed","Sun Mar 29 07:02:15 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","2388","An UPDATE message with status DRAFT after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:48 UTC 2026","passed","Sun Mar 29 07:02:51 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","1249","A CREATE message with status EXPIRED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:58 UTC 2026","passed","Sun Mar 29 07:00:59 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"
+Tests the retrieval of an access token from the POSTE authentication endpoint using client credentials and mutual TLS.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","412","Auth endpoint returns valid token","functional-tests.tests.availability","Sun Mar 29 06:58:23 UTC 2026","passed","Sun Mar 29 06:58:24 UTC 2026","","test_availability_POSTE","",""
+"","1794","An RTP callback is successfully received with status RJCT","functional-tests.tests.callbacks","Sun Mar 29 06:58:55 UTC 2026","failed","Sun Mar 29 06:58:56 UTC 2026","","test_RTP_callback_DS_08","",""
+"
+Tests that sending an RTP payload with an invalid amount to the POSTE endpoint results in a 400 Bad Request response.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","1174","Cannot send RTP with invalid amount","functional-tests.tests.availability","Sun Mar 29 06:58:25 UTC 2026","passed","Sun Mar 29 06:58:26 UTC 2026","","test_availability_POSTE","",""
+"","1023","Auth endpoint returns valid token","functional-tests.tests.availability","Sun Mar 29 06:58:19 UTC 2026","broken","Sun Mar 29 06:58:20 UTC 2026","","test_availability_CBI","",""
+"","1203","SP_B cannot retrieve activation by Activation ID created by SP_A","functional-tests.tests.activation","Sun Mar 29 06:57:38 UTC 2026","passed","Sun Mar 29 06:57:39 UTC 2026","","test_RTP_activation_security","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","2499","An UPDATE message with status INVALID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:37 UTC 2026","passed","Sun Mar 29 07:02:40 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"","545","The service returns the mocked server error","functional-tests.tests.availability","Sun Mar 29 06:58:23 UTC 2026","passed","Sun Mar 29 06:58:23 UTC 2026","","test_availability_MOCK","",""
+"","1798","SP_B cannot retrieve activation by Fiscal Code created by SP_A","functional-tests.tests.activation","Sun Mar 29 06:57:35 UTC 2026","passed","Sun Mar 29 06:57:36 UTC 2026","","test_RTP_activation_security","",""
+"
+Test RFC callback DS12P with wrong certificate identity.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12P callback with assignee_bic='MOCKSP01' which doesn't match the certificate's identity (MOCKSP04)
+7. Verify callback is rejected with 403 (certificate mismatch)
+
+Expected: 403 Forbidden - The server should reject the callback because the BIC in the
+Assgne field doesn't match the identity in the client certificate.
+","2347","Unauthorized RFC callback due to wrong certificate serial","functional-tests.tests.callbacks","Sun Mar 29 06:59:34 UTC 2026","failed","Sun Mar 29 06:59:37 UTC 2026","","test_RTP_callback_DS_12P","",""
+"","562","Non-integer size returns 400","functional-tests.tests.activation","Sun Mar 29 06:58:05 UTC 2026","passed","Sun Mar 29 06:58:05 UTC 2026","","test_debtor_activation_list","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1820","A DELETE message after CREATE VALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:02 UTC 2026","passed","Sun Mar 29 07:01:04 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2352","A DELETE message after CREATE VALID + UPDATE EXPIRED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:41 UTC 2026","passed","Sun Mar 29 07:01:43 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","560","The activation request must contain lower case fiscal code","functional-tests.tests.activation","Sun Mar 29 06:57:50 UTC 2026","passed","Sun Mar 29 06:57:51 UTC 2026","","test_debtor_activation_create","",""
+"","552","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:16 UTC 2026","passed","Sun Mar 29 06:58:17 UTC 2026","","test_auth","",""
+"","542","The RTP web page is reachable","functional-tests.tests.availability","Sun Mar 29 06:58:29 UTC 2026","passed","Sun Mar 29 06:58:30 UTC 2026","","test_availability_RTP_webform","",""
+"Authenticated but not authorized: token of SP A tries to use OTP issued for SP B","2164","Test Takeover Fails with Wrong SP Token","functional-tests.tests.takeover","Sun Mar 29 07:04:07 UTC 2026","passed","Sun Mar 29 07:04:09 UTC 2026","","test_debtor_takeover","",""
+"","518","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks","Sun Mar 29 06:59:02 UTC 2026","failed","Sun Mar 29 06:59:02 UTC 2026","","test_RTP_callback_DS_08","",""
+"","0","A Service Provider is authenticated","functional-tests.tests.auth","Sun Mar 29 06:58:13 UTC 2026","passed","Sun Mar 29 06:58:13 UTC 2026","","test_auth","",""
+"Test that takeover fails when the service provider is unauthenticated","1699","Test Takeover Fails with Unauthenticated SP","functional-tests.tests.takeover","Sun Mar 29 07:03:57 UTC 2026","passed","Sun Mar 29 07:03:58 UTC 2026","","test_debtor_takeover","",""
+"","569","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:16 UTC 2026","passed","Sun Mar 29 06:58:16 UTC 2026","","test_auth","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1695","A DELETE message after CREATE PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:11 UTC 2026","passed","Sun Mar 29 07:01:13 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","2277","An RTP callback is received with invalid status","functional-tests.tests.callbacks","Sun Mar 29 06:59:11 UTC 2026","passed","Sun Mar 29 06:59:14 UTC 2026","","test_RTP_callback_DS_08","",""
+"","562","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","Sun Mar 29 06:58:15 UTC 2026","passed","Sun Mar 29 06:58:15 UTC 2026","","test_auth","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","1146","A CREATE message with status PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:53 UTC 2026","passed","Sun Mar 29 07:00:54 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"","2406","An RTP callback with status ACTC is successfully received","functional-tests.tests.callbacks","Sun Mar 29 06:58:41 UTC 2026","failed","Sun Mar 29 06:58:43 UTC 2026","","test_RTP_callback_DS_05","",""
+"
+Test RFC callback DS12N with wrong certificate identity.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12N callback with assignee_bic='MOCKSP01' which doesn't match the certificate's identity (MOCKSP04)
+7. Verify callback is rejected with 403 (certificate mismatch)
+
+Expected: 403 Forbidden - The server should reject the callback because the BIC in the
+Assgne field doesn't match the identity in the client certificate.
+","2410","Unauthorized RFC callback due to wrong certificate serial","functional-tests.tests.callbacks","Sun Mar 29 06:59:19 UTC 2026","failed","Sun Mar 29 06:59:21 UTC 2026","","test_RTP_callback_DS_12N","",""
+"","1208","A debtor is activated by an authenticated service provider","functional-tests.tests.activation","Sun Mar 29 06:57:44 UTC 2026","passed","Sun Mar 29 06:57:45 UTC 2026","","test_debtor_activation_create","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1802","A DELETE message after standalone UPDATE PAID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:57 UTC 2026","passed","Sun Mar 29 07:01:58 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","1823","A CREATE message with status INVALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:00:48 UTC 2026","passed","Sun Mar 29 07:00:50 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"
+Verify that a debt position can be updated successfully.
+","6684","Happy path: a debt position is updated in DEV environment","functional-tests.tests.gpd_availability","Sun Mar 29 07:00:34 UTC 2026","passed","Sun Mar 29 07:00:41 UTC 2026","","test_availability_GPD","",""
+"
+Tests that sending an RTP payload with an amount over the POSTE limit results in a 400 Bad Request response.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","1313","Cannot send RTP with an amount over the POSTE limit","functional-tests.tests.availability","Sun Mar 29 06:58:26 UTC 2026","failed","Sun Mar 29 06:58:28 UTC 2026","","test_availability_POSTE","",""
+"","1243","An RTP is sent through API","functional-tests.tests.send_rtp","Sun Mar 29 07:03:28 UTC 2026","passed","Sun Mar 29 07:03:29 UTC 2026","","test_RTP_send_MOCK","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1702","A DELETE message after standalone UPDATE INVALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:51 UTC 2026","passed","Sun Mar 29 07:01:53 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"
+Test RFC callback DS12N with RJCR status.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+7. Verify callback is accepted (200)
+8. Verify RTP status is ERROR_CANCEL
+","2353","An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL","functional-tests.tests.callbacks","Sun Mar 29 06:59:15 UTC 2026","failed","Sun Mar 29 06:59:18 UTC 2026","","test_RTP_callback_DS_12N","",""
+"
+Send the same CREATE VALID message twice.
+
+Because send_gpd_message derives the Idempotency-Key deterministically from
+the message id (msg_id), reusing the same payload reuses the same key.
+
+Expectations:
+- Both calls return HTTP 200 (idempotent, not an error).
+- The resourceID in both responses is identical, proving the API returned
+  the cached response and did not process the message twice.
+- Querying by notice number returns exactly one RTP, confirming that only
+  one record was written to the database.
+","2331","Two CREATE VALID messages with the same Idempotency-Key both succeed but only one RTP is stored","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:09 UTC 2026","passed","Sun Mar 29 07:02:11 UTC 2026","","test_RTP_process_sender_IDEMPOTENCY","",""
+"
+Test RFC callback DS12N with non-existing service provider.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12N callback with non-existing BIC (MOCKSP99)
+7. Verify callback is rejected with 400 (service provider not found)
+
+Expected: 400 Bad Request
+","2330","Failed RFC callback for non existing Service Provider - DS-12N RJCR compliant","functional-tests.tests.callbacks","Sun Mar 29 06:59:22 UTC 2026","passed","Sun Mar 29 06:59:25 UTC 2026","","test_RTP_callback_DS_12N","",""
+"","565","RTP cancellation fails if ID does not exist","functional-tests.tests.cancel_rtp","Sun Mar 29 06:59:49 UTC 2026","passed","Sun Mar 29 06:59:49 UTC 2026","","test_RTP_cancel","",""
+"Test the takeover flow where a user changes service provider","3956","Test Takeover Flow","functional-tests.tests.takeover","Sun Mar 29 07:03:48 UTC 2026","passed","Sun Mar 29 07:03:52 UTC 2026","","test_debtor_takeover","",""
+"","538","Get payees with invalid authorization","functional-tests.tests.service_registry","Sun Mar 29 07:03:45 UTC 2026","passed","Sun Mar 29 07:03:45 UTC 2026","","test_service_registry_payees_registry","",""
+"Empty OTP should be rejected","811","Test Takeover Fails with Empty OTP","functional-tests.tests.takeover","Sun Mar 29 07:04:04 UTC 2026","passed","Sun Mar 29 07:04:05 UTC 2026","","test_debtor_takeover","",""
+"
+Verify that a debt position can be created and published successfully.
+","551","Happy path: a debt position is created and published in DEV environment","functional-tests.tests.gpd_availability","Sun Mar 29 07:00:17 UTC 2026","passed","Sun Mar 29 07:00:17 UTC 2026","","test_availability_GPD","",""
+"","3339","An RTP callback with invalid status is received and processed with success without affecting the RTP status","functional-tests.tests.callbacks","Sun Mar 29 06:58:45 UTC 2026","passed","Sun Mar 29 06:58:48 UTC 2026","","test_RTP_callback_DS_05","",""
+"","567","A debtor service provider fails activation due to wrong service provider id","functional-tests.tests.activation","Sun Mar 29 06:58:00 UTC 2026","passed","Sun Mar 29 06:58:00 UTC 2026","","test_debtor_activation_list","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1761","An UPDATE message with status PARTIALLY_PAID after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:28 UTC 2026","passed","Sun Mar 29 07:02:29 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"
+Verify that a debt position can be created and published successfully.
+","619","Happy path: a debt position is created and published in UAT environment","functional-tests.tests.gpd_availability","Sun Mar 29 07:00:15 UTC 2026","passed","Sun Mar 29 07:00:15 UTC 2026","","test_availability_GPD","",""
+"","604","Invalid pagination parameters returns 400","functional-tests.tests.activation","Sun Mar 29 06:58:01 UTC 2026","passed","Sun Mar 29 06:58:02 UTC 2026","","test_debtor_activation_list","",""
+"","1356","A debtor is activated and retrieved by activation id","functional-tests.tests.activation","Sun Mar 29 06:57:53 UTC 2026","passed","Sun Mar 29 06:57:54 UTC 2026","","test_debtor_activation_get","",""
+"
+Verify that a debt position can be updated successfully.
+","7105","Happy path: a debt position is updated in UAT environment","functional-tests.tests.gpd_availability","Sun Mar 29 07:00:26 UTC 2026","passed","Sun Mar 29 07:00:33 UTC 2026","","test_availability_GPD","",""
+"","1174","SP_ACTIVATIONS_READ_ALL can retrieve activation by Fiscal Code created by SP_A","functional-tests.tests.activation","Sun Mar 29 06:57:40 UTC 2026","passed","Sun Mar 29 06:57:41 UTC 2026","","test_RTP_activation_security","",""
+"Reusing the same OTP after a successful takeover should fail","2385","Test Takeover Fails with Reused OTP","functional-tests.tests.takeover","Sun Mar 29 07:04:10 UTC 2026","passed","Sun Mar 29 07:04:13 UTC 2026","","test_debtor_takeover","",""
+"","569","Retrieving activation with invalid UUID returns 400","functional-tests.tests.activation","Sun Mar 29 06:57:56 UTC 2026","passed","Sun Mar 29 06:57:57 UTC 2026","","test_debtor_activation_get","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1705","A DELETE message after CREATE EXPIRED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:17 UTC 2026","passed","Sun Mar 29 07:01:18 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","565","A Service Provider with invalid client secret is not authenticated on Keycloak","functional-tests.tests.auth","Sun Mar 29 06:58:18 UTC 2026","passed","Sun Mar 29 06:58:18 UTC 2026","","test_auth","",""
+"","569","Non-existent NextActivationId returns 200 with empty body","functional-tests.tests.activation","Sun Mar 29 06:58:07 UTC 2026","passed","Sun Mar 29 06:58:08 UTC 2026","","test_debtor_activation_list","",""
+"OTP bound to payer1 should not work for payer2","1669","Test Takeover Fails with OTP Bound to Different Payer","functional-tests.tests.takeover","Sun Mar 29 07:03:59 UTC 2026","passed","Sun Mar 29 07:04:01 UTC 2026","","test_debtor_takeover","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1687","A DELETE message after standalone UPDATE PUBLISHED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:59 UTC 2026","passed","Sun Mar 29 07:02:01 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","548","Deactivation fails for non-existing activation","functional-tests.tests.activation","Sun Mar 29 06:58:10 UTC 2026","passed","Sun Mar 29 06:58:11 UTC 2026","","test_debtor_deactivation","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1826","An UPDATE message with status INVALID after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:16 UTC 2026","passed","Sun Mar 29 07:02:18 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","1140","An UPDATE message with status INVALID before CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:07 UTC 2026","passed","Sun Mar 29 07:03:08 UTC 2026","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"","543","A Service Provider with invalid client ID is not authenticated on Keycloak","functional-tests.tests.auth","Sun Mar 29 06:58:17 UTC 2026","passed","Sun Mar 29 06:58:18 UTC 2026","","test_auth","",""
+"","1133","A debtor cannot be activated more than once by the same service provider","functional-tests.tests.activation","Sun Mar 29 06:57:48 UTC 2026","passed","Sun Mar 29 06:57:49 UTC 2026","","test_debtor_activation_create","",""
+"","659","Get list of service providers successfully","functional-tests.tests.service_registry","Sun Mar 29 07:03:46 UTC 2026","passed","Sun Mar 29 07:03:47 UTC 2026","","test_service_registry_service_providers","",""
+"UPDATE PAID with psp_tax_code=None (invalid PSP) results in RTP state RFC_SENT","2696","An UPDATE PAID message with an invalid PSP results in RFC_SENT state","functional-tests.tests.process_messages_sender","Sun Mar 29 07:03:00 UTC 2026","passed","Sun Mar 29 07:03:03 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2355","A DELETE message after CREATE VALID + UPDATE INVALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:34 UTC 2026","passed","Sun Mar 29 07:01:36 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"","1753","An RTP callback is successfully received with status ACCP","functional-tests.tests.callbacks","Sun Mar 29 06:58:51 UTC 2026","failed","Sun Mar 29 06:58:53 UTC 2026","","test_RTP_callback_DS_08","",""
+"
+Test RFC callback DS12P with INVALID status.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12P callback with CxlStsId INVALID (Invalid Cancellation Request)
+7. Verify callback is rejected with 400
+8. Verify RTP status is still RFC_SENT
+","2922","An RFC callback DS12P INVALID is rejected with 400","functional-tests.tests.callbacks","Sun Mar 29 06:59:42 UTC 2026","passed","Sun Mar 29 06:59:45 UTC 2026","","test_RTP_callback_DS_12P","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2385","A DELETE message after CREATE VALID + UPDATE DRAFT","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:45 UTC 2026","passed","Sun Mar 29 07:01:47 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2418","A DELETE message after CREATE VALID + UPDATE PUBLISHED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:30 UTC 2026","passed","Sun Mar 29 07:01:33 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1857","An UPDATE message with status DRAFT after CREATE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:25 UTC 2026","passed","Sun Mar 29 07:02:27 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","1147","A CREATE message with status DRAFT","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:00 UTC 2026","passed","Sun Mar 29 07:01:01 UTC 2026","","test_RTP_process_sender_CREATE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2591","A DELETE message after CREATE VALID + UPDATE VALID","functional-tests.tests.process_messages_sender","Sun Mar 29 07:01:23 UTC 2026","passed","Sun Mar 29 07:01:26 UTC 2026","","test_RTP_process_sender_DELETE","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","2832","An UPDATE message with status EXPIRED after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:44 UTC 2026","passed","Sun Mar 29 07:02:47 UTC 2026","","test_RTP_process_sender_UPDATE","",""
+"","543","Invalid pagination parameters returns 400","functional-tests.tests.activation","Sun Mar 29 06:58:02 UTC 2026","passed","Sun Mar 29 06:58:03 UTC 2026","","test_debtor_activation_list","",""
+"Takeover without a previously issued OTP should fail","1137","Test Takeover Fails without Prior OTP","functional-tests.tests.takeover","Sun Mar 29 07:04:02 UTC 2026","passed","Sun Mar 29 07:04:03 UTC 2026","","test_debtor_takeover","",""
+"","1806","RTP is successfully cancelled","functional-tests.tests.cancel_rtp","Sun Mar 29 06:59:46 UTC 2026","passed","Sun Mar 29 06:59:48 UTC 2026","","test_RTP_cancel","",""
+"
+Test RFC callback DS12P with non-existing service provider.
+
+Flow:
+1. Get debtor service provider token
+2. Activate payer to get fiscal code
+3. Get creditor service provider token
+4. Send an RTP
+5. Cancel the RTP (RFC - Request for Cancellation)
+6. Send DS12P callback with non-existing BIC (MOCKSP99)
+7. Verify callback is rejected with 400 (service provider not found)
+
+Expected: 400 Bad Request
+","2701","Failed RFC callback for non existing Service Provider - DS-12P CNCL compliant","functional-tests.tests.callbacks","Sun Mar 29 06:59:38 UTC 2026","passed","Sun Mar 29 06:59:41 UTC 2026","","test_RTP_callback_DS_12P","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1676","A DELETE message after standalone UPDATE EXPIRED","functional-tests.tests.process_messages_sender","Sun Mar 29 07:02:02 UTC 2026","passed","Sun Mar 29 07:02:04 UTC 2026","","test_RTP_process_sender_DELETE","",""
