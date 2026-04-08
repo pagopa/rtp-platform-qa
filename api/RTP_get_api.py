@@ -16,6 +16,7 @@ import requests
 from api.utils.api_version import GET_RTP_VERSION
 from api.utils.endpoints import GET_RTP_BY_NOTICE_NUMBER_URL, GET_RTP_DELIVERY_STATUS_URL, GET_RTP_URL
 from api.utils.http_utils import APPLICATION_JSON_HEADER, HTTP_TIMEOUT
+from unittest.mock import Mock 
 
 
 def get_rtp(access_token: str, rtp_id: str):
@@ -112,3 +113,37 @@ def get_rtp_delivery_status(access_token: str, notice_number: str, payee_id: str
         timeout=HTTP_TIMEOUT,
     )
     return resp
+
+def get_rtp_optout_payees_list_mock():
+    """
+    Retrieve the list of payees that have opted out of receiving RTP messages.
+
+    Returns:
+        requests.Response: The HTTP response object returned by the API.
+    """
+    # Mock response for the list of payees that have opted out of receiving RTP messages
+    # Mi mancano i dettagli dell'endpoint reale, quindi sto creando una risposta mock con dati di esempio
+    # Ovviamente il test sarà adattato una volta che si conoscono i dettagli dell'endpoint reale e il formato della risposta
+    
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.json.return_value = [
+        {
+            "payeeId": "12345678901",
+            "payeeName": "Regione Veneto",
+            "optOut_Flag": True
+        },
+        {
+            "payeeId": "98765432109",
+            "payeeName": "Comune di Milano",
+            "optOut_Flag": True
+        },
+        {
+            "payeeId": "88760932207",
+            "payeeName": "Regione Valle d'Aosta",
+            "optOut_Flag": True
+        }
+    ]
+    return mock_response
+
+    

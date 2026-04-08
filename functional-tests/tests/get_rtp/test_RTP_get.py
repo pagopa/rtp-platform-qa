@@ -4,7 +4,7 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
-from api.RTP_get_api import get_rtp
+from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
 from utils.dataset_RTP_data import generate_rtp_data
@@ -94,3 +94,31 @@ def test_get_rtp_missing_token():
 
     resp = get_rtp(access_token="", rtp_id=fake_rtp)
     assert resp.status_code == 401
+
+@allure.feature("RTP Get")
+@allure.story("Come Sp Voglio sapere quali sono gli enti che hanno fatto Opt-out da RTP")
+@allure.title("200 ok")
+@pytest.mark.get
+@pytest.mark.mock
+@pytest.mark.happy_path
+def test_get_rtp_optout_payees_list_mock():
+   
+   #Controllo che il codice HTTP della risposta sia 200 come atteso
+   response = get_rtp_optout_payees_list_mock()
+   assert response.status_code == 200, f"Expected status code 200, got {response.status_code}"
+
+   #Controllo che il body della risposta sia una lista non vuota
+   body = response.json()
+   assert isinstance(body, list), f"Expected a list, got {type(body)}"
+   assert len(body) > 0, f"Expected a non-empty list of opt-out payees"
+
+   #Controllo che ogni elemento della lista abbia i campi 'payeeId', 'payeeName' e 'optOut_Flag' non vuoti e che 'optOut_Flag' sia True
+   for payee in body:
+       assert "payeeId" in payee, f"Missing 'payeeId' in payee: {payee}"
+       assert "payeeName" in payee, f"Missing 'payeeName' in payee: {payee}"
+       assert "optOut_Flag" in payee, f"Missing 'optOut_Flag' in payee: {payee}"
+       assert payee["optOut_Flag"] is True,  f"'optOut_Flag' should be True in payee: {payee}, instead got {payee['optOut_Flag']}"
+       
+   
+
+       
