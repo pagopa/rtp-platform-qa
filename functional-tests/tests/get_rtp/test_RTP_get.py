@@ -4,7 +4,7 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
-from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock
+from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock, get_institutions_service_consent_backoffice
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
 from utils.dataset_RTP_data import generate_rtp_data
@@ -120,5 +120,41 @@ def test_get_rtp_optout_payees_list_mock():
        assert payee["optOut_Flag"] is True,  f"'optOut_Flag' should be True in payee: {payee}, instead got {payee['optOut_Flag']}"
        
    
+@allure.feature("RTP Get")
+@allure.story("Come Sp Voglio sapere quali sono gli enti che hanno fatto Opt-out da RTP")
+@allure.title("200 ok")
+@pytest.mark.get
+@pytest.mark.backoffice
+@pytest.mark.happy_path
+def test_get_rtp_optout_payees_list_backoffice():
+   
+   #Controllo che il codice HTTP della risposta sia 200 come atteso
+   response = get_institutions_service_consent_backoffice()
+   assert response.status_code == 200, f"Expected status code 200, got {response.status_code}, body: {response.text}"
 
+   #Controllo che il body della risposta sia una lista 
+   body = response.json()
+   assert isinstance(body, dict), f"Expected a dict, got {type(body)}"
+
+   assert "results" in body, "La chiave 'results' (o simile) non è presente nel dizionario"
+    
+   payees_list = body["results"] 
+   assert isinstance(payees_list, list), "Il contenuto di 'results' dovrebbe essere una lista"
+
+    #  Controllo i campi di ogni elemento della lista
+   for payee in payees_list:
+        
+        # Controllo consentInfo
+        assert "consentInfo" in payee, f"Missing 'consentInfo' in payee: {payee}"
+        assert "consent" in payee["consentInfo"], f"Missing 'consent' in consentInfo: {payee['consentInfo']}"
+        
+        # Estraggo il valore e lo confronto con OPT_OUT
+        valore_consent = payee["consentInfo"]["consent"]
+        assert valore_consent == "OPT_OUT", f"'consent' should be 'OPT_OUT', instead got {valore_consent}"
+        
+        # Controllo institutionInfo
+        assert "institutionInfo" in payee, f"Missing 'institutionInfo' in payee: {payee}"
+        assert "taxCode" in payee["institutionInfo"], f"Missing 'taxCode' in institutionInfo: {payee['institutionInfo']}"
+        assert "name" in payee["institutionInfo"], f"Missing 'name' in institutionInfo: {payee['institutionInfo']}"
+       
        
