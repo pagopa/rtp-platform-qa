@@ -147,7 +147,7 @@ def get_rtp_optout_payees_list_mock():
     return mock_response
 
     
-def get_institutions_service_consent_backoffice(service_id="RTP"):
+def get_institutions_service_consent_backoffice_optout(service_id="RTP"):
 
     url = f"https://api.uat.platform.pagopa.it/backoffice/pagopa/services/v1/institutions/services/{service_id}/consents"
 
@@ -161,6 +161,25 @@ def get_institutions_service_consent_backoffice(service_id="RTP"):
         "pageNumber": 1,
         "pageSize": 10,
         "consent": "OPT_OUT",
+        "toDate": "2026-04-09T23:59:59Z"
+    }
+
+    return requests.get(url=url, headers=headers, params=params)
+
+def get_institutions_service_consent_backoffice_optin(service_id="RTP"):
+
+    url = f"https://api.uat.platform.pagopa.it/backoffice/pagopa/services/v1/institutions/services/{service_id}/consents"
+
+    headers = {
+        "Ocp-Apim-Subscription-Key": "a3861f3a2b7540ffa9ede8c191f1be4c",
+        "Accept": "application/json"
+    }
+
+    params = {
+        "serviceId": "RTP",
+        "pageNumber": 1,
+        "pageSize": 10,
+        "consent": "OPT_IN",
         "toDate": "2026-04-09T23:59:59Z"
     }
 

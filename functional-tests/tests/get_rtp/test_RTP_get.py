@@ -4,7 +4,7 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
-from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock, get_institutions_service_consent_backoffice
+from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock, get_institutions_service_consent_backoffice_optout, get_institutions_service_consent_backoffice_optin
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
 from utils.dataset_RTP_data import generate_rtp_data
@@ -129,17 +129,17 @@ def test_get_rtp_optout_payees_list_mock():
 def test_get_rtp_optout_payees_list_backoffice():
    
    #Controllo che il codice HTTP della risposta sia 200 come atteso
-   response = get_institutions_service_consent_backoffice()
+   response = get_institutions_service_consent_backoffice_optout()
    assert response.status_code == 200, f"Expected status code 200, got {response.status_code}, body: {response.text}"
 
    #Controllo che il body della risposta sia una lista 
    body = response.json()
    assert isinstance(body, dict), f"Expected a dict, got {type(body)}"
 
-   assert "results" in body, "La chiave 'results' (o simile) non è presente nel dizionario"
+   assert "results" in body, f"La chiave 'results' (o simile) non è presente nel dizionario"
     
    payees_list = body["results"] 
-   assert isinstance(payees_list, list), "Il contenuto di 'results' dovrebbe essere una lista"
+   assert isinstance(payees_list, list), f"Il contenuto di 'results' dovrebbe essere una lista"
 
     #  Controllo i campi di ogni elemento della lista
    for payee in payees_list:
@@ -158,3 +158,31 @@ def test_get_rtp_optout_payees_list_backoffice():
         assert "name" in payee["institutionInfo"], f"Missing 'name' in institutionInfo: {payee['institutionInfo']}"
        
        
+@allure.feature("RTP Get")
+@allure.story("Come Sp Voglio sapere quali sono gli enti che hanno fatto Opt-out da RTP")
+@allure.title("200 ok")
+@pytest.mark.get
+@pytest.mark.backoffice
+@pytest.mark.unhappy_path
+def test_get_rtp_optout_payees_list_confront_with_optin_list_backoffice():
+   
+    #Controllo che il codice HTTP della risposta sia 200 come atteso
+   response_optout = get_institutions_service_consent_backoffice_optout()
+   assert response_optout.status_code == 200, f"Expected status code 200, got {response_optout.status_code}, body: {response_optout.text}"
+   
+     #Controllo che il codice HTTP della risposta sia 200 come atteso
+   response_optin = get_institutions_service_consent_backoffice_optin()
+   assert response_optin.status_code == 200, f"Expected status code 200, got {response_optin.status_code}, body: {response_optin.text}"
+
+   #Estraggo le liste di payee opt-out e opt-in
+   body_optout = response_optout.json()
+   body_optin = response_optin.json()
+
+   payees_optout_list = body_optout["results"]
+   payees_optin_list = body_optin["results"]
+
+   #Confronto le liste di payee opt-out e opt-in per verificare che non ci siano sovrapposizioni:: gli enti che hanno fatto opt-out non dovrebbero essere presenti nella lista di quelli che hanno fatto opt-in
+   tax_codes_optout = {payee["institutionInfo"]["taxCode"] for payee in payees_optout_list}
+   tax_codes_optin = {payee["institutionInfo"]["taxCode"] for payee in payees_optin_list}
+   sovrapposizioni = tax_codes_optout.intersection(tax_codes_optin)
+   assert len(sovrapposizioni) == 0, f"Sono presenti sovrapposizioni tra enti opt-out e opt-in: {sovrapposizioni}"
