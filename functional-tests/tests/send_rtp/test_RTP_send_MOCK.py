@@ -173,3 +173,79 @@ def test_send_rtp_sync_rejected_ds08p_n(
     )
     assert get_response.status_code == 200
     assert get_response.json()["status"] == "REJECTED"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with synchronous ACTC response missing _links")
+@allure.title("An RTP sent when EPC response omits _links is in status ACCEPTED")
+@allure.tag("functional", "happy_path", "rtp_send", "optional_epc_fields")
+@pytest.mark.send
+@pytest.mark.happy_path
+def test_send_rtp_sync_accepted_no_links(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    rtp_data = generate_rtp_data(payer_id=secrets.mock_no_links_fiscal_code)
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    assert get_response.json()["status"] == "ACCEPTED"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with synchronous ACTC response containing an unexpected field")
+@allure.title("An RTP sent when EPC response contains an unknown field is in status SENT")
+@allure.tag("functional", "unhappy_path", "rtp_send", "optional_epc_fields")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_sent_extra_field(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    rtp_data = generate_rtp_data(payer_id=secrets.mock_extra_field_fiscal_code)
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201
+
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    assert get_response.json()["status"] == "SENT"
