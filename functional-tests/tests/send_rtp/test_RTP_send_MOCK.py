@@ -2,11 +2,11 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
-from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from config.configuration import config, secrets
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.regex_utils import uuidv4_pattern
+from utils.rtp_send_helpers import send_rtp_and_get_status
 
 
 @allure.epic("RTP Send")
@@ -99,33 +99,6 @@ def test_cannot_send_rtp_not_activated_user(creditor_service_provider_token_a):
     assert send_response.status_code == 404
 
 
-def _send_rtp_and_get_status(
-    debtor_token: str,
-    creditor_token: str,
-    reader_token: str,
-    payer_id: str,
-    expected_send_status: int = 201,
-) -> str:
-    rtp_data = generate_rtp_data(payer_id=payer_id)
-
-    activation_response = activate(
-        debtor_token,
-        rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert activation_response.status_code in (201, 409), "Error activating debtor"
-
-    send_response = send_rtp(access_token=creditor_token, rtp_payload=rtp_data)
-    assert send_response.status_code == expected_send_status
-
-    resource_id = send_response.headers["Location"].split("/")[-1]
-
-    get_response = get_rtp(access_token=reader_token, rtp_id=resource_id)
-    assert get_response.status_code == 200
-
-    return get_response.json()["status"]
-
-
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP with synchronous ACTC response")
@@ -138,7 +111,7 @@ def test_send_rtp_sync_accepted_ds05_actc(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = _send_rtp_and_get_status(
+    status = send_rtp_and_get_status(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
@@ -159,7 +132,7 @@ def test_send_rtp_sync_rejected_ds08p_n(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = _send_rtp_and_get_status(
+    status = send_rtp_and_get_status(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
@@ -181,7 +154,7 @@ def test_send_rtp_sync_accepted_no_links(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = _send_rtp_and_get_status(
+    status = send_rtp_and_get_status(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
@@ -202,7 +175,7 @@ def test_send_rtp_sync_sent_extra_field(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = _send_rtp_and_get_status(
+    status = send_rtp_and_get_status(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
