@@ -215,8 +215,8 @@ def test_send_rtp_sync_accepted_no_links(
 
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with synchronous ACTC response containing an unexpected field")
-@allure.title("An RTP sent when EPC response contains an unknown field is in status SENT")
+@allure.story("Service provider sends an RTP but EPC response contains an unknown field and is treated as non-compliant")
+@allure.title("An RTP sent when EPC response contains an unknown field does not transition to ACCEPTED and remains in status SENT")
 @allure.tag("functional", "unhappy_path", "rtp_send", "optional_epc_fields")
 @pytest.mark.send
 @pytest.mark.unhappy_path
