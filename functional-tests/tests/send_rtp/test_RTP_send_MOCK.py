@@ -1,12 +1,14 @@
 import allure
 import pytest
 
+
 from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from config.configuration import config, secrets
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.regex_utils import uuidv4_pattern
+
 
 
 @allure.epic("RTP Send")
@@ -173,3 +175,74 @@ def test_send_rtp_sync_rejected_ds08p_n(
     )
     assert get_response.status_code == 200
     assert get_response.json()["status"] == "REJECTED"
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Alcuni body di risposta vengono erroneamente flaggati come ERROR_SEND")
+@allure.tag("functional", "happy_path", "rtp_send", "policy_mock")
+@pytest.mark.send
+@pytest.mark.happy_path
+def test_send_rtp_sync_no_links(debtor_service_provider_token_a, creditor_service_provider_token_a, rtp_reader_access_token):
+    rtp_data = generate_rtp_data(payer_id=secrets.mock_no_links_fiscal_code)
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), f"Error activating debtor, got status code {activation_response.status_code}, body: {activation_response.text}"
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201, f"Expected status code 201, got {send_response.status_code}, body: {send_response.text}"
+
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200, f"Expected status code 200, got {get_response.status_code}, body: {get_response.text}" 
+
+    status = get_response.json().get("status")
+    assert status == "ACCEPTED", f"Expected status 'ACCEPTED', got '{status}'"
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Alcuni body di risposta vengono erroneamente flaggati come ERROR_SEND")
+@allure.tag("functional", "unhappy_path", "rtp_send", "policy_mock")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_invalid_extra_field(debtor_service_provider_token_a, creditor_service_provider_token_a, rtp_reader_access_token):
+    rtp_data = generate_rtp_data(payer_id=secrets.mock_extra_field_fiscal_code)
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), f"Error activating debtor, got status code {activation_response.status_code}, body: {activation_response.text}"
+
+    send_response = send_rtp(
+        access_token=creditor_service_provider_token_a,
+        rtp_payload=rtp_data,
+    )
+    assert send_response.status_code == 201, f"Expected status code 201, got {send_response.status_code}, body: {send_response.text}"
+
+    location = send_response.headers["Location"]
+    resource_id = location.split("/")[-1]
+
+    get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200, f"Expected status code 200, got {get_response.status_code}, body: {get_response.text}" 
+
+    status = get_response.json().get("status")
+    assert status == "SENT", f"Expected status 'SENT', got '{status}'"    
+
+
+    

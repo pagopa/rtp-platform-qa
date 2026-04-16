@@ -166,11 +166,11 @@ def test_get_rtp_optout_payees_list_backoffice():
 @pytest.mark.unhappy_path
 def test_get_rtp_optout_payees_list_confront_with_optin_list_backoffice():
    
-    #Controllo che il codice HTTP della risposta sia 200 come atteso
+   #Controllo che il codice HTTP della risposta sia 200 come atteso
    response_optout = get_institutions_service_consent_backoffice_optout()
    assert response_optout.status_code == 200, f"Expected status code 200, got {response_optout.status_code}, body: {response_optout.text}"
    
-     #Controllo che il codice HTTP della risposta sia 200 come atteso
+   #Controllo che il codice HTTP della risposta sia 200 come atteso
    response_optin = get_institutions_service_consent_backoffice_optin()
    assert response_optin.status_code == 200, f"Expected status code 200, got {response_optin.status_code}, body: {response_optin.text}"
 
@@ -181,7 +181,7 @@ def test_get_rtp_optout_payees_list_confront_with_optin_list_backoffice():
    payees_optout_list = body_optout["results"]
    payees_optin_list = body_optin["results"]
 
-   #Confronto le liste di payee opt-out e opt-in per verificare che non ci siano sovrapposizioni:: gli enti che hanno fatto opt-out non dovrebbero essere presenti nella lista di quelli che hanno fatto opt-in
+   #Confronto le liste di payee opt-out e opt-in per verificare che non ci siano sovrapposizioni: gli enti che hanno fatto opt-out non dovrebbero essere presenti nella lista di quelli che hanno fatto opt-in
    tax_codes_optout = {payee["institutionInfo"]["taxCode"] for payee in payees_optout_list}
    tax_codes_optin = {payee["institutionInfo"]["taxCode"] for payee in payees_optin_list}
    sovrapposizioni = tax_codes_optout.intersection(tax_codes_optin)
