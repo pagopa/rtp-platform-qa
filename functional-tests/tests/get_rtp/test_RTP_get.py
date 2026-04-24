@@ -192,9 +192,9 @@ def test_get_rtp_optout_payees_list_confront_with_optin_list_backoffice():
 @allure.title("200 ok")
 @pytest.mark.get
 @pytest.mark.happy_path
-def test_get_payees_consents_optout(pagopa_payee_registry_token: str): 
+def test_get_payees_consents_optout(rtp_reader_access_token: str): 
    
-   response =  get_payees_consents_optout(access_token=pagopa_payee_registry_token)
+   response =  get_payees_consents_optout(access_token=rtp_reader_access_token)
    assert response.status_code == 200, f"Expected status code 200, got {response.status_code}, body: {response.text}"
 
    body = response.json()
