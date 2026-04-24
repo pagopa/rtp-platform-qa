@@ -7,7 +7,9 @@ from utils.response_assertions_utils import assert_body_presence, assert_respons
 from utils.test_expectations import (
     DELETE_AFTER_CREATE_CODES,
     DELETE_AFTER_UPDATE_CODES,
+    UPDATE_BEFORE_CREATE_CODES,
     UPDATE_EXPECTED_CODES,
+    DELETE_AFTER_UPDATE_WITHOUT_CREATE_CODES,
     get_create_expected_code,
     should_have_body,
 )
@@ -43,7 +45,11 @@ def test_send_gpd_message_delete_after_create(rtp_consumer_access_token, random_
     assert_response_code(response_delete, expected_delete_code, "DELETE after CREATE", status)
 
     response_body = get_response_body_safe(response_delete)
-    assert_body_presence(response_body, should_have_body(status), "DELETE after CREATE", status)
+
+    if status == "VALID":
+     assert_body_presence(response_body, should_have_body(status), "DELETE after CREATE", status)
+    else:
+       assert_response_code(response_delete, 404, "DELETE after CREATE", status)
 
 
 @allure.epic("RTP GPD Message")
@@ -84,3 +90,51 @@ def test_send_gpd_message_delete_after_create_and_update(
 
     expected_delete_code = DELETE_AFTER_UPDATE_CODES[status]
     assert_response_code(response_delete, expected_delete_code, "DELETE after UPDATE", status)
+
+    response_body = get_response_body_safe(response_delete)
+
+    if status == "VALID":
+       assert_body_presence(response_body, should_have_body(status), "DELETE after CREATE", status)
+    else:
+       assert_response_code(response_delete, expected_delete_code, "DELETE after UPDATE", status)
+
+
+
+@allure.epic("RTP GPD Message")
+@allure.feature("GPD Message API")
+@allure.story("Consumer sends DELETE message to Sender after UPDATE")
+@allure.title("A DELETE message after UPDATE {status}")
+@allure.tag("functional", "gpd_message", "rtp_send", "delete_parameterized")
+@pytest.mark.send
+@pytest.mark.parametrize("status", list(DELETE_AFTER_UPDATE_WITHOUT_CREATE_CODES.keys()))
+def test_send_gpd_message_delete_after_update(
+    rtp_consumer_access_token, random_fiscal_code, activate_payer, status
+):
+    """Test sending a DELETE operation message via GPD message API after an UPDATE"""
+
+    activate_payer(random_fiscal_code)
+
+    update_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="UPDATE", status=status)
+
+    response_update = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=update_payload)
+
+    expected_update_code = UPDATE_BEFORE_CREATE_CODES[status]
+    assert_response_code(response_update, expected_update_code, "UPDATE standalone", status)
+
+    msg_id = update_payload["id"]
+    iuv = update_payload["iuv"]
+
+    delete_payload = generate_gpd_delete_message_payload(msg_id=msg_id, iuv=iuv)
+
+    response_delete = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+
+    expected_delete_code = DELETE_AFTER_UPDATE_WITHOUT_CREATE_CODES[status]
+    assert_response_code(response_delete, expected_delete_code, "DELETE after UPDATE", status)
+
+    response_body = get_response_body_safe(response_delete)
+
+    if status == "VALID":
+       assert_body_presence(response_body, should_have_body(status), "DELETE after UPDATE", "VALID")
+       assert_response_code(response_delete, expected_delete_code, "DELETE after UPDATE", "VALID")
+    else:
+       assert_response_code(response_delete, expected_delete_code, "DELETE after UPDATE", status)

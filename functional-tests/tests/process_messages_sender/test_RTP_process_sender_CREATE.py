@@ -27,4 +27,9 @@ def test_send_gpd_message_create_scenarios(rtp_consumer_access_token, random_fis
     assert_response_code(response, expected_code, "CREATE", status)
 
     response_body = get_response_body_safe(response)
-    assert_body_presence(response_body, should_have_body(status), "CREATE", status)
+
+    if status == "VALID":
+     assert_body_presence(response_body, should_have_body(status), "CREATE", status)
+     assert_response_code(response, expected_code, "CREATE", "VALID")
+    else:
+       assert_response_code(response, expected_code, "CREATE", status)

@@ -5,7 +5,8 @@ from api.RTP_get_api import get_rtp
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.response_assertions_utils import assert_response_code
-from utils.test_expectations import UPDATE_BEFORE_CREATE_CODES
+from utils.response_assertions_utils import assert_body_presence, assert_response_code, get_response_body_safe
+from utils.test_expectations import UPDATE_BEFORE_CREATE_CODES, should_have_body
 
 
 @allure.epic("RTP GPD Message")
@@ -26,6 +27,15 @@ def test_send_gpd_message_update_before_create(rtp_consumer_access_token, random
 
     expected_code = UPDATE_BEFORE_CREATE_CODES[status]
     assert_response_code(response_update, expected_code, "UPDATE before CREATE", status)
+
+    response_body = get_response_body_safe(response_update)
+
+    if status == "VALID":
+        assert_body_presence(response_body, should_have_body(status), "UPDATE before CREATE", status)
+    else:
+        assert_response_code(response_update, expected_code, "UPDATE before CREATE", status)   
+      
+
 
 
 @allure.epic("RTP GPD Message")
@@ -53,3 +63,6 @@ def test_send_gpd_message_update_valid_before_create_rtp_exists(
     get_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
     assert get_response.status_code == 200, f"Expected RTP to exist in DB, got {get_response.status_code}"
     assert get_response.json()["resourceID"] == resource_id
+
+
+
