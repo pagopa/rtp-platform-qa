@@ -4,7 +4,7 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
-from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock, get_institutions_service_consent_backoffice_optout, get_institutions_service_consent_backoffice_optin
+from api.RTP_get_api import get_rtp, get_rtp_optout_payees_list_mock, get_institutions_service_consent_backoffice_optout, get_institutions_service_consent_backoffice_optin, get_payees_consents_optout
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
 from utils.dataset_RTP_data import generate_rtp_data
@@ -160,9 +160,9 @@ def test_get_rtp_optout_payees_list_backoffice():
        
 @allure.feature("RTP Get")
 @allure.story("Come Sp Voglio sapere quali sono gli enti che hanno fatto Opt-out da RTP")
-@allure.title("200 ok")
+@allure.title("confronto tra lista opt-out e opt-in backoffice")
 @pytest.mark.get
-@pytest.mark.backoffice
+@pytest.mark.get
 @pytest.mark.unhappy_path
 def test_get_rtp_optout_payees_list_confront_with_optin_list_backoffice():
    
@@ -186,3 +186,22 @@ def test_get_rtp_optout_payees_list_confront_with_optin_list_backoffice():
    tax_codes_optin = {payee["institutionInfo"]["taxCode"] for payee in payees_optin_list}
    sovrapposizioni = tax_codes_optout.intersection(tax_codes_optin)
    assert len(sovrapposizioni) == 0, f"Sono presenti sovrapposizioni tra enti opt-out e opt-in: {sovrapposizioni}"
+
+@allure.feature("RTP Get")
+@allure.story("Come Sp Voglio sapere quali sono gli enti che hanno fatto Opt-out da RTP")
+@allure.title("200 ok")
+@pytest.mark.get
+@pytest.mark.happy_path
+def test_get_payees_consents_optout(pagopa_payee_registry_token: str): 
+   
+   response =  get_payees_consents_optout(access_token=pagopa_payee_registry_token)
+   assert response.status_code == 200, f"Expected status code 200, got {response.status_code}, body: {response.text}"
+
+   body = response.json()
+   assert isinstance(body, dict), f"Expected a dict, got {type(body)}"
+
+   for payee in body.get("payees", []):
+       assert "taxCode" in payee, f"Missing 'taxCode' in payee: {payee}"
+       assert "name" in payee, f"Missing 'name' in payee: {payee}"
+       
+   

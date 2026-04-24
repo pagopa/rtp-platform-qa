@@ -10,6 +10,7 @@ Functions:
 """
 
 import uuid
+import datetime
 
 import requests
 
@@ -181,6 +182,30 @@ def get_institutions_service_consent_backoffice_optin(service_id="RTP"):
         "pageSize": 10,
         "consent": "OPT_IN",
         "toDate": "2026-04-09T23:59:59Z"
+    }
+
+    return requests.get(url=url, headers=headers, params=params)
+
+def get_payees_consents_optout(access_token: str):
+
+    url = "https://api-rtp.uat.cstar.pagopa.it/rtp/payees/consents"
+
+    
+
+    headers = {
+        "Authorization": access_token,
+        "RequestId": str(uuid.uuid4()),
+        "Version": GET_RTP_VERSION,
+        "Content-Type": "application/json"
+    }
+
+    params = {
+        "serviceId": "RTP",
+        "pageNumber": 0,
+        "pageSize": 20,
+        "ConsentFilter": "OPT_OUT",
+        "fromDate": "2026-01-01T00:00:00Z",
+        "toDate": datetime.datetime.now().isoformat() + "Z"
     }
 
     return requests.get(url=url, headers=headers, params=params)
