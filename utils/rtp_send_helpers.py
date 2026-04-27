@@ -55,19 +55,8 @@ def send_rtp_and_get_status_rejected(
     payer_id: str,
     expected_send_status: int = 422,
 ) -> str:
-    """Activate a debtor, send an RTP, and return the resulting RTP status.
-
-    Args:
-        debtor_token: Bearer token for the debtor service provider.
-        creditor_token: Bearer token for the creditor service provider.
-        reader_token: Bearer token for the RTP reader.
-        payer_id: Fiscal code used as payer ID (drives mock EPC response).
-        expected_send_status: Expected HTTP status code from the send RTP call.
-
-    Returns:
-        The RTP status string (e.g. "ACCEPTED", "REJECTED", "SENT").
-    """
-    assert expected_send_status >= 400, "This helper is intended for cases where the send RTP call is expected to fail (e.g. REJECTED status), please use send_rtp_and_get_status for cases where the send is expected to succeed."
+    assert expected_send_status >= 400
+    
     rtp_data = generate_rtp_data(payer_id=payer_id)
     notice_number = rtp_data["paymentNotice"]["noticeNumber"]
 
@@ -81,34 +70,18 @@ def send_rtp_and_get_status_rejected(
     send_response = send_rtp(access_token=creditor_token, rtp_payload=rtp_data)
     assert send_response.status_code == expected_send_status
 
-    status = get_status_from_notice_number(notice_number)
+    status = get_status_from_notice_number(reader_token, notice_number)
 
-    return get_response.json()["status"]
+    return status
 
-def get_status_from_notice_number(notice_number: str) -> str:
-    """Helper function to retrieve the RTP status by notice number.
+def get_status_from_notice_number(access_token: str, notice_number: str) -> str:
+    rtp_data = get_rtp_by_notice_number(access_token, notice_number)
+    return rtp_data["status"]
 
-    This is a workaround for cases where the send RTP call is expected to fail (e.g. REJECTED status) and thus we cannot retrieve the RTP ID from the Location header to check the status via the get RTP endpoint.
-
-    Args:
-        notice_number: The notice number of the payment notice included in the RTP payload.
-    Returns:
-        The RTP status string (e.g. "ACCEPTED", "REJECTED", "SENT").
-    """
-    # In the current mock setup, the notice number is unique for each send RTP call and can be used to correlate the get RTP response to the original send RTP request.
-    # This allows us to retrieve the RTP status even in cases where the send RTP call fails and we cannot get the RTP ID from the Location header.
-    response = get_rtp_by_notice_number(notice_number)
-    assert response.status_code == 200, "Error retrieving RTP by notice number"
-    return response.json()[-1]["status"]
-
-def get_rtp_by_notice_number(notice_number: str) -> List[dict]:
-    """Helper function to retrieve the RTP details by notice number.
-
-    Args:
-        notice_number: The notice number of the payment notice included in the RTP payload.
-
-    Returns:
-        The response object from the get RTP API call.
-    """
-    # TODO: COMPLETE THIS METHOD AND FIX THE ABOVE ONES.
-    pass
+def get_rtp_by_notice_number(access_token: str, notice_number: str) -> dict:
+    from api.RTP_get_api import get_rtp_by_notice_number as api_get_rtp_by_notice_number
+    
+    response = api_get_rtp_by_notice_number(access_token, notice_number)
+    assert response.status_code == 200, "Error retrieving RTP by notice number. Status Code: {response.status_code}"
+    
+    return response.json()[-1]
