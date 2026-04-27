@@ -187,7 +187,7 @@ def test_send_rtp_sync_sent_extra_field(
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP with synchronous RJCT response containing extra fields")
 @allure.title("An RTP sent with synchronous rejection containing extra fields returns HTTP 422")
-@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_rjct_extra_fields")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_extra_fields")
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_with_extra_fields(
@@ -208,7 +208,7 @@ def test_send_rtp_sync_rejected_with_extra_fields(
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP with synchronous RJCT response without _links")
 @allure.title("An RTP sent with synchronous rejection and missing _links returns HTTP 422")
-@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_rjct_no_links")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_no_links")
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_no_links(
