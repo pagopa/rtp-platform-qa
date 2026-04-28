@@ -46,9 +46,6 @@ def send_rtp_and_get_status(
 
     return get_response.json()["status"]
 
-# This solution is temporary until we have a more robust way to trigger specific RTP statuses in our mocks.
-# In the meantime, this helper can be used in tests that need to verify behavior based on the RTP status after sending (e.g. "ACCEPTED", "REJECTED", "SENT")
-# by using specific payer IDs that drive the mock EPC response to return the desired status.
 def send_rtp_and_get_status_rejected(
     debtor_token: str,
     creditor_token: str,
