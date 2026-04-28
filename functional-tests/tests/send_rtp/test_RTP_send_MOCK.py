@@ -194,7 +194,6 @@ def test_send_rtp_sync_rejected_with_extra_fields(
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
-    expected_status: str = "REJECTED",
 ):
     status = send_rtp_and_get_status_by_notice_number(
         debtor_service_provider_token_a,
@@ -202,7 +201,7 @@ def test_send_rtp_sync_rejected_with_extra_fields(
         rtp_reader_access_token,
         secrets.mock_reject_extra_fields_fiscal_code,
     )
-    assert status == expected_status
+    assert status == "REJECTED"
 
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
@@ -215,7 +214,6 @@ def test_send_rtp_sync_rejected_no_links(
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
-    expected_status: str = "REJECTED",
 ):
     status = send_rtp_and_get_status_by_notice_number(
         debtor_service_provider_token_a,
@@ -223,4 +221,4 @@ def test_send_rtp_sync_rejected_no_links(
         rtp_reader_access_token,
         secrets.mock_reject_no_links_fiscal_code,
     )
-    assert status == expected_status
+    assert status == "REJECTED"
