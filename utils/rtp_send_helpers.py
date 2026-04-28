@@ -46,7 +46,7 @@ def send_rtp_and_get_status(
 
     return get_response.json()["status"]
 
-def send_rtp_and_get_status_rejected(
+def send_rtp_and_get_status_by_notice_number(
     debtor_token: str,
     creditor_token: str,
     reader_token: str,
