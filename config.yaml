@@ -49,6 +49,7 @@ get_api_version: 'v1'
 # ============================
 payees_registry_path: "payees/payees"
 payees_registry_api_version: "v1"
+payees_consents_path: "payees/consents"
 
 service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'

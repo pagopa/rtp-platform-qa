@@ -27,6 +27,7 @@ GET_RTP_BY_NOTICE_NUMBER_URL = config.rtp_creation_base_url_path + config.get_rt
 GET_RTP_DELIVERY_STATUS_URL = config.rtp_creation_base_url_path + config.get_rtp_delivery_status_path
 LANDING_PAGE_URL = config.landing_page_path
 PAYEES_URL = config.rtp_creation_base_url_path + config.payees_registry_path
+PAYEES_CONSENTS_URL = config.rtp_creation_base_url_path + config.payees_consents_path
 PRODUCER_GPD_MESSAGE_URL = config.producer_gpd_message_base_url + config.send_gpd_message
 SEND_RTP_URL = config.rtp_creation_base_url_path + config.send_rtp_path
 SERVICE_PROVIDER_MOCK_URL = config.mock_service_provider_url
