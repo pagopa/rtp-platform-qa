@@ -7,6 +7,7 @@ from utils.datetime_utils import get_yesterday_and_today
 DEFAULT_PAGE_NUMBER = 0
 DEFAULT_PAGE_SIZE = 20
 CONSENT_OPT_OUT = "OPT_OUT"
+EXTREME_PAGE_SIZE = 2**31
 
 
 @allure.epic("Service Registry Payees")
@@ -77,6 +78,22 @@ def test_get_payees_consents_negative_page_size(pagopa_payees_registry_consent_t
     response = get_payees_consents(
         access_token=pagopa_payees_registry_consent_token,
         page_size=-1,
+    )
+
+    assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
+
+
+@allure.epic("Service Registry Payees")
+@allure.feature("Payees Consents")
+@allure.story("DSP retrieves paginated list of payees consents")
+@allure.title("Get payees consents with extreme page size returns 400")
+@allure.tag("functional", "unhappy_path", "payees_consents")
+@pytest.mark.unhappy_path
+@pytest.mark.get
+def test_get_payees_consents_extreme_page_size(pagopa_payees_registry_consent_token: str) -> None:
+    response = get_payees_consents(
+        access_token=pagopa_payees_registry_consent_token,
+        page_size=EXTREME_PAGE_SIZE,
     )
 
     assert response.status_code == 400, f"Expected 400, got {response.status_code}: {response.text}"
