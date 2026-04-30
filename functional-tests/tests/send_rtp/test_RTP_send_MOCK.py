@@ -165,7 +165,9 @@ def test_send_rtp_sync_accepted_no_links(
 
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with a non-compliant synchronous ACTC-like response containing an unexpected field that is ignored")
+@allure.story(
+    "Service provider sends an RTP with a non-compliant synchronous ACTC-like response containing an unexpected field that is ignored"
+)
 @allure.title("An RTP sent when EPC response contains an unknown field is ignored and remains in status SENT")
 @allure.tag("functional", "unhappy_path", "rtp_send", "optional_epc_fields")
 @pytest.mark.send
@@ -182,7 +184,8 @@ def test_send_rtp_sync_sent_extra_field(
         secrets.mock_extra_field_fiscal_code,
     )
     assert status == "SENT"
-    
+
+
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP with synchronous RJCT response containing extra fields")
@@ -202,6 +205,7 @@ def test_send_rtp_sync_rejected_with_extra_fields(
         secrets.mock_reject_extra_fields_fiscal_code,
     )
     assert status == "REJECTED"
+
 
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")

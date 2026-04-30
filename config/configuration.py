@@ -59,6 +59,11 @@ secrets.pagopa_integration_payee_registry = Dynaconf(
     client_secret=os.getenv("PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET"),
 )
 
+secrets.pagopa_integration_payee_registry_consent = Dynaconf(
+    client_id=os.getenv("PAGOPA_INTEGRATION_PAYEE_REGISTRY_CONSENT_CLIENT_ID"),
+    client_secret=os.getenv("PAGOPA_INTEGRATION_PAYEE_REGISTRY_CONSENT_CLIENT_SECRET"),
+)
+
 secrets.pagopa_integration_service_registry = Dynaconf(
     client_id=os.getenv("PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID"),
     client_secret=os.getenv("PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET"),

@@ -270,6 +270,8 @@ Secrets must be updated manually by admins when rotated.
 |----------|-------------|
 | `PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_ID` | Client ID for the PagoPA payee registry |
 | `PAGOPA_INTEGRATION_PAYEE_REGISTRY_CLIENT_SECRET` | Client secret for the PagoPA payee registry |
+| `PAGOPA_INTEGRATION_PAYEE_REGISTRY_CONSENT_CLIENT_ID` | Client ID for the PagoPA payee registry consent |
+| `PAGOPA_INTEGRATION_PAYEE_REGISTRY_CONSENT_CLIENT_SECRET` | Client secret for the PagoPA payee registry consent |
 | `PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID` | Client ID for the PagoPA service registry |
 | `PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET` | Client secret for the PagoPA service registry |
 

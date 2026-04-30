@@ -2,10 +2,10 @@
 
 from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
+from api.RTP_get_api import get_rtp_by_notice_number as api_get_rtp_by_notice_number
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
 from utils.dataset_RTP_data import generate_rtp_data
-from api.RTP_get_api import get_rtp_by_notice_number as api_get_rtp_by_notice_number
 
 
 def send_rtp_and_get_status(
@@ -46,6 +46,7 @@ def send_rtp_and_get_status(
 
     return get_response.json()["status"]
 
+
 def send_rtp_and_get_status_by_notice_number(
     debtor_token: str,
     creditor_token: str,
@@ -54,7 +55,7 @@ def send_rtp_and_get_status_by_notice_number(
     expected_send_status: int = 422,
 ) -> str:
     assert expected_send_status >= 400
-    
+
     rtp_data = generate_rtp_data(payer_id=payer_id)
     notice_number = rtp_data["paymentNotice"]["noticeNumber"]
 
@@ -72,13 +73,15 @@ def send_rtp_and_get_status_by_notice_number(
 
     return status
 
+
 def get_status_from_notice_number(access_token: str, notice_number: str) -> str:
     rtp_data = get_rtp_by_notice_number(access_token, notice_number)
     return rtp_data["status"]
 
+
 def get_rtp_by_notice_number(access_token: str, notice_number: str) -> dict:
-    
+
     response = api_get_rtp_by_notice_number(access_token, notice_number)
     assert response.status_code == 200, "Error retrieving RTP by notice number. Status Code: {response.status_code}"
-    
+
     return response.json()[-1]
