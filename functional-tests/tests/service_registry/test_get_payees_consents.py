@@ -14,8 +14,9 @@ from api.service_registry_payee_registry_api import get_payees_consents
 @pytest.mark.happy_path
 @pytest.mark.get
 def test_get_payees_consents_returns_200(pagopa_payees_registry_consent_token: str) -> None:
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    today = datetime.now().strftime("%Y-%m-%d")
+    now = datetime.now()
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    today = now.strftime("%Y-%m-%d")
 
     response = get_payees_consents(
         access_token=pagopa_payees_registry_consent_token,
