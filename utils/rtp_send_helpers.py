@@ -84,4 +84,10 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str) -> dict:
     response = api_get_rtp_by_notice_number(access_token, notice_number)
     assert response.status_code == 200, f"Error retrieving RTP by notice number. Status Code: {response.status_code}"
 
-    return response.json()[-1]
+    payload = response.json()
+    assert isinstance(payload, list) and payload, (
+        f"Expected non-empty list when retrieving RTP by notice number {notice_number}. "
+        f"Response body: {response.text}"
+    )
+
+    return payload[-1]
