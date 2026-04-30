@@ -6,7 +6,7 @@ from api.RTP_send_api import send_rtp
 from config.configuration import config, secrets
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.regex_utils import uuidv4_pattern
-from utils.rtp_send_helpers import send_rtp_and_get_status
+from utils.rtp_send_helpers import send_rtp_and_get_status, send_rtp_and_get_status_by_notice_number
 
 
 @allure.epic("RTP Send")
@@ -132,7 +132,7 @@ def test_send_rtp_sync_rejected_ds08p_n(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = send_rtp_and_get_status(
+    status = send_rtp_and_get_status_by_notice_number(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
@@ -182,3 +182,43 @@ def test_send_rtp_sync_sent_extra_field(
         secrets.mock_extra_field_fiscal_code,
     )
     assert status == "SENT"
+    
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with synchronous RJCT response containing extra fields")
+@allure.title("An RTP sent with synchronous rejection containing extra fields returns HTTP 422")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_extra_fields")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_rejected_with_extra_fields(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    status = send_rtp_and_get_status_by_notice_number(
+        debtor_service_provider_token_a,
+        creditor_service_provider_token_a,
+        rtp_reader_access_token,
+        secrets.mock_reject_extra_fields_fiscal_code,
+    )
+    assert status == "REJECTED"
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with synchronous RJCT response without _links")
+@allure.title("An RTP sent with synchronous rejection and missing _links returns HTTP 422")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_no_links")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_rejected_no_links(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    status = send_rtp_and_get_status_by_notice_number(
+        debtor_service_provider_token_a,
+        creditor_service_provider_token_a,
+        rtp_reader_access_token,
+        secrets.mock_reject_no_links_fiscal_code,
+    )
+    assert status == "REJECTED"
