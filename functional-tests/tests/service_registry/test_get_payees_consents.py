@@ -121,8 +121,9 @@ def test_get_payees_consents_invalid_date_format(pagopa_payees_registry_consent_
 @pytest.mark.unhappy_path
 @pytest.mark.get
 def test_get_payees_consents_wrong_token_type(rtp_reader_access_token: str) -> None:
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    today = datetime.now().strftime("%Y-%m-%d")
+    now = datetime.now()
+    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    today = now.strftime("%Y-%m-%d")
 
     response = get_payees_consents(
         access_token=rtp_reader_access_token,
