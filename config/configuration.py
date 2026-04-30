@@ -123,5 +123,5 @@ secrets.mock_no_links_fiscal_code = os.getenv("MOCK_NO_LINKS_FISCAL_CODE")
 secrets.mock_extra_field_fiscal_code = os.getenv("MOCK_EXTRA_FIELD_FISCAL_CODE")
 secrets.ec_tax_code = os.getenv("EC_TAX_CODE")
 
-secrets.mock_reject_extra_fields_fiscal_code = os.getenv("MOCK_REJECT_EXTRA_FIELDS_FISCAL_CODE")
-secrets.mock_reject_no_links_fiscal_code = os.getenv("MOCK_REJECT_NO_LINKS_FISCAL_CODE")
+secrets.mock_rjct_extra_field_fiscal_code = os.getenv("MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE")
+secrets.mock_rjct_no_links_fiscal_code = os.getenv("MOCK_RJCT_NO_LINKS_FISCAL_CODE")

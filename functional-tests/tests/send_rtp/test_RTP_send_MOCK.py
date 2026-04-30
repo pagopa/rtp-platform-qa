@@ -202,7 +202,7 @@ def test_send_rtp_sync_rejected_with_extra_fields(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
-        secrets.mock_reject_extra_fields_fiscal_code,
+        secrets.mock_rjct_extra_field_fiscal_code,
     )
     assert status == "REJECTED"
 
@@ -223,6 +223,6 @@ def test_send_rtp_sync_rejected_no_links(
         debtor_service_provider_token_a,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
-        secrets.mock_reject_no_links_fiscal_code,
+        secrets.mock_rjct_no_links_fiscal_code,
     )
     assert status == "REJECTED"
