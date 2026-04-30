@@ -1,9 +1,8 @@
-from datetime import datetime, timedelta
-
 import allure
 import pytest
 
 from api.service_registry_payee_registry_api import get_payees_consents
+from utils.datetime_utils import get_yesterday_and_today
 
 
 @allure.epic("Service Registry Payees")
@@ -14,9 +13,7 @@ from api.service_registry_payee_registry_api import get_payees_consents
 @pytest.mark.happy_path
 @pytest.mark.get
 def test_get_payees_consents_returns_200(pagopa_payees_registry_consent_token: str) -> None:
-    now = datetime.now()
-    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    today = now.strftime("%Y-%m-%d")
+    yesterday, today = get_yesterday_and_today()
 
     response = get_payees_consents(
         access_token=pagopa_payees_registry_consent_token,
@@ -121,9 +118,7 @@ def test_get_payees_consents_invalid_date_format(pagopa_payees_registry_consent_
 @pytest.mark.unhappy_path
 @pytest.mark.get
 def test_get_payees_consents_wrong_token_type(rtp_reader_access_token: str) -> None:
-    now = datetime.now()
-    yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-    today = now.strftime("%Y-%m-%d")
+    yesterday, today = get_yesterday_and_today()
 
     response = get_payees_consents(
         access_token=rtp_reader_access_token,

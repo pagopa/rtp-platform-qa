@@ -2,6 +2,11 @@ import random
 from datetime import datetime, timedelta
 
 
+def get_yesterday_and_today() -> tuple[str, str]:
+    now = datetime.now()
+    return (now - timedelta(days=1)).strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")
+
+
 def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
     """Generate a random expiry date in the future.
 
