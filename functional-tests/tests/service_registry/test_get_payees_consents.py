@@ -4,6 +4,10 @@ import pytest
 from api.service_registry_payee_registry_api import get_payees_consents
 from utils.datetime_utils import get_yesterday_and_today
 
+DEFAULT_PAGE_NUMBER = 0
+DEFAULT_PAGE_SIZE = 20
+CONSENT_OPT_OUT = "OPT_OUT"
+
 
 @allure.epic("Service Registry Payees")
 @allure.feature("Payees Consents")
@@ -17,9 +21,9 @@ def test_get_payees_consents_returns_200(pagopa_payees_registry_consent_token: s
 
     response = get_payees_consents(
         access_token=pagopa_payees_registry_consent_token,
-        page_number=0,
-        page_size=20,
-        consent="OPT_OUT",
+        page_number=DEFAULT_PAGE_NUMBER,
+        page_size=DEFAULT_PAGE_SIZE,
+        consent=CONSENT_OPT_OUT,
         from_date=yesterday,
         to_date=today,
     )
@@ -122,9 +126,9 @@ def test_get_payees_consents_wrong_token_type(rtp_reader_access_token: str) -> N
 
     response = get_payees_consents(
         access_token=rtp_reader_access_token,
-        page_number=0,
-        page_size=20,
-        consent="OPT_OUT",
+        page_number=DEFAULT_PAGE_NUMBER,
+        page_size=DEFAULT_PAGE_SIZE,
+        consent=CONSENT_OPT_OUT,
         from_date=yesterday,
         to_date=today,
     )
