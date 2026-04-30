@@ -125,6 +125,19 @@ def pagopa_payee_registry_token() -> str:
 
 
 @pytest.fixture
+def pagopa_payees_registry_consent_token() -> str:
+    """
+    Access token for pagoPA payees registry consent client.
+    Used by tests that call the Payees Registry Consent API.
+    """
+    return get_valid_access_token(
+        client_id=secrets.pagopa_integration_payee_registry_consent.client_id,
+        client_secret=secrets.pagopa_integration_payee_registry_consent.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
 def pagopa_service_providers_registry_token() -> str:
     """
     Access token for pagoPA service providers registry client.
