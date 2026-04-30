@@ -82,6 +82,6 @@ def get_status_from_notice_number(access_token: str, notice_number: str) -> str:
 def get_rtp_by_notice_number(access_token: str, notice_number: str) -> dict:
 
     response = api_get_rtp_by_notice_number(access_token, notice_number)
-    assert response.status_code == 200, "Error retrieving RTP by notice number. Status Code: {response.status_code}"
+    assert response.status_code == 200, f"Error retrieving RTP by notice number. Status Code: {response.status_code}"
 
     return response.json()[-1]
