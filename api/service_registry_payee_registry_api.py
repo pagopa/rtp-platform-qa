@@ -27,7 +27,7 @@ def get_payees_consents(
     access_token: str,
     page_number: int = CONSENTS_DEFAULT_PAGE_NUMBER,
     page_size: int = CONSENTS_DEFAULT_PAGE_SIZE,
-    consent: str = CONSENTS_DEFAULT_VALUE,
+    consent: str | None = CONSENTS_DEFAULT_VALUE,
     from_date: str | None = None,
     to_date: str | None = None,
 ) -> requests.Response:
