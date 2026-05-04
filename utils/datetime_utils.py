@@ -6,6 +6,19 @@ def get_yesterday_and_today() -> tuple[str, str]:
     now = datetime.now()
     return (now - timedelta(days=1)).strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")
 
+"""This method is required as the API requires a toDate parameter, but it should default to today's date if not provided."""
+def get_date_or_today(date_str: str | None) -> str:
+    """
+    Get the provided date string or return today's date if the string is None.
+    Args:
+        date_str: A date string in YYYY-MM-DD format or None
+    Returns:
+        A date string in YYYY-MM-DD format
+    """
+    if date_str is not None:
+        return date_str
+    return datetime.datetime.now().strftime("%Y-%m-%d")
+
 
 def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
     """Generate a random expiry date in the future.

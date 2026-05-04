@@ -3,6 +3,7 @@ import pytest
 
 from api.service_registry_payee_registry_api import get_payees_consents
 from utils.datetime_utils import get_yesterday_and_today
+from utils.datetime_utils import get_date_or_today
 
 DEFAULT_PAGE_NUMBER = 0
 DEFAULT_PAGE_SIZE = 20
@@ -46,7 +47,16 @@ def test_get_payees_consents_returns_200(pagopa_payees_registry_consent_token: s
 @pytest.mark.unhappy_path
 @pytest.mark.get
 def test_get_payees_consents_invalid_auth() -> None:
-    response = get_payees_consents(access_token="invalid_token")
+    yesterday, today = get_yesterday_and_today()
+
+    response = get_payees_consents(
+        access_token="invalid_token",
+        page_number=DEFAULT_PAGE_NUMBER,
+        page_size=DEFAULT_PAGE_SIZE,
+        consent=CONSENT_OPT_OUT,
+        from_date=yesterday,
+        to_date=today,
+    )
 
     assert response.status_code == 401, f"Expected 401, got {response.status_code}: {response.text}"
 
