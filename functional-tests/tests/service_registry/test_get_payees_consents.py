@@ -3,7 +3,6 @@ import pytest
 
 from api.service_registry_payee_registry_api import get_payees_consents
 from utils.datetime_utils import get_yesterday_and_today
-from utils.datetime_utils import get_date_or_today
 
 DEFAULT_PAGE_NUMBER = 0
 DEFAULT_PAGE_SIZE = 20

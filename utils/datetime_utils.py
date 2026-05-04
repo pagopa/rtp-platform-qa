@@ -6,7 +6,7 @@ def get_yesterday_and_today() -> tuple[str, str]:
     now = datetime.now()
     return (now - timedelta(days=1)).strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")
 
-"""This method is required as the API requires a toDate parameter, but it should default to today's date if not provided."""
+# Returns today's date when to_date is None (API requires toDate in every request).
 def get_date_or_today(date_str: str | None) -> str:
     """
     Get the provided date string or return today's date if the string is None.
