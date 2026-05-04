@@ -7,6 +7,8 @@ from api.utils.api_version import PAYEES_VERSION
 from api.utils.endpoints import PAYEES_CONSENTS_URL, PAYEES_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 
+from utils.datetime_utils import get_date_or_today
+
 CONSENTS_DEFAULT_PAGE_SIZE = 20
 CONSENTS_DEFAULT_PAGE_NUMBER = 0
 CONSENTS_DEFAULT_VALUE = "OPT_OUT"

@@ -17,7 +17,7 @@ def get_date_or_today(date_str: str | None) -> str:
     """
     if date_str is not None:
         return date_str
-    return datetime.datetime.now().strftime("%Y-%m-%d")
+    return datetime.now().strftime("%Y-%m-%d")
 
 
 def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
