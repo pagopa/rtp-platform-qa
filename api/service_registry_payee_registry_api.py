@@ -5,7 +5,7 @@ import requests
 from api.utils.api_version import PAYEES_VERSION
 from api.utils.endpoints import PAYEES_CONSENTS_URL, PAYEES_URL
 from api.utils.http_utils import HTTP_TIMEOUT
-from utils.datetime_utils import get_date_or_today
+from utils.datetime_utils import get_date_or_default_today
 
 CONSENTS_DEFAULT_PAGE_SIZE = 20
 CONSENTS_DEFAULT_PAGE_NUMBER = 0
@@ -35,7 +35,7 @@ def get_payees_consents(
         params["consent"] = consent
     if from_date is not None:
         params["fromDate"] = from_date
-    params["toDate"] = get_date_or_today(to_date)
+    params["toDate"] = get_date_or_default_today(to_date)
 
     return requests.get(
         url=PAYEES_CONSENTS_URL,
