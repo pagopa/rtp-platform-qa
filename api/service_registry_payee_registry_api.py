@@ -5,6 +5,11 @@ import requests
 from api.utils.api_version import PAYEES_VERSION
 from api.utils.endpoints import PAYEES_CONSENTS_URL, PAYEES_URL
 from api.utils.http_utils import HTTP_TIMEOUT
+from utils.datetime_utils import get_date_or_default_today
+
+CONSENTS_DEFAULT_PAGE_SIZE = 20
+CONSENTS_DEFAULT_PAGE_NUMBER = 0
+CONSENTS_DEFAULT_VALUE = "OPT_OUT"
 
 
 def get_payee_registry(access_token: str, page: int = 0, size: int = 20):
@@ -19,9 +24,9 @@ def get_payee_registry(access_token: str, page: int = 0, size: int = 20):
 
 def get_payees_consents(
     access_token: str,
-    page_number: int = 0,
-    page_size: int = 20,
-    consent: str | None = None,
+    page_number: int = CONSENTS_DEFAULT_PAGE_NUMBER,
+    page_size: int = CONSENTS_DEFAULT_PAGE_SIZE,
+    consent: str | None = CONSENTS_DEFAULT_VALUE,
     from_date: str | None = None,
     to_date: str | None = None,
 ) -> requests.Response:
@@ -30,8 +35,7 @@ def get_payees_consents(
         params["consent"] = consent
     if from_date is not None:
         params["fromDate"] = from_date
-    if to_date is not None:
-        params["toDate"] = to_date
+    params["toDate"] = get_date_or_default_today(to_date)
 
     return requests.get(
         url=PAYEES_CONSENTS_URL,

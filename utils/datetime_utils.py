@@ -7,6 +7,32 @@ def get_yesterday_and_today() -> tuple[str, str]:
     return (now - timedelta(days=1)).strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d")
 
 
+def get_date_or_default_today(date_str: str | None) -> str:
+    """
+    Get the provided date string or return today's date if the string is None.
+    Args:
+        date_str: A date string in YYYY-MM-DD format or None
+    Returns:
+        A date string in YYYY-MM-DD format
+    """
+    today = datetime.now().strftime("%Y-%m-%d")
+    return get_date_or_default(date_str, today)
+
+
+def get_date_or_default(date_str: str | None, default_date: str ) -> str:
+    """
+    Get the provided date string or return the default date if the string is None.
+    Args:
+        date_str: A date string in YYYY-MM-DD format or None
+        default: A default date string in YYYY-MM-DD format
+    Returns:
+        A date string in YYYY-MM-DD format
+    """
+    if date_str is not None:
+        return date_str
+    return default_date
+
+
 def generate_expiry_date(min_days: int = 1, max_days: int = 365) -> str:
     """Generate a random expiry date in the future.
 
