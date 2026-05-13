@@ -7,9 +7,11 @@ from api.RTP_cancel_api import cancel_rtp
 from api.RTP_get_api import get_rtp
 from api.RTP_send_api import send_rtp
 from config.configuration import secrets
+from utils.constants_text_helper import CANCEL_REASON_MODT, CANCEL_REASON_PAID
 from utils.dataset_callback_data_DS_12_invalid import generate_callback_data_DS_12_invalid
 from utils.dataset_callback_data_DS_12P_CNCL_compliant import generate_callback_data_DS_12P_CNCL_compliant
 from utils.dataset_RTP_data import generate_rtp_data
+from utils.http_utils import extract_id_from_location
 
 
 @allure.epic("RTP Callback")
@@ -19,11 +21,13 @@ from utils.dataset_RTP_data import generate_rtp_data
 @allure.tag("functional", "happy_path", "rtp_callback", "ds_12p_cncl_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.happy_path
+@pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_receive_rfc_callback_DS_12P_CNCL_compliant(
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
+    cancel_reason,
 ):
     """
     Test RFC callback DS12P with CNCL status.
@@ -54,11 +58,10 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12P_CNCL_compliant(
@@ -93,10 +96,12 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
 @allure.tag("functional", "unhappy_path", "rtp_callback", "ds_12p_cncl_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
+@pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     debtor_sp_mock_cert_key,
+    cancel_reason,
 ):
     """
     Test RFC callback DS12P with wrong certificate identity.
@@ -129,11 +134,10 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12P_CNCL_compliant(
@@ -161,10 +165,12 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
 @allure.tag("functional", "unhappy_path", "rtp_callback", "ds_12p_cncl_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
+@pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compliant(
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     debtor_sp_mock_cert_key,
+    cancel_reason,
 ):
     """
     Test RFC callback DS12P with non-existing service provider.
@@ -196,11 +202,10 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12P_CNCL_compliant(
@@ -228,11 +233,13 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
 @allure.tag("functional", "unhappy_path", "rtp_callback", "ds_12p_invalid", "rfc")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
+@pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_receive_rfc_callback_DS_12P_invalid(
     debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
+    cancel_reason,
 ):
     """
     Test RFC callback DS12P with INVALID status.
@@ -263,11 +270,10 @@ def test_receive_rfc_callback_DS_12P_invalid(
     )
     assert send_response.status_code == 201
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id)
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12_invalid(
@@ -293,3 +299,4 @@ def test_receive_rfc_callback_DS_12P_invalid(
     assert get_response.status_code == 200
     body = get_response.json()
     assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
+

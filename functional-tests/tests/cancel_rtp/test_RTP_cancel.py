@@ -7,6 +7,7 @@ from api.RTP_cancel_api import cancel_rtp
 from api.RTP_send_api import send_rtp
 from utils.constants_text_helper import CANCEL_REASON_MODT, CANCEL_REASON_PAID
 from utils.dataset_RTP_data import generate_rtp_data
+from utils.http_utils import extract_id_from_location
 
 _INVALID_CANCEL_REASON = "INVALID_REASON"
 
@@ -28,7 +29,7 @@ def test_cancel_rtp_with_reason_paid(creditor_service_provider_token_a, activate
     send_response = send_rtp(access_token=access_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201
 
-    resource_id = send_response.headers["Location"].split("/")[-1]
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
 
     cancel_response = cancel_rtp(access_token, resource_id, CANCEL_REASON_PAID)
     assert cancel_response.status_code == 204
@@ -51,7 +52,7 @@ def test_cancel_rtp_with_reason_modt(creditor_service_provider_token_a, activate
     send_response = send_rtp(access_token=access_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201
 
-    resource_id = send_response.headers["Location"].split("/")[-1]
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
 
     cancel_response = cancel_rtp(access_token, resource_id, CANCEL_REASON_MODT)
     assert cancel_response.status_code == 204
