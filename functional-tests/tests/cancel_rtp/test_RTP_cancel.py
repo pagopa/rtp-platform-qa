@@ -1,5 +1,3 @@
-import uuid
-
 import allure
 import pytest
 
@@ -80,9 +78,17 @@ def test_cancel_rtp_with_nonexistent_resource_id(creditor_service_provider_token
 @allure.tag("functional", "unhappy_path", "rtp_cancel")
 @pytest.mark.cancel
 @pytest.mark.unhappy_path
-def test_cancel_rtp_with_invalid_reason(creditor_service_provider_token_a):
+def test_cancel_rtp_with_invalid_reason(creditor_service_provider_token_a, activate_payer):
+    rtp_data = generate_rtp_data()
     access_token = creditor_service_provider_token_a
-    fake_resource_id = str(uuid.uuid4())
 
-    cancel_response = cancel_rtp(access_token, fake_resource_id, _INVALID_CANCEL_REASON)
+    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    assert activation_response.status_code == 201, "Error activating debtor"
+
+    send_response = send_rtp(access_token=access_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 201
+
+    resource_id = extract_id_from_location(send_response.headers.get("Location"))
+
+    cancel_response = cancel_rtp(access_token, resource_id, _INVALID_CANCEL_REASON)
     assert cancel_response.status_code == 400, "Expected 400 Bad Request for invalid cancel reason"
