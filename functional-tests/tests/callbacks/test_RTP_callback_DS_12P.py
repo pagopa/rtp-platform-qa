@@ -59,6 +59,7 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
     original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
@@ -135,6 +136,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
     original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
@@ -203,6 +205,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
     original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
@@ -271,6 +274,7 @@ def test_receive_rfc_callback_DS_12P_invalid(
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
     original_msg_id = resource_id.replace("-", "")
 
     cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
