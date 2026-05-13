@@ -3,19 +3,20 @@ import uuid
 from behave import given, then, when
 
 from api.RTP_cancel_api import cancel_rtp
+from utils.constants_text_helper import CANCEL_REASON_MODT, CANCEL_REASON_PAID
 
 
 @when("the {role} Service send a cancellation request for the RTP")
 @given("the {role} Service sent a cancellation request for the RTP")
 def when_sp_cancel_rtp(context, role):
-    cancel_response = cancel_rtp(context.access_tokens[role], context.latest_rtp_resource_id)
+    cancel_response = cancel_rtp(context.access_tokens[role], context.latest_rtp_resource_id, CANCEL_REASON_MODT)
     context.cancel_rtp_response = cancel_response
     assert cancel_response.status_code == 204, f"Error cancelling RTP, got status code: {cancel_response.status_code}"
 
 
 @when("the {role} Service send another cancellation request for the RTP")
 def when_sp_cancel_rtp_again(context, role):
-    cancel_response = cancel_rtp(context.access_tokens[role], context.latest_rtp_resource_id)
+    cancel_response = cancel_rtp(context.access_tokens[role], context.latest_rtp_resource_id, CANCEL_REASON_MODT)
     context.cancel_rtp_response = cancel_response
 
 
@@ -35,7 +36,7 @@ def then_rtp_is_cancelled(context):
 
 @when("the {role} Service Provider send a cancellation request for a non-existing RTP")
 def when_sp_cancel_nonexistent_rtp(context, role):
-    cancel_response = cancel_rtp(context.access_tokens[role], str(uuid.uuid4()))
+    cancel_response = cancel_rtp(context.access_tokens[role], str(uuid.uuid4()), CANCEL_REASON_PAID)
     context.latest_cancel_response = cancel_response
 
 
