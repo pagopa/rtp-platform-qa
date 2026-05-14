@@ -45,7 +45,7 @@ def require_env(name: str) -> str:
 
 def require_env_or_default(name: str, default: str) -> str:
     val = os.getenv(name)
-    if not val:
+    if val is None:
         return default
     return val
 

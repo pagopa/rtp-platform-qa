@@ -156,7 +156,6 @@ def run_continuously(timelength_minutes: float, block: Callable[[], None]):
         timelength_minutes (float): The duration in minutes for which to run the block of code continuously.
         block (callable[[], None]): The block of code to execute, which takes no arguments and returns None.
     """
-    # If the specified duration is very short, run the block once without entering the loop
     if timelength_minutes < 0:
         raise ValueError("timelength_minutes must be non-negative")
     if timelength_minutes < 0.01:
@@ -168,13 +167,13 @@ def run_continuously(timelength_minutes: float, block: Callable[[], None]):
             block()
         except Exception as e:
             print(f"Error during operation: {e}")
-            continue  # Continue to next iteration until deadline
+            continue  
 
 def main() -> None:
     rows = int(require_env("ROWS"))
     out_dir = Path(require_env("OUT_DIR"))
     out_dir.mkdir(parents=True, exist_ok=True)
-    mins = float(int( require_env_or_default("MINUTES", "0") ))
+    mins = float(require_env_or_default("MINUTES", "0"))
     op_env = require_env("OPERATION").upper()
     if op_env not in {"CREATE", "UPDATE"}:
         raise SystemExit("OPERATION must be CREATE or UPDATE")
