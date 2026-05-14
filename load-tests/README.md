@@ -33,9 +33,67 @@ python gpd-massive/upload_create_pd_file.py
 ```
 
 ### 2. Create and send a json (CREATE and UPDATE)
+
+All parameters are passed as environment variables.
+
+**Single run — CREATE:**
 ```bash
-python gpd-massive/send_to_gpd_queue.py
+ROWS=100 \
+OUT_DIR=./output \
+OPERATION=CREATE \
+STATUS=VALID \
+FISCAL_CODE=<DEBTOR_FISCAL_CODE> \
+BULK=false \
+RATE=10 \
+python3 send_to_gpd_queue.py
 ```
+
+**Single run — UPDATE** (requires a prior CREATE run in the same `OUT_DIR`):
+```bash
+ROWS=100 \
+OUT_DIR=./output \
+OPERATION=UPDATE \
+STATUS=PAID \
+FISCAL_CODE=<DEBTOR_FISCAL_CODE> \
+BULK=false \
+RATE=10 \
+python3 send_to_gpd_queue.py
+```
+
+**Continuous run** — loops until the `MINUTES` deadline, re-sending batches on each iteration. Errors on individual iterations are caught and logged so the loop continues:
+```bash
+ROWS=50 \
+OUT_DIR=./output \
+OPERATION=CREATE \
+STATUS=VALID \
+FISCAL_CODE=<DEBTOR_FISCAL_CODE> \
+BULK=false \
+RATE=1 \
+MINUTES=30 \
+python3 send_to_gpd_queue.py
+```
+
+If `MINUTES` is omitted or set to `0`, the script behaves like a single run.
+
+| Variable | Required | Description |
+|---|---|---|
+| `ROWS` | yes | Number of records per batch |
+| `OUT_DIR` | yes | Directory for generated NDJSON files |
+| `OPERATION` | yes | `CREATE` or `UPDATE` |
+| `STATUS` | yes | Record status (e.g. `VALID`, `PAID`) |
+| `FISCAL_CODE` | yes | Debtor fiscal code applied to all records |
+| `BULK` | yes | `true`/`false` — bulk mode on the API |
+| `RATE` | yes | Server-side concurrency (parallel workers) |
+| `MINUTES` | no | Duration in minutes for continuous mode (default: `0`) |
+| `PSP_CODE` | no | PSP code |
+| `PSP_TAX_CODE` | no | PSP tax code |
+
+**Throughput estimation:**
+```
+T_batch ≈ (ROWS / RATE) × T_rec
+msgs/s  = ROWS / T_batch = RATE / T_rec
+```
+Where `T_rec` is the server-side processing time per record.
 
 ### 3. Delete an RTP
 ```bash

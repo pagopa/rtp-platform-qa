@@ -43,5 +43,12 @@ def require_env(name: str) -> str:
     return val
 
 
+def require_env_or_default(name: str, default: str) -> str:
+    val = os.getenv(name)
+    if val is None:
+        return default
+    return val
+
+
 def to_epoch_millis(dt: datetime) -> int:
     return int(dt.timestamp() * 1000)
