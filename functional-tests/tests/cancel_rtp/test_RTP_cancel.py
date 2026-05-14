@@ -1,3 +1,5 @@
+import uuid
+
 import allure
 import pytest
 
@@ -28,6 +30,7 @@ def test_cancel_rtp_with_reason_paid(creditor_service_provider_token_a, activate
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, "Missing Location header in send RTP response"
 
     cancel_response = cancel_rtp(access_token, resource_id, CANCEL_REASON_PAID)
     assert cancel_response.status_code == 204
@@ -51,6 +54,7 @@ def test_cancel_rtp_with_reason_modt(creditor_service_provider_token_a, activate
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, "Missing Location header in send RTP response"
 
     cancel_response = cancel_rtp(access_token, resource_id, CANCEL_REASON_MODT)
     assert cancel_response.status_code == 204
@@ -89,6 +93,7 @@ def test_cancel_rtp_with_invalid_reason(creditor_service_provider_token_a, activ
     assert send_response.status_code == 201
 
     resource_id = extract_id_from_location(send_response.headers.get("Location"))
+    assert resource_id is not None, "Missing Location header in send RTP response"
 
     cancel_response = cancel_rtp(access_token, resource_id, _INVALID_CANCEL_REASON)
     assert cancel_response.status_code == 400, "Expected 400 Bad Request for invalid cancel reason"
