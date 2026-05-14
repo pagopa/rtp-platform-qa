@@ -45,7 +45,7 @@ def pfx_to_pem(base64_pfx, base64_password, cert_destination_path=None, key_dest
     """
 
     pfx_data = base64.b64decode(base64_pfx)
-    pfx_password = base64.b64decode(base64_password)
+    pfx_password = base64.b64decode(base64_password) if base64_password else None
 
     private_key, certificate, _ = load_key_and_certificates(pfx_data, pfx_password)
 
