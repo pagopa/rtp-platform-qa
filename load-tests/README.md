@@ -93,7 +93,7 @@ If `MINUTES` is omitted or set to `0`, the script behaves like a single run.
 T_batch ≈ (ROWS / RATE) × T_rec
 msgs/s  = ROWS / T_batch = RATE / T_rec
 ```
-Where `T_rec` is the server-side processing time per record (~0.085s measured in UAT). Example: `RATE=1` → ~11 msg/s; `RATE=5` → ~59 msg/s.
+Where `T_rec` is the server-side processing time per record.
 
 ### 3. Delete an RTP
 ```bash
