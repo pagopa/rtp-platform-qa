@@ -10,6 +10,7 @@ from utils.dataset_callback_data_DS_05_ACTC_compliant import (
     generate_invalid_callback_data_DS_05_ACTC,
 )
 from utils.dataset_RTP_data import generate_rtp_data
+from utils.http_utils import extract_id_from_location
 
 
 @allure.epic("RTP Callback")
@@ -38,7 +39,8 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
     assert send_response.status_code == 201
 
     location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(location)
+    assert resource_id, f"Could not extract resource ID from Location header: {location}"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
@@ -95,7 +97,8 @@ def test_receive_rtp_callback_DS_05_ACTC_non_compliant(
     assert send_response.status_code == 201
 
     location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(location)
+    assert resource_id, f"Could not extract resource ID from Location header: {location}"
     original_msg_id = resource_id.replace("-", "")
 
     get_response_pre_callback = get_rtp(
@@ -158,7 +161,8 @@ def test_fail_send_rtp_callback_invalid_transition_DS_05_ACTC_compliant(
     assert send_response.status_code == 201
 
     location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = extract_id_from_location(location)
+    assert resource_id, f"Could not extract resource ID from Location header: {location}"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
