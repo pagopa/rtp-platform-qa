@@ -2,12 +2,24 @@ import re
 from datetime import datetime
 
 import allure
-from playwright.sync_api import expect
+from playwright.sync_api import Page, expect
 
 from config.configuration import config, secrets
 from utils.dataset_RTP_data import generate_rtp_data
 
 page_url = config.landing_page_path
+
+_LOGIN_BUTTON = 'button[type="submit"]'
+
+
+def _login(page: Page):
+    """Navigate to the login page and authenticate."""
+    page.goto(page_url)
+    expect(page).to_have_url(config.login_page_path)
+    page.fill('input[name="username"]', secrets.webpage.username)
+    page.fill('input[name="password"]', secrets.webpage.password)
+    page.click(_LOGIN_BUTTON)
+    expect(page).to_have_url(page_url)
 
 
 @allure.feature("RTP Submission")
@@ -15,16 +27,9 @@ page_url = config.landing_page_path
 @allure.title("RTP form is filled and submitted")
 def test_rtp_form_submission(page):
     rtp_data = generate_rtp_data()
-    rtp_data["payer"]["payerId"] = "CPPRML60T46X000R"
+    rtp_data["payer"]["payerId"] = "BRGCNT70M12X000F"
 
-    page.goto(page_url)
-    expect(page).to_have_url(config.login_page_path)
-
-    page.fill('input[name="username"]', secrets.webpage.username)
-    page.fill('input[name="password"]', secrets.webpage.password)
-    page.click('button[id=":r2:"]')
-
-    expect(page).to_have_url(page_url)
+    _login(page)
 
     page.fill('input[name="payee.name"]', rtp_data["payee"]["name"])
     page.fill('input[name="payee.payeeId"]', rtp_data["payee"]["payeeId"])
@@ -43,9 +48,12 @@ def test_rtp_form_submission(page):
     page.fill('input[name="paymentNotice.description"]', rtp_data["paymentNotice"]["description"])
     page.click("[type=submit]")
 
+    # Wait for navigation to the success page (API call may take a few seconds)
+    page.wait_for_url("**/**/ok", timeout=30000)
+
     # Check success message and URL
     message = page.locator("text=La richiesta è stata inviata con successo!")
-    expect(message).to_be_visible()
+    expect(message).to_be_visible(timeout=10000)
     base_url = re.escape(config.landing_page_path.split("/")[0] + "//" + config.landing_page_path.split("/")[2])
     uuidv4_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
     assert re.search(f"{base_url}/{uuidv4_pattern}/ok", page.url)
@@ -58,14 +66,7 @@ def test_rtp_form_submission(page):
 @allure.story("Input validation")
 @allure.title("Whitespaces is allowed in description and company name field")
 def test_whitespace_and_capitalization_in_description_and_payee_company_name(page):
-    page.goto(page_url)
-    expect(page).to_have_url(config.login_page_path)
-
-    page.fill('input[name="username"]', secrets.webpage.username)
-    page.fill('input[name="password"]', secrets.webpage.password)
-    page.click('button[id=":r2:"]')
-
-    expect(page).to_have_url(page_url)
+    _login(page)
 
     description = "Description with spaces"
     payee_company_name = "Payee company name with spaces"

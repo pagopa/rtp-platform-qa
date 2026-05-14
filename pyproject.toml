@@ -72,6 +72,7 @@ testpaths = [
 pythonpath = [
   ".",
   "gpd-test",
+  "ux-tests/tests",
 ]
 markers = [
   "use_case: ID of the use case",

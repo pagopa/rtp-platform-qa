@@ -37,7 +37,7 @@ deactivation_path: "/activations"
 deactivation_api_version: 'v1'
 cancel_rtp_operation: '/sepa-request-to-pay-requests'
 cancel: '/cancel'
-cancel_rtp_path: "rtps/{rtp_id}/cancel"
+cancel_rtp_path: "rtps/cancel"
 cancel_api_version: 'v1'
 get_rtp_path: "rtps/{rtpId}"
 get_rtp_by_notice_number_path: "rtps"
