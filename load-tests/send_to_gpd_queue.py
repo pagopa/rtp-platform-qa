@@ -4,7 +4,7 @@ import os
 from collections.abc import Iterable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from datetime import datetime, timedelta
+from typing import Callable
 import requests
 from dotenv import load_dotenv
 from utilities import random_iuv, require_env, require_env_or_default, to_epoch_millis
@@ -26,7 +26,7 @@ def generate_create_records(count: int) -> Iterable[dict]:
     debtor_cf = require_env("FISCAL_CODE")
 
     for i in range(count):
-        due = to_epoch_millis(now + timedelta(days=30, seconds=i))
+        due = to_epoch_millis(now + timedelta(days=30))
         iuv = random_iuv(17)
         yield {
             "id": random_iuv(10),
@@ -141,7 +141,7 @@ def send_file_to_api(path: Path) -> dict:
 
     with path.open("rb") as fh:
         files = {"file": (path.name, fh, "application/x-ndjson")}
-        resp = requests.post(api_url, params=params, files=files, timeout=30000)
+        resp = requests.post(api_url, params=params, files=files, timeout=300)
     try:
         resp.raise_for_status()
     except requests.HTTPError:
@@ -149,7 +149,7 @@ def send_file_to_api(path: Path) -> dict:
     return resp.json()
 
 
-def run_continuously(timelength_minutes: float, block: callable[[], None]):
+def run_continuously(timelength_minutes: float, block: Callable[[], None]):
     """Utility function to run a block of code continuously for a specified duration in minutes.
     If the duration is less than 0.01 minutes (i.e., less than 0.6 seconds), the block will be executed only once.
     Args:
@@ -157,7 +157,9 @@ def run_continuously(timelength_minutes: float, block: callable[[], None]):
         block (callable[[], None]): The block of code to execute, which takes no arguments and returns None.
     """
     # If the specified duration is very short, run the block once without entering the loop
-    if abs(timelength_minutes) < 0.01:
+    if timelength_minutes < 0:
+        raise ValueError("timelength_minutes must be non-negative")
+    if timelength_minutes < 0.01:
         block()
         return
     deadline = datetime.now() + timedelta(minutes=timelength_minutes)
