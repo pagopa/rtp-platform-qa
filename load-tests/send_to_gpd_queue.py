@@ -4,10 +4,10 @@ import os
 from collections.abc import Iterable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-
+from datetime import datetime, timedelta
 import requests
 from dotenv import load_dotenv
-from utilities import random_iuv, require_env, to_epoch_millis
+from utilities import random_iuv, require_env, require_env_or_default, to_epoch_millis
 
 from config import GPD_TEST_BASE_URL
 
@@ -26,13 +26,12 @@ def generate_create_records(count: int) -> Iterable[dict]:
     debtor_cf = require_env("FISCAL_CODE")
 
     for i in range(count):
-        ts = to_epoch_millis(now + timedelta(seconds=i))
         due = to_epoch_millis(now + timedelta(days=30, seconds=i))
         iuv = random_iuv(17)
         yield {
             "id": random_iuv(10),
             "operation": operation,
-            "timestamp": ts,
+            "timestamp": to_epoch_millis(datetime.now(UTC)),
             "iuv": iuv,
             "subject": "Performance Test RTP",
             "description": "Test RTP from queue API",
@@ -142,7 +141,7 @@ def send_file_to_api(path: Path) -> dict:
 
     with path.open("rb") as fh:
         files = {"file": (path.name, fh, "application/x-ndjson")}
-        resp = requests.post(api_url, params=params, files=files, timeout=300)
+        resp = requests.post(api_url, params=params, files=files, timeout=30000)
     try:
         resp.raise_for_status()
     except requests.HTTPError:
@@ -150,24 +149,46 @@ def send_file_to_api(path: Path) -> dict:
     return resp.json()
 
 
+def run_continuously(timelength_minutes: float, block: callable[[], None]):
+    """Utility function to run a block of code continuously for a specified duration in minutes.
+    If the duration is less than 0.01 minutes (i.e., less than 0.6 seconds), the block will be executed only once.
+    Args:
+        timelength_minutes (float): The duration in minutes for which to run the block of code continuously.
+        block (callable[[], None]): The block of code to execute, which takes no arguments and returns None.
+    """
+    # If the specified duration is very short, run the block once without entering the loop
+    if abs(timelength_minutes) < 0.01:
+        block()
+        return
+    deadline = datetime.now() + timedelta(minutes=timelength_minutes)
+    while datetime.now() < deadline:
+        try:
+            block()
+        except Exception as e:
+            print(f"Error during operation: {e}")
+            continue  # Continue to next iteration until deadline
+
 def main() -> None:
     rows = int(require_env("ROWS"))
     out_dir = Path(require_env("OUT_DIR"))
     out_dir.mkdir(parents=True, exist_ok=True)
-
+    mins = float(int( require_env_or_default("MINUTES", "0") ))
     op_env = require_env("OPERATION").upper()
     if op_env not in {"CREATE", "UPDATE"}:
         raise SystemExit("OPERATION must be CREATE or UPDATE")
+    
+    def block():
+        source_file = out_dir / "createRTP.ndjson" if op_env == "UPDATE" else None
 
-    source_file = out_dir / "createRTP.ndjson" if op_env == "UPDATE" else None
+        out_path = write_file(out_dir, rows, op_env, source_file)
+        print(f"[generator] {op_env} -> {out_path.resolve()}")
+        generate_search_file(out_dir)
 
-    out_path = write_file(out_dir, rows, op_env, source_file)
-    print(f"[generator] {op_env} -> {out_path.resolve()}")
-    generate_search_file(out_dir)
-
-    result = send_file_to_api(out_path)
-    print("[uploader] Response:")
-    print(json.dumps(result, indent=2))
+        result = send_file_to_api(out_path)
+        print("[uploader] Response:")
+        print(json.dumps(result, indent=2))
+    
+    run_continuously(mins, block)
 
 
 if __name__ == "__main__":
