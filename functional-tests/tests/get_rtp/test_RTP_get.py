@@ -40,7 +40,7 @@ def test_get_rtp_success(debtor_service_provider_token_a, creditor_service_provi
 
     assert get_response.status_code == 200
     body = get_response.json()
-    assert body["resourceID"] == resource_id
+    assert body["resourceId"] == resource_id
 
 
 @allure.epic("RTP Get")
