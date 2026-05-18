@@ -24,7 +24,7 @@ def test_send_gpd_message_create_idempotency(
 
     Expectations:
     - Both calls return HTTP 200 (idempotent, not an error).
-    - The resourceID in both responses is identical, proving the API returned
+    - The resourceId in both responses is identical, proving the API returned
       the cached response and did not process the message twice.
     - Querying by notice number returns exactly one RTP, confirming that only
       one record was written to the database.
@@ -47,12 +47,12 @@ def test_send_gpd_message_create_idempotency(
     body_first = response_first.json()
     body_second = response_second.json()
 
-    assert "resourceID" in body_first, f"Expected 'resourceID' in first response body, got: {response_first.text}"
-    assert "resourceID" in body_second, f"Expected 'resourceID' in second response body, got: {response_second.text}"
+    assert "resourceId" in body_first, f"Expected 'resourceId' in first response body, got: {response_first.text}"
+    assert "resourceId" in body_second, f"Expected 'resourceId' in second response body, got: {response_second.text}"
 
-    assert body_first["resourceID"] == body_second["resourceID"], (
-        f"Expected both calls to return the same resourceID (idempotency), "
-        f"but got '{body_first['resourceID']}' and '{body_second['resourceID']}'"
+    assert body_first["resourceId"] == body_second["resourceId"], (
+        f"Expected both calls to return the same resourceId (idempotency), "
+        f"but got '{body_first['resourceId']}' and '{body_second['resourceId']}'"
     )
 
     by_notice = get_rtp_by_notice_number(
