@@ -103,7 +103,7 @@ def send_rtp_and_get_status_by_notice_number_mock_only(
     notice_number = message_payload["nav"]
 
     response = send_gpd_message(access_token=rtp_consumer_token, message_payload=message_payload)
-    assert response.status_code == expected_send_status
+    assert response.status_code == expected_send_status, "Service Provider rejection."
 
     status = get_status_from_notice_number(reader_token, notice_number)
 
