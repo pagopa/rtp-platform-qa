@@ -28,7 +28,11 @@ cd rtp-platform-qa
 
 ### 2. Get secrets
 
-Create a `.env` file in the project root with all the credentials listed in [Secrets Management](#secrets-management-on-github).
+Copy `.env.example` to `.env` and fill in the real values:
+
+```bash
+cp .env.example .env
+```
 
 > **Configuration split:** secrets (client IDs, client secrets, certificates, fiscal codes) live in `.env`; non-secret settings (API base URLs, paths, timeouts) live in `config.yaml`.
 
@@ -273,7 +277,27 @@ Requires a `.env` in the project root with `SERVICE_PROVIDER`, `BROKER_CODE`, `O
 
 GitHub Actions uses repository environment variables and secrets. All values must be set in the repository's [Environments settings](https://github.com/pagopa/rtp-platform-qa/settings/environments) for each environment (`dev`, `uat`, `prod` — currently `uat` is active).
 
-Secrets must be updated manually by admins when rotated.
+Secrets must be updated manually by admins when rotated. The full list of required variables (with descriptions) is in [`.env.example`](.env.example).
+
+**Variable groups:**
+
+| Group | Variables |
+|-------|-----------|
+| Debtor Service Provider | `DEBTOR_SERVICE_PROVIDER_CLIENT_ID`, `_SECRET`, `_ID` |
+| Debtor Service Provider B | `DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID`, `_SECRET`, `_ID` |
+| Creditor Service Provider | `CREDITOR_SERVICE_PROVIDER_CLIENT_ID`, `_SECRET`, `_ID` |
+| RTP Consumer / Sender | `RTP_CONSUMER_CLIENT_ID`, `_SECRET` |
+| RTP Reader | `RTP_READER_CLIENT_ID`, `_SECRET` |
+| Read RTP Activations | `READ_RTP_ACTIVATIONS_CLIENT_ID`, `_SECRET` |
+| PagoPA Integration | `PAGOPA_INTEGRATION_*_CLIENT_ID`, `*_CLIENT_SECRET` (3 clients) |
+| CBI | `CBI_CLIENT_ID`, `_SECRET`, `_PFX_BASE64`, `_PFX_PASSWORD_BASE64`, `CBI_ACTIVATED_FISCAL_CODE`, `CBI_PAYEE_ID`, `CREDITOR_AGENT_ID` |
+| Third-Party Providers | `POSTE_CLIENT_ID`, `_SECRET`, `POSTE_ACTIVATED_FISCAL_CODE`, `ICCREA_ACTIVATED_FISCAL_CODE` |
+| Mock Service Provider | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64`, `_PASSWORD_BASE64`, `MOCK_*_FISCAL_CODE` (6 vars) |
+| GPD (Debt Positions) | `DEBT_POSITIONS_SUBSCRIPTION_KEY`, `_ORGANIZATION_ID` (UAT + DEV), `EC_TAX_CODE` |
+| Web Application | `WEBPAGE_USERNAME`, `WEBPAGE_PASSWORD`, `WEBPAGE_CLIENT_ID` |
+
+<details>
+<summary>Full variable reference (click to expand)</summary>
 
 ### Debtor Service Provider
 
@@ -347,8 +371,8 @@ Secrets must be updated manually by admins when rotated.
 | `MOCK_RJCT_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT response (DS-08P N) |
 | `MOCK_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous ACTC response without the `_links` field |
 | `MOCK_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous non-compliant ACTC-like response with an unexpected extra field; the RTP status remains `SENT` |
-| `MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT  non-compliant with an unexpected extra field |
-| `MOCK_RJCT_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT  without the `_links` field |
+| `MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT non-compliant with an unexpected extra field |
+| `MOCK_RJCT_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT without the `_links` field |
 
 ### Third-Party Providers
 
@@ -383,20 +407,13 @@ Secrets must be updated manually by admins when rotated.
 | `RTP_CONSUMER_CLIENT_ID` | Client ID used by the consumer to authenticate to the sender |
 | `RTP_CONSUMER_CLIENT_SECRET` | Client secret used by the consumer to authenticate to the sender |
 
+</details>
+
 ---
 
 ## Run It Locally
 
-Create a `.env` file in the project root with all the variables listed above, then follow the [Setup](#setup) steps.
-
-Example `.env` structure:
-
-```ini
-DEBTOR_SERVICE_PROVIDER_CLIENT_ID=...
-DEBTOR_SERVICE_PROVIDER_ID=...
-DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET=...
-# ... (all other variables)
-```
+Copy `.env.example` to `.env`, fill in the real values, then follow the [Setup](#setup) steps.
 
 ---
 
@@ -543,6 +560,7 @@ rtp-platform-qa/
 ├── generate-allure-report.sh
 ├── install-requirements.sh
 ├── sanitize-allure-results.py                # Strips secrets from Allure results before publication
+├── .env.example                              # Template for local .env (copy and fill in)
 ├── Makefile
 └── pyproject.toml
 ```
