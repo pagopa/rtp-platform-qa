@@ -2,7 +2,6 @@ import allure
 import pytest
 
 from api.RTP_process_sender import send_gpd_message
-from config.configuration import secrets
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.regex_utils import uuidv4_pattern
 
@@ -16,13 +15,16 @@ from utils.regex_utils import uuidv4_pattern
 @pytest.mark.happy_path
 @pytest.mark.real_integration
 @pytest.mark.cbi
-def test_send_rtp_to_cbi(rtp_consumer_access_token):
+def test_send_rtp_to_cbi(rtp_consumer_access_token, activate_payer, random_fiscal_code):
 
     message_payload = generate_gpd_message_payload(
-        fiscal_code=secrets.cbi_activated_fiscal_code,
+        fiscal_code=random_fiscal_code,
         operation="CREATE",
         status="VALID",
     )
+
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201, "Error activating debtor"
 
     send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200
