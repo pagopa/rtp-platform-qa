@@ -196,11 +196,11 @@ def test_send_rtp_sync_sent_extra_field(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_with_extra_fields(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
 ):
     status = send_rtp_and_get_status_by_notice_number_mock_only(
-        creditor_service_provider_token_a,
+        rtp_consumer_access_token,
         rtp_reader_access_token,
         secrets.mock_rjct_extra_field_fiscal_code,
     )
@@ -215,11 +215,11 @@ def test_send_rtp_sync_rejected_with_extra_fields(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_no_links(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
 ):
     status = send_rtp_and_get_status_by_notice_number_mock_only(
-        creditor_service_provider_token_a,
+        rtp_consumer_access_token,
         rtp_reader_access_token,
         secrets.mock_rjct_no_links_fiscal_code,
     )

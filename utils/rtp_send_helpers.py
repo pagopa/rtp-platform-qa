@@ -1,5 +1,9 @@
 """Helper functions for RTP send flows used across functional tests."""
 
+import time
+
+from api.RTP_process_sender import send_gpd_message
+from utils.dataset_gpd_message import generate_gpd_message_payload
 from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
 from api.RTP_get_api import get_rtp_by_notice_number as api_get_rtp_by_notice_number
@@ -74,33 +78,34 @@ def send_rtp_and_get_status_by_notice_number(
     return status
 
 def send_rtp_and_get_status_by_notice_number_mock_only(
-    creditor_token: str,
+    rtp_consumer_token: str,
     reader_token: str,
     payer_id: str,
     expected_send_status: int = 422,
 ) -> str:
-    """Send an RTP without debtor activation and return the resulting status by notice number.
+    """Send a GPD message and return the resulting RTP status by notice number.
 
     Intended for mock-only scenarios where the payer fiscal code is pre-configured
-    in the mock EPC to trigger a specific synchronous response (e.g. RJCT with extra
-    fields or missing _links), making the activation step unnecessary.
+    in the mock EPC to trigger a specific synchronous RJCT response (e.g. with extra
+    fields or missing _links). Uses the GPD message flow instead of the direct RTP
+    send flow, so no debtor activation is required.
 
     Args:
-        creditor_token: Bearer token for the creditor service provider.
+        rtp_consumer_token: Bearer token for the RTP consumer (GPD message sender).
         reader_token: Bearer token for the RTP reader.
         payer_id: Fiscal code used as payer ID (drives the mock EPC response).
-        expected_send_status: Expected HTTP status code from the send RTP call (must be >= 400).
+        expected_send_status: Expected HTTP status code from the GPD message call (must be >= 400).
 
     Returns:
         The RTP status string (e.g. "REJECTED").
     """
     assert expected_send_status >= 400
 
-    rtp_data = generate_rtp_data(payer_id=payer_id)
-    notice_number = rtp_data["paymentNotice"]["noticeNumber"]
+    message_payload = generate_gpd_message_payload(fiscal_code=payer_id, operation="CREATE", status="VALID")
+    notice_number = message_payload["nav"]
 
-    send_response = send_rtp(access_token=creditor_token, rtp_payload=rtp_data)
-    assert send_response.status_code == expected_send_status
+    response = send_gpd_message(access_token=rtp_consumer_token, message_payload=message_payload)
+    assert response.status_code == expected_send_status
 
     status = get_status_from_notice_number(reader_token, notice_number)
 
