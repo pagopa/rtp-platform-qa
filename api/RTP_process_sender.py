@@ -20,7 +20,7 @@ def send_gpd_message(access_token: str, message_payload: dict):
     msg_id = str(message_payload.get("id", ""))
     resource_uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, msg_id))
 
-    operation = message_payload.get("operation", "CREATE")
+    operation = message_payload.get("operation") or "CREATE"
 
     idempotency_key = generate_idempotency_key(operation, resource_uuid)
 
