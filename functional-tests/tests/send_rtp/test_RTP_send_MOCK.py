@@ -6,7 +6,9 @@ from api.RTP_send_api import send_rtp
 from config.configuration import config, secrets
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.regex_utils import uuidv4_pattern
-from utils.rtp_send_helpers import send_rtp_and_get_status, send_rtp_and_get_status_by_notice_number
+from utils.rtp_send_helpers import (send_rtp_and_get_status,
+                                    send_rtp_and_get_status_by_notice_number,
+                                    send_rtp_and_get_status_by_notice_number_mock_only)
 
 
 @allure.epic("RTP Send")
@@ -194,12 +196,10 @@ def test_send_rtp_sync_sent_extra_field(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_with_extra_fields(
-    debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = send_rtp_and_get_status_by_notice_number(
-        debtor_service_provider_token_a,
+    status = send_rtp_and_get_status_by_notice_number_mock_only(
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_rjct_extra_field_fiscal_code,
@@ -215,12 +215,10 @@ def test_send_rtp_sync_rejected_with_extra_fields(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_no_links(
-    debtor_service_provider_token_a,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = send_rtp_and_get_status_by_notice_number(
-        debtor_service_provider_token_a,
+    status = send_rtp_and_get_status_by_notice_number_mock_only(
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_rjct_no_links_fiscal_code,
