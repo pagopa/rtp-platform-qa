@@ -1,11 +1,15 @@
 """Helper functions for RTP send flows used across functional tests."""
 
+import uuid
+
 from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
 from api.RTP_get_api import get_rtp_by_notice_number as api_get_rtp_by_notice_number
 from api.RTP_process_sender import send_gpd_message
+from api.RTP_send_api import send_rtp
 from config.configuration import secrets
 from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.dataset_RTP_data import generate_rtp_data
 
 
 def send_rtp_and_get_status(
@@ -91,3 +95,62 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str) -> dict:
     )
 
     return payload[-1]
+
+
+def send_rtp_and_get_status_via_rest(
+    debtor_token: str,
+    creditor_token: str,
+    reader_token: str,
+    payer_id: str,
+    expected_send_status: int = 201,
+) -> str:
+    """Activate a debtor, send an RTP via REST API (/rtps), and return the resulting RTP status.
+
+    Used for _THROUGH_WEB_API test variants that exercise the legacy REST send endpoint.
+    """
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+
+    activation_response = activate(
+        debtor_token,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    send_response = send_rtp(access_token=creditor_token, rtp_payload=rtp_data)
+    assert send_response.status_code == expected_send_status
+
+    resource_id = send_response.headers["Location"].split("/")[-1]
+
+    get_response = get_rtp(access_token=reader_token, rtp_id=resource_id)
+    assert get_response.status_code == 200
+
+    return get_response.json()["status"]
+
+
+def send_rtp_and_get_status_by_notice_number_via_rest(
+    debtor_token: str,
+    creditor_token: str,
+    reader_token: str,
+    payer_id: str,
+    expected_send_status: int = 422,
+) -> str:
+    """Activate a debtor, send an RTP via REST API expecting a synchronous RJCT (422),
+    then retrieve the RTP status by notice number.
+
+    Used for _THROUGH_WEB_API RJCT test variants.
+    """
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+    notice_number = rtp_data["paymentNotice"]["noticeNumber"]
+
+    activation_response = activate(
+        debtor_token,
+        rtp_data["payer"]["payerId"],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    send_response = send_rtp(access_token=creditor_token, rtp_payload=rtp_data)
+    assert send_response.status_code == expected_send_status
+
+    return get_status_from_notice_number(reader_token, notice_number)
