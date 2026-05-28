@@ -1,17 +1,13 @@
 import allure
 import pytest
 
-from api.debtor_activation_api import activate
 from api.RTP_callback_api import srtp_rfc_callback
-from api.RTP_cancel_api import cancel_rtp
 from api.RTP_get_api import get_rtp
-from api.RTP_send_api import send_rtp
-from config.configuration import secrets
+from api.RTP_process_sender import send_gpd_message
 from utils.constants_text_helper import CANCEL_REASON_MODT, CANCEL_REASON_PAID
 from utils.dataset_callback_data_DS_12_invalid import generate_callback_data_DS_12_invalid
 from utils.dataset_callback_data_DS_12N_RJCR_compliant import generate_callback_data_DS_12N_RJCR_compliant
-from utils.dataset_RTP_data import generate_rtp_data
-from utils.http_utils import extract_id_from_location
+from utils.dataset_gpd_message import generate_gpd_message_payload
 
 
 @allure.epic("RTP Callback")
@@ -23,47 +19,42 @@ from utils.http_utils import extract_id_from_location
 @pytest.mark.happy_path
 @pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_receive_rfc_callback_DS_12N_RJCR_compliant(
-    debtor_service_provider_token_a,
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
+    activate_payer,
+    random_fiscal_code,
     cancel_reason,
 ):
     """
     Test RFC callback DS12N with RJCR status.
 
     Flow:
-    1. Get debtor service provider token
-    2. Activate payer to get fiscal code
-    3. Get creditor service provider token
-    4. Send an RTP
-    5. Cancel the RTP (RFC - Request for Cancellation)
-    6. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
-    7. Verify callback is accepted (200)
-    8. Verify RTP status is ERROR_CANCEL
+    1. Activate payer
+    2. Send an RTP via GPD message (CREATE VALID)
+    3. Cancel the RTP via GPD message (CANCEL)
+    4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+    5. Verify callback is accepted (200)
+    6. Verify RTP status is ERROR_CANCEL
     """
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate(
-        debtor_service_provider_token_a,
-        rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
-    )
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    resource_id = extract_id_from_location(send_response.headers.get("Location"))
-    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, f"Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
-    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+    cancel_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CANCEL", msg_id=message_payload["id"], iuv=message_payload["iuv"]
+    )
+    cancel_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=cancel_payload)
+    assert cancel_response.status_code == 200, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
@@ -99,48 +90,43 @@ def test_receive_rfc_callback_DS_12N_RJCR_compliant(
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
-    debtor_service_provider_token_a,
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_sp_mock_cert_key,
+    activate_payer,
+    random_fiscal_code,
     cancel_reason,
 ):
     """
     Test RFC callback DS12N with wrong certificate identity.
 
     Flow:
-    1. Get debtor service provider token
-    2. Activate payer to get fiscal code
-    3. Get creditor service provider token
-    4. Send an RTP
-    5. Cancel the RTP (RFC - Request for Cancellation)
-    6. Send DS12N callback with assignee_bic='MOCKSP01' which doesn't match the certificate's identity (MOCKSP04)
-    7. Verify callback is rejected with 403 (certificate mismatch)
+    1. Activate payer
+    2. Send an RTP via GPD message (CREATE VALID)
+    3. Cancel the RTP via GPD message (CANCEL)
+    4. Send DS12N callback with assignee_bic='MOCKSP01' which doesn't match the certificate's identity (MOCKSP04)
+    5. Verify callback is rejected with 403 (certificate mismatch)
 
     Expected: 403 Forbidden - The server should reject the callback because the BIC in the
     Assgne field doesn't match the identity in the client certificate.
     """
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate(
-        debtor_service_provider_token_a,
-        rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
-    )
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    resource_id = extract_id_from_location(send_response.headers.get("Location"))
-    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, f"Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
-    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+    cancel_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CANCEL", msg_id=message_payload["id"], iuv=message_payload["iuv"]
+    )
+    cancel_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=cancel_payload)
+    assert cancel_response.status_code == 200, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
@@ -169,47 +155,42 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compliant(
-    debtor_service_provider_token_a,
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_sp_mock_cert_key,
+    activate_payer,
+    random_fiscal_code,
     cancel_reason,
 ):
     """
     Test RFC callback DS12N with non-existing service provider.
 
     Flow:
-    1. Get debtor service provider token
-    2. Activate payer to get fiscal code
-    3. Get creditor service provider token
-    4. Send an RTP
-    5. Cancel the RTP (RFC - Request for Cancellation)
-    6. Send DS12N callback with non-existing BIC (MOCKSP99)
-    7. Verify callback is rejected with 400 (service provider not found)
+    1. Activate payer
+    2. Send an RTP via GPD message (CREATE VALID)
+    3. Cancel the RTP via GPD message (CANCEL)
+    4. Send DS12N callback with non-existing BIC (MOCKSP99)
+    5. Verify callback is rejected with 400 (service provider not found)
 
     Expected: 400 Bad Request
     """
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate(
-        debtor_service_provider_token_a,
-        rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
-    )
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    resource_id = extract_id_from_location(send_response.headers.get("Location"))
-    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, f"Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
-    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+    cancel_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CANCEL", msg_id=message_payload["id"], iuv=message_payload["iuv"]
+    )
+    cancel_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=cancel_payload)
+    assert cancel_response.status_code == 200, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
@@ -238,47 +219,42 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_RJCR_compli
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
 def test_receive_rfc_callback_DS_12N_invalid(
-    debtor_service_provider_token_a,
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
+    activate_payer,
+    random_fiscal_code,
     cancel_reason,
 ):
     """
     Test RFC callback DS12N with INVALID status.
 
     Flow:
-    1. Get debtor service provider token
-    2. Activate payer to get fiscal code
-    3. Get creditor service provider token
-    4. Send an RTP
-    5. Cancel the RTP (RFC - Request for Cancellation)
-    6. Send DS12N callback with CxlStsId INVALID (Invalid Cancellation Request)
-    7. Verify callback is rejected with 400
-    8. Verify RTP status is still RFC_SENT
+    1. Activate payer
+    2. Send an RTP via GPD message (CREATE VALID)
+    3. Cancel the RTP via GPD message (CANCEL)
+    4. Send DS12N callback with CxlStsId INVALID (Invalid Cancellation Request)
+    5. Verify callback is rejected with 400
+    6. Verify RTP status is still RFC_SENT
     """
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate(
-        debtor_service_provider_token_a,
-        rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
-    )
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    resource_id = extract_id_from_location(send_response.headers.get("Location"))
-    assert resource_id is not None, f"Missing or invalid Location header in send RTP response: headers={send_response.headers}"
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, f"Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, cancel_reason)
-    assert cancel_response.status_code == 204, f"Error cancelling RTP, got {cancel_response.status_code}"
+    cancel_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CANCEL", msg_id=message_payload["id"], iuv=message_payload["iuv"]
+    )
+    cancel_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=cancel_payload)
+    assert cancel_response.status_code == 200, f"Error cancelling RTP, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12_invalid(
         resource_id=resource_id,

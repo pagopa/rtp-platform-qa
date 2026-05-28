@@ -3,9 +3,9 @@ import random
 import allure
 import pytest
 
-from api.RTP_send_api import send_rtp
-from config.configuration import config, secrets
-from utils.dataset_RTP_data import generate_rtp_data
+from api.RTP_process_sender import send_gpd_message
+from config.configuration import secrets
+from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.regex_utils import uuidv4_pattern
 
 
@@ -18,15 +18,19 @@ from utils.regex_utils import uuidv4_pattern
 @pytest.mark.happy_path
 @pytest.mark.real_integration
 @pytest.mark.poste
-def test_send_rtp_to_poste(creditor_service_provider_token_a):
+def test_send_rtp_to_poste(rtp_consumer_access_token):
 
     amount = random.randint(100, 10000)
-    rtp_data = generate_rtp_data(payer_id=secrets.poste_activated_fiscal_code, amount=amount)
+    message_payload = generate_gpd_message_payload(
+        fiscal_code=secrets.poste_activated_fiscal_code,
+        operation="CREATE",
+        status="VALID",
+        amount=amount,
+    )
 
-    send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    location_split = location.split("/")
-    assert "/".join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
-    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
+    resource_id = send_response.json()["resourceId"]
+    assert bool(uuidv4_pattern.fullmatch(resource_id)), f"resourceId is not a valid UUIDv4: {resource_id}"
+

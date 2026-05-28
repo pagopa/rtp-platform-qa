@@ -3,7 +3,7 @@ import pytest
 
 from api.RTP_callback_api import srtp_callback
 from api.RTP_get_api import get_rtp
-from api.RTP_send_api import send_rtp
+from api.RTP_process_sender import send_gpd_message
 from utils.callback_builder import build_callback_with_original_msg_id
 from utils.dataset_callback_data_DS_05_ACTC_compliant import generate_callback_data_DS_05_ACTC_compliant
 from utils.dataset_callback_data_DS_08N_compliant import generate_callback_data_DS_08N_compliant
@@ -12,7 +12,7 @@ from utils.dataset_callback_data_DS_08P_ACCP_compliant import generate_callback_
 from utils.dataset_callback_data_DS_08P_ACWC_compliant import generate_callback_data_DS_08P_ACWC_compliant
 from utils.dataset_callback_data_DS_08P_invalid import generate_invalid_callback_data_DS_08P
 from utils.dataset_callback_data_DS_08P_RJCT_compliant import generate_callback_data_DS_08P_RJCT_compliant
-from utils.dataset_RTP_data import generate_rtp_data
+from utils.dataset_gpd_message import generate_gpd_message_payload
 
 
 @allure.epic("RTP Callback")
@@ -23,25 +23,23 @@ from utils.dataset_RTP_data import generate_rtp_data
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08P_compliant_ACCP(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     activate_payer,
+    random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
@@ -102,25 +100,23 @@ def test_receive_rtp_callback_DS_08P_compliant_ACCP(
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08P_compliant_RJCT(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     activate_payer,
+    random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
@@ -206,25 +202,23 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_08N_compliant(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_rtp_callback_DS_08P_compliant_ACWC(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     activate_payer,
+    random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     initial_get_response = get_rtp(
@@ -295,26 +289,24 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08N_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     activate_payer,
+    random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
 
-    assert send_response.status_code == 201
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
@@ -349,25 +341,23 @@ def test_receive_rtp_callback_DS_08N_compliant(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_rtp_callback_DS_08P_invalid(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     activate_payer,
+    random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
@@ -404,25 +394,23 @@ def test_receive_rtp_callback_DS_08P_invalid(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_rtp_callback_DS_08N_invalid(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     rtp_reader_access_token,
     activate_payer,
+    random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate_payer(rtp_data["payer"]["payerId"])
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201
 
-    send_response = send_rtp(
-        access_token=creditor_service_provider_token_a,
-        rtp_payload=rtp_data,
-    )
-    assert send_response.status_code == 201
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(

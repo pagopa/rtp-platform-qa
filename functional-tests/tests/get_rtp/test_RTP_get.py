@@ -3,11 +3,9 @@ import uuid
 import allure
 import pytest
 
-from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
-from api.RTP_send_api import send_rtp
-from config.configuration import secrets
-from utils.dataset_RTP_data import generate_rtp_data
+from api.RTP_process_sender import send_gpd_message
+from utils.dataset_gpd_message import generate_gpd_message_payload
 
 
 @allure.epic("RTP Get")
@@ -17,24 +15,17 @@ from utils.dataset_RTP_data import generate_rtp_data
 @allure.tag("functional", "happy_path", "rtp_get")
 @pytest.mark.get
 @pytest.mark.happy_path
-def test_get_rtp_success(debtor_service_provider_token_a, creditor_service_provider_token_a, rtp_reader_access_token):
+def test_get_rtp_success(rtp_consumer_access_token, activate_payer, random_fiscal_code, rtp_reader_access_token):
 
-    rtp_data = generate_rtp_data()
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
-    activation_response = activate(
-        debtor_service_provider_token_a,
-        rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
-    )
-
+    activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201, "Error activating debtor"
 
-    send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
 
-    assert send_response.status_code == 201
-
-    location = send_response.headers["Location"]
-    resource_id = location.split("/")[-1]
+    resource_id = send_response.json()["resourceId"]
 
     get_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
 
