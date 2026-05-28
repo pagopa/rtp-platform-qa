@@ -1,7 +1,5 @@
 """Helper functions for RTP send flows used across functional tests."""
 
-import time
-
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from api.debtor_activation_api import activate
