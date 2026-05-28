@@ -1,10 +1,10 @@
 # send_to_gpd_queue.py
 import json
 import os
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Callable
+
 import requests
 from dotenv import load_dotenv
 from utilities import random_iuv, require_env, require_env_or_default, to_epoch_millis
@@ -167,7 +167,8 @@ def run_continuously(timelength_minutes: float, block: Callable[[], None]):
             block()
         except Exception as e:
             print(f"Error during operation: {e}")
-            continue  
+            continue
+
 
 def main() -> None:
     rows = int(require_env("ROWS"))
@@ -177,7 +178,7 @@ def main() -> None:
     op_env = require_env("OPERATION").upper()
     if op_env not in {"CREATE", "UPDATE"}:
         raise SystemExit("OPERATION must be CREATE or UPDATE")
-    
+
     def block():
         source_file = out_dir / "createRTP.ndjson" if op_env == "UPDATE" else None
 
@@ -188,7 +189,7 @@ def main() -> None:
         result = send_file_to_api(out_path)
         print("[uploader] Response:")
         print(json.dumps(result, indent=2))
-    
+
     run_continuously(mins, block)
 
 

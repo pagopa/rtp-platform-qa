@@ -6,15 +6,16 @@ Validates that the API conforms to its OpenAPI specification by checking:
 - no server errors (5xx) are returned
 
 """
+
 import uuid
 
 import allure
 import schemathesis
+from contract_checks import CONTRACT_CHECKS
 from schemathesis import Case
 
 from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from config.configuration import config, secrets
-from contract_checks import CONTRACT_CHECKS
 
 SPEC_URL = config.send_api_specification
 BASE_URL = config.rtp_creation_base_url_path
@@ -46,11 +47,7 @@ def test_send_api_contract(case: Case):
         "Authorization": ACCESS_TOKEN,
         "RequestId": str(uuid.uuid4()),
         "Version": "v1",
-        **{
-            k: v
-            for k, v in (case.headers or {}).items()
-            if k.lower() not in {"authorization", "requestid", "version"}
-        },
+        **{k: v for k, v in (case.headers or {}).items() if k.lower() not in {"authorization", "requestid", "version"}},
     }
 
     if case.path == "/gpd/message" and case.method.upper() == "POST":

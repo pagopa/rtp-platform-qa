@@ -4,8 +4,8 @@ import pytest
 from api.RTP_process_sender import send_gpd_message
 from api.RTP_send_api import send_rtp
 from config.configuration import config, secrets
-from utils.dataset_RTP_data import generate_rtp_data
 from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.dataset_RTP_data import generate_rtp_data
 from utils.fiscal_code_utils import fake_fc
 from utils.regex_utils import uuidv4_pattern
 from utils.rtp_send_helpers import (
@@ -330,7 +330,9 @@ def test_send_rtp_sync_accepted_no_links_THROUGH_WEB_API(
 @allure.story(
     "Service provider sends an RTP with a non-compliant synchronous ACTC-like response containing an unexpected field that is ignored"
 )
-@allure.title("An RTP sent when EPC response contains an unknown field is ignored and remains in status SENT - through Web API")
+@allure.title(
+    "An RTP sent when EPC response contains an unknown field is ignored and remains in status SENT - through Web API"
+)
 @allure.tag("functional", "unhappy_path", "rtp_send", "optional_epc_fields")
 @pytest.mark.send
 @pytest.mark.unhappy_path
@@ -351,7 +353,9 @@ def test_send_rtp_sync_sent_extra_field_THROUGH_WEB_API(
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP with synchronous RJCT response containing extra fields")
-@allure.title("An RTP sent with synchronous rejection containing extra fields results in status REJECTED - through Web API")
+@allure.title(
+    "An RTP sent with synchronous rejection containing extra fields results in status REJECTED - through Web API"
+)
 @allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_extra_fields")
 @pytest.mark.send
 @pytest.mark.unhappy_path

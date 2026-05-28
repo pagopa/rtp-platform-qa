@@ -36,7 +36,7 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    assert resource_id, f"Missing resourceId in send GPD message response"
+    assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
@@ -91,7 +91,7 @@ def test_receive_rtp_callback_DS_05_ACTC_non_compliant(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    assert resource_id, f"Missing resourceId in send GPD message response"
+    assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     get_response_pre_callback = get_rtp(
@@ -152,7 +152,7 @@ def test_fail_send_rtp_callback_invalid_transition_DS_05_ACTC_compliant(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    assert resource_id, f"Missing resourceId in send GPD message response"
+    assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(

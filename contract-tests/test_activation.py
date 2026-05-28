@@ -5,15 +5,16 @@ Validates that the API conforms to its OpenAPI specification by checking:
 - response bodies match the documented schemas
 - no server errors (5xx) are returned
 """
+
 import uuid
 
 import allure
 import schemathesis
+from contract_checks import CONTRACT_CHECKS
 from schemathesis import Case
 
 from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from config.configuration import config, secrets
-from contract_checks import CONTRACT_CHECKS
 
 SPEC_URL = config.activation_api_specification
 BASE_URL = config.activation_base_url_path
@@ -42,11 +43,7 @@ def test_activation_contract(case: Case):
         "Authorization": ACCESS_TOKEN,
         "RequestId": str(uuid.uuid4()),
         "Version": "v1",
-        **{
-            k: v
-            for k, v in (case.headers or {}).items()
-            if k.lower() not in {"authorization", "requestid", "version"}
-        },
+        **{k: v for k, v in (case.headers or {}).items() if k.lower() not in {"authorization", "requestid", "version"}},
     }
 
     response = case.call(base_url=BASE_URL)

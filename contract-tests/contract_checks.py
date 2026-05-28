@@ -10,6 +10,7 @@ intercepting requests (e.g. when schemathesis injects unknown headers) and retur
 a bare 403 with no body, which would otherwise fail schema validation despite being
 infrastructure behaviour outside the API contract.
 """
+
 import schemathesis
 from schemathesis.checks import CHECKS
 

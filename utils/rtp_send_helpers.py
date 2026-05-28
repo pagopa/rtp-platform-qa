@@ -1,7 +1,5 @@
 """Helper functions for RTP send flows used across functional tests."""
 
-import uuid
-
 from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp
 from api.RTP_get_api import get_rtp_by_notice_number as api_get_rtp_by_notice_number
@@ -90,8 +88,7 @@ def get_rtp_by_notice_number(access_token: str, notice_number: str) -> dict:
 
     payload = response.json()
     assert isinstance(payload, list) and payload, (
-        f"Expected non-empty list when retrieving RTP by notice number {notice_number}. "
-        f"Response body: {response.text}"
+        f"Expected non-empty list when retrieving RTP by notice number {notice_number}. Response body: {response.text}"
     )
 
     return payload[-1]

@@ -264,7 +264,9 @@ def test_receive_rfc_callback_DS_12N_invalid(
 @allure.epic("RTP Callback")
 @allure.feature("RTP Callback DS_12N")
 @allure.story("Service provider sends an RFC callback with RJCR status")
-@allure.title("An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL - through Web API cancel")
+@allure.title(
+    "An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL - through Web API cancel"
+)
 @allure.tag("functional", "happy_path", "rtp_callback", "ds_12n_rjcr_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.happy_path

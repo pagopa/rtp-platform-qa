@@ -18,7 +18,9 @@ _INVALID_CANCEL_REASON = "INVALID_REASON"
 @allure.tag("functional", "happy_path", "rtp_cancel")
 @pytest.mark.cancel
 @pytest.mark.happy_path
-def test_cancel_rtp_with_reason_paid(rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a):
+def test_cancel_rtp_with_reason_paid(
+    rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a
+):
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
     activation_response = activate_payer(random_fiscal_code)
@@ -41,7 +43,9 @@ def test_cancel_rtp_with_reason_paid(rtp_consumer_access_token, activate_payer, 
 @allure.tag("functional", "happy_path", "rtp_cancel")
 @pytest.mark.cancel
 @pytest.mark.happy_path
-def test_cancel_rtp_with_reason_modt(rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a):
+def test_cancel_rtp_with_reason_modt(
+    rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a
+):
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
     activation_response = activate_payer(random_fiscal_code)
@@ -79,7 +83,9 @@ def test_cancel_rtp_with_nonexistent_resource_id(creditor_service_provider_token
 @allure.tag("functional", "unhappy_path", "rtp_cancel")
 @pytest.mark.cancel
 @pytest.mark.unhappy_path
-def test_cancel_rtp_with_invalid_reason(rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a):
+def test_cancel_rtp_with_invalid_reason(
+    rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a
+):
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
     activation_response = activate_payer(random_fiscal_code)

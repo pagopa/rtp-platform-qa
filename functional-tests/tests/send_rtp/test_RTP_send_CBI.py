@@ -4,8 +4,8 @@ import pytest
 from api.RTP_process_sender import send_gpd_message
 from api.RTP_send_api import send_rtp
 from config.configuration import config, secrets
-from utils.dataset_RTP_data import generate_rtp_data
 from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.dataset_RTP_data import generate_rtp_data
 from utils.regex_utils import uuidv4_pattern
 
 
@@ -59,4 +59,3 @@ def test_send_rtp_to_cbi_THROUGH_WEB_API(webpage_token):
     location_split = location.split("/")
     assert "/".join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
     assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
-
