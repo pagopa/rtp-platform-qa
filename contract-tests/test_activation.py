@@ -1,12 +1,19 @@
+"""Contract tests for the RTP Activation API.
+
+Validates that the API conforms to its OpenAPI specification by checking:
+- response status codes are among those documented in the spec
+- response bodies match the documented schemas
+- no server errors (5xx) are returned
+"""
 import uuid
 
 import allure
-import requests
 import schemathesis
 from schemathesis import Case
 
 from api.auth_api import get_keycloak_access_token, get_valid_access_token
 from config.configuration import config, secrets
+from contract_checks import CONTRACT_CHECKS
 
 SPEC_URL = config.activation_api_specification
 BASE_URL = config.activation_base_url_path
@@ -23,34 +30,24 @@ ACCESS_TOKEN = get_valid_access_token(
 @allure.label("parentSuite", "contract-tests.tests")
 @allure.feature("RTP Activation")
 @schema.parametrize()
-def test_activation(case: Case):
-    request_id = str(uuid.uuid4())
+def test_activation_contract(case: Case):
+    """Parametrized contract test generated from the Activation API OpenAPI spec.
 
-    request_kwargs: dict = {
-        "method": case.method,
-        "url": BASE_URL.rstrip("/") + case.path,
-        "headers": {
-            "Authorization": ACCESS_TOKEN,
-            "RequestId": request_id,
-            "Version": "v1",
-            **{
-                h: v
-                for h, v in (case.headers or {}).items()
-                if h.lower() not in {"authorization", "requestid", "version"}
-            },
+    Schemathesis derives one test case per endpoint defined in the spec, generating
+    request data (path params, query params, body) that is valid according to the schema.
+    Each case is executed against the live API and the response is validated with
+    CONTRACT_CHECKS.
+    """
+    case.headers = {
+        "Authorization": ACCESS_TOKEN,
+        "RequestId": str(uuid.uuid4()),
+        "Version": "v1",
+        **{
+            k: v
+            for k, v in (case.headers or {}).items()
+            if k.lower() not in {"authorization", "requestid", "version"}
         },
-        "params": case.query,
     }
 
-    if isinstance(case.body, (dict, list)):
-        request_kwargs["json"] = case.body
-
-    response = requests.request(**request_kwargs)
-
-    assert 100 <= response.status_code < 600
-
-    if 400 <= response.status_code < 500:
-        return
-
-    if response.headers.get("Content-Type", "").startswith("application/json"):
-        _ = response.json()
+    response = case.call(base_url=BASE_URL)
+    case.validate_response(response, checks=CONTRACT_CHECKS)
