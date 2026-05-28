@@ -11,6 +11,7 @@ This repository contains a comprehensive test suite for the RTP (Request to Pay)
   - [UX Tests](#ux-tests)
   - [Performance Tests](#performance-tests)
   - [Contract Tests](#contract-tests)
+  - [Load Test Utilities](#load-test-utilities)
 - [Secrets Management](#secrets-management-on-github)
 - [Run Locally](#run-it-locally)
 - [Project Structure](#project-structure)
@@ -234,6 +235,40 @@ pytest contract-tests/ -q
 
 ---
 
+### Load Test Utilities
+
+Python utility scripts for GPD massive uploads, RTP lifecycle automation, and Cosmos DB maintenance. These are operational tools rather than automated test suites.
+
+- **Location:** `load-tests/`
+- **Tool:** Python 3.11+ (independent `requirements.txt`)
+- **Full documentation:** `load-tests/README.md`
+
+**Scripts:**
+
+| Script | Purpose |
+|--------|---------|
+| `activation.py` | Create an RTP activation |
+| `generate_massive_zip.py` | Generate a massive debt-position JSON + ZIP |
+| `upload_create_pd_file.py` | Upload ZIP to GPD massive endpoint (CREATE) |
+| `upload_delete_file.py` | Upload ZIP to GPD massive endpoint (DELETE) |
+| `send_to_gpd_queue.py` | Send CREATE/UPDATE records directly to the GPD queue (single or continuous mode) |
+| `cleanup_activation.py` | Deactivate an activation and remove local artifacts |
+| `cleanup_mongo.py` | Batch-delete records from Azure Cosmos DB for MongoDB |
+| `cancel_rtp_from_queue.py` | Cancel RTPs via queue message |
+| `auth.py` | Authentication helpers |
+| `utilities.py` | Shared utilities |
+
+**Setup:**
+
+```bash
+cd load-tests
+pip install -r requirements.txt
+```
+
+Requires a `.env` in the project root with `SERVICE_PROVIDER`, `BROKER_CODE`, `ORG_FISCAL_CODE`, `GPD_API_KEY` (for GPD scripts) and optionally `COSMOS_DB_CONNECTION_STRING` (for cleanup).
+
+---
+
 ## Secrets Management on GitHub
 
 GitHub Actions uses repository environment variables and secrets. All values must be set in the repository's [Environments settings](https://github.com/pagopa/rtp-platform-qa/settings/environments) for each environment (`dev`, `uat`, `prod` — currently `uat` is active).
@@ -319,8 +354,17 @@ Secrets must be updated manually by admins when rotated.
 
 | Variable | Description |
 |----------|-------------|
+| `POSTE_CLIENT_ID` | Client ID for Poste Italiane service |
+| `POSTE_CLIENT_SECRET` | Client secret for Poste Italiane service |
 | `POSTE_ACTIVATED_FISCAL_CODE` | Fiscal code pre-activated for Poste Italiane tests |
 | `ICCREA_ACTIVATED_FISCAL_CODE` | Fiscal code pre-activated for ICCREA tests |
+
+### Read RTP Activations
+
+| Variable | Description |
+|----------|-------------|
+| `READ_RTP_ACTIVATIONS_CLIENT_ID` | Client ID for the read-activations service client |
+| `READ_RTP_ACTIVATIONS_CLIENT_SECRET` | Client secret for the read-activations service client |
 
 ### GPD (Debt Positions)
 
@@ -418,13 +462,29 @@ rtp-platform-qa/
 │       ├── service_registry/
 │       ├── takeover/
 │       └── conftest.py
+├── load-tests/                                   # GPD massive & Cosmos DB operational utilities
+│   ├── activation.py
+│   ├── auth.py
+│   ├── cancel_rtp_from_queue.py
+│   ├── cleanup_activation.py
+│   ├── cleanup_mongo.py
+│   ├── config.py
+│   ├── generate_massive_zip.py
+│   ├── send_to_gpd_queue.py
+│   ├── upload_create_pd_file.py
+│   ├── upload_delete_file.py
+│   ├── utilities.py
+│   ├── requirements.txt
+│   └── README.md
 ├── performance-tests/
 │   ├── config/
 │   │   └── config.js
 │   ├── script/                               # One-off data setup scripts
 │   │   ├── create-activation-otp.js
 │   │   ├── create-activations.js
-│   │   └── create-rtp.js
+│   │   ├── create-gpd-message.js
+│   │   ├── create-rtp.js
+│   │   └── create-rtp-cancel.js
 │   ├── tests/
 │   │   ├── rtp-activator/
 │   │   ├── rtp-sender/
@@ -446,8 +506,14 @@ rtp-platform-qa/
 │   ├── constants_secrets_helper.py
 │   ├── constants_text_helper.py
 │   ├── cryptography_utils.py
-│   ├── dataset_*.py                          # Test data builders (EPC payloads, callbacks, debt positions)
+│   ├── dataset_callback_data_DS_*.py         # Callback payload builders (DS-04b, DS-05, DS-08N, DS-08P, DS-12)
+│   ├── dataset_debt_position_create.py
+│   ├── dataset_debt_position_update.py
+│   ├── dataset_EPC_RTP_data.py
+│   ├── dataset_gpd_message.py
+│   ├── dataset_RTP_data.py
 │   ├── datetime_utils.py
+│   ├── extract_next_activation_id.py
 │   ├── fiscal_code_utils.py
 │   ├── generator_random_values_utils.py
 │   ├── generators_utils.py
@@ -457,6 +523,7 @@ rtp-platform-qa/
 │   ├── log_sanitizer_helper.py
 │   ├── regex_utils.py
 │   ├── response_assertions_utils.py
+│   ├── rtp_send_helpers.py
 │   ├── test_expectations.py
 │   ├── text_utils.py
 │   └── type_utils.py
@@ -468,7 +535,8 @@ rtp-platform-qa/
 ├── .github/
 │   └── workflows/
 │       ├── run_tests.yml                     # Main CI: functional + BDD tests with Allure
-│       ├── doc_page.yaml                     # GitHub Pages deployment
+│       ├── doc_page.yaml                     # GitHub Pages deployment (MkDocs + Allure reports)
+│       ├── docker-publish.yml                # Build & deploy GPD test Docker image
 │       ├── send_slack_notification.yml       # Slack notifications
 │       ├── manual_debt_position_tests.yml    # Manual trigger for GPD tests
 │       └── extract_allure_fail_rate.yml      # Allure failure rate extraction
@@ -506,6 +574,21 @@ Order of execution:
 ```bash
 ./generate-allure-report.sh
 ```
+
+### `scenarios_parser.py` / `main.py`
+
+Parses all Behave feature files and generates a MkDocs documentation site with a full scenario catalog, component index, and links to published Allure reports. Used automatically in the `doc_page.yaml` CI workflow to publish the GitHub Pages site.
+
+```bash
+python main.py \
+  --page-name "RTP Platform QA" \
+  --repo-name "rtp-platform-qa" \
+  --root-dir .
+```
+
+Output: `docs/` directory + `mkdocs.yml` configuration.
+
+---
 
 ### `sanitize-allure-results.py`
 
