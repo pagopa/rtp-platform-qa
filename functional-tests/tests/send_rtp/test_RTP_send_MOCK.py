@@ -78,7 +78,7 @@ def test_field_error_in_body(rtp_consumer_access_token, activate_payer, random_f
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP to a non-activated debtor")
-@allure.title("Sending to non-activated debtor returns 404")
+@allure.title("Sending to non-activated debtor returns 422")
 @allure.tag("functional", "unhappy_path", "rtp_send")
 @pytest.mark.send
 @pytest.mark.unhappy_path
@@ -87,7 +87,7 @@ def test_cannot_send_rtp_not_activated_user(rtp_consumer_access_token):
     message_payload = generate_gpd_message_payload(fiscal_code=fake_fc(), operation="CREATE", status="VALID")
 
     send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 404
+    assert send_response.status_code == 422
 
 
 @allure.epic("RTP Send")
@@ -252,14 +252,14 @@ def test_send_rtp_api_THROUGH_WEB_API(
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP to a non-activated debtor")
-@allure.title("Sending to non-activated debtor returns 404 - through Web API")
+@allure.title("Sending to non-activated debtor returns 422 - through Web API")
 @allure.tag("functional", "unhappy_path", "rtp_send")
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_cannot_send_rtp_not_activated_user_THROUGH_WEB_API(creditor_service_provider_token_a):
     rtp_data = generate_rtp_data(payer_id=fake_fc())
     send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
-    assert send_response.status_code == 404
+    assert send_response.status_code == 422
 
 
 @allure.epic("RTP Send")
