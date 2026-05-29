@@ -11,6 +11,7 @@ def generate_gpd_message_payload(
     iuv: str = None,
     msg_id: int = None,
     psp_tax_code: str | None = "Mock04-tax-code",
+    amount: int = 30000,
 ):
     """Generate a valid GPD message payload with dynamic values"""
     now = datetime.now(UTC)
@@ -33,7 +34,7 @@ def generate_gpd_message_payload(
         "debtor_tax_code": fiscal_code,
         "nav": f"3{iuv}",
         "due_date": due_date,
-        "amount": 30000,
+        "amount": amount,
         "status": status,
         "psp_code": None,
         "psp_tax_code": psp_tax_code,

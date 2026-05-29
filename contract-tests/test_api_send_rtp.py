@@ -1,8 +1,17 @@
+"""Contract tests for the RTP Send API.
+
+Validates that the API conforms to its OpenAPI specification by checking:
+- response status codes are among those documented in the spec
+- response bodies match the documented schemas
+- no server errors (5xx) are returned
+
+"""
+
 import uuid
 
 import allure
-import requests
 import schemathesis
+from contract_checks import CONTRACT_CHECKS
 from schemathesis import Case
 
 from api.auth_api import get_keycloak_access_token, get_valid_access_token
@@ -21,33 +30,31 @@ ACCESS_TOKEN = get_valid_access_token(
 
 
 @allure.label("parentSuite", "contract-tests.tests")
-@allure.feature("RTP Create")
+@allure.feature("RTP Send API")
 @schema.parametrize()
-def test_send_rtp(case: Case):
-    request_id = str(uuid.uuid4())
+def test_send_api_contract(case: Case):
+    """Parametrized contract test generated from the Send API OpenAPI spec.
 
-    request_kwargs: dict = {
-        "method": case.method,
-        "url": BASE_URL.rstrip("/") + case.path,
-        "headers": {
-            "Authorization": ACCESS_TOKEN,
-            "RequestId": request_id,
-            "Version": "v1",
-            **{
-                h: v
-                for h, v in (case.headers or {}).items()
-                if h.lower() not in {"authorization", "requestid", "version"}
-            },
-        },
-        "params": case.query,
+    Schemathesis derives one test case per endpoint defined in the spec, generating
+    request data (path params, query params, body) that is valid according to the schema.
+    Each case is executed against the live API and the response is validated with
+    CONTRACT_CHECKS.
+
+    An additional assertion verifies that the Location header is present on 201 responses
+    from POST /rtps, as required by the spec.
+    """
+    case.headers = {
+        "Authorization": ACCESS_TOKEN,
+        "RequestId": str(uuid.uuid4()),
+        "Version": "v1",
+        **{k: v for k, v in (case.headers or {}).items() if k.lower() not in {"authorization", "requestid", "version"}},
     }
 
-    if isinstance(case.body, (dict, list)):
-        request_kwargs["json"] = case.body
+    if case.path == "/gpd/message" and case.method.upper() == "POST":
+        case.headers["Idempotency-Key"] = str(uuid.uuid4())
 
-    response = requests.request(**request_kwargs)
+    response = case.call(base_url=BASE_URL)
+    case.validate_response(response, checks=CONTRACT_CHECKS)
 
-    assert 100 <= response.status_code < 600
-
-    if response.headers.get("Content-Type", "").startswith("application/json"):
-        _ = response.json()
+    if case.path == "/rtps" and case.method.upper() == "POST" and response.status_code == 201:
+        assert "Location" in response.headers, "Missing required Location header on 201 createRtp"

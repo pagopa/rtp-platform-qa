@@ -11,6 +11,7 @@ This repository contains a comprehensive test suite for the RTP (Request to Pay)
   - [UX Tests](#ux-tests)
   - [Performance Tests](#performance-tests)
   - [Contract Tests](#contract-tests)
+  - [Load Test Utilities](#load-test-utilities)
 - [Secrets Management](#secrets-management-on-github)
 - [Run Locally](#run-it-locally)
 - [Project Structure](#project-structure)
@@ -27,7 +28,11 @@ cd rtp-platform-qa
 
 ### 2. Get secrets
 
-Create a `.env` file in the project root with all the credentials listed in [Secrets Management](#secrets-management-on-github).
+Copy `.env.example` to `.env` and fill in the real values:
+
+```bash
+cp .env.example .env
+```
 
 > **Configuration split:** secrets (client IDs, client secrets, certificates, fiscal codes) live in `.env`; non-secret settings (API base URLs, paths, timeouts) live in `config.yaml`.
 
@@ -229,8 +234,41 @@ pytest contract-tests/ -q
 **Test files:**
 
 - `test_activation.py` – Activation API contract
-- `test_api_create_rtp.py` – RTP create API contract
 - `test_api_send_rtp.py` – RTP send API contract
+
+---
+
+### Load Test Utilities
+
+Python utility scripts for GPD massive uploads, RTP lifecycle automation, and Cosmos DB maintenance. These are operational tools rather than automated test suites.
+
+- **Location:** `load-tests/`
+- **Tool:** Python 3.11+ (independent `requirements.txt`)
+- **Full documentation:** `load-tests/README.md`
+
+**Scripts:**
+
+| Script | Purpose |
+|--------|---------|
+| `activation.py` | Create an RTP activation |
+| `generate_massive_zip.py` | Generate a massive debt-position JSON + ZIP |
+| `upload_create_pd_file.py` | Upload ZIP to GPD massive endpoint (CREATE) |
+| `upload_delete_file.py` | Upload ZIP to GPD massive endpoint (DELETE) |
+| `send_to_gpd_queue.py` | Send CREATE/UPDATE records directly to the GPD queue (single or continuous mode) |
+| `cleanup_activation.py` | Deactivate an activation and remove local artifacts |
+| `cleanup_mongo.py` | Batch-delete records from Azure Cosmos DB for MongoDB |
+| `cancel_rtp_from_queue.py` | Cancel RTPs via queue message |
+| `auth.py` | Authentication helpers |
+| `utilities.py` | Shared utilities |
+
+**Setup:**
+
+```bash
+cd load-tests
+pip install -r requirements.txt
+```
+
+Requires a `.env` in the project root with `SERVICE_PROVIDER`, `BROKER_CODE`, `ORG_FISCAL_CODE`, `GPD_API_KEY` (for GPD scripts) and optionally `COSMOS_DB_CONNECTION_STRING` (for cleanup).
 
 ---
 
@@ -238,7 +276,27 @@ pytest contract-tests/ -q
 
 GitHub Actions uses repository environment variables and secrets. All values must be set in the repository's [Environments settings](https://github.com/pagopa/rtp-platform-qa/settings/environments) for each environment (`dev`, `uat`, `prod` — currently `uat` is active).
 
-Secrets must be updated manually by admins when rotated.
+Secrets must be updated manually by admins when rotated. The full list of required variables (with descriptions) is in [`.env.example`](.env.example).
+
+**Variable groups:**
+
+| Group | Variables |
+|-------|-----------|
+| Debtor Service Provider | `DEBTOR_SERVICE_PROVIDER_CLIENT_ID`, `_SECRET`, `_ID` |
+| Debtor Service Provider B | `DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID`, `_SECRET`, `_ID` |
+| Creditor Service Provider | `CREDITOR_SERVICE_PROVIDER_CLIENT_ID`, `_SECRET`, `_ID` |
+| RTP Consumer / Sender | `RTP_CONSUMER_CLIENT_ID`, `_SECRET` |
+| RTP Reader | `RTP_READER_CLIENT_ID`, `_SECRET` |
+| Read RTP Activations | `READ_RTP_ACTIVATIONS_CLIENT_ID`, `_SECRET` |
+| PagoPA Integration | `PAGOPA_INTEGRATION_*_CLIENT_ID`, `*_CLIENT_SECRET` (3 clients) |
+| CBI | `CBI_CLIENT_ID`, `_SECRET`, `_PFX_BASE64`, `_PFX_PASSWORD_BASE64`, `CBI_ACTIVATED_FISCAL_CODE`, `CBI_PAYEE_ID`, `CREDITOR_AGENT_ID` |
+| Third-Party Providers | `POSTE_CLIENT_ID`, `_SECRET`, `POSTE_ACTIVATED_FISCAL_CODE`, `ICCREA_ACTIVATED_FISCAL_CODE` |
+| Mock Service Provider | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64`, `_PASSWORD_BASE64`, `MOCK_*_FISCAL_CODE` (6 vars) |
+| GPD (Debt Positions) | `DEBT_POSITIONS_SUBSCRIPTION_KEY`, `_ORGANIZATION_ID` (UAT + DEV), `EC_TAX_CODE` |
+| Web Application | `WEBPAGE_USERNAME`, `WEBPAGE_PASSWORD`, `WEBPAGE_CLIENT_ID` |
+
+<details>
+<summary>Full variable reference (click to expand)</summary>
 
 ### Debtor Service Provider
 
@@ -312,15 +370,24 @@ Secrets must be updated manually by admins when rotated.
 | `MOCK_RJCT_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT response (DS-08P N) |
 | `MOCK_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous ACTC response without the `_links` field |
 | `MOCK_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous non-compliant ACTC-like response with an unexpected extra field; the RTP status remains `SENT` |
-| `MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT  non-compliant with an unexpected extra field |
-| `MOCK_RJCT_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT  without the `_links` field |
+| `MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT non-compliant with an unexpected extra field |
+| `MOCK_RJCT_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT without the `_links` field |
 
 ### Third-Party Providers
 
 | Variable | Description |
 |----------|-------------|
+| `POSTE_CLIENT_ID` | Client ID for Poste Italiane service |
+| `POSTE_CLIENT_SECRET` | Client secret for Poste Italiane service |
 | `POSTE_ACTIVATED_FISCAL_CODE` | Fiscal code pre-activated for Poste Italiane tests |
 | `ICCREA_ACTIVATED_FISCAL_CODE` | Fiscal code pre-activated for ICCREA tests |
+
+### Read RTP Activations
+
+| Variable | Description |
+|----------|-------------|
+| `READ_RTP_ACTIVATIONS_CLIENT_ID` | Client ID for the read-activations service client |
+| `READ_RTP_ACTIVATIONS_CLIENT_SECRET` | Client secret for the read-activations service client |
 
 ### GPD (Debt Positions)
 
@@ -339,20 +406,13 @@ Secrets must be updated manually by admins when rotated.
 | `RTP_CONSUMER_CLIENT_ID` | Client ID used by the consumer to authenticate to the sender |
 | `RTP_CONSUMER_CLIENT_SECRET` | Client secret used by the consumer to authenticate to the sender |
 
+</details>
+
 ---
 
 ## Run It Locally
 
-Create a `.env` file in the project root with all the variables listed above, then follow the [Setup](#setup) steps.
-
-Example `.env` structure:
-
-```ini
-DEBTOR_SERVICE_PROVIDER_CLIENT_ID=...
-DEBTOR_SERVICE_PROVIDER_ID=...
-DEBTOR_SERVICE_PROVIDER_CLIENT_SECRET=...
-# ... (all other variables)
-```
+Copy `.env.example` to `.env`, fill in the real values, then follow the [Setup](#setup) steps.
 
 ---
 
@@ -402,7 +462,6 @@ rtp-platform-qa/
 │   └── configuration.py
 ├── contract-tests/
 │   ├── test_activation.py
-│   ├── test_api_create_rtp.py
 │   └── test_api_send_rtp.py
 ├── functional-tests/
 │   └── tests/
@@ -418,13 +477,29 @@ rtp-platform-qa/
 │       ├── service_registry/
 │       ├── takeover/
 │       └── conftest.py
+├── load-tests/                                   # GPD massive & Cosmos DB operational utilities
+│   ├── activation.py
+│   ├── auth.py
+│   ├── cancel_rtp_from_queue.py
+│   ├── cleanup_activation.py
+│   ├── cleanup_mongo.py
+│   ├── config.py
+│   ├── generate_massive_zip.py
+│   ├── send_to_gpd_queue.py
+│   ├── upload_create_pd_file.py
+│   ├── upload_delete_file.py
+│   ├── utilities.py
+│   ├── requirements.txt
+│   └── README.md
 ├── performance-tests/
 │   ├── config/
 │   │   └── config.js
 │   ├── script/                               # One-off data setup scripts
 │   │   ├── create-activation-otp.js
 │   │   ├── create-activations.js
-│   │   └── create-rtp.js
+│   │   ├── create-gpd-message.js
+│   │   ├── create-rtp.js
+│   │   └── create-rtp-cancel.js
 │   ├── tests/
 │   │   ├── rtp-activator/
 │   │   ├── rtp-sender/
@@ -446,8 +521,14 @@ rtp-platform-qa/
 │   ├── constants_secrets_helper.py
 │   ├── constants_text_helper.py
 │   ├── cryptography_utils.py
-│   ├── dataset_*.py                          # Test data builders (EPC payloads, callbacks, debt positions)
+│   ├── dataset_callback_data_DS_*.py         # Callback payload builders (DS-04b, DS-05, DS-08N, DS-08P, DS-12)
+│   ├── dataset_debt_position_create.py
+│   ├── dataset_debt_position_update.py
+│   ├── dataset_EPC_RTP_data.py
+│   ├── dataset_gpd_message.py
+│   ├── dataset_RTP_data.py
 │   ├── datetime_utils.py
+│   ├── extract_next_activation_id.py
 │   ├── fiscal_code_utils.py
 │   ├── generator_random_values_utils.py
 │   ├── generators_utils.py
@@ -457,6 +538,7 @@ rtp-platform-qa/
 │   ├── log_sanitizer_helper.py
 │   ├── regex_utils.py
 │   ├── response_assertions_utils.py
+│   ├── rtp_send_helpers.py
 │   ├── test_expectations.py
 │   ├── text_utils.py
 │   └── type_utils.py
@@ -468,13 +550,15 @@ rtp-platform-qa/
 ├── .github/
 │   └── workflows/
 │       ├── run_tests.yml                     # Main CI: functional + BDD tests with Allure
-│       ├── doc_page.yaml                     # GitHub Pages deployment
+│       ├── doc_page.yaml                     # GitHub Pages deployment (MkDocs + Allure reports)
+│       ├── docker-publish.yml                # Build & deploy GPD test Docker image
 │       ├── send_slack_notification.yml       # Slack notifications
 │       ├── manual_debt_position_tests.yml    # Manual trigger for GPD tests
 │       └── extract_allure_fail_rate.yml      # Allure failure rate extraction
 ├── generate-allure-report.sh
 ├── install-requirements.sh
 ├── sanitize-allure-results.py                # Strips secrets from Allure results before publication
+├── .env.example                              # Template for local .env (copy and fill in)
 ├── Makefile
 └── pyproject.toml
 ```
@@ -506,6 +590,21 @@ Order of execution:
 ```bash
 ./generate-allure-report.sh
 ```
+
+### `scenarios_parser.py` / `main.py`
+
+Parses all Behave feature files and generates a MkDocs documentation site with a full scenario catalog, component index, and links to published Allure reports. Used automatically in the `doc_page.yaml` CI workflow to publish the GitHub Pages site.
+
+```bash
+python main.py \
+  --page-name "RTP Platform QA" \
+  --repo-name "rtp-platform-qa" \
+  --root-dir .
+```
+
+Output: `docs/` directory + `mkdocs.yml` configuration.
+
+---
 
 ### `sanitize-allure-results.py`
 

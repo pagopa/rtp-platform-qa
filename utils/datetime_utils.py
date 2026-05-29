@@ -19,7 +19,7 @@ def get_date_or_default_today(date_str: str | None) -> str:
     return get_date_or_default(date_str, today)
 
 
-def get_date_or_default(date_str: str | None, default_date: str ) -> str:
+def get_date_or_default(date_str: str | None, default_date: str) -> str:
     """
     Get the provided date string or return the default date if the string is None.
     Args:

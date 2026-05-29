@@ -11,9 +11,10 @@ def _init_access_tokens() -> dict[str, str]:
     (see functional-tests/tests/conftest.py).
 
     Returns a dict with:
-    - debtor:    Debtor Service Provider A
-    - debtor_b:  Debtor Service Provider B
-    - creditor:  Creditor Service Provider A (if needed in RTP scenarios)
+    - debtor:        Debtor Service Provider A
+    - debtor_b:      Debtor Service Provider B
+    - creditor:      Creditor Service Provider A (REST cancel endpoint)
+    - rtp_consumer:  RTP Consumer client (GPD message send endpoint)
     """
 
     tokens: dict[str, str] = {}
@@ -34,6 +35,13 @@ def _init_access_tokens() -> dict[str, str]:
         tokens["creditor"] = get_valid_access_token(
             client_id=secrets.creditor_service_provider.client_id,
             client_secret=secrets.creditor_service_provider.client_secret,
+            access_token_function=get_keycloak_access_token,
+        )
+
+    if getattr(secrets, "rtp_consumer", None):
+        tokens["rtp_consumer"] = get_valid_access_token(
+            client_id=secrets.rtp_consumer.client_id,
+            client_secret=secrets.rtp_consumer.client_secret,
             access_token_function=get_keycloak_access_token,
         )
 
