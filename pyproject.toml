@@ -71,6 +71,7 @@ testpaths = [
 ]
 pythonpath = [
   ".",
+  "contract-tests",
   "gpd-test",
   "ux-tests/tests",
 ]
