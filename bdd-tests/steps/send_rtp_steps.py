@@ -51,32 +51,32 @@ def then_the_rtp_is_not_created(context, reason_ko):
 
     if reason_ko == "THE SERVICE PROVIDER IS NOT AUTHENTICATED":
         assert actual == 401, f"Expected 401, got {actual}: {context.latest_rtp_response.text[:200]}"
-
-    if reason_ko == "THE DEBTOR SERVICE PROVIDER CANNOT SEND AN RTP":
+    elif reason_ko == "THE DEBTOR SERVICE PROVIDER CANNOT SEND AN RTP":
         assert actual == 403, f"Expected 403, got {actual}: {context.latest_rtp_response.text[:200]}"
-
-    if reason_ko == "THE DEBTOR IS NOT ACTIVATED":
+    elif reason_ko == "THE DEBTOR IS NOT ACTIVATED":
         assert actual == 422, f"Expected 422, got {actual}: {context.latest_rtp_response.text[:200]}"
+    else:
+        raise AssertionError(f"Unknown reason_ko: '{reason_ko}'")
 
 
 @given("the Ente Creditore is on the web page")
 @given("the Creditor is on the web page")
 def given_ec_on_page(context):
-    assert TEST_TRUE_CONDITION, "TEST_SHOULD_NOT_FAIL_MSG"
+    assert TEST_TRUE_CONDITION, TEST_SHOULD_NOT_FAIL_MSG
 
 
 @given("the Ente Creditore insert RTP data")
 @given("the Creditor insert RTP data")
 def given_ec_insert_data(context):
-    assert TEST_TRUE_CONDITION, "TEST_SHOULD_NOT_FAIL_MSG"
+    assert TEST_TRUE_CONDITION, TEST_SHOULD_NOT_FAIL_MSG
 
 
 @when("the Ente Creditore presses send button")
 @when("the Creditor presses send button")
 def given_ec_press_send(context):
-    assert TEST_TRUE_CONDITION, "TEST_SHOULD_NOT_FAIL_MSG"
+    assert TEST_TRUE_CONDITION, TEST_SHOULD_NOT_FAIL_MSG
 
 
 @then("a confirmation messages shows confirming the operation")
 def given_confirmation_message_shows(context):
-    assert TEST_TRUE_CONDITION, "TEST_SHOULD_NOT_FAIL_MSG"
+    assert TEST_TRUE_CONDITION, TEST_SHOULD_NOT_FAIL_MSG

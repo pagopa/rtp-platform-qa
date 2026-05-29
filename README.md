@@ -234,7 +234,6 @@ pytest contract-tests/ -q
 **Test files:**
 
 - `test_activation.py` – Activation API contract
-- `test_api_create_rtp.py` – RTP create API contract
 - `test_api_send_rtp.py` – RTP send API contract
 
 ---
@@ -463,7 +462,6 @@ rtp-platform-qa/
 │   └── configuration.py
 ├── contract-tests/
 │   ├── test_activation.py
-│   ├── test_api_create_rtp.py
 │   └── test_api_send_rtp.py
 ├── functional-tests/
 │   └── tests/
