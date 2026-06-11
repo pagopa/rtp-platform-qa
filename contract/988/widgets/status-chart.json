@@ -1,0 +1,1 @@
+[{"uid":"762891cabd0a0286","name":"test_send_api_contract[POST /gpd/message]","time":{"start":1781174901260,"stop":1781175015906,"duration":114646},"status":"passed","severity":"normal"},{"uid":"cfa612b4c24b2e20","name":"test_activation_contract[GET /activations/payer]","time":{"start":1781174614736,"stop":1781174668881,"duration":54145},"status":"passed","severity":"normal"}]
