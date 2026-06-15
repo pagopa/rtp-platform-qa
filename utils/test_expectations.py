@@ -6,12 +6,12 @@ Defines expected status codes and body presence for different operations and sta
 # CREATE
 CREATE_EXPECTED_CODES = {
     "VALID": 200,
-    "INVALID": 400,
-    "PARTIALLY_PAID": 400,
-    "PAID": 400,
-    "PUBLISHED": 400,
-    "EXPIRED": 400,
-    "DRAFT": 400,
+    "INVALID": 422,
+    "PARTIALLY_PAID": 422,
+    "PAID": 422,
+    "PUBLISHED": 422,
+    "EXPIRED": 422,
+    "DRAFT": 422,
 }
 
 # UPDATE post CREATE VALID
@@ -21,19 +21,19 @@ UPDATE_EXPECTED_CODES = {
     "PAID": 200,
     "EXPIRED": 200,
     "DRAFT": 200,
-    "PARTIALLY_PAID": 400,
-    "PUBLISHED": 400,
+    "PARTIALLY_PAID": 422,
+    "PUBLISHED": 422,
 }
 
 # UPDATE standalone (no prior CREATE)
 UPDATE_BEFORE_CREATE_CODES = {
     "VALID": 200,
-    "INVALID": 404,
-    "PAID": 404,
-    "EXPIRED": 404,
-    "DRAFT": 404,
-    "PARTIALLY_PAID": 400,
-    "PUBLISHED": 400,
+    "INVALID": 422,
+    "PAID": 422,
+    "EXPIRED": 422,
+    "DRAFT": 422,
+    "PARTIALLY_PAID": 422,
+    "PUBLISHED": 422,
 }
 
 # UPDATE post CREATE VALID and DELETE
@@ -43,19 +43,19 @@ UPDATE_AFTER_CREATE_AND_DELETE_CODES = {
     "PAID": 422,
     "EXPIRED": 422,
     "DRAFT": 422,
-    "PARTIALLY_PAID": 400,
-    "PUBLISHED": 400,
+    "PARTIALLY_PAID": 422,
+    "PUBLISHED": 422,
 }
 
 # DELETE post CREATE (status refers to the CREATE status)
 DELETE_AFTER_CREATE_CODES = {
     "VALID": 200,
-    "INVALID": 404,
-    "PARTIALLY_PAID": 404,
-    "PAID": 404,
-    "PUBLISHED": 404,
-    "EXPIRED": 404,
-    "DRAFT": 404,
+    "INVALID": 422,
+    "PARTIALLY_PAID": 422,
+    "PAID": 422,
+    "PUBLISHED": 422,
+    "EXPIRED": 422,
+    "DRAFT": 422,
 }
 
 # DELETE post CREATE VALID and UPDATE (status refers to the UPDATE status)
@@ -72,12 +72,12 @@ DELETE_AFTER_UPDATE_CODES = {
 # DELETE post standalone UPDATE (status refers to the UPDATE status)
 DELETE_AFTER_UPDATE_STANDALONE_CODES = {
     "VALID": 200,
-    "INVALID": 404,
-    "PARTIALLY_PAID": 404,
-    "PAID": 404,
-    "PUBLISHED": 404,
-    "EXPIRED": 404,
-    "DRAFT": 404,
+    "INVALID": 422,
+    "PARTIALLY_PAID": 422,
+    "PAID": 422,
+    "PUBLISHED": 422,
+    "EXPIRED": 422,
+    "DRAFT": 422,
 }
 
 STATUSES_WITH_BODY = {"VALID"}
