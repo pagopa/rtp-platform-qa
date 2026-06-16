@@ -1,6 +1,6 @@
 import allure
 from playwright.sync_api import expect
-from test_RTP_submission import test_rtp_form_submission
+from test_RTP_submission_v3 import test_rtp_form_submission
 
 _CANCEL_MODT_BUTTON = 'button:has-text("Cancella MODT v3.2")'
 _CANCEL_PAID_BUTTON = 'button:has-text("Cancella PAID v3.2")'
