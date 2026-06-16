@@ -2,8 +2,8 @@ import allure
 from playwright.sync_api import expect
 from test_RTP_submission import test_rtp_form_submission
 
-_CANCEL_MODT_BUTTON = 'button:has-text("Cancella MODT")'
-_CANCEL_PAID_BUTTON = 'button:has-text("Cancella PAID")'
+_CANCEL_MODT_BUTTON = 'button:has-text("Cancella MODT v3.2")'
+_CANCEL_PAID_BUTTON = 'button:has-text("Cancella PAID v3.2")'
 _CONFIRM_CANCEL_BUTTON = 'button:has-text("Cancella richiesta")'
 _DIALOG_NAME = "Vuoi cancellare la richiesta?"
 _DIALOG_DESCRIPTION = "Proseguendo, la richiesta di pagamento appena creata verrà cancellata."
