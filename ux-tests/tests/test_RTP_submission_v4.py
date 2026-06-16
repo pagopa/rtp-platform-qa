@@ -46,7 +46,7 @@ def test_rtp_form_submission(page):
     )
     page.fill('input[name="paymentNotice.subject"]', rtp_data["paymentNotice"]["description"])
     page.fill('input[name="paymentNotice.description"]', rtp_data["paymentNotice"]["description"])
-    page.click("[type=submit]")
+    page.click('button:has-text("Invia RTP v4.0")')
 
     # Wait for navigation to the success page (API call may take a few seconds)
     page.wait_for_url("**/**/ok", timeout=30000)
