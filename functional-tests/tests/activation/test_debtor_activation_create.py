@@ -120,6 +120,28 @@ def test_activate_debtor_with_omocodia_fiscal_code(debtor_service_provider_token
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Debtor activation")
+@allure.title("A debtor with foreign fiscal code is activated successfully")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "foreign")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_activate_debtor_with_foreign_fiscal_code(debtor_service_provider_token_a, random_foreign_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_foreign_fiscal_code,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert res.status_code == 201, f"Expected 201 but got {res.status_code}: {res.text}"
+
+    res = get_activation_by_payer_id(debtor_service_provider_token_a, random_foreign_fiscal_code)
+    assert res.status_code == 200
+    assert res.json()["payer"]["fiscalCode"] == random_foreign_fiscal_code
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
 @allure.title("The activation request must contain lower case fiscal code")
 @allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
 @pytest.mark.auth

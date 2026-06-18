@@ -5,6 +5,17 @@ from faker import Faker
 
 fake = Faker("it_IT")
 
+# Valid numeric ranges for Italian foreign cadastral codes (codici catastali esteri).
+# Each tuple is (lo, hi) inclusive; the full code is "Z" + the 3-digit number.
+_FOREIGN_CODE_RANGES = [
+    (100, 156), (200, 259), (300, 368), (400, 404),
+    (500, 524), (600, 614), (700, 735), (800, 802), (900, 906),
+]
+
+# Omocodia: digit positions (0-indexed) that can be substituted, ordered right-to-left
+_OMOCODIA_POSITIONS = [14, 13, 12, 10, 9, 7, 6]
+_OMOCODIA_MAP = dict(zip("0123456789", "LMNPQRSTUV"))
+
 
 def fake_fc(age: int = None, custom_month: int = None, custom_day: int = None, sex: str = None) -> str:
     """Generate a fake fiscal code with customizable parameters.
@@ -47,11 +58,6 @@ def fake_fc(age: int = None, custom_month: int = None, custom_day: int = None, s
     return f"{surname}{name}{year}{month_letter}{day}{municipality}{checksum}"
 
 
-# Omocodia: digit positions (0-indexed) that can be substituted, ordered right-to-left
-_OMOCODIA_POSITIONS = [14, 13, 12, 10, 9, 7, 6]
-_OMOCODIA_MAP = dict(zip("0123456789", "LMNPQRSTUV"))
-
-
 def fake_omocodia_fc(level: int = None) -> str:
     """Generate a fake fiscal code with omocodia substitution.
 
@@ -71,6 +77,36 @@ def fake_omocodia_fc(level: int = None) -> str:
     return "".join(cf)
 
 
+def fake_fc_foreign(
+    age: int = None,
+    custom_month: int = None,
+    custom_day: int = None,
+    sex: str = None,
+    country_code: str = None,
+) -> str:
+    """Generate a fake Italian fiscal code for a person born in a foreign country.
+
+    The municipality code (positions 11–14) is replaced with a foreign country
+    cadastral code (codice catastale estero), which always starts with 'Z'.
+
+    Args:
+        age: Age of the person.
+        custom_month: Birth month (1–12).
+        custom_day: Birth day (1–31).
+        sex: Sex of the person ('M' or 'F').
+        country_code: A specific foreign country cadastral code (e.g. 'Z110' for Germany).
+                      If omitted, a random code is chosen from the valid ranges.
+
+    Returns:
+        A fake fiscal code string with a foreign country cadastral code.
+    """
+    if country_code is None:
+        country_code = _random_foreign_code()
+
+    base = fake_fc(age=age, custom_month=custom_month, custom_day=custom_day, sex=sex)
+    return f"{base[:11]}{country_code}{base[15]}"
+
+
 def month_number_to_fc_letter(month_num: int) -> str:
     """Convert month number to fiscal code letter.
 
@@ -85,3 +121,13 @@ def month_number_to_fc_letter(month_num: int) -> str:
         return months[int(month_num) - 1]
     else:
         return "A"
+
+def _random_foreign_code() -> str:
+    """Pick a random foreign country cadastral code from the valid ranges.
+
+    Returns:
+        A 4-character string starting with 'Z' followed by a 3-digit number
+        within one of the valid ranges defined in _FOREIGN_CODE_RANGES.
+    """
+    lo, hi = random.choice(_FOREIGN_CODE_RANGES)
+    return f"Z{random.randint(lo, hi)}"
