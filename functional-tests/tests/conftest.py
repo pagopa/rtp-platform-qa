@@ -9,7 +9,7 @@ from api.debtor_activation_api import activate
 from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
-from utils.fiscal_code_utils import fake_fc
+from utils.fiscal_code_utils import fake_fc, fake_omocodia_fc
 from utils.log_sanitizer_helper import sanitize_bearer_token
 
 # ============================================================
@@ -192,6 +192,12 @@ def next_cursor() -> Callable[[str], str | None]:
 def random_fiscal_code() -> str:
     """Generate a random fiscal code for tests that need a fresh debtor."""
     return fake_fc()
+
+
+@pytest.fixture
+def random_omocodia_fiscal_code() -> str:
+    """Generate a random fiscal code with omocodia substitution (random level 1-7)."""
+    return fake_omocodia_fc()
 
 
 @pytest.fixture

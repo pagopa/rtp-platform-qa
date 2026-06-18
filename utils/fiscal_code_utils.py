@@ -1,3 +1,4 @@
+import random
 from datetime import datetime, timedelta
 
 from faker import Faker
@@ -44,6 +45,30 @@ def fake_fc(age: int = None, custom_month: int = None, custom_day: int = None, s
         day = fake_cf[9:11]
 
     return f"{surname}{name}{year}{month_letter}{day}{municipality}{checksum}"
+
+
+# Omocodia: digit positions (0-indexed) that can be substituted, ordered right-to-left
+_OMOCODIA_POSITIONS = [14, 13, 12, 10, 9, 7, 6]
+_OMOCODIA_MAP = dict(zip("0123456789", "LMNPQRSTUV"))
+
+
+def fake_omocodia_fc(level: int = None) -> str:
+    """Generate a fake fiscal code with omocodia substitution.
+
+    Args:
+        level: Number of digit positions to substitute (1-7). Defaults to random.
+
+    Returns:
+        A fiscal code string with omocodia substitution applied.
+    """
+    if level is None:
+        level = random.randint(1, 7)
+    level = max(1, min(level, 7))
+
+    cf = list(fake_fc())
+    for pos in _OMOCODIA_POSITIONS[:level]:
+        cf[pos] = _OMOCODIA_MAP[cf[pos]]
+    return "".join(cf)
 
 
 def month_number_to_fc_letter(month_num: int) -> str:

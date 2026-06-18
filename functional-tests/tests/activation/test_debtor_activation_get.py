@@ -4,7 +4,7 @@ from datetime import datetime
 import allure
 import pytest
 
-from api.debtor_activation_api import get_activation_by_id
+from api.debtor_activation_api import activate, get_activation_by_id
 from config.configuration import secrets
 
 
@@ -31,6 +31,31 @@ def test_get_activation_by_id(debtor_service_provider_token_a, make_activation):
         datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
     except ValueError:
         assert False, "Invalid date format"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Get Debtor activation by ID")
+@allure.title("A debtor with omocodia fiscal code is activated and retrieved by activation id")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "omocodia")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_get_activation_by_id_omocodia_fiscal_code(debtor_service_provider_token_a, random_omocodia_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_omocodia_fiscal_code,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
+    activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
+
+    res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
+    assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
+    body = res.json()
+    assert body["id"] == activation_id
+    assert body["payer"]["fiscalCode"] == random_omocodia_fiscal_code
 
 
 @allure.epic("Debtor Activation")
