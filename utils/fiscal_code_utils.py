@@ -107,6 +107,22 @@ def fake_fc_foreign(
     return f"{base[:11]}{country_code}{base[15]}"
 
 
+def fake_vat() -> str:
+    """Generate a fake Italian VAT number (Partita IVA).
+
+    A Partita IVA is an 11-digit string: 7 random digits, a 3-digit province
+    code (001–100), and a Luhn-like check digit.
+
+    Returns:
+        An 11-digit string representing a valid Italian VAT number.
+    """
+    digits = [random.randint(0, 9) for _ in range(7)]
+    province = random.randint(1, 100)
+    digits += [province // 100, (province // 10) % 10, province % 10]
+    digits.append(_vat_check_digit(digits))
+    return "".join(map(str, digits))
+
+
 def month_number_to_fc_letter(month_num: int) -> str:
     """Convert month number to fiscal code letter.
 
@@ -122,6 +138,7 @@ def month_number_to_fc_letter(month_num: int) -> str:
     else:
         return "A"
 
+
 def _random_foreign_code() -> str:
     """Pick a random foreign country cadastral code from the valid ranges.
 
@@ -131,3 +148,17 @@ def _random_foreign_code() -> str:
     """
     lo, hi = random.choice(_FOREIGN_CODE_RANGES)
     return f"Z{random.randint(lo, hi)}"
+
+
+def _vat_check_digit(digits: list) -> int:
+    """Compute the check digit for an Italian VAT number (Partita IVA).
+
+    Args:
+        digits: The first 10 digits of the VAT number as a list of ints.
+
+    Returns:
+        The check digit (0–9).
+    """
+    odd_sum = sum(digits[i] for i in range(0, 10, 2))
+    even_sum = sum(d * 2 if d * 2 < 10 else d * 2 - 9 for d in (digits[i] for i in range(1, 10, 2)))
+    return (10 - (odd_sum + even_sum) % 10) % 10

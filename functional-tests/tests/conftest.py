@@ -9,7 +9,7 @@ from api.debtor_activation_api import activate
 from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
-from utils.fiscal_code_utils import fake_fc, fake_fc_foreign, fake_omocodia_fc
+from utils.fiscal_code_utils import fake_fc, fake_fc_foreign, fake_omocodia_fc, fake_vat
 from utils.log_sanitizer_helper import sanitize_bearer_token
 
 # ============================================================
@@ -204,6 +204,12 @@ def random_omocodia_fiscal_code() -> str:
 def random_foreign_fiscal_code() -> str:
     """Generate a random fiscal code for a foreign person (country code Z + 3 digits)."""
     return fake_fc_foreign()
+
+
+@pytest.fixture
+def random_vat_number() -> str:
+    """Generate a random Italian VAT number (Partita IVA, 11 digits)."""
+    return fake_vat()
 
 
 @pytest.fixture

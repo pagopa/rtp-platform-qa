@@ -142,6 +142,28 @@ def test_activate_debtor_with_foreign_fiscal_code(debtor_service_provider_token_
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Debtor activation")
+@allure.title("A debtor with VAT number (Partita IVA) is activated successfully")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "vat")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_activate_debtor_with_vat_number(debtor_service_provider_token_a, random_vat_number):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_vat_number,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert res.status_code == 201, f"Expected 201 but got {res.status_code}: {res.text}"
+
+    res = get_activation_by_payer_id(debtor_service_provider_token_a, random_vat_number)
+    assert res.status_code == 200
+    assert res.json()["payer"]["fiscalCode"] == random_vat_number
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
 @allure.title("The activation request must contain lower case fiscal code")
 @allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
 @pytest.mark.auth
