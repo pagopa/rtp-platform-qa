@@ -6,21 +6,57 @@ from faker import Faker
 fake = Faker("it_IT")
 
 _FOREIGN_CODE_RANGES = [
-    (100, 156), (200, 259), (300, 368), (400, 404),
-    (500, 524), (600, 614), (700, 735), (800, 802), (900, 906),
+    (100, 156),
+    (200, 259),
+    (300, 368),
+    (400, 404),
+    (500, 524),
+    (600, 614),
+    (700, 735),
+    (800, 802),
+    (900, 906),
 ]
 
 _OMOCODIA_POSITIONS = [14, 13, 12, 10, 9, 7, 6]
 _OMOCODIA_MAP = dict(zip("0123456789", "LMNPQRSTUV"))
 
 _CF_ODD_VALUES = {
-    '0': 1,  '1': 0,  '2': 5,  '3': 7,  '4': 9,
-    '5': 13, '6': 15, '7': 17, '8': 19, '9': 21,
-    'A': 1,  'B': 0,  'C': 5,  'D': 7,  'E': 9,
-    'F': 13, 'G': 15, 'H': 17, 'I': 19, 'J': 21,
-    'K': 2,  'L': 4,  'M': 18, 'N': 20, 'O': 11,
-    'P': 3,  'Q': 6,  'R': 8,  'S': 12, 'T': 14,
-    'U': 16, 'V': 10, 'W': 22, 'X': 25, 'Y': 24, 'Z': 23,
+    "0": 1,
+    "1": 0,
+    "2": 5,
+    "3": 7,
+    "4": 9,
+    "5": 13,
+    "6": 15,
+    "7": 17,
+    "8": 19,
+    "9": 21,
+    "A": 1,
+    "B": 0,
+    "C": 5,
+    "D": 7,
+    "E": 9,
+    "F": 13,
+    "G": 15,
+    "H": 17,
+    "I": 19,
+    "J": 21,
+    "K": 2,
+    "L": 4,
+    "M": 18,
+    "N": 20,
+    "O": 11,
+    "P": 3,
+    "Q": 6,
+    "R": 8,
+    "S": 12,
+    "T": 14,
+    "U": 16,
+    "V": 10,
+    "W": 22,
+    "X": 25,
+    "Y": 24,
+    "Z": 23,
 }
 
 
@@ -172,6 +208,7 @@ def _vat_check_digit(digits: list) -> int:
     even_sum = sum(d * 2 if d * 2 < 10 else d * 2 - 9 for d in (digits[i] for i in range(1, 10, 2)))
     return (10 - (odd_sum + even_sum) % 10) % 10
 
+
 def _cf_checksum(cf: list) -> str:
     """Compute the control character for an Italian fiscal code.
 
@@ -182,7 +219,7 @@ def _cf_checksum(cf: list) -> str:
         The control character (A–Z).
     """
     total = sum(
-        _CF_ODD_VALUES[c] if i % 2 == 0 else (ord(c) - ord('A') if c.isalpha() else int(c))
+        _CF_ODD_VALUES[c] if i % 2 == 0 else (ord(c) - ord("A") if c.isalpha() else int(c))
         for i, c in enumerate(cf[:15])
     )
-    return chr(ord('A') + total % 26)
+    return chr(ord("A") + total % 26)

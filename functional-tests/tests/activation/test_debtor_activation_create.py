@@ -103,7 +103,9 @@ def test_fail_activate_debtor_two_times(debtor_service_provider_token_a, random_
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor_with_omocodia_fiscal_code(debtor_service_provider_token_a, activate_payer, random_omocodia_fiscal_code):
+def test_activate_debtor_with_omocodia_fiscal_code(
+    debtor_service_provider_token_a, activate_payer, random_omocodia_fiscal_code
+):
 
     activate_payer(random_omocodia_fiscal_code)
 
@@ -120,7 +122,9 @@ def test_activate_debtor_with_omocodia_fiscal_code(debtor_service_provider_token
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor_with_foreign_fiscal_code(debtor_service_provider_token_a, activate_payer, random_foreign_fiscal_code):
+def test_activate_debtor_with_foreign_fiscal_code(
+    debtor_service_provider_token_a, activate_payer, random_foreign_fiscal_code
+):
 
     activate_payer(random_foreign_fiscal_code)
 

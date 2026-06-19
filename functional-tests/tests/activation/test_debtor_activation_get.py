@@ -41,7 +41,9 @@ def test_get_activation_by_id(debtor_service_provider_token_a, make_activation):
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_activation_by_id_omocodia_fiscal_code(debtor_service_provider_token_a, make_activation, random_omocodia_fiscal_code):
+def test_get_activation_by_id_omocodia_fiscal_code(
+    debtor_service_provider_token_a, make_activation, random_omocodia_fiscal_code
+):
 
     activation_id, _ = make_activation(random_omocodia_fiscal_code)
 
@@ -66,7 +68,9 @@ def test_get_activation_by_id_omocodia_fiscal_code(debtor_service_provider_token
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_activation_by_id_foreign_fiscal_code(debtor_service_provider_token_a, make_activation, random_foreign_fiscal_code):
+def test_get_activation_by_id_foreign_fiscal_code(
+    debtor_service_provider_token_a, make_activation, random_foreign_fiscal_code
+):
 
     activation_id, _ = make_activation(random_foreign_fiscal_code)
 

@@ -73,9 +73,7 @@ def test_send_gpd_message_create_foreign_fiscal_code(
 @allure.tag("functional", "happy_path", "gpd_message", "rtp_send", "vat")
 @pytest.mark.send
 @pytest.mark.happy_path
-def test_send_gpd_message_create_vat_number(
-    rtp_consumer_access_token, random_vat_number, activate_payer
-):
+def test_send_gpd_message_create_vat_number(rtp_consumer_access_token, random_vat_number, activate_payer):
     """Test sending a CREATE operation message with an Italian VAT number via GPD message API"""
 
     activate_payer(random_vat_number)
