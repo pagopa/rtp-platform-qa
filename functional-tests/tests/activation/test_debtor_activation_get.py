@@ -36,6 +36,85 @@ def test_get_activation_by_id(debtor_service_provider_token_a, make_activation):
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Get Debtor activation by ID")
+@allure.title("A debtor with omocodia fiscal code is activated and retrieved by activation id")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "omocodia")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_get_activation_by_id_omocodia_fiscal_code(
+    debtor_service_provider_token_a, make_activation, random_omocodia_fiscal_code
+):
+
+    activation_id, _ = make_activation(random_omocodia_fiscal_code)
+
+    res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
+    assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
+    body = res.json()
+    assert body["id"] == activation_id
+    assert body["payer"]["fiscalCode"] == random_omocodia_fiscal_code
+    assert body["payer"]["rtpSpId"] == secrets.debtor_service_provider.service_provider_id
+
+    try:
+        datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        assert False, "Invalid date format"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Get Debtor activation by ID")
+@allure.title("A debtor with foreign fiscal code is activated and retrieved by activation id")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "foreign")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_get_activation_by_id_foreign_fiscal_code(
+    debtor_service_provider_token_a, make_activation, random_foreign_fiscal_code
+):
+
+    activation_id, _ = make_activation(random_foreign_fiscal_code)
+
+    res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
+    assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
+    body = res.json()
+    assert body["id"] == activation_id
+    assert body["payer"]["fiscalCode"] == random_foreign_fiscal_code
+    assert body["payer"]["rtpSpId"] == secrets.debtor_service_provider.service_provider_id
+
+    try:
+        datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        assert False, "Invalid date format"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Get Debtor activation by ID")
+@allure.title("A debtor with VAT number is activated and retrieved by activation id")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "vat")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_get_activation_by_id_vat_number(debtor_service_provider_token_a, make_activation, random_vat_number):
+
+    activation_id, _ = make_activation(random_vat_number)
+
+    res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
+    assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
+    body = res.json()
+    assert body["id"] == activation_id
+    assert body["payer"]["fiscalCode"] == random_vat_number
+    assert body["payer"]["rtpSpId"] == secrets.debtor_service_provider.service_provider_id
+
+    try:
+        datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        assert False, "Invalid date format"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Get Debtor activation by ID")
 @allure.title("Retrieving activation without valid token returns 401")
 @allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
 @pytest.mark.auth

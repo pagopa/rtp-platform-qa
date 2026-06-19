@@ -9,7 +9,7 @@ from api.debtor_activation_api import activate
 from config.configuration import config, secrets
 from utils.cryptography_utils import pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
-from utils.fiscal_code_utils import fake_fc
+from utils.fiscal_code_utils import fake_fc, fake_fc_foreign, fake_omocodia_fc, fake_vat
 from utils.log_sanitizer_helper import sanitize_bearer_token
 
 # ============================================================
@@ -158,14 +158,15 @@ def pagopa_service_providers_registry_token() -> str:
 @pytest.fixture
 def make_activation(
     debtor_service_provider_token_a: str,
-) -> Callable[[], tuple[str, str]]:
+) -> Callable[[str | None], tuple[str, str]]:
     """
     Factory fixture:
     creates a debtor activation and returns (activation_id, debtor_fc).
+    Accepts an optional fiscal_code; if omitted a random standard one is generated.
     """
 
-    def _create() -> tuple[str, str]:
-        debtor_fc: str = fake_fc()
+    def _create(fiscal_code: str | None = None) -> tuple[str, str]:
+        debtor_fc: str = fiscal_code if fiscal_code is not None else fake_fc()
         res = activate(
             debtor_service_provider_token_a,
             debtor_fc,
@@ -192,6 +193,24 @@ def next_cursor() -> Callable[[str], str | None]:
 def random_fiscal_code() -> str:
     """Generate a random fiscal code for tests that need a fresh debtor."""
     return fake_fc()
+
+
+@pytest.fixture
+def random_omocodia_fiscal_code() -> str:
+    """Generate a random fiscal code with omocodia substitution (random level 1-7)."""
+    return fake_omocodia_fc()
+
+
+@pytest.fixture
+def random_foreign_fiscal_code() -> str:
+    """Generate a random fiscal code for a foreign person (country code Z + 3 digits)."""
+    return fake_fc_foreign()
+
+
+@pytest.fixture
+def random_vat_number() -> str:
+    """Generate a random Italian VAT number (Partita IVA, 11 digits)."""
+    return fake_vat()
 
 
 @pytest.fixture
