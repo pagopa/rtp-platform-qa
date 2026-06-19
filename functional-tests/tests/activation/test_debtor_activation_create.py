@@ -103,14 +103,9 @@ def test_fail_activate_debtor_two_times(debtor_service_provider_token_a, random_
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor_with_omocodia_fiscal_code(debtor_service_provider_token_a, random_omocodia_fiscal_code):
+def test_activate_debtor_with_omocodia_fiscal_code(debtor_service_provider_token_a, activate_payer, random_omocodia_fiscal_code):
 
-    res = activate(
-        debtor_service_provider_token_a,
-        random_omocodia_fiscal_code,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 201, f"Expected 201 but got {res.status_code}: {res.text}"
+    activate_payer(random_omocodia_fiscal_code)
 
     res = get_activation_by_payer_id(debtor_service_provider_token_a, random_omocodia_fiscal_code)
     assert res.status_code == 200
@@ -125,14 +120,9 @@ def test_activate_debtor_with_omocodia_fiscal_code(debtor_service_provider_token
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor_with_foreign_fiscal_code(debtor_service_provider_token_a, random_foreign_fiscal_code):
+def test_activate_debtor_with_foreign_fiscal_code(debtor_service_provider_token_a, activate_payer, random_foreign_fiscal_code):
 
-    res = activate(
-        debtor_service_provider_token_a,
-        random_foreign_fiscal_code,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 201, f"Expected 201 but got {res.status_code}: {res.text}"
+    activate_payer(random_foreign_fiscal_code)
 
     res = get_activation_by_payer_id(debtor_service_provider_token_a, random_foreign_fiscal_code)
     assert res.status_code == 200
@@ -147,14 +137,9 @@ def test_activate_debtor_with_foreign_fiscal_code(debtor_service_provider_token_
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_activate_debtor_with_vat_number(debtor_service_provider_token_a, random_vat_number):
+def test_activate_debtor_with_vat_number(debtor_service_provider_token_a, activate_payer, random_vat_number):
 
-    res = activate(
-        debtor_service_provider_token_a,
-        random_vat_number,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 201, f"Expected 201 but got {res.status_code}: {res.text}"
+    activate_payer(random_vat_number)
 
     res = get_activation_by_payer_id(debtor_service_provider_token_a, random_vat_number)
     assert res.status_code == 200

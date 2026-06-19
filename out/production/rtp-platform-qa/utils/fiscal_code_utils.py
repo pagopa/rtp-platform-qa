@@ -112,8 +112,7 @@ def fake_fc_foreign(
         country_code = _random_foreign_code()
 
     base = fake_fc(age=age, custom_month=custom_month, custom_day=custom_day, sex=sex)
-    cf = list(base[:11] + country_code)
-    return "".join(cf) + _cf_checksum(cf)
+    return f"{base[:11]}{country_code}{base[15]}"
 
 
 def fake_vat() -> str:

@@ -4,7 +4,7 @@ from datetime import datetime
 import allure
 import pytest
 
-from api.debtor_activation_api import activate, get_activation_by_id
+from api.debtor_activation_api import get_activation_by_id
 from config.configuration import secrets
 
 
@@ -41,21 +41,21 @@ def test_get_activation_by_id(debtor_service_provider_token_a, make_activation):
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_activation_by_id_omocodia_fiscal_code(debtor_service_provider_token_a, random_omocodia_fiscal_code):
+def test_get_activation_by_id_omocodia_fiscal_code(debtor_service_provider_token_a, make_activation, random_omocodia_fiscal_code):
 
-    res = activate(
-        debtor_service_provider_token_a,
-        random_omocodia_fiscal_code,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
-    activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
+    activation_id, _ = make_activation(random_omocodia_fiscal_code)
 
     res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
     assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
     body = res.json()
     assert body["id"] == activation_id
     assert body["payer"]["fiscalCode"] == random_omocodia_fiscal_code
+    assert body["payer"]["rtpSpId"] == secrets.debtor_service_provider.service_provider_id
+
+    try:
+        datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        assert False, "Invalid date format"
 
 
 @allure.epic("Debtor Activation")
@@ -66,21 +66,21 @@ def test_get_activation_by_id_omocodia_fiscal_code(debtor_service_provider_token
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_activation_by_id_foreign_fiscal_code(debtor_service_provider_token_a, random_foreign_fiscal_code):
+def test_get_activation_by_id_foreign_fiscal_code(debtor_service_provider_token_a, make_activation, random_foreign_fiscal_code):
 
-    res = activate(
-        debtor_service_provider_token_a,
-        random_foreign_fiscal_code,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
-    activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
+    activation_id, _ = make_activation(random_foreign_fiscal_code)
 
     res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
     assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
     body = res.json()
     assert body["id"] == activation_id
     assert body["payer"]["fiscalCode"] == random_foreign_fiscal_code
+    assert body["payer"]["rtpSpId"] == secrets.debtor_service_provider.service_provider_id
+
+    try:
+        datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        assert False, "Invalid date format"
 
 
 @allure.epic("Debtor Activation")
@@ -91,21 +91,21 @@ def test_get_activation_by_id_foreign_fiscal_code(debtor_service_provider_token_
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.happy_path
-def test_get_activation_by_id_vat_number(debtor_service_provider_token_a, random_vat_number):
+def test_get_activation_by_id_vat_number(debtor_service_provider_token_a, make_activation, random_vat_number):
 
-    res = activate(
-        debtor_service_provider_token_a,
-        random_vat_number,
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 201, f"Activation failed: {res.status_code} {res.text}"
-    activation_id = res.headers["Location"].rstrip("/").split("/")[-1]
+    activation_id, _ = make_activation(random_vat_number)
 
     res = get_activation_by_id(debtor_service_provider_token_a, activation_id)
     assert res.status_code == 200, f"Expected 200 but got {res.status_code}"
     body = res.json()
     assert body["id"] == activation_id
     assert body["payer"]["fiscalCode"] == random_vat_number
+    assert body["payer"]["rtpSpId"] == secrets.debtor_service_provider.service_provider_id
+
+    try:
+        datetime.strptime(body["effectiveActivationDate"], "%Y-%m-%dT%H:%M:%S.%f")
+    except ValueError:
+        assert False, "Invalid date format"
 
 
 @allure.epic("Debtor Activation")

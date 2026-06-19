@@ -158,14 +158,15 @@ def pagopa_service_providers_registry_token() -> str:
 @pytest.fixture
 def make_activation(
     debtor_service_provider_token_a: str,
-) -> Callable[[], tuple[str, str]]:
+) -> Callable[[str | None], tuple[str, str]]:
     """
     Factory fixture:
     creates a debtor activation and returns (activation_id, debtor_fc).
+    Accepts an optional fiscal_code; if omitted a random standard one is generated.
     """
 
-    def _create() -> tuple[str, str]:
-        debtor_fc: str = fake_fc()
+    def _create(fiscal_code: str | None = None) -> tuple[str, str]:
+        debtor_fc: str = fiscal_code if fiscal_code is not None else fake_fc()
         res = activate(
             debtor_service_provider_token_a,
             debtor_fc,
