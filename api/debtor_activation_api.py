@@ -3,7 +3,13 @@ import uuid
 import requests
 
 from api.utils.api_version import ACTIVATION_VERSION
-from api.utils.endpoints import ACTIVATION_BY_ID_URL, ACTIVATION_LIST_URL, ACTIVATION_URL, ACTIVATION_URL_DEV
+from api.utils.endpoints import (
+    ACTIVATION_BY_ID_URL,
+    ACTIVATION_LIST_URL,
+    ACTIVATION_PAYER_STATUS_URL,
+    ACTIVATION_URL,
+    ACTIVATION_URL_DEV,
+)
 from api.utils.http_utils import HTTP_TIMEOUT
 
 
@@ -55,6 +61,45 @@ def get_activation_by_id(access_token: str, activation_id: str):
     return requests.get(
         url=ACTIVATION_BY_ID_URL.format(activationId=activation_id),
         headers={"Authorization": f"{access_token}", "Version": ACTIVATION_VERSION, "RequestId": str(uuid.uuid4())},
+        timeout=HTTP_TIMEOUT,
+    )
+
+
+def get_activation_status_by_fiscal_code(access_token: str, payer_fiscal_code: str):
+    """API to check whether a payer is active, returning minimal yes/no without PII.
+
+    The response is deliberately indistinguishable between "not found" and
+    "active under a different Service Provider" to avoid information disclosure.
+
+    :returns: the response of the call.
+    :rtype: requests.Response
+    """
+    return requests.get(
+        url=ACTIVATION_PAYER_STATUS_URL,
+        headers={
+            "Authorization": f"{access_token}",
+            "Version": ACTIVATION_VERSION,
+            "RequestId": str(uuid.uuid4()),
+            "PayerId": payer_fiscal_code,
+        },
+        timeout=HTTP_TIMEOUT,
+    )
+
+
+def get_activation_status_without_payer_id(access_token: str):
+    """API call to the payer status endpoint omitting the PayerId header.
+    Used to test the 400 error response when the required header is missing.
+
+    :returns: the response of the call.
+    :rtype: requests.Response
+    """
+    return requests.get(
+        url=ACTIVATION_PAYER_STATUS_URL,
+        headers={
+            "Authorization": f"{access_token}",
+            "Version": ACTIVATION_VERSION,
+            "RequestId": str(uuid.uuid4()),
+        },
         timeout=HTTP_TIMEOUT,
     )
 

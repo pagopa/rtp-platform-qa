@@ -91,6 +91,7 @@ iccrea_send_url: 'https://r5i-svil.api.gbi.bcc.it/pagopa4/pagopa-broker-api/pago
 # ACTIVATION LIST AND DETAILS
 # ============================
 activation_list_path: "/activations"
+activation_payer_status_path: "/activations/payer/status"
 activation_takeover: "/activations/takeover"
 takeover_api_version: 'v1'
 activation_by_id_path: "/activations/{activationId}"
