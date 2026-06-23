@@ -74,6 +74,8 @@ def test_get_activation_status_active_payer(debtor_service_provider_token_a, mak
     res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, debtor_fc)
     assert res.status_code == 200, f"Expected 200 but got {res.status_code}: {res.text}"
     assert res.json()["isActive"] is True, f"Expected isActive=true but got: {res.json()}"
+
+
 @allure.tag("functional", "happy_path", "activation", "payer_status")
 @pytest.mark.activation
 @pytest.mark.happy_path
@@ -82,6 +84,8 @@ def test_get_activation_status_not_active_payer(debtor_service_provider_token_a,
     res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, random_fiscal_code)
     assert res.status_code == 200, f"Expected 200 but got {res.status_code}: {res.text}"
     assert res.json()["isActive"] is False, f"Expected isActive=false but got: {res.json()}"
+
+
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
 @allure.title("A payer active on a different Service Provider returns isActive false (privacy)")
@@ -124,15 +128,15 @@ def test_get_activation_status_read_rtp_all_role_own_service_provider(
 
     res = get_activation_status_by_fiscal_code(sp_activations_read_all_token, debtor_fc)
     assert res.status_code == 200, f"Expected 200 but got {res.status_code}: {res.text}"
-    assert res.json()["isActive"] is True, (
-        f"Expected isActive=true with read_rtp_all role but got: {res.json()}"
-    )
+    assert res.json()["isActive"] is True, f"Expected isActive=true with read_rtp_all role but got: {res.json()}"
 
 
 @allure.epic("Debtor Activation")
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
-@allure.title("read_rtp_all role returns isActive true while read_rtp_activations returns false for the same cross-SP payer")
+@allure.title(
+    "read_rtp_all role returns isActive true while read_rtp_activations returns false for the same cross-SP payer"
+)
 @allure.tag("functional", "happy_path", "activation", "payer_status", "rbac")
 @pytest.mark.activation
 @pytest.mark.happy_path
@@ -268,15 +272,11 @@ def test_get_activation_status_missing_payer_id_header(debtor_service_provider_t
 @pytest.mark.activation
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize("description,invalid_payer_id", _INVALID_PAYER_IDS)
-def test_get_activation_status_invalid_payer_id_format(
-    debtor_service_provider_token_a, description, invalid_payer_id
-):
+def test_get_activation_status_invalid_payer_id_format(debtor_service_provider_token_a, description, invalid_payer_id):
     """Each entry in ``_INVALID_PAYER_IDS`` must be rejected with 400.
 
     The ``description`` parameter appears in pytest output to identify which
     case failed without having to inspect the raw value.
     """
     res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, invalid_payer_id)
-    assert res.status_code == 400, (
-        f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
-    )
+    assert res.status_code == 400, f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
