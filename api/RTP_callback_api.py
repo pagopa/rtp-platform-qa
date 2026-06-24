@@ -5,7 +5,7 @@ from api.utils.endpoints import CALLBACK_URL, RFC_CALLBACK_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 
 
-def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = True):
+def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
     headers = {"Version": CALLBACK_VERSION} if include_version_header else {}
     return requests.post(
         cert=(cert_path, key_path),
@@ -16,7 +16,7 @@ def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_he
     )
 
 
-def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = True):
+def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
     """
     Send RFC (Request for Cancellation) callback.
 
@@ -27,7 +27,7 @@ def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_versio
         cert_path: Path to the certificate file
         key_path: Path to the key file
         rtp_payload: The RFC callback payload (DS12P or DS12N)
-        include_version_header: When False, omits the Version header (used for regression tests)
+        include_version_header: When True, adds the Version header to the request
 
     Returns:
         Response object from the callback request

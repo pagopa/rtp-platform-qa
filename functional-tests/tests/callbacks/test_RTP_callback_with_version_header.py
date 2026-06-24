@@ -46,18 +46,22 @@ from utils.dataset_gpd_message import generate_gpd_delete_message_payload, gener
 @pytest.mark.unhappy_path
 def test_rtp_callback_DS_04b_with_version_header(
     rtp_consumer_access_token,
+    rtp_reader_access_token,
     activate_payer,
     random_fiscal_code,
     debtor_sp_mock_cert_key,
 ):
     """
     DS_04b callback sent with the Version header must be rejected with 404.
+    The RTP state must be unchanged.
 
     Flow:
     1. Activate payer and send an RTP → resource_id
-    2. Build a valid DS_04b payload referencing the RTP
-    3. POST to callback endpoint WITH Version header
-    4. Verify 404 is returned
+    2. Capture current RTP status
+    3. Build a valid DS_04b payload referencing the RTP
+    4. POST to callback endpoint WITH Version header
+    5. Verify 404 is returned
+    6. Verify RTP status is unchanged
     """
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
@@ -71,6 +75,10 @@ def test_rtp_callback_DS_04b_with_version_header(
     assert resource_id is not None, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
+    pre_callback_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
+    assert pre_callback_response.status_code == 200
+    initial_status = pre_callback_response.json()["status"]
+
     callback_data = build_callback_with_original_msg_id(
         generate_callback_data_DS_04b_compliant,
         original_msg_id,
@@ -83,9 +91,16 @@ def test_rtp_callback_DS_04b_with_version_header(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=True,
     )
     assert callback_response.status_code == 404, (
         f"Expected 404 (Version header should be rejected) but got {callback_response.status_code}"
+    )
+
+    post_callback_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
+    assert post_callback_response.status_code == 200
+    assert post_callback_response.json()["status"] == initial_status, (
+        f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )
 
 
@@ -138,6 +153,7 @@ def test_rtp_callback_DS_05_ACTC_with_version_header(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=True,
     )
     assert callback_response.status_code == 404, (
         f"Expected 404 (Version header should be rejected) but got {callback_response.status_code}"
@@ -216,6 +232,7 @@ def test_rtp_callback_DS_08P_ACCP_with_version_header(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=True,
     )
     assert callback_response.status_code == 404, (
         f"Expected 404 (Version header should be rejected) but got {callback_response.status_code}"
@@ -278,6 +295,7 @@ def test_rtp_callback_DS_08N_with_version_header(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=True,
     )
     assert callback_response.status_code == 404, (
         f"Expected 404 (Version header should be rejected) but got {callback_response.status_code}"
@@ -350,6 +368,7 @@ def test_rfc_callback_DS_12P_CNCL_with_version_header(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=True,
     )
     assert callback_response.status_code == 404, (
         f"Expected 404 (Version header should be rejected) but got {callback_response.status_code}"
@@ -417,6 +436,7 @@ def test_rfc_callback_DS_12N_RJCR_with_version_header(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=True,
     )
     assert callback_response.status_code == 404, (
         f"Expected 404 (Version header should be rejected) but got {callback_response.status_code}"
