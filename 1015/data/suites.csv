@@ -1,0 +1,42 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","121233","test_send_api_contract[POST /gpd/message]","contract-tests.tests","Wed Jun 24 11:09:13 UTC 2026","passed","Wed Jun 24 11:11:15 UTC 2026","","test_api_send_rtp","",""
+"","1138","Whitespaces is allowed in description and company name field","ux-tests.tests","Wed Jun 24 10:49:38 UTC 2026","passed","Wed Jun 24 10:49:39 UTC 2026","","test_RTP_submission_v3","",""
+"","2234","Takeover fails with invalid OTP","bdd-tests","Wed Jun 24 10:39:17 UTC 2026","passed","Wed Jun 24 10:39:20 UTC 2026","Debtor_Activation_Takeover","RTP","",""
+"","31450","RTP form cancellation with reason PAID","ux-tests.tests","Wed Jun 24 10:46:58 UTC 2026","broken","Wed Jun 24 10:47:30 UTC 2026","","test_RTP_cancel_v3","",""
+"","417","A Service Provider tries to activates a debtor without having the correct credentials","bdd-tests","Wed Jun 24 10:39:13 UTC 2026","passed","Wed Jun 24 10:39:13 UTC 2026","Debtor_Activation","RTP","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","56053","test_activation_contract[GET /activations/payer]","contract-tests.tests","Wed Jun 24 11:04:06 UTC 2026","passed","Wed Jun 24 11:05:02 UTC 2026","","test_activation","",""
+"","1768","Takeover fails without authentication","bdd-tests","Wed Jun 24 10:39:20 UTC 2026","passed","Wed Jun 24 10:39:21 UTC 2026","Debtor_Activation_Takeover","RTP","",""
+"","3460","Attempt to cancel an already cancelled RTP","bdd-tests","Wed Jun 24 10:39:25 UTC 2026","passed","Wed Jun 24 10:39:29 UTC 2026","RTP_Cancellation","RTP","",""
+"","6102","Attempt to cancel a non-existing RTP","bdd-tests","Wed Jun 24 10:39:29 UTC 2026","passed","Wed Jun 24 10:39:35 UTC 2026","RTP_Cancellation","RTP","",""
+"","3856","Successfully cancel a Request to Pay","bdd-tests","Wed Jun 24 10:39:21 UTC 2026","passed","Wed Jun 24 10:39:25 UTC 2026","RTP_Cancellation","RTP","",""
+"","32680","RTP form cancellation with reason PAID","ux-tests.tests","Wed Jun 24 10:48:34 UTC 2026","broken","Wed Jun 24 10:49:06 UTC 2026","","test_RTP_cancel_v4","",""
+"","31326","RTP form is filled and submitted","ux-tests.tests","Wed Jun 24 10:49:39 UTC 2026","broken","Wed Jun 24 10:50:11 UTC 2026","","test_RTP_submission_v4","",""
+"","31443","RTP form is filled and submitted","ux-tests.tests","Wed Jun 24 10:49:07 UTC 2026","broken","Wed Jun 24 10:49:38 UTC 2026","","test_RTP_submission_v3","",""
+"","4172","A debtor Service Provider successfully takes over an activation from another provider","bdd-tests","Wed Jun 24 10:39:13 UTC 2026","passed","Wed Jun 24 10:39:17 UTC 2026","Debtor_Activation_Takeover","RTP","",""
+"","31299","RTP form cancellation with reason MODT","ux-tests.tests","Wed Jun 24 10:48:02 UTC 2026","broken","Wed Jun 24 10:48:33 UTC 2026","","test_RTP_cancel_v4","",""
+"","3489","An authenticated creditor Service Provider can send an RTP to an activated debtor","bdd-tests","Wed Jun 24 10:39:35 UTC 2026","passed","Wed Jun 24 10:39:38 UTC 2026","RTP_Sending","RTP","",""
+"","33549","RTP form cancellation with reason MODT","ux-tests.tests","Wed Jun 24 10:46:24 UTC 2026","broken","Wed Jun 24 10:46:58 UTC 2026","","test_RTP_cancel_v3","",""
+"","1","Successful login","bdd-tests","Wed Jun 24 10:39:45 UTC 2026","passed","Wed Jun 24 10:39:45 UTC 2026","RTP_Web_Sending","RTP","",""
+"","2084","A debtor Service Provider tries to activates a debtor 2 times, failing the second attempt","bdd-tests","Wed Jun 24 10:39:11 UTC 2026","passed","Wed Jun 24 10:39:13 UTC 2026","Debtor_Activation","RTP","",""
+"","2604","A debtor Service Provider activates a debtor","bdd-tests","Wed Jun 24 10:39:08 UTC 2026","passed","Wed Jun 24 10:39:11 UTC 2026","Debtor_Activation","RTP","",""
+"","1791","A debtor Service Provider cannot send an RTP","bdd-tests","Wed Jun 24 10:39:44 UTC 2026","passed","Wed Jun 24 10:39:45 UTC 2026","RTP_Sending","RTP","",""
+"","2189","An authenticated Service Provider cannot send an RTP to an activated debtor","bdd-tests","Wed Jun 24 10:39:38 UTC 2026","passed","Wed Jun 24 10:39:40 UTC 2026","RTP_Sending","RTP","",""
+"","3124","An authenticated Service Provider cannot send an RTP to an unactivated debtor","bdd-tests","Wed Jun 24 10:39:40 UTC 2026","passed","Wed Jun 24 10:39:44 UTC 2026","RTP_Sending","RTP","",""
+"","34110","RTP form is filled and submitted","ux-tests.tests","Wed Jun 24 10:45:50 UTC 2026","broken","Wed Jun 24 10:46:24 UTC 2026","","test_RTP_cancel_v3","",""
+"","1300","Whitespaces is allowed in description and company name field","ux-tests.tests","Wed Jun 24 10:50:11 UTC 2026","passed","Wed Jun 24 10:50:12 UTC 2026","","test_RTP_submission_v4","",""
+"","32133","RTP form is filled and submitted","ux-tests.tests","Wed Jun 24 10:47:30 UTC 2026","broken","Wed Jun 24 10:48:02 UTC 2026","","test_RTP_cancel_v4","",""
