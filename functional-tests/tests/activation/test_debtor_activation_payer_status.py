@@ -230,7 +230,6 @@ def test_get_activation_status_unauthorized():
 
 
 @allure.epic("Debtor Activation")
-@allure.epic("Debtor Activation")
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
 @allure.title("Querying activation status with an invalid payerId format returns 400")
