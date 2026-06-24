@@ -230,10 +230,10 @@ def test_get_activation_status_unauthorized():
 
 
 @allure.epic("Debtor Activation")
-@allure.epic("Debtor Activation")
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
-@allure.title("Querying activation status with an invalid payerId format returns 400")@allure.tag("functional", "unhappy_path", "activation", "payer_status")
+@allure.title("Querying activation status with an invalid payerId format returns 400")
+@allure.tag("functional", "unhappy_path", "activation", "payer_status")
 @pytest.mark.activation
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize("description,invalid_payer_id", INVALID_PAYER_IDS)
