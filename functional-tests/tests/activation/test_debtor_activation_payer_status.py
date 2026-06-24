@@ -232,7 +232,7 @@ def test_get_activation_status_unauthorized():
 @allure.epic("Debtor Activation")
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
-@allure.title("Token without read_rtp_activation or read_rtp_all role returns 403 Forbidden")
+@allure.title("Token without read_rtp_activations or read_rtp_all role returns 403 Forbidden")
 @allure.tag("functional", "unhappy_path", "activation", "payer_status", "security")
 @pytest.mark.activation
 @pytest.mark.unhappy_path
