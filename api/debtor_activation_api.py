@@ -75,26 +75,7 @@ def get_activation_status_by_fiscal_code(access_token: str, payer_fiscal_code: s
     :rtype: requests.Response
     """
     return requests.get(
-        url=ACTIVATION_PAYER_STATUS_URL,
-        headers={
-            "Authorization": f"{access_token}",
-            "Version": ACTIVATION_VERSION,
-            "RequestId": str(uuid.uuid4()),
-            "PayerId": payer_fiscal_code,
-        },
-        timeout=HTTP_TIMEOUT,
-    )
-
-
-def get_activation_status_without_payer_id(access_token: str):
-    """API call to the payer status endpoint omitting the PayerId header.
-    Used to test the 400 error response when the required header is missing.
-
-    :returns: the response of the call.
-    :rtype: requests.Response
-    """
-    return requests.get(
-        url=ACTIVATION_PAYER_STATUS_URL,
+        url=ACTIVATION_PAYER_STATUS_URL.format(payerId=payer_fiscal_code),
         headers={
             "Authorization": f"{access_token}",
             "Version": ACTIVATION_VERSION,

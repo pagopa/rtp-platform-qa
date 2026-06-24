@@ -1,7 +1,8 @@
-"""Tests for the GET /activations/payer/status endpoint.
+"""Tests for the GET /activations/payer/{payerId}/status endpoint.
 
 This endpoint returns a minimal yes/no response indicating whether a payer (identified
 by fiscal code or VAT number) is currently active in the RTP system.
+The ``payerId`` is passed as a **path parameter**.
 
 Privacy rule: the response is deliberately indistinguishable between "not found" and
 "active under a different Service Provider" — both cases return ``{ "isActive": false }``
@@ -12,7 +13,7 @@ Authorization roles:
   the ``sub`` claim of the presented JWT.
 - ``read_rtp_all``: reads activations for any Service Provider (admin-level visibility).
 
-The ``_INVALID_PAYER_IDS`` constant drives the parametrized 400 suite.
+The ``INVALID_PAYER_IDS`` constant (from ``tests.payer_id_data``) drives the parametrized 400 suite.
 It mirrors the ``invalidFiscalCodes`` data source in ``ActivationAPIControllerImplTest.java``
 and is extended with structural edge cases from the Italian CF/PIVA specification:
 
@@ -27,38 +28,15 @@ and is extended with structural edge cases from the Italian CF/PIVA specificatio
 - **EU VAT prefix**: ``IT`` + 11 digits → 13 chars → length error (common client mistake).
 - **Checksum probe**: syntactically valid CF with wrong control character.  This case acts
   as a TDD sentinel: it stays red until the backend enforces checksum validation.
+- **Empty string**: empty path segment → 400 (or 404 depending on routing).
 """
 
 import allure
 import pytest
 
-from api.debtor_activation_api import get_activation_status_by_fiscal_code, get_activation_status_without_payer_id
+from api.debtor_activation_api import get_activation_status_by_fiscal_code
 from api.debtor_deactivation_api import deactivate
-
-_INVALID_PAYER_IDS = [
-    ("too_short_fiscal_code", "XCGCHS98M13F16"),
-    ("too_long_fiscal_code", "XCGCHS98M13F166EXX"),
-    ("vat_number_10_digits", "1234567890"),
-    ("vat_number_12_digits", "123456789012"),
-    ("lowercase_fiscal_code", "xcgchs98m13f166e"),
-    ("mixed_case_fiscal_code", "XcGCHS98M13F166E"),
-    ("invalid_month_code_F", "XCGCHS98F13F166E"),
-    ("invalid_month_code_G", "XCGCHS98G13F166E"),
-    ("invalid_month_code_U", "XCGCHS98U13F166E"),
-    ("invalid_birth_day_00", "XCGCHS98M00F166E"),
-    ("invalid_birth_day_32_male", "XCGCHS98M32F166E"),
-    ("invalid_birth_day_40_dead_zone", "XCGCHS98M40F166E"),
-    ("invalid_birth_day_72_female", "XCGCHS98M72F166E"),
-    ("non_alphanumeric_character", "XCGCHS98M13F166!"),
-    ("space_in_fiscal_code", "XCGCHS98M13 F66E"),
-    ("cf_with_leading_whitespace", " XCGCHS98M13F166E"),
-    ("cf_with_trailing_whitespace", "XCGCHS98M13F166E "),
-    ("non_numeric_vat_like", "ABCDEFGHIJK"),
-    ("all_zeros_10_digits", "0000000000"),
-    ("vat_with_eu_it_prefix", "IT12345678903"),
-    ("cf_wrong_checksum", "RSSMRA85T10A562T"),
-    ("empty_string", ""),
-]
+from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 
 
 @allure.epic("Debtor Activation")
@@ -252,28 +230,15 @@ def test_get_activation_status_unauthorized():
 
 
 @allure.epic("Debtor Activation")
-@allure.feature("Payer Status")
-@allure.story("Get Activation Status by Fiscal Code")
-@allure.title("Querying activation status without the PayerId header returns 400")
-@allure.tag("functional", "unhappy_path", "activation", "payer_status")
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_get_activation_status_missing_payer_id_header(debtor_service_provider_token_a):
-    """Request without the required ``PayerId`` header → must return 400."""
-    res = get_activation_status_without_payer_id(debtor_service_provider_token_a)
-    assert res.status_code == 400, f"Expected 400 but got {res.status_code}: {res.text}"
-
-
 @allure.epic("Debtor Activation")
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
-@allure.title("Querying activation status with an invalid payerId format returns 400")
-@allure.tag("functional", "unhappy_path", "activation", "payer_status")
+@allure.title("Querying activation status with an invalid payerId format returns 400")@allure.tag("functional", "unhappy_path", "activation", "payer_status")
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-@pytest.mark.parametrize("description,invalid_payer_id", _INVALID_PAYER_IDS)
+@pytest.mark.parametrize("description,invalid_payer_id", INVALID_PAYER_IDS)
 def test_get_activation_status_invalid_payer_id_format(debtor_service_provider_token_a, description, invalid_payer_id):
-    """Each entry in ``_INVALID_PAYER_IDS`` must be rejected with 400.
+    """Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
 
     The ``description`` parameter appears in pytest output to identify which
     case failed without having to inspect the raw value.
