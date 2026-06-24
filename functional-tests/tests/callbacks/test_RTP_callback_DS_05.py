@@ -51,6 +51,7 @@ def test_receive_rtp_callback_DS_05_ACTC_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -114,6 +115,7 @@ def test_receive_rtp_callback_DS_05_ACTC_non_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"
@@ -167,6 +169,7 @@ def test_fail_send_rtp_callback_invalid_transition_DS_05_ACTC_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert first_callback_response.status_code == 200, (
         f"Error from first callback, expected 200 got {first_callback_response.status_code}"
@@ -184,6 +187,7 @@ def test_fail_send_rtp_callback_invalid_transition_DS_05_ACTC_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert second_callback_response.status_code == 400, (
         f"Error from second callback, expected 400 got {second_callback_response.status_code}"

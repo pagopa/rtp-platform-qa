@@ -50,6 +50,7 @@ def test_receive_rtp_callback_DS_04b_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -75,6 +76,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_04b_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 403, (
         f"Expecting error from callback, expected 403 got {callback_response.status_code}"
@@ -100,6 +102,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_04b_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Expecting error from callback, expected 400 got {callback_response.status_code}"
@@ -153,6 +156,7 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_04b_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"

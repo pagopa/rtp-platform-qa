@@ -64,6 +64,7 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -130,6 +131,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 403, (
         f"Expecting error from callback, expected 403 got {callback_response.status_code}"
@@ -188,6 +190,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Expecting error from callback, expected 400 got {callback_response.status_code}"
@@ -247,6 +250,7 @@ def test_receive_rfc_callback_DS_12P_invalid(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"
@@ -316,6 +320,7 @@ def test_receive_rfc_callback_DS_12P_CNCL_compliant_THROUGH_WEB_API(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -384,6 +389,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_CNCL_compliant_T
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 403, (
         f"Expecting error from callback, expected 403 got {callback_response.status_code}"
@@ -444,6 +450,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_CNCL_compli
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Expecting error from callback, expected 400 got {callback_response.status_code}"
@@ -505,6 +512,7 @@ def test_receive_rfc_callback_DS_12P_invalid_THROUGH_WEB_API(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"

@@ -54,6 +54,7 @@ def test_receive_rtp_callback_DS_08P_compliant_ACCP(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -78,6 +79,7 @@ def test_receive_rtp_callback_DS_08P_compliant_ACCP(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -131,6 +133,7 @@ def test_receive_rtp_callback_DS_08P_compliant_RJCT(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -155,6 +158,7 @@ def test_receive_rtp_callback_DS_08P_compliant_RJCT(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -188,6 +192,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_08N_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Expecting error from callback, expected 400 got {callback_response.status_code}"
@@ -241,6 +246,7 @@ def test_receive_rtp_callback_DS_08P_compliant_ACWC(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"
@@ -275,6 +281,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 403, (
         f"Expecting error from callback, expected 403 got {callback_response.status_code}"
@@ -320,6 +327,7 @@ def test_receive_rtp_callback_DS_08N_compliant(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 200, (
         f"Error from callback, expected 200 got {callback_response.status_code}"
@@ -372,6 +380,7 @@ def test_receive_rtp_callback_DS_08P_invalid(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"
@@ -425,6 +434,7 @@ def test_receive_rtp_callback_DS_08N_invalid(
         rtp_payload=callback_data,
         cert_path=cert,
         key_path=key,
+        include_version_header=False,
     )
     assert callback_response.status_code == 400, (
         f"Error from callback, expected 400 got {callback_response.status_code}"
