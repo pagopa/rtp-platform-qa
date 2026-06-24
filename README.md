@@ -93,7 +93,7 @@ pytest functional-tests/tests/ -q
 
 | Directory | Coverage |
 |-----------|----------|
-| `activation/` | Debtor activation create, get, list, deactivation, security |
+| `activation/` | Debtor activation create, get, list, deactivation, payer status (GET /activations/payer/{payerId}/status), security |
 | `auth/` | OAuth2 / Keycloak token retrieval and bearer token format |
 | `availability/` | Service availability checks |
 | `callbacks/` | RTP callback scenarios DS-04, DS-05, DS-08, DS-12N, DS-12P |
