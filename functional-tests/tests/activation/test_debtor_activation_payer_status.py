@@ -232,6 +232,19 @@ def test_get_activation_status_unauthorized():
 @allure.epic("Debtor Activation")
 @allure.feature("Payer Status")
 @allure.story("Get Activation Status by Fiscal Code")
+@allure.title("Token without read_rtp_activations or read_rtp_all role returns 403 Forbidden")
+@allure.tag("functional", "unhappy_path", "activation", "payer_status", "security")
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_status_forbidden_no_role(pagopa_service_providers_registry_token, random_fiscal_code):
+    """A valid token that carries neither read_rtp_activations nor read_rtp_all must be rejected with 403."""
+    res = get_activation_status_by_fiscal_code(pagopa_service_providers_registry_token, random_fiscal_code)
+    assert res.status_code == 403, f"Expected 403 Forbidden but got {res.status_code}: {res.text}"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Payer Status")
+@allure.story("Get Activation Status by Fiscal Code")
 @allure.title("Querying activation status with an invalid payerId format returns 400")
 @allure.tag("functional", "unhappy_path", "activation", "payer_status")
 @pytest.mark.activation
