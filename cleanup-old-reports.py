@@ -12,7 +12,7 @@ import shutil
 import sys
 from pathlib import Path
 
-REPORT_SUBDIRS = ['functional', 'bdd', 'ux', 'contract']
+REPORT_SUBDIRS = ['functional', 'bdd', 'ux', 'contract', 'aggregate']
 
 keep = int(sys.argv[1]) if len(sys.argv) > 1 else 20
 gh_pages = Path(sys.argv[2]) if len(sys.argv) > 2 else Path('.')
