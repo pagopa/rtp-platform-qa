@@ -27,7 +27,7 @@ def _login(page: Page):
 @allure.title("RTP form is filled and submitted")
 def test_rtp_form_submission(page):
     rtp_data = generate_rtp_data()
-    rtp_data["payer"]["payerId"] = "BRGCNT70M12X000F"
+    rtp_data["payer"]["payerId"] = secrets.webpage.payer_fiscal_code
 
     _login(page)
 

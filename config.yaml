@@ -69,7 +69,7 @@ rfc_callback_api_version: 'v1'
 # ============================
 # MOCK SERVICES & API SPECIFICATIONS
 # ============================
-mock_service_provider_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/sepa-request-to-pay-requests"
+mock_service_provider_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/v1/sepa-request-to-pay-requests"
 activation_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehub-infra-api-spec/main/src/srtp/api/pagopa/activation.yaml'
 send_api_specification: 'https://raw.githubusercontent.com/pagopa/cstar-securehub-infra-api-spec/main/src/srtp/api/pagopa/send.openapi.yaml'
 
