@@ -73,6 +73,7 @@ secrets.webpage = Dynaconf(
     username=os.getenv("WEBPAGE_USERNAME"),
     password=os.getenv("WEBPAGE_PASSWORD"),
     client_id=os.getenv("WEBPAGE_CLIENT_ID"),
+    payer_fiscal_code=os.getenv("WEBPAGE_PAYER_FISCAL_CODE"),
 )
 
 secrets.debt_positions = Dynaconf(
@@ -125,3 +126,4 @@ secrets.ec_tax_code = os.getenv("EC_TAX_CODE")
 
 secrets.mock_rjct_extra_field_fiscal_code = os.getenv("MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE")
 secrets.mock_rjct_no_links_fiscal_code = os.getenv("MOCK_RJCT_NO_LINKS_FISCAL_CODE")
+secrets.mock_server_error_fiscal_code = os.getenv("MOCK_SERVER_ERROR_FISCAL_CODE")

@@ -2,6 +2,7 @@ import allure
 import pytest
 
 from api.RTP_send_api import send_rtp_to_mock
+from config.configuration import secrets
 from utils.dataset_RTP_data import generate_rtp_data
 
 
@@ -28,7 +29,7 @@ def test_mock_reachability():
 @pytest.mark.unhappy_path
 def test_receive_server_error_from_mock():
 
-    mock_fiscal_code = "RSSMRA85T10X000D"
+    mock_fiscal_code = secrets.mock_server_error_fiscal_code
     expected_mocked_failure_status_code = 502
 
     rtp_data = generate_rtp_data()
