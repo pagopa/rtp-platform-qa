@@ -10,6 +10,10 @@ on:
         required: false
         default: '20'
 
+concurrency:
+  group: cleanup-old-reports
+  cancel-in-progress: true
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -33,13 +37,13 @@ jobs:
 
       - name: Ensure .gitignore exists on gh-pages
         run: |
-          if [ ! -f gh-pages/.gitignore ]; then
-            echo ".DS_Store" > gh-pages/.gitignore
-            echo "Thumbs.db" >> gh-pages/.gitignore
-          elif ! grep -q ".DS_Store" gh-pages/.gitignore; then
-            echo ".DS_Store" >> gh-pages/.gitignore
-            echo "Thumbs.db" >> gh-pages/.gitignore
-          fi
+          grep -qF '.DS_Store' gh-pages/.gitignore 2>/dev/null || echo '.DS_Store' >> gh-pages/.gitignore
+          grep -qF 'Thumbs.db' gh-pages/.gitignore 2>/dev/null || echo 'Thumbs.db' >> gh-pages/.gitignore
+
+      - name: Setup Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b #v5.3.0
+        with:
+          python-version: 3.x
 
       - name: Cleanup old reports
         run: |
