@@ -1,6 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"","1197","Whitespaces is allowed in description and company name field","ux-tests.tests","Thu May 28 10:08:38 UTC 2026","passed","Thu May 28 10:08:39 UTC 2026","","test_RTP_submission","",""
-"","2356","RTP form is filled and submitted","ux-tests.tests","Thu May 28 10:08:35 UTC 2026","passed","Thu May 28 10:08:38 UTC 2026","","test_RTP_submission","",""
-"","6822","RTP form is filled and submitted","ux-tests.tests","Thu May 28 10:08:17 UTC 2026","passed","Thu May 28 10:08:24 UTC 2026","","test_RTP_cancel","",""
-"","4496","RTP form cancellation with reason PAID","ux-tests.tests","Thu May 28 10:08:31 UTC 2026","passed","Thu May 28 10:08:35 UTC 2026","","test_RTP_cancel","",""
-"","6868","RTP form cancellation with reason MODT","ux-tests.tests","Thu May 28 10:08:24 UTC 2026","passed","Thu May 28 10:08:31 UTC 2026","","test_RTP_cancel","",""
