@@ -258,3 +258,16 @@ def test_get_activation_status_invalid_payer_id_format(debtor_service_provider_t
     """
     res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, invalid_payer_id)
     assert res.status_code == 400, f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Payer Status")
+@allure.story("Get Activation Status by Fiscal Code")
+@allure.title("Querying activation status with an empty payerId returns 404")
+@allure.tag("functional", "unhappy_path", "activation", "payer_status")
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_status_empty_payer_id(debtor_service_provider_token_a):
+    """Querying activation status with an empty payerId must be rejected with 404."""
+    res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, "")
+    assert res.status_code == 404, f"Expected 404 Not Found but got {res.status_code}: {res.text}"
