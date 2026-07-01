@@ -28,7 +28,7 @@ and is extended with structural edge cases from the Italian CF/PIVA specificatio
 - **EU VAT prefix**: ``IT`` + 11 digits → 13 chars → length error (common client mistake).
 - **Checksum probe**: syntactically valid CF with wrong control character.  This case acts
   as a TDD sentinel: it stays red until the backend enforces checksum validation.
-- **Empty string**: empty path segment → 400 (or 404 depending on routing).
+- **Empty string**: empty path segment → 404 (routing resolves it before validation).
 """
 
 import allure

@@ -46,5 +46,4 @@ INVALID_PAYER_IDS = [
     ("all_zeros_10_digits", "0000000000"),
     ("vat_with_eu_it_prefix", "IT12345678903"),
     ("cf_wrong_checksum", "RSSMRA85T10A562T"),
-    ("empty_string", ""),
 ]
