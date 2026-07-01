@@ -2,7 +2,7 @@ import allure
 import pytest
 
 from api.RTP_process_sender import send_gpd_message
-from api.RTP_send_api import send_rtp
+from api.RTP_send_api import send_rtp, send_rtp_v2
 from config.configuration import config, secrets
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.dataset_RTP_data import generate_rtp_data
@@ -53,6 +53,31 @@ def test_send_rtp_to_cbi_THROUGH_WEB_API(webpage_token):
     )
 
     send_response = send_rtp(access_token=webpage_token, rtp_payload=rtp_data)
+    assert send_response.status_code == 201
+
+    location = send_response.headers["Location"]
+    location_split = location.split("/")
+    assert "/".join(location_split[:-1]) == config.rtp_creation_base_url_path + config.send_rtp_path
+    assert bool(uuidv4_pattern.fullmatch(location_split[-1]))
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP to a provider through Sender")
+@allure.title("An RTP is sent to a CBI service with activated fiscal code - through Web API V2")
+@allure.tag("functional", "happy_path", "rtp_send", "cbi")
+@pytest.mark.send
+@pytest.mark.happy_path
+@pytest.mark.real_integration
+@pytest.mark.cbi
+def test_send_rtp_to_cbi_THROUGH_WEB_API_V2(webpage_token):
+
+    rtp_data = generate_rtp_data(
+        payer_id=secrets.cbi_activated_fiscal_code,
+        payee_id=str(secrets.cbi_payee_id),
+    )
+
+    send_response = send_rtp_v2(access_token=webpage_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201
 
     location = send_response.headers["Location"]
