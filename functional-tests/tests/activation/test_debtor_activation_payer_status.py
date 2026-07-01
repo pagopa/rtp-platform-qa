@@ -5,8 +5,8 @@ by fiscal code or VAT number) is currently active in the RTP system.
 The ``payerId`` is passed as a **path parameter**.
 
 Privacy rule: the response is deliberately indistinguishable between "not found" and
-"active under a different Service Provider" — both cases return ``{ "isActive": false }``
-— to avoid leaking cross-SP information to competitors.
+"active under a different Service Provider" - both cases return ``{ "isActive": false }``
+- to avoid leaking cross-SP information to competitors.
 
 Authorization roles:
 - ``read_rtp_activations``: reads only activations whose ``serviceProviderDebtor`` matches
@@ -21,7 +21,7 @@ and is extended with structural edge cases from the Italian CF/PIVA specificatio
 - **Case**: lowercase and mixed-case CFs (only uppercase alphanumeric is valid).
 - **Month codes**: valid set is A B C D E H L M P R S T.  F and G (between valid E and H)
   and U (outside range) are the most common off-by-one mistakes.
-- **Birth day**: male range 01–31, female range 41–71.  Day 00, 32, 40 (dead zone), and 72
+- **Birth day**: male range 01-31, female range 41-71.  Day 00, 32, 40 (dead zone), and 72
   are the relevant boundary violations.
 - **Special characters**: ``!``, embedded space, leading/trailing whitespace (17 chars → length
   error), non-numeric VAT-like string, all-zeros (10 digits).
@@ -123,8 +123,8 @@ def test_get_activation_status_role_comparison_cross_service_provider(
 ):
     """
     Payer activated under SP A.
-    - SP B (read_rtp_activations): isActive must be false — privacy rule hides cross-SP activation.
-    - Admin (read_rtp_all): isActive must be true — role grants visibility across all SPs.
+    - SP B (read_rtp_activations): isActive must be false - privacy rule hides cross-SP activation.
+    - Admin (read_rtp_all): isActive must be true - role grants visibility across all SPs.
     Same payer, same endpoint, different roles → different results.
     """
     _activation_id, debtor_fc = make_activation()

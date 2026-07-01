@@ -8,7 +8,7 @@ a 400 response.  Import it wherever parametrized negative-path assertions on
 Validation rules enforced by the backend:
 
 - **Fiscal code**: 16 uppercase alphanumeric characters, valid month code
-  (A B C D E H L M P R S T), birth day in range 01–31 (male) or 41–71 (female),
+  (A B C D E H L M P R S T), birth day in range 01-31 (male) or 41-71 (female),
   and a correct Luhn-style control character.
 - **VAT number**: exactly 11 decimal digits.
 
@@ -16,11 +16,11 @@ Edge-case rationale
 -------------------
 - **Month codes**: the valid set is non-contiguous.  F and G (between valid E and H)
   and U are the most common off-by-one mistakes in validators.
-- **Birth day dead zone**: 32–40 is always invalid (male max = 31, female min = 41).
-- **EU VAT prefix**: ``IT`` + 11 digits produces a 13-char string — a common client
+- **Birth day dead zone**: 32-40 is always invalid (male max = 31, female min = 41).
+- **EU VAT prefix**: ``IT`` + 11 digits produces a 13-char string - a common client
   mistake that must be rejected on length grounds before any digit check.
 - **Checksum probe** (``cf_wrong_checksum``): syntactically valid CF with a wrong
-  control character.  Acts as a TDD sentinel — stays red until the backend enforces
+  control character.  Acts as a TDD sentinel - stays red until the backend enforces
   checksum validation.
 """
 
