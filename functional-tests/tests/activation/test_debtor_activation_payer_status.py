@@ -5,8 +5,8 @@ by fiscal code or VAT number) is currently active in the RTP system.
 The ``payerId`` is passed as a **path parameter**.
 
 Privacy rule: the response is deliberately indistinguishable between "not found" and
-"active under a different Service Provider" — both cases return ``{ "isActive": false }``
-— to avoid leaking cross-SP information to competitors.
+"active under a different Service Provider" - both cases return ``{ "isActive": false }``
+- to avoid leaking cross-SP information to competitors.
 
 Authorization roles:
 - ``read_rtp_activations``: reads only activations whose ``serviceProviderDebtor`` matches
@@ -21,14 +21,14 @@ and is extended with structural edge cases from the Italian CF/PIVA specificatio
 - **Case**: lowercase and mixed-case CFs (only uppercase alphanumeric is valid).
 - **Month codes**: valid set is A B C D E H L M P R S T.  F and G (between valid E and H)
   and U (outside range) are the most common off-by-one mistakes.
-- **Birth day**: male range 01–31, female range 41–71.  Day 00, 32, 40 (dead zone), and 72
+- **Birth day**: male range 01-31, female range 41-71.  Day 00, 32, 40 (dead zone), and 72
   are the relevant boundary violations.
 - **Special characters**: ``!``, embedded space, leading/trailing whitespace (17 chars → length
   error), non-numeric VAT-like string, all-zeros (10 digits).
 - **EU VAT prefix**: ``IT`` + 11 digits → 13 chars → length error (common client mistake).
 - **Checksum probe**: syntactically valid CF with wrong control character.  This case acts
   as a TDD sentinel: it stays red until the backend enforces checksum validation.
-- **Empty string**: empty path segment → 400 (or 404 depending on routing).
+- **Empty string**: empty path segment → 404 (routing resolves it before validation).
 """
 
 import allure
@@ -123,8 +123,8 @@ def test_get_activation_status_role_comparison_cross_service_provider(
 ):
     """
     Payer activated under SP A.
-    - SP B (read_rtp_activations): isActive must be false — privacy rule hides cross-SP activation.
-    - Admin (read_rtp_all): isActive must be true — role grants visibility across all SPs.
+    - SP B (read_rtp_activations): isActive must be false - privacy rule hides cross-SP activation.
+    - Admin (read_rtp_all): isActive must be true - role grants visibility across all SPs.
     Same payer, same endpoint, different roles → different results.
     """
     _activation_id, debtor_fc = make_activation()
@@ -258,3 +258,16 @@ def test_get_activation_status_invalid_payer_id_format(debtor_service_provider_t
     """
     res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, invalid_payer_id)
     assert res.status_code == 400, f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Payer Status")
+@allure.story("Get Activation Status by Fiscal Code")
+@allure.title("Querying activation status with an empty payerId returns 404")
+@allure.tag("functional", "unhappy_path", "activation", "payer_status")
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_status_empty_payer_id(debtor_service_provider_token_a):
+    """Querying activation status with an empty payerId must be rejected with 404."""
+    res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, "")
+    assert res.status_code == 404, f"Expected 404 Not Found but got {res.status_code}: {res.text}"
