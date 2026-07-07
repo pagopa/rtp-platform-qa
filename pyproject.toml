@@ -40,9 +40,6 @@ ux-tests = [
   "allure-pytest>=2.13",
   "allure-python-commons==2.13.5",
 ]
-performance-tests = [
-  "aiokafka==0.12.0",
-]
 contract-tests = [
   "schemathesis>=3.23",
   "pytest==8.4.1",
@@ -51,14 +48,7 @@ contract-tests = [
 ]
 dev = [
   "pre-commit>=3.7",
-  "azure-core==1.35.0",
-  "azure-identity==1.16.1",
-  "azure-keyvault-secrets==4.10.0",
-  "fastapi==0.116.1",
-  "pydantic==2.11.7",
   "pytest-asyncio>=0.23.0",
-  "python-multipart==0.0.20",
-  "uvicorn[standard]",
 ]
 
 [tool.pytest.ini_options]
@@ -67,12 +57,10 @@ testpaths = [
   "functional-tests/tests",
   "contract-tests",
   "ux-tests/tests",
-  "gpd-test/tests",
 ]
 pythonpath = [
   ".",
   "contract-tests",
-  "gpd-test",
   "ux-tests/tests",
 ]
 markers = [
@@ -95,7 +83,6 @@ markers = [
   "deactivation: mark tests that exercise deactivation endpoints",
   "mock: mark tests that use mock services",
   "debt_positions: mark tests that exercise debt positions endpoints",
-  "producer_gpd_message: mark tests that exercise GPD message producer endpoints",
   "timeout: Tests with timeouts",
   "functional: Functional tests",
   "webform: Tests on RTP webform",

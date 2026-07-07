@@ -529,7 +529,6 @@ Each API domain has a corresponding pytest marker defined in `pyproject.toml`. W
 
 ### What NOT to recommend
 
-- Do NOT recommend `gpd-test/` for general changes — it requires a running GPD environment and is triggered separately via a manual workflow.
 - Do NOT recommend `load-tests/` for general changes — load tests target specific performance scenarios and are run on dedicated infrastructure.
 - Do NOT recommend provider-specific tests (e.g. `-m cbi`) when the change is provider-agnostic — use the domain marker instead (e.g. `-m send`).
 
