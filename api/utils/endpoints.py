@@ -34,5 +34,4 @@ SERVICE_PROVIDERS_URL = config.rtp_creation_base_url_path + config.service_provi
 ACTIVATION_PAYER_STATUS_URL = config.activation_base_url_path + config.activation_payer_status_path
 TAKEOVER_URL = config.activation_base_url_path + config.activation_takeover
 TAKEOVER_NOTIFICATION_URL = config.takeover_notification_url
-LANDING_PAGE_URL = config.landing_page_path
 RTP_SENDER_GPD_MESSAGE_URL = config.rtp_creation_base_url_path + config.send_gpd_message_path

@@ -53,8 +53,8 @@ Dependencies are managed via `pyproject.toml` extras. Use the Makefile targets:
 make install-functional    # pytest, allure-pytest, cryptography
 make install-bdd           # behave, allure-behave
 make install-ux            # pytest-playwright, playwright
-make install-contract       # schemathesis, pytest
-make install-dev           # pre-commit, azure-*, fastapi, pydantic
+make install-contract      # schemathesis, pytest
+make install-dev           # pre-commit, pytest-asyncio
 ```
 
 Or install everything at once:
