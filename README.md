@@ -549,7 +549,6 @@ rtp-platform-qa/
 │   └── workflows/
 │       ├── run_tests.yml                     # Main CI: functional + BDD tests with Allure
 │       ├── doc_page.yaml                     # GitHub Pages deployment (MkDocs + Allure reports)
-│       ├── docker-publish.yml                # Build & deploy GPD test Docker image
 │       ├── send_slack_notification.yml       # Slack notifications
 │       ├── manual_debt_position_tests.yml    # Manual trigger for GPD tests
 │       └── extract_allure_fail_rate.yml      # Allure failure rate extraction
