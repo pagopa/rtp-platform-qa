@@ -53,9 +53,8 @@ Dependencies are managed via `pyproject.toml` extras. Use the Makefile targets:
 make install-functional    # pytest, allure-pytest, cryptography
 make install-bdd           # behave, allure-behave
 make install-ux            # pytest-playwright, playwright
-make install-performance   # aiokafka (k6 itself installed separately)
 make install-contract      # schemathesis, pytest
-make install-dev           # pre-commit, azure-*, fastapi, pydantic
+make install-dev           # pre-commit, pytest-asyncio
 ```
 
 Or install everything at once:
@@ -107,7 +106,7 @@ pytest functional-tests/tests/ -q
 
 **pytest markers** (use `-m <marker>` to filter):
 
-`activation`, `auth`, `keycloak`, `send`, `cbi`, `poste`, `iccrea`, `callback`, `cancel`, `deactivation`, `mock`, `debt_positions`, `producer_gpd_message`, `get`, `webform`, `landing_page`, `happy_path`, `unhappy_path`, `real_integration`, `need_fix`
+`activation`, `auth`, `keycloak`, `send`, `cbi`, `poste`, `iccrea`, `callback`, `cancel`, `deactivation`, `mock`, `debt_positions`, `get`, `webform`, `landing_page`, `happy_path`, `unhappy_path`, `real_integration`, `need_fix`
 
 ---
 
@@ -427,7 +426,6 @@ rtp-platform-qa/
 │   ├── debtor_service_provider_api.py
 │   ├── debtor_takeover_api.py
 │   ├── GPD_debt_position_api.py
-│   ├── producer_GPD_message_api.py
 │   ├── RTP_callback_api.py
 │   ├── RTP_cancel_api.py
 │   ├── RTP_get_api.py
@@ -551,7 +549,6 @@ rtp-platform-qa/
 │   └── workflows/
 │       ├── run_tests.yml                     # Main CI: functional + BDD tests with Allure
 │       ├── doc_page.yaml                     # GitHub Pages deployment (MkDocs + Allure reports)
-│       ├── docker-publish.yml                # Build & deploy GPD test Docker image
 │       ├── send_slack_notification.yml       # Slack notifications
 │       ├── manual_debt_position_tests.yml    # Manual trigger for GPD tests
 │       └── extract_allure_fail_rate.yml      # Allure failure rate extraction

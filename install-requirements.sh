@@ -23,7 +23,6 @@ make install-dev || true
 make install-functional || true
 make install-bdd || true
 make install-ux || true
-make install-performance || true
 make install-contract || true
 
 echo "Installations completed."

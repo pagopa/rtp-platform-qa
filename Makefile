@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-functional install-bdd install-ux install-performance install-contract \
+.PHONY: help install install-dev install-functional install-bdd install-ux install-contract \
 	    test-functional test-bdd test-ux test-contract precommit
 
 help:
@@ -8,7 +8,6 @@ help:
 	@echo "  install-functional    Install functional test deps"
 	@echo "  install-bdd           Install BDD test deps"
 	@echo "  install-ux            Install UX test deps"
-	@echo "  install-performance   Install performance test deps"
 	@echo "  install-contract      Install contract test deps"
 	@echo "  test-functional       Run functional tests"
 	@echo "  test-bdd              Run BDD tests (behave)"
@@ -32,9 +31,6 @@ install-bdd:
 install-ux:
 	pip install -e .[ux-tests]
 	python -m playwright install
-
-install-performance:
-	pip install -e .[performance-tests]
 
 install-contract:
 	pip install -e .[contract-tests]
