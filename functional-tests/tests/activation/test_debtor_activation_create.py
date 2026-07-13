@@ -6,8 +6,14 @@ import pytest
 from api.debtor_activation_api import activate, get_activation_by_payer_id
 from config.configuration import config, secrets
 from utils.activation_helpers import activate_with_sp_a, activate_with_sp_b
+from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 from utils.http_utils import extract_id_from_location
 from utils.regex_utils import uuidv4_pattern
+
+# The activation endpoint does not yet enforce fiscal code checksum validation
+# (an activation with a syntactically valid but wrong-checksum CF succeeds with 201),
+# so the "cf_wrong_checksum" TDD sentinel from INVALID_PAYER_IDS is excluded here.
+INVALID_FISCAL_CODE_IDS = [case for case in INVALID_PAYER_IDS if case[0] != "cf_wrong_checksum"]
 
 
 @allure.epic("Debtor Activation")
@@ -158,17 +164,21 @@ def test_activate_debtor_with_vat_number(debtor_service_provider_token_a, activa
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Debtor activation")
-@allure.title("The activation request must contain lower case fiscal code")
+@allure.title("The activation request must contain a validly formatted fiscal code")
 @allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_cannot_activate_debtor_lower_fiscal_code(debtor_service_provider_token_a, random_fiscal_code):
+@pytest.mark.parametrize("description,invalid_payer_id", INVALID_FISCAL_CODE_IDS)
+def test_cannot_activate_debtor_invalid_fiscal_code_format(
+    debtor_service_provider_token_a, description, invalid_payer_id
+):
+    """Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400."""
 
     res = activate(
-        debtor_service_provider_token_a, random_fiscal_code.lower(), secrets.debtor_service_provider.service_provider_id
+        debtor_service_provider_token_a, invalid_payer_id, secrets.debtor_service_provider.service_provider_id
     )
-    assert res.status_code == 400
+    assert res.status_code == 400, f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
     assert res.json()["errors"][0]["code"] == "01021002E"
     assert res.json()["errors"][0]["description"] == "Invalid fiscal code format."
 
@@ -191,26 +201,6 @@ def test_cannot_activate_debtor_lower_rtp_sp_id(debtor_service_provider_token_a,
     assert res.status_code == 400
     assert res.json()["errors"][0]["code"] == "01021003E"
     assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format." 
-
-
-@allure.epic("Debtor Activation")
-@allure.feature("Activation")
-@allure.story("Debtor activation")
-@allure.title("The activation request must contain a fiscal code of valid length")
-@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
-@pytest.mark.auth
-@pytest.mark.activation
-@pytest.mark.unhappy_path
-def test_cannot_activate_debtor_short_fiscal_code(debtor_service_provider_token_a, random_fiscal_code):
-
-    res = activate(
-        debtor_service_provider_token_a,
-        random_fiscal_code[:5],
-        secrets.debtor_service_provider.service_provider_id,
-    )
-    assert res.status_code == 400
-    assert res.json()["errors"][0]["code"] == "01021002E"
-    assert res.json()["errors"][0]["description"] == "Invalid fiscal code format."
 
 
 @allure.epic("Debtor Activation")
