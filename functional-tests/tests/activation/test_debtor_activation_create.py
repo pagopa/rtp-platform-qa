@@ -5,6 +5,7 @@ import pytest
 
 from api.debtor_activation_api import activate, get_activation_by_payer_id
 from config.configuration import config, secrets
+from utils.activation_error_codes import ActivationErrorCode
 from utils.activation_helpers import activate_with_sp_a, activate_with_sp_b
 from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 from utils.http_utils import extract_id_from_location
@@ -72,8 +73,8 @@ def test_activate_debtor_already_active_on_another_service_provider_triggers_tak
 
     body = res_b.json()
     assert isinstance(body.get("errors"), list) and body["errors"], "Expected non-empty 'errors' list in 409 response"
-    assert body["errors"][0]["code"] == "01031006E"
-    assert body["errors"][0]["description"] == "User is already active"
+    assert body["errors"][0]["code"] == ActivationErrorCode.USER_ALREADY_ACTIVE.code
+    assert body["errors"][0]["description"] == ActivationErrorCode.USER_ALREADY_ACTIVE.description
 
 
 @allure.epic("Debtor Activation")
@@ -102,8 +103,8 @@ def test_fail_activate_debtor_two_times(debtor_service_provider_token_a, random_
 
     body = res.json()
     assert isinstance(body.get("errors"), list) and body["errors"], "Expected non-empty 'errors' list in 409 response"
-    assert body["errors"][0]["code"] == "01031006E"
-    assert body["errors"][0]["description"] == "User is already active"
+    assert body["errors"][0]["code"] == ActivationErrorCode.USER_ALREADY_ACTIVE.code
+    assert body["errors"][0]["description"] == ActivationErrorCode.USER_ALREADY_ACTIVE.description
 
 
 @allure.epic("Debtor Activation")
@@ -179,8 +180,8 @@ def test_cannot_activate_debtor_invalid_fiscal_code_format(
         debtor_service_provider_token_a, invalid_payer_id, secrets.debtor_service_provider.service_provider_id
     )
     assert res.status_code == 400, f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
-    assert res.json()["errors"][0]["code"] == "01021002E"
-    assert res.json()["errors"][0]["description"] == "Invalid fiscal code format."
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.INVALID_FISCAL_CODE_FORMAT.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.INVALID_FISCAL_CODE_FORMAT.description
 
 
 @allure.epic("Debtor Activation")
@@ -199,8 +200,8 @@ def test_cannot_activate_debtor_lower_rtp_sp_id(debtor_service_provider_token_a,
         secrets.debtor_service_provider.service_provider_id.lower(),
     )
     assert res.status_code == 400
-    assert res.json()["errors"][0]["code"] == "01021003E"
-    assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format." 
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.description
 
 
 @allure.epic("Debtor Activation")
@@ -219,8 +220,8 @@ def test_cannot_activate_debtor_short_rtp_sp_id(debtor_service_provider_token_a,
         secrets.debtor_service_provider.service_provider_id[:3],
     )
     assert res.status_code == 400
-    assert res.json()["errors"][0]["code"] == "01021003E"
-    assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format."
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.description
 
 
 @allure.epic("Debtor Activation")
