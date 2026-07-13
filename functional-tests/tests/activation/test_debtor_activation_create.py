@@ -64,6 +64,11 @@ def test_activate_debtor_already_active_on_another_service_provider_triggers_tak
     otp = extract_id_from_location(res_b.headers.get("Location"))
     assert otp is not None, "Missing/invalid Location header (expected OTP for takeover trigger)"
 
+    body = res_b.json()
+    assert isinstance(body.get("errors"), list) and body["errors"], "Expected non-empty 'errors' list in 409 response"
+    assert body["errors"][0]["code"] == "01031006E"
+    assert body["errors"][0]["description"] == "User is already active"
+
 
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
@@ -164,8 +169,68 @@ def test_cannot_activate_debtor_lower_fiscal_code(debtor_service_provider_token_
         debtor_service_provider_token_a, random_fiscal_code.lower(), secrets.debtor_service_provider.service_provider_id
     )
     assert res.status_code == 400
-    assert res.json()["errors"][0]["code"] == "Pattern.activationReqDtoMono.payer.fiscalCode"
-    assert res.json()["errors"][0]["description"].startswith("payer.fiscalCode must match")
+    assert res.json()["errors"][0]["code"] == "01021002E"
+    assert res.json()["errors"][0]["description"] == "Invalid fiscal code format."
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("The activation request must contain a validly formatted Service Provider ID")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_cannot_activate_debtor_lower_rtp_sp_id(debtor_service_provider_token_a, random_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_fiscal_code,
+        secrets.debtor_service_provider.service_provider_id.lower(),
+    )
+    assert res.status_code == 400
+    assert res.json()["errors"][0]["code"] == "01021003E"
+    assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format."
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("The activation request must contain a fiscal code of valid length")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_cannot_activate_debtor_short_fiscal_code(debtor_service_provider_token_a, random_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_fiscal_code[:5],
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert res.status_code == 400
+    assert res.json()["errors"][0]["code"] == "01021002E"
+    assert res.json()["errors"][0]["description"] == "Invalid fiscal code format."
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("The activation request must contain a Service Provider ID of valid length")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_cannot_activate_debtor_short_rtp_sp_id(debtor_service_provider_token_a, random_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_fiscal_code,
+        secrets.debtor_service_provider.service_provider_id[:3],
+    )
+    assert res.status_code == 400
+    assert res.json()["errors"][0]["code"] == "01021003E"
+    assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format."
 
 
 @allure.epic("Debtor Activation")
