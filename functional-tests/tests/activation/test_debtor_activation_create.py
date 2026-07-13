@@ -190,7 +190,7 @@ def test_cannot_activate_debtor_lower_rtp_sp_id(debtor_service_provider_token_a,
     )
     assert res.status_code == 400
     assert res.json()["errors"][0]["code"] == "01021003E"
-    assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format."
+    assert res.json()["errors"][0]["description"] == "Invalid RTP Service Provider ID format." 
 
 
 @allure.epic("Debtor Activation")
