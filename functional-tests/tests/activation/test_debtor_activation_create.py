@@ -11,12 +11,6 @@ from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 from utils.http_utils import extract_id_from_location
 from utils.regex_utils import uuidv4_pattern
 
-# The activation endpoint does not yet enforce fiscal code checksum validation
-# (an activation with a syntactically valid but wrong-checksum CF succeeds with 201),
-# so the "cf_wrong_checksum" TDD sentinel from INVALID_PAYER_IDS is excluded here.
-INVALID_FISCAL_CODE_IDS = [case for case in INVALID_PAYER_IDS if case[0] != "cf_wrong_checksum"]
-
-
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Debtor activation")
@@ -170,7 +164,7 @@ def test_activate_debtor_with_vat_number(debtor_service_provider_token_a, activa
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-@pytest.mark.parametrize("description,invalid_payer_id", INVALID_FISCAL_CODE_IDS)
+@pytest.mark.parametrize("description,invalid_payer_id", INVALID_PAYER_IDS)
 def test_cannot_activate_debtor_invalid_fiscal_code_format(
     debtor_service_provider_token_a, description, invalid_payer_id
 ):
