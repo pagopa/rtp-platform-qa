@@ -5,10 +5,11 @@ import pytest
 
 from api.debtor_activation_api import activate, get_activation_by_payer_id
 from config.configuration import config, secrets
+from utils.activation_error_codes import ActivationErrorCode
 from utils.activation_helpers import activate_with_sp_a, activate_with_sp_b
+from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 from utils.http_utils import extract_id_from_location
 from utils.regex_utils import uuidv4_pattern
-
 
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
@@ -64,6 +65,11 @@ def test_activate_debtor_already_active_on_another_service_provider_triggers_tak
     otp = extract_id_from_location(res_b.headers.get("Location"))
     assert otp is not None, "Missing/invalid Location header (expected OTP for takeover trigger)"
 
+    body = res_b.json()
+    assert isinstance(body.get("errors"), list) and body["errors"], "Expected non-empty 'errors' list in 409 response"
+    assert body["errors"][0]["code"] == ActivationErrorCode.USER_ALREADY_ACTIVE.code
+    assert body["errors"][0]["description"] == ActivationErrorCode.USER_ALREADY_ACTIVE.description
+
 
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
@@ -91,8 +97,8 @@ def test_fail_activate_debtor_two_times(debtor_service_provider_token_a, random_
 
     body = res.json()
     assert isinstance(body.get("errors"), list) and body["errors"], "Expected non-empty 'errors' list in 409 response"
-    assert body["errors"][0]["code"] == "01031006E"
-    assert body["errors"][0]["description"] == "User is already active"
+    assert body["errors"][0]["code"] == ActivationErrorCode.USER_ALREADY_ACTIVE.code
+    assert body["errors"][0]["description"] == ActivationErrorCode.USER_ALREADY_ACTIVE.description
 
 
 @allure.epic("Debtor Activation")
@@ -153,19 +159,63 @@ def test_activate_debtor_with_vat_number(debtor_service_provider_token_a, activa
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Debtor activation")
-@allure.title("The activation request must contain lower case fiscal code")
+@allure.title("The activation request must contain a validly formatted fiscal code")
 @allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
 @pytest.mark.auth
 @pytest.mark.activation
 @pytest.mark.unhappy_path
-def test_cannot_activate_debtor_lower_fiscal_code(debtor_service_provider_token_a, random_fiscal_code):
+@pytest.mark.parametrize("description,invalid_payer_id", INVALID_PAYER_IDS)
+def test_cannot_activate_debtor_invalid_fiscal_code_format(
+    debtor_service_provider_token_a, description, invalid_payer_id
+):
+    """Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400."""
 
     res = activate(
-        debtor_service_provider_token_a, random_fiscal_code.lower(), secrets.debtor_service_provider.service_provider_id
+        debtor_service_provider_token_a, invalid_payer_id, secrets.debtor_service_provider.service_provider_id
+    )
+    assert res.status_code == 400, f"[{description}] Expected 400 but got {res.status_code}: {res.text}"
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.INVALID_FISCAL_CODE_FORMAT.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.INVALID_FISCAL_CODE_FORMAT.description
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("The activation request must contain a validly formatted Service Provider ID")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_cannot_activate_debtor_lower_rtp_sp_id(debtor_service_provider_token_a, random_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_fiscal_code,
+        secrets.debtor_service_provider.service_provider_id.lower(),
     )
     assert res.status_code == 400
-    assert res.json()["errors"][0]["code"] == "Pattern.activationReqDtoMono.payer.fiscalCode"
-    assert res.json()["errors"][0]["description"].startswith("payer.fiscalCode must match")
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.description
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("The activation request must contain a Service Provider ID of valid length")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_cannot_activate_debtor_short_rtp_sp_id(debtor_service_provider_token_a, random_fiscal_code):
+
+    res = activate(
+        debtor_service_provider_token_a,
+        random_fiscal_code,
+        secrets.debtor_service_provider.service_provider_id[:3],
+    )
+    assert res.status_code == 400
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.INVALID_SERVICE_PROVIDER_ID_FORMAT.description
 
 
 @allure.epic("Debtor Activation")
