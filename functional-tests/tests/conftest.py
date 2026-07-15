@@ -71,6 +71,19 @@ def debtor_service_provider_token_b() -> str:
 
 
 @pytest.fixture
+def debtor_service_provider_token_c() -> str:
+    """
+    Access token for Debtor Service Provider C (MOCKSP05).
+    Used by the EPC v4 cancellation mock scenarios.
+    """
+    return get_valid_access_token(
+        client_id=secrets.debtor_service_provider_C.client_id,
+        client_secret=secrets.debtor_service_provider_C.client_secret,
+        access_token_function=get_keycloak_access_token,
+    )
+
+
+@pytest.fixture
 def creditor_service_provider_token_a() -> str:
     """
     Access token for Creditor Service Provider A.

@@ -48,6 +48,12 @@ secrets.debtor_service_provider_B = Dynaconf(
     client_secret=os.getenv("DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET"),
 )
 
+secrets.debtor_service_provider_C = Dynaconf(
+    client_id=os.getenv("DEBTOR_SERVICE_PROVIDER_C_CLIENT_ID"),
+    service_provider_id=os.getenv("DEBTOR_SERVICE_PROVIDER_C_ID"),
+    client_secret=os.getenv("DEBTOR_SERVICE_PROVIDER_C_CLIENT_SECRET"),
+)
+
 secrets.creditor_service_provider = Dynaconf(
     client_id=os.getenv("CREDITOR_SERVICE_PROVIDER_CLIENT_ID"),
     service_provider_id=os.getenv("CREDITOR_SERVICE_PROVIDER_ID"),

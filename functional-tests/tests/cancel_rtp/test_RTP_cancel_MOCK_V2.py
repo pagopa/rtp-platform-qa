@@ -46,6 +46,7 @@ from utils.constants_epc_cancel_mock import (
     RTP_STATUS_ERROR_CANCEL,
     RTP_STATUS_RFC_SENT,
 )
+from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_C_ID
 from utils.constants_text_helper import CANCEL_REASON_PAID
 from utils.rtp_cancel_helpers import send_and_cancel_rtp_v2_get_status
 
@@ -59,7 +60,7 @@ from utils.rtp_cancel_helpers import send_and_cancel_rtp_v2_get_status
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_empty_json_object(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -70,12 +71,13 @@ def test_cancel_rtp_v2_epc_mock_empty_json_object(
     Expected outcome: no `Sts.Conf` confirmation is present, so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_EMPTY_OBJECT,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -89,7 +91,7 @@ def test_cancel_rtp_v2_epc_mock_empty_json_object(
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_plain_string(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -100,12 +102,13 @@ def test_cancel_rtp_v2_epc_mock_plain_string(
     Expected outcome: the response body is not a recognizable cancellation confirmation, so the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_PLAIN_STRING,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -119,7 +122,7 @@ def test_cancel_rtp_v2_epc_mock_plain_string(
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_minimal_json(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -130,12 +133,13 @@ def test_cancel_rtp_v2_epc_mock_minimal_json(
     Expected outcome: no `Sts.Conf` confirmation is present, so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_MINIMAL_JSON,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -149,7 +153,7 @@ def test_cancel_rtp_v2_epc_mock_minimal_json(
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_cncl_confirmed(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -160,12 +164,13 @@ def test_cancel_rtp_v2_epc_mock_cncl_confirmed(
     Expected outcome: `Sts.Conf = "CNCL"` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_ACCR, ending in CANCELLED_ACCR.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_CNCL,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_CANCELLED_ACCR, f"Expected status {RTP_STATUS_CANCELLED_ACCR}, got {status}"
 
@@ -179,7 +184,7 @@ def test_cancel_rtp_v2_epc_mock_cncl_confirmed(
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_no_sts_block(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -190,12 +195,13 @@ def test_cancel_rtp_v2_epc_mock_no_sts_block(
     Expected outcome: no `Sts.Conf` confirmation is present, so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_NO_STS_BLOCK,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -209,7 +215,7 @@ def test_cancel_rtp_v2_epc_mock_no_sts_block(
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_rjcr_rejected(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -220,12 +226,13 @@ def test_cancel_rtp_v2_epc_mock_rjcr_rejected(
     Expected outcome: `Sts.Conf = "RJCR"` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_REJECTED, ending in CANCELLED_REJECTED.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_RJCR,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_CANCELLED_REJECTED, f"Expected status {RTP_STATUS_CANCELLED_REJECTED}, got {status}"
 
@@ -239,7 +246,7 @@ def test_cancel_rtp_v2_epc_mock_rjcr_rejected(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_400(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -250,12 +257,13 @@ def test_cancel_rtp_v2_epc_mock_epc_400(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_400,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -269,7 +277,7 @@ def test_cancel_rtp_v2_epc_mock_epc_400(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_401(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -280,12 +288,13 @@ def test_cancel_rtp_v2_epc_mock_epc_401(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_401,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -299,7 +308,7 @@ def test_cancel_rtp_v2_epc_mock_epc_401(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_404(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -310,12 +319,13 @@ def test_cancel_rtp_v2_epc_mock_epc_404(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_404,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -329,7 +339,7 @@ def test_cancel_rtp_v2_epc_mock_epc_404(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_406(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -340,12 +350,13 @@ def test_cancel_rtp_v2_epc_mock_epc_406(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_406,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -359,7 +370,7 @@ def test_cancel_rtp_v2_epc_mock_epc_406(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_410(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -370,12 +381,13 @@ def test_cancel_rtp_v2_epc_mock_epc_410(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_410,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -389,7 +401,7 @@ def test_cancel_rtp_v2_epc_mock_epc_410(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_415(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -400,12 +412,13 @@ def test_cancel_rtp_v2_epc_mock_epc_415(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_415,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -419,7 +432,7 @@ def test_cancel_rtp_v2_epc_mock_epc_415(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_422(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -430,12 +443,13 @@ def test_cancel_rtp_v2_epc_mock_epc_422(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_422,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -449,7 +463,7 @@ def test_cancel_rtp_v2_epc_mock_epc_422(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_epc_429(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -460,12 +474,13 @@ def test_cancel_rtp_v2_epc_mock_epc_429(
     Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_429,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
 
@@ -479,7 +494,7 @@ def test_cancel_rtp_v2_epc_mock_epc_429(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_cncl_extra_field(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -493,12 +508,13 @@ def test_cancel_rtp_v2_epc_mock_cncl_extra_field(
     CNCL confirmation is not processed and the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_CNCL_EXTRA_FIELD,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -512,7 +528,7 @@ def test_cancel_rtp_v2_epc_mock_cncl_extra_field(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_rjcr_extra_field(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -526,12 +542,13 @@ def test_cancel_rtp_v2_epc_mock_rjcr_extra_field(
     RJCR confirmation is not processed and the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_RJCR_EXTRA_FIELD,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -545,7 +562,7 @@ def test_cancel_rtp_v2_epc_mock_rjcr_extra_field(
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 def test_cancel_rtp_v2_epc_mock_malformed_string(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -556,12 +573,13 @@ def test_cancel_rtp_v2_epc_mock_malformed_string(
     Expected outcome: the response cannot be parsed as a cancellation confirmation, so the RTP stays in RFC_SENT rather than erroring out.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_MALFORMED_STRING,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
 
@@ -577,7 +595,7 @@ def test_cancel_rtp_v2_epc_mock_malformed_string(
 @pytest.mark.mock
 @pytest.mark.happy_path
 def test_cancel_rtp_v2_epc_mock_no_match_fallback(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -588,11 +606,12 @@ def test_cancel_rtp_v2_epc_mock_no_match_fallback(
     Expected outcome: the mock policy falls back to its default `{}` response when no notice number matches, so the RTP stays in RFC_SENT.
     """
     status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_NO_MATCH,
         CANCEL_REASON_PAID,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"

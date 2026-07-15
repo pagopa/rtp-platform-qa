@@ -105,6 +105,7 @@ def _send_rtp_via_rest(
     payer_id: str,
     send_fn: Callable[[str, dict], requests.Response],
     expected_send_status: int = 201,
+    service_provider_id: str = secrets.debtor_service_provider.service_provider_id,
 ) -> str:
     """Internal helper: activate a debtor, send an RTP via REST and return the resulting status."""
     rtp_data = generate_rtp_data(payer_id=payer_id)
@@ -112,7 +113,7 @@ def _send_rtp_via_rest(
     activation_response = activate(
         debtor_token,
         rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
+        service_provider_id,
     )
     assert activation_response.status_code in (201, 409), "Error activating debtor"
 
@@ -122,8 +123,7 @@ def _send_rtp_via_rest(
     )
 
     assert "Location" in send_response.headers, (
-        f"Expected Location header in response but got status {send_response.status_code}. "
-        f"Body: {send_response.text}"
+        f"Expected Location header in response but got status {send_response.status_code}. Body: {send_response.text}"
     )
     resource_id = send_response.headers["Location"].split("/")[-1]
 
@@ -140,6 +140,7 @@ def _send_rtp_by_notice_number_via_rest(
     payer_id: str,
     send_fn: Callable[[str, dict], requests.Response],
     expected_send_status: int = 422,
+    service_provider_id: str = secrets.debtor_service_provider.service_provider_id,
 ) -> str:
     """Internal helper: activate a debtor, send an RTP via REST expecting RJCT and return status by notice number."""
     rtp_data = generate_rtp_data(payer_id=payer_id)
@@ -148,7 +149,7 @@ def _send_rtp_by_notice_number_via_rest(
     activation_response = activate(
         debtor_token,
         rtp_data["payer"]["payerId"],
-        secrets.debtor_service_provider.service_provider_id,
+        service_provider_id,
     )
     assert activation_response.status_code in (201, 409), "Error activating debtor"
 
@@ -172,7 +173,10 @@ def send_rtp_and_get_status_via_rest(
     Used for _THROUGH_WEB_API test variants that exercise the legacy REST send endpoint.
     """
     return _send_rtp_via_rest(
-        debtor_token, creditor_token, reader_token, payer_id,
+        debtor_token,
+        creditor_token,
+        reader_token,
+        payer_id,
         lambda token, payload: send_rtp(access_token=token, rtp_payload=payload),
         expected_send_status,
     )
@@ -191,7 +195,10 @@ def send_rtp_and_get_status_by_notice_number_via_rest(
     Used for _THROUGH_WEB_API RJCT test variants.
     """
     return _send_rtp_by_notice_number_via_rest(
-        debtor_token, creditor_token, reader_token, payer_id,
+        debtor_token,
+        creditor_token,
+        reader_token,
+        payer_id,
         lambda token, payload: send_rtp(access_token=token, rtp_payload=payload),
         expected_send_status,
     )
@@ -206,9 +213,13 @@ def send_rtp_v2_and_get_status_via_rest(
 ) -> str:
     """Activate a debtor, send an RTP via REST API v2 (/rtps with Version: v2), and return the resulting RTP status."""
     return _send_rtp_via_rest(
-        debtor_token, creditor_token, reader_token, payer_id,
+        debtor_token,
+        creditor_token,
+        reader_token,
+        payer_id,
         lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
         expected_send_status,
+        service_provider_id=secrets.debtor_service_provider_C.service_provider_id,
     )
 
 
@@ -223,8 +234,11 @@ def send_rtp_v2_and_get_status_by_notice_number_via_rest(
     then retrieve the RTP status by notice number.
     """
     return _send_rtp_by_notice_number_via_rest(
-        debtor_token, creditor_token, reader_token, payer_id,
+        debtor_token,
+        creditor_token,
+        reader_token,
+        payer_id,
         lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
         expected_send_status,
+        service_provider_id=secrets.debtor_service_provider_C.service_provider_id,
     )
-
