@@ -5,18 +5,19 @@ Each test triggers a dedicated mock scenario on `postRequestToPayCancellationReq
 specific notice number on the RTP, then asserts the RTP status once the async
 rtp-sender-v2 cancellation flow has processed the EPC mock response.
 
-NOTE: these assertions describe the *target* behaviour of rtp-sender-v2 once the sidecar
-EPC proxy extracts the `Sts.Conf` confirmation (CNCL/RJCR) from the raw EPC response. This
-extraction is implemented on branch `SRTP-1968-cancel-sidecar` (rtp-sender-v2, PR #26); until
-that branch is merged, `EpcService.processCancelRtp` on main does not populate the
-`confirmation` field consumed by `SidecarCancelRtpHandler`, so all scenarios currently
-resolve to RFC_SENT regardless of the mock response. These tests are expected to start
-passing once that PR is merged.
+PR #26 (`SRTP-1968-cancel-sidecar`, rtp-sender-v2) is merged and deployed: the sidecar EPC
+proxy now extracts the `Sts.Conf` confirmation (CNCL/RJCR) from the raw EPC response.
 
 Confirmed with rtp-sender-v2 maintainers (PR #26 review): an EPC response containing fields
 not declared in the OpenAPI spec (cases 14/15, extra `invalid-field`) is intentionally treated
 as an invalid message and is NOT tolerated for accept/reject purposes, so those cases expect
 RFC_SENT rather than CANCELLED_ACCR/CANCELLED_REJECTED.
+
+Confirmed with the team (Luigi De Marco, Francesco Muscianisi): for the EPC HTTP error
+scenarios (cases 7-14, notice numbers ...006-...013), the PSP synchronously rejects the
+cancel request itself with 422 ("Service Provider rejection") per standard for these error
+codes, rather than accepting it with 204. The RTP is then checked and must end up in
+ERROR_CANCEL.
 """
 
 import allure
@@ -254,7 +255,9 @@ def test_cancel_rtp_v2_epc_mock_epc_400(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 400 Bad Request and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -263,6 +266,7 @@ def test_cancel_rtp_v2_epc_mock_epc_400(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_400,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -285,7 +289,9 @@ def test_cancel_rtp_v2_epc_mock_epc_401(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 401 Unauthorized and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -294,6 +300,7 @@ def test_cancel_rtp_v2_epc_mock_epc_401(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_401,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -316,7 +323,9 @@ def test_cancel_rtp_v2_epc_mock_epc_404(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 404 Not Found and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -325,6 +334,7 @@ def test_cancel_rtp_v2_epc_mock_epc_404(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_404,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -347,7 +357,9 @@ def test_cancel_rtp_v2_epc_mock_epc_406(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 406 Not Acceptable and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -356,6 +368,7 @@ def test_cancel_rtp_v2_epc_mock_epc_406(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_406,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -378,7 +391,9 @@ def test_cancel_rtp_v2_epc_mock_epc_410(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 410 Gone and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -387,6 +402,7 @@ def test_cancel_rtp_v2_epc_mock_epc_410(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_410,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -409,7 +425,9 @@ def test_cancel_rtp_v2_epc_mock_epc_415(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 415 Unsupported Media Type and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -418,6 +436,7 @@ def test_cancel_rtp_v2_epc_mock_epc_415(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_415,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -440,7 +459,9 @@ def test_cancel_rtp_v2_epc_mock_epc_422(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 422 Unprocessable Entity and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -449,6 +470,7 @@ def test_cancel_rtp_v2_epc_mock_epc_422(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_422,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
@@ -471,7 +493,9 @@ def test_cancel_rtp_v2_epc_mock_epc_429(
     """
     Cancel an RTP (v2) whose EPC v4 mock response is EPC 429 Too Many Requests and assert the resulting status.
 
-    Expected outcome: any EPC HTTP error response triggers ERROR_CANCEL_RTP, ending in ERROR_CANCEL.
+    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
+    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
+    ERROR_CANCEL via ERROR_CANCEL_RTP.
     """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
@@ -480,6 +504,7 @@ def test_cancel_rtp_v2_epc_mock_epc_429(
         random_fiscal_code,
         MOCK_CANCEL_NOTICE_NUMBER_429,
         CANCEL_REASON_PAID,
+        expected_cancel_status=422,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
     assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
