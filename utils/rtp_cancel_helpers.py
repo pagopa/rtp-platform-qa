@@ -34,13 +34,13 @@ def send_and_cancel_rtp_v2_get_status(
         expected_cancel_status: Expected HTTP status code from the cancel call. Usually 204 (accepted),
             but EPC mock HTTP error scenarios may be synchronously rejected by the PSP with 422.
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
-            to service provider A; pass a different one (e.g. MOCKSP05) when the test needs it.
+            to service provider C (MOCKSP05); pass a different one when the test needs it.
 
     Returns:
         The RTP status string (e.g. "CANCELLED_ACCR", "CANCELLED_REJECTED", "ERROR_CANCEL", "RFC_SENT").
     """
     if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider.service_provider_id
+        service_provider_id = secrets.debtor_service_provider_C.service_provider_id
 
     rtp_data = generate_rtp_data(payer_id=payer_id, notice_number=notice_number)
 

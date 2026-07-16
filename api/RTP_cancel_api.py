@@ -30,7 +30,7 @@ def cancel_rtp(access_token: str, resource_id: str, reason: str) -> requests.Res
     """
     Cancel an RTP request (Version: v1).
 
-    :param access_token: ****** token for authorization.
+    :param access_token: Bearer access token for authorization.
     :param resource_id: UUID of the RTP resource to cancel.
     :param reason: Cancellation reason. Must be one of: PAID, MODT.
     :returns: The HTTP response.
@@ -43,7 +43,7 @@ def cancel_rtp_v2(access_token: str, resource_id: str, reason: str) -> requests.
     """
     Cancel an RTP request (Version: v2).
 
-    :param access_token: ****** token for authorization.
+    :param access_token: Bearer access token for authorization.
     :param resource_id: UUID of the RTP resource to cancel.
     :param reason: Cancellation reason. Must be one of: PAID, MODT.
     :returns: The HTTP response.
