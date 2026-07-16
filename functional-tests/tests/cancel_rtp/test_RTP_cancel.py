@@ -109,12 +109,13 @@ def test_cancel_rtp_with_invalid_reason(
 @allure.epic("RTP Cancel")
 @allure.feature("RTP Cancel")
 @allure.story("Service provider cancels RTP")
-@allure.title("RTP is successfully cancelled with reason PAID - V2")
+@allure.title("RTP is successfully cancelled with reason {cancel_reason} - V2")
 @allure.tag("functional", "happy_path", "rtp_cancel")
 @pytest.mark.cancel
 @pytest.mark.happy_path
-def test_cancel_rtp_with_reason_paid_v2(
-    rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a
+@pytest.mark.parametrize("cancel_reason", [CANCEL_REASON_PAID, CANCEL_REASON_MODT])
+def test_cancel_rtp_with_reason_v2(
+    rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a, cancel_reason
 ):
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
@@ -127,32 +128,7 @@ def test_cancel_rtp_with_reason_paid_v2(
     resource_id = send_response.json()["resourceId"]
     assert resource_id is not None, "Missing resourceId in send GPD message response"
 
-    cancel_response = cancel_rtp_v2(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
-    assert cancel_response.status_code == 204
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP")
-@allure.title("RTP is successfully cancelled with reason MODT - V2")
-@allure.tag("functional", "happy_path", "rtp_cancel")
-@pytest.mark.cancel
-@pytest.mark.happy_path
-def test_cancel_rtp_with_reason_modt_v2(
-    rtp_consumer_access_token, activate_payer, random_fiscal_code, creditor_service_provider_token_a
-):
-    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
-
-    activation_response = activate_payer(random_fiscal_code)
-    assert activation_response.status_code == 201, "Error activating debtor"
-
-    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200
-
-    resource_id = send_response.json()["resourceId"]
-    assert resource_id is not None, "Missing resourceId in send GPD message response"
-
-    cancel_response = cancel_rtp_v2(creditor_service_provider_token_a, resource_id, CANCEL_REASON_MODT)
+    cancel_response = cancel_rtp_v2(creditor_service_provider_token_a, resource_id, cancel_reason)
     assert cancel_response.status_code == 204
 
 

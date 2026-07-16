@@ -9,6 +9,16 @@ from utils.idempotency_key_utils import generate_idempotency_key
 
 
 def _post_cancel(access_token: str, resource_id: str, reason: str, version: str) -> requests.Response:
+    """
+    Internal helper: send the cancellation POST request for a given RTP resource and API version.
+
+    :param access_token: Bearer access token for authorization.
+    :param resource_id: UUID of the RTP resource to cancel.
+    :param reason: Cancellation reason. Must be one of: PAID, MODT.
+    :param version: API version to target (e.g. "v1", "v2"), sent as the Version header.
+    :returns: The HTTP response.
+    :rtype: requests.Response
+    """
     idempotency_key = generate_idempotency_key(CANCEL_RTP_OPERATION, resource_id)
 
     headers = {

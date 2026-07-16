@@ -51,592 +51,261 @@ from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_C_ID
 from utils.constants_text_helper import CANCEL_REASON_PAID
 from utils.rtp_cancel_helpers import send_and_cancel_rtp_v2_get_status
 
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response is an empty JSON object leaves it in RFC_SENT")
-@allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_empty_json_object(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is empty JSON object and assert the resulting status.
-
-    Expected outcome: no `Sts.Conf` confirmation is present, so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
+# Each entry: (scenario_id, notice_number, expected_status, description).
+# These are cases where the cancel REST call itself is accepted (204) and the RTP either
+# reaches a terminal cancellation status (CNCL/RJCR confirmed) or stays in RFC_SENT because
+# the EPC mock response carries no usable/parseable cancellation confirmation.
+_HAPPY_PATH_SCENARIOS = [
+    pytest.param(
+        "empty_json_object",
         MOCK_CANCEL_NOTICE_NUMBER_EMPTY_OBJECT,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response is a quoted plain string leaves it in RFC_SENT")
-@allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_plain_string(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is quoted plain string and assert the resulting status.
-
-    Expected outcome: the response body is not a recognizable cancellation confirmation, so the RTP stays in RFC_SENT.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
+        RTP_STATUS_RFC_SENT,
+        "No `Sts.Conf` confirmation is present (empty JSON object), so only CANCEL_RTP is "
+        "triggered and the RTP stays in RFC_SENT.",
+        id="empty_json_object",
+    ),
+    pytest.param(
+        "plain_string",
         MOCK_CANCEL_NOTICE_NUMBER_PLAIN_STRING,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response is minimal JSON without a Sts block leaves it in RFC_SENT")
-@allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_minimal_json(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is minimal JSON without Sts and assert the resulting status.
-
-    Expected outcome: no `Sts.Conf` confirmation is present, so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
+        RTP_STATUS_RFC_SENT,
+        "The response body is not a recognizable cancellation confirmation (quoted plain "
+        "string), so the RTP stays in RFC_SENT.",
+        id="plain_string",
+    ),
+    pytest.param(
+        "minimal_json",
         MOCK_CANCEL_NOTICE_NUMBER_MINIMAL_JSON,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response confirms CNCL moves it to CANCELLED_ACCR")
-@allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_cncl_confirmed(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is Sts.Conf = CNCL and assert the resulting status.
-
-    Expected outcome: `Sts.Conf = "CNCL"` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_ACCR, ending in CANCELLED_ACCR.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
+        RTP_STATUS_RFC_SENT,
+        "No `Sts.Conf` confirmation is present (minimal JSON without Sts), so only CANCEL_RTP "
+        "is triggered and the RTP stays in RFC_SENT.",
+        id="minimal_json",
+    ),
+    pytest.param(
+        "cncl_confirmed",
         MOCK_CANCEL_NOTICE_NUMBER_CNCL,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_CANCELLED_ACCR, f"Expected status {RTP_STATUS_CANCELLED_ACCR}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response omits the Sts block entirely leaves it in RFC_SENT")
-@allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_no_sts_block(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is full response without Sts block and assert the resulting status.
-
-    Expected outcome: no `Sts.Conf` confirmation is present, so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
+        RTP_STATUS_CANCELLED_ACCR,
+        '`Sts.Conf = "CNCL"` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_ACCR, ending in CANCELLED_ACCR.',
+        id="cncl_confirmed",
+    ),
+    pytest.param(
+        "no_sts_block",
         MOCK_CANCEL_NOTICE_NUMBER_NO_STS_BLOCK,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response confirms RJCR moves it to CANCELLED_REJECTED")
-@allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_rjcr_rejected(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is Sts.Conf = RJCR and assert the resulting status.
-
-    Expected outcome: `Sts.Conf = "RJCR"` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_REJECTED, ending in CANCELLED_REJECTED.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
+        RTP_STATUS_RFC_SENT,
+        "No `Sts.Conf` confirmation is present (Sts block omitted entirely), so only "
+        "CANCEL_RTP is triggered and the RTP stays in RFC_SENT.",
+        id="no_sts_block",
+    ),
+    pytest.param(
+        "rjcr_rejected",
         MOCK_CANCEL_NOTICE_NUMBER_RJCR,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_CANCELLED_REJECTED, f"Expected status {RTP_STATUS_CANCELLED_REJECTED}, got {status}"
+        RTP_STATUS_CANCELLED_REJECTED,
+        '`Sts.Conf = "RJCR"` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_REJECTED, ending in CANCELLED_REJECTED.',
+        id="rjcr_rejected",
+    ),
+    pytest.param(
+        "no_match_fallback",
+        MOCK_CANCEL_NOTICE_NUMBER_NO_MATCH,
+        RTP_STATUS_RFC_SENT,
+        "The mock policy falls back to its default `{}` response when no notice number "
+        "matches, so the RTP stays in RFC_SENT.",
+        id="no_match_fallback",
+    ),
+]
 
 
 @allure.epic("RTP Cancel")
 @allure.feature("RTP Cancel")
 @allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 400 Bad Request moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_400(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 400 Bad Request and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_400,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 401 Unauthorized moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_401(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 401 Unauthorized and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_401,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 404 Not Found moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_404(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 404 Not Found and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_404,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 406 Not Acceptable moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_406(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 406 Not Acceptable and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_406,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 410 Gone moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_410(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 410 Gone and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_410,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 415 Unsupported Media Type moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_415(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 415 Unsupported Media Type and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_415,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 422 Unprocessable Entity moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_422(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 422 Unprocessable Entity and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_422,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock returns 429 Too Many Requests moves it to ERROR_CANCEL")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_epc_429(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is EPC 429 Too Many Requests and assert the resulting status.
-
-    Expected outcome: the PSP synchronously rejects the cancellation request with 422 (per
-    standard behaviour for this EPC HTTP error scenario). The RTP then transitions to
-    ERROR_CANCEL via ERROR_CANCEL_RTP.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_429,
-        CANCEL_REASON_PAID,
-        expected_cancel_status=422,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_ERROR_CANCEL, f"Expected status {RTP_STATUS_ERROR_CANCEL}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response confirms CNCL plus an unexpected field leaves it in RFC_SENT")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_cncl_extra_field(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is Sts.Conf = CNCL with unknown field and assert the resulting status.
-
-    Expected outcome: an EPC response containing fields not declared in the OpenAPI spec is treated as an
-    invalid message and is NOT tolerated for accept/reject purposes (confirmed with rtp-sender-v2
-    maintainers, PR #26). The extra `invalid-field` property invalidates the whole response, so the
-    CNCL confirmation is not processed and the RTP stays in RFC_SENT.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_CNCL_EXTRA_FIELD,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response confirms RJCR plus an unexpected field leaves it in RFC_SENT")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_rjcr_extra_field(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is Sts.Conf = RJCR with unknown field and assert the resulting status.
-
-    Expected outcome: an EPC response containing fields not declared in the OpenAPI spec is treated as an
-    invalid message and is NOT tolerated for accept/reject purposes (confirmed with rtp-sender-v2
-    maintainers, PR #26). The extra `invalid-field` property invalidates the whole response, so the
-    RJCR confirmation is not processed and the RTP stays in RFC_SENT.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_RJCR_EXTRA_FIELD,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title("Cancelling an RTP whose EPC mock response is a malformed, non-JSON string leaves it in RFC_SENT")
-@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
-@pytest.mark.cancel
-@pytest.mark.mock
-@pytest.mark.unhappy_path
-def test_cancel_rtp_v2_epc_mock_malformed_string(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-    random_fiscal_code,
-):
-    """
-    Cancel an RTP (v2) whose EPC v4 mock response is malformed unquoted string and assert the resulting status.
-
-    Expected outcome: the response cannot be parsed as a cancellation confirmation, so the RTP stays in RFC_SENT rather than erroring out.
-    """
-    status = send_and_cancel_rtp_v2_get_status(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_MALFORMED_STRING,
-        CANCEL_REASON_PAID,
-        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
-
-
-@allure.epic("RTP Cancel")
-@allure.feature("RTP Cancel")
-@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
-@allure.title(
-    "Cancelling an RTP whose notice number matches no EPC mock scenario falls back to the default empty response, leaving it in RFC_SENT"
-)
+@allure.title("Cancelling an RTP - EPC v4 mock happy path scenario: {scenario_id}")
 @allure.tag("functional", "happy_path", "rtp_cancel", "epc_v4_mock")
 @pytest.mark.cancel
 @pytest.mark.mock
 @pytest.mark.happy_path
-def test_cancel_rtp_v2_epc_mock_no_match_fallback(
+@pytest.mark.parametrize("scenario_id, notice_number, expected_status, description", _HAPPY_PATH_SCENARIOS)
+def test_cancel_rtp_v2_epc_mock_happy_path(
     debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
     random_fiscal_code,
+    scenario_id,
+    notice_number,
+    expected_status,
+    description,
 ):
+    """Cancel an RTP (v2) against an EPC v4 mock scenario where the cancel call is accepted (204)
+    and assert the resulting RTP status.
     """
-    Cancel an RTP (v2) whose EPC v4 mock response is no notice number match (default) and assert the resulting status.
+    allure.dynamic.description(description)
 
-    Expected outcome: the mock policy falls back to its default `{}` response when no notice number matches, so the RTP stays in RFC_SENT.
-    """
     status = send_and_cancel_rtp_v2_get_status(
         debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         random_fiscal_code,
-        MOCK_CANCEL_NOTICE_NUMBER_NO_MATCH,
+        notice_number,
         CANCEL_REASON_PAID,
         service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert status == RTP_STATUS_RFC_SENT, f"Expected status {RTP_STATUS_RFC_SENT}, got {status}"
+    assert status == expected_status, f"Expected status {expected_status}, got {status}"
+
+
+# Each entry: (scenario_id, notice_number, expected_cancel_status, expected_status, description).
+# These are cases where either the EPC mock HTTP error code causes the PSP to synchronously
+# reject the cancel call itself (422), or the EPC mock response is malformed/carries an
+# unexpected field and is treated as an invalid, non-actionable message (cancel call still
+# accepted with 204, but the RTP stays in RFC_SENT).
+_UNHAPPY_PATH_SCENARIOS = [
+    pytest.param(
+        "epc_400",
+        MOCK_CANCEL_NOTICE_NUMBER_400,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 400 Bad Request scenario). The RTP then transitions to "
+        "ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_400",
+    ),
+    pytest.param(
+        "epc_401",
+        MOCK_CANCEL_NOTICE_NUMBER_401,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 401 Unauthorized scenario). The RTP then transitions to "
+        "ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_401",
+    ),
+    pytest.param(
+        "epc_404",
+        MOCK_CANCEL_NOTICE_NUMBER_404,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 404 Not Found scenario). The RTP then transitions to "
+        "ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_404",
+    ),
+    pytest.param(
+        "epc_406",
+        MOCK_CANCEL_NOTICE_NUMBER_406,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 406 Not Acceptable scenario). The RTP then transitions to "
+        "ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_406",
+    ),
+    pytest.param(
+        "epc_410",
+        MOCK_CANCEL_NOTICE_NUMBER_410,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 410 Gone scenario). The RTP then transitions to ERROR_CANCEL "
+        "via ERROR_CANCEL_RTP.",
+        id="epc_410",
+    ),
+    pytest.param(
+        "epc_415",
+        MOCK_CANCEL_NOTICE_NUMBER_415,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 415 Unsupported Media Type scenario). The RTP then transitions "
+        "to ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_415",
+    ),
+    pytest.param(
+        "epc_422",
+        MOCK_CANCEL_NOTICE_NUMBER_422,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 422 Unprocessable Entity scenario). The RTP then transitions "
+        "to ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_422",
+    ),
+    pytest.param(
+        "epc_429",
+        MOCK_CANCEL_NOTICE_NUMBER_429,
+        422,
+        RTP_STATUS_ERROR_CANCEL,
+        "The PSP synchronously rejects the cancellation request with 422 (per standard "
+        "behaviour for the EPC 429 Too Many Requests scenario). The RTP then transitions to "
+        "ERROR_CANCEL via ERROR_CANCEL_RTP.",
+        id="epc_429",
+    ),
+    pytest.param(
+        "cncl_extra_field",
+        MOCK_CANCEL_NOTICE_NUMBER_CNCL_EXTRA_FIELD,
+        204,
+        RTP_STATUS_RFC_SENT,
+        "An EPC response containing fields not declared in the OpenAPI spec is treated as an "
+        "invalid message and is NOT tolerated for accept/reject purposes (confirmed with "
+        "rtp-sender-v2 maintainers, PR #26). The extra `invalid-field` property invalidates "
+        "the whole response, so the CNCL confirmation is not processed and the RTP stays in "
+        "RFC_SENT.",
+        id="cncl_extra_field",
+    ),
+    pytest.param(
+        "rjcr_extra_field",
+        MOCK_CANCEL_NOTICE_NUMBER_RJCR_EXTRA_FIELD,
+        204,
+        RTP_STATUS_RFC_SENT,
+        "An EPC response containing fields not declared in the OpenAPI spec is treated as an "
+        "invalid message and is NOT tolerated for accept/reject purposes (confirmed with "
+        "rtp-sender-v2 maintainers, PR #26). The extra `invalid-field` property invalidates "
+        "the whole response, so the RJCR confirmation is not processed and the RTP stays in "
+        "RFC_SENT.",
+        id="rjcr_extra_field",
+    ),
+    pytest.param(
+        "malformed_string",
+        MOCK_CANCEL_NOTICE_NUMBER_MALFORMED_STRING,
+        204,
+        RTP_STATUS_RFC_SENT,
+        "The response cannot be parsed as a cancellation confirmation (malformed, unquoted "
+        "string), so the RTP stays in RFC_SENT rather than erroring out.",
+        id="malformed_string",
+    ),
+]
+
+
+@allure.epic("RTP Cancel")
+@allure.feature("RTP Cancel")
+@allure.story("Service provider cancels RTP - EPC v4 mock scenarios")
+@allure.title("Cancelling an RTP - EPC v4 mock unhappy path scenario: {scenario_id}")
+@allure.tag("functional", "unhappy_path", "rtp_cancel", "epc_v4_mock")
+@pytest.mark.cancel
+@pytest.mark.mock
+@pytest.mark.unhappy_path
+@pytest.mark.parametrize(
+    "scenario_id, notice_number, expected_cancel_status, expected_status, description", _UNHAPPY_PATH_SCENARIOS
+)
+def test_cancel_rtp_v2_epc_mock_unhappy_path(
+    debtor_service_provider_token_c,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+    random_fiscal_code,
+    scenario_id,
+    notice_number,
+    expected_cancel_status,
+    expected_status,
+    description,
+):
+    """Cancel an RTP (v2) against an EPC v4 mock error/edge-case scenario and assert both the
+    cancel call's HTTP status and the resulting RTP status.
+    """
+    allure.dynamic.description(description)
+
+    status = send_and_cancel_rtp_v2_get_status(
+        debtor_service_provider_token_c,
+        creditor_service_provider_token_a,
+        rtp_reader_access_token,
+        random_fiscal_code,
+        notice_number,
+        CANCEL_REASON_PAID,
+        expected_cancel_status=expected_cancel_status,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
+    )
+    assert status == expected_status, f"Expected status {expected_status}, got {status}"
