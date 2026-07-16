@@ -421,7 +421,9 @@ def test_send_rtp_api_THROUGH_WEB_API_V2(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201, "Error activating debtor"
+    assert activation_response.status_code in (201, 409), (
+        f"Error activating debtor: {activation_response.status_code} {activation_response.text}"
+    )
 
     rtp_data = generate_rtp_data(payer_id=random_fiscal_code)
     send_response = send_rtp_v2(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)

@@ -25,9 +25,9 @@ def send_and_cancel_rtp_v2_get_status(
     (`postRequestToPayCancellationRequest-v4`) on the downstream cancellation call.
 
     Args:
-        debtor_token: ****** for the debtor service provider.
-        creditor_token: ****** for the creditor service provider sending/cancelling the RTP.
-        reader_token: ****** for the RTP reader.
+        debtor_token: Bearer access token for the debtor service provider (used to activate the payer).
+        creditor_token: Bearer access token for the creditor service provider (used to send/cancel the RTP).
+        reader_token: Bearer access token for the RTP reader (used to read the RTP status).
         payer_id: Fiscal code used as payer ID.
         notice_number: 18-digit notice number forced on the RTP to trigger the EPC mock scenario.
         reason: Cancellation reason. Must be one of: PAID, MODT.
