@@ -16,7 +16,7 @@ def send_and_cancel_rtp_v2_get_status(
     notice_number: str,
     reason: str,
     expected_cancel_status: int = 204,
-    service_provider_id: str = secrets.debtor_service_provider.service_provider_id,
+    service_provider_id: str | None = None,
 ) -> str:
     """Activate a debtor, send an RTP via REST API v2 with a forced notice number, cancel it via
     the v2 cancel endpoint, and return the resulting RTP status.
@@ -31,14 +31,17 @@ def send_and_cancel_rtp_v2_get_status(
         payer_id: Fiscal code used as payer ID.
         notice_number: 18-digit notice number forced on the RTP to trigger the EPC mock scenario.
         reason: Cancellation reason. Must be one of: PAID, MODT.
-        expected_cancel_status: Expected HTTP status code from the cancel call (fire-and-forget,
-            always 204 regardless of the downstream EPC mock outcome).
+        expected_cancel_status: Expected HTTP status code from the cancel call. Usually 204 (accepted),
+            but EPC mock HTTP error scenarios may be synchronously rejected by the PSP with 422.
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
             to service provider A; pass a different one (e.g. MOCKSP05) when the test needs it.
 
     Returns:
         The RTP status string (e.g. "CANCELLED_ACCR", "CANCELLED_REJECTED", "ERROR_CANCEL", "RFC_SENT").
     """
+    if service_provider_id is None:
+        service_provider_id = secrets.debtor_service_provider.service_provider_id
+
     rtp_data = generate_rtp_data(payer_id=payer_id, notice_number=notice_number)
 
     activation_response = activate(

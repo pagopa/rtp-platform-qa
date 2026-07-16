@@ -17,6 +17,7 @@ def generate_rtp_data(
         payer_id: Optional payer ID, generates random if not provided
         payee_id: Optional payee ID, generates random if not provided
         bic: Optional BIC code for debtor agent
+        amount: Optional payment amount, generates random if not provided
         notice_number: Optional 18-digit notice number, generates random if not provided.
             Used to force a specific value (e.g. to trigger EPC mock scenarios on cancel).
 
