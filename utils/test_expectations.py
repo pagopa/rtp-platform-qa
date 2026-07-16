@@ -82,6 +82,12 @@ DELETE_AFTER_UPDATE_STANDALONE_CODES = {
 
 STATUSES_WITH_BODY = {"VALID"}
 
+# Error body returned when the ec_tax_code (payee) does not exist in GPD
+PAYEE_NOT_FOUND_ERROR = {
+    "code": "02041002E",
+    "description": "Payee not found.",
+}
+
 
 def should_have_body(status: str) -> bool:
     """Check if a status should return a non-empty body (for CREATE and simple DELETE scenarios)"""

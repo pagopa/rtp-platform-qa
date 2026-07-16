@@ -3,8 +3,10 @@ import pytest
 
 from api.RTP_process_sender import send_gpd_message
 from utils.dataset_gpd_message import generate_gpd_delete_message_payload, generate_gpd_message_payload
+from utils.generators_utils import generate_random_digits
 from utils.response_assertions_utils import assert_body_presence, assert_response_code, get_response_body_safe
 from utils.test_expectations import (
+    PAYEE_NOT_FOUND_ERROR,
     UPDATE_AFTER_CREATE_AND_DELETE_CODES,
     UPDATE_EXPECTED_CODES,
     has_body_for_expected_code,
@@ -110,3 +112,28 @@ def test_send_gpd_message_update_paid_unhappy_path(rtp_consumer_access_token, ra
     assert_response_code(response, 200, "UPDATE", "PAID")
     body = response.json()
     assert body["status"] == "RFC_SENT", f"Expected RTP state 'RFC_SENT', got '{body['status']}'"
+
+
+@allure.epic("RTP GPD Message")
+@allure.feature("GPD Message API")
+@allure.story("Consumer sends RTP message to Sender with a non-existent payee")
+@allure.title("An UPDATE VALID message with a non-existent ec_tax_code is rejected")
+@allure.tag("functional", "unhappy_path", "gpd_message", "rtp_send", "ec_tax_code_not_found")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_gpd_message_update_ec_tax_code_not_found(rtp_consumer_access_token, random_fiscal_code, activate_payer):
+    """UPDATE VALID with an ec_tax_code that does not exist in GPD returns 422 Payee not found"""
+
+    activate_payer(random_fiscal_code)
+
+    update_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code,
+        operation="UPDATE",
+        status="VALID",
+        ec_tax_code=generate_random_digits(11),
+    )
+
+    response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=update_payload)
+
+    assert_response_code(response, 422, "UPDATE", "VALID (ec_tax_code not found)")
+    assert response.json() == PAYEE_NOT_FOUND_ERROR, f"Unexpected error body: {response.text}"
