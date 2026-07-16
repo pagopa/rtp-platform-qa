@@ -8,18 +8,24 @@ from .generators_utils import generate_notice_number, random_payee_id
 from .text_utils import generate_random_description
 
 
-def generate_rtp_data(payer_id: str = "", payee_id: str = "", bic: str = "", amount: int = None) -> dict:
+def generate_rtp_data(
+    payer_id: str = "", payee_id: str = "", bic: str = "", amount: int = None, notice_number: str = ""
+) -> dict:
     """Generate RTP (Request to Pay) data for testing.
 
     Args:
         payer_id: Optional payer ID, generates random if not provided
         payee_id: Optional payee ID, generates random if not provided
         bic: Optional BIC code for debtor agent
+        amount: Optional payment amount, generates random if not provided
+        notice_number: Optional 18-digit notice number, generates random if not provided.
+            Used to force a specific value (e.g. to trigger EPC mock scenarios on cancel).
 
     Returns:
         Dictionary containing payee, payer, and payment notice data
     """
-    notice_number = generate_notice_number()
+    if not notice_number:
+        notice_number = generate_notice_number()
 
     if amount is None:
         amount = random.randint(0, 999999999)
