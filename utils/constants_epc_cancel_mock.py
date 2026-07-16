@@ -26,19 +26,6 @@ MOCK_CANCEL_NOTICE_NUMBER_RJCR_EXTRA_FIELD = "999999999999999015"
 MOCK_CANCEL_NOTICE_NUMBER_MALFORMED_STRING = "999999999999999016"
 MOCK_CANCEL_NOTICE_NUMBER_NO_MATCH = "999999999999999999"
 
-# Expected RTP status once the async cancellation flow (rtp-sender-v2, sidecar EPC proxy)
-# has processed the EPC mock response.
-#
-# State machine reference (rtp-sender-v2, StateMachineConfiguration):
-#   SENT --CANCEL_RTP--> RFC_SENT --CONFIRM_RFC--> CANCELLED
-#   CANCELLED --CANCEL_RTP_ACCR--> CANCELLED_ACCR         (EPC confirmation: CNCL)
-#   CANCELLED --CANCEL_RTP_REJECTED--> CANCELLED_REJECTED (EPC confirmation: RJCR)
-#   (any)     --ERROR_CANCEL_RTP--> ERROR_CANCEL           (EPC HTTP error status)
-# When the EPC response cannot be matched to CNCL/RJCR (missing/malformed/absent
-# confirmation, or a response containing fields not declared in the EPC OpenAPI spec),
-# only CANCEL_RTP is triggered and the RTP stays in RFC_SENT. Confirmed with rtp-sender-v2
-# maintainers (PR #26 review): a response with unexpected fields is treated as an invalid
-# EPC message and intentionally NOT tolerated for accept/reject purposes.
 RTP_STATUS_RFC_SENT = "RFC_SENT"
 RTP_STATUS_CANCELLED_ACCR = "CANCELLED_ACCR"
 RTP_STATUS_CANCELLED_REJECTED = "CANCELLED_REJECTED"
