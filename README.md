@@ -283,6 +283,7 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 |-------|-----------|
 | Debtor Service Provider | `DEBTOR_SERVICE_PROVIDER_CLIENT_ID`, `_SECRET`, `_ID` |
 | Debtor Service Provider B | `DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID`, `_SECRET`, `_ID` |
+| Debtor Service Provider C | `DEBTOR_SERVICE_PROVIDER_C_CLIENT_ID`, `_SECRET`, `_ID` |
 | Creditor Service Provider | `CREDITOR_SERVICE_PROVIDER_CLIENT_ID`, `_SECRET`, `_ID` |
 | RTP Consumer / Sender | `RTP_CONSUMER_CLIENT_ID`, `_SECRET` |
 | RTP Reader | `RTP_READER_CLIENT_ID`, `_SECRET` |
@@ -312,6 +313,14 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 | `DEBTOR_SERVICE_PROVIDER_B_CLIENT_ID` | Client ID for the secondary debtor service provider |
 | `DEBTOR_SERVICE_PROVIDER_B_ID` | Unique identifier for the secondary debtor service provider |
 | `DEBTOR_SERVICE_PROVIDER_B_CLIENT_SECRET` | Client secret for the secondary debtor service provider |
+
+### Debtor Service Provider C
+
+| Variable | Description |
+|----------|-------------|
+| `DEBTOR_SERVICE_PROVIDER_C_CLIENT_ID` | Client ID for debtor service provider MOCKSP05, used in send/cancel v2 EPC mock tests |
+| `DEBTOR_SERVICE_PROVIDER_C_ID` | Unique identifier for debtor service provider MOCKSP05 |
+| `DEBTOR_SERVICE_PROVIDER_C_CLIENT_SECRET` | Client secret for debtor service provider MOCKSP05 |
 
 ### Creditor Service Provider
 

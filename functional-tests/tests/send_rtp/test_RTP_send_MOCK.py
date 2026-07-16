@@ -1,9 +1,11 @@
 import allure
 import pytest
 
+from api.debtor_activation_api import activate
 from api.RTP_process_sender import send_gpd_message
 from api.RTP_send_api import send_rtp, send_rtp_v2
 from config.configuration import config, secrets
+from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_C_ID
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.fiscal_code_utils import fake_fc
@@ -13,8 +15,8 @@ from utils.rtp_send_helpers import (
     send_rtp_and_get_status_by_notice_number,
     send_rtp_and_get_status_by_notice_number_via_rest,
     send_rtp_and_get_status_via_rest,
-    send_rtp_v2_and_get_status_via_rest,
     send_rtp_v2_and_get_status_by_notice_number_via_rest,
+    send_rtp_v2_and_get_status_via_rest,
 )
 
 
@@ -409,14 +411,19 @@ def test_send_rtp_sync_rejected_no_links_THROUGH_WEB_API(
 @pytest.mark.send
 @pytest.mark.happy_path
 def test_send_rtp_api_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
-    activate_payer,
     random_fiscal_code,
 ):
-    activation_response = activate_payer(random_fiscal_code)
-    assert activation_response.status_code == 201, "Error activating debtor"
+    activation_response = activate(
+        debtor_service_provider_token_c,
+        random_fiscal_code,
+        DEBTOR_SERVICE_PROVIDER_C_ID,
+    )
+    assert activation_response.status_code in (201, 409), (
+        f"Error activating debtor: {activation_response.status_code} {activation_response.text}"
+    )
 
     rtp_data = generate_rtp_data(payer_id=random_fiscal_code)
     send_response = send_rtp_v2(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
@@ -449,12 +456,12 @@ def test_cannot_send_rtp_not_activated_user_THROUGH_WEB_API_V2(creditor_service_
 @pytest.mark.send
 @pytest.mark.happy_path
 def test_send_rtp_sync_accepted_ds05_actc_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
     status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_actc_fiscal_code_v2,
@@ -470,12 +477,12 @@ def test_send_rtp_sync_accepted_ds05_actc_THROUGH_WEB_API_V2(
 @pytest.mark.send
 @pytest.mark.happy_path
 def test_send_rtp_sync_rejected_ds08p_n_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
     status = send_rtp_v2_and_get_status_by_notice_number_via_rest(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_rjct_fiscal_code_v2,
@@ -491,12 +498,12 @@ def test_send_rtp_sync_rejected_ds08p_n_THROUGH_WEB_API_V2(
 @pytest.mark.send
 @pytest.mark.happy_path
 def test_send_rtp_sync_accepted_no_links_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
     status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_no_links_fiscal_code_v2,
@@ -516,12 +523,12 @@ def test_send_rtp_sync_accepted_no_links_THROUGH_WEB_API_V2(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_sent_extra_field_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
     status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_extra_field_fiscal_code_v2,
@@ -539,12 +546,12 @@ def test_send_rtp_sync_sent_extra_field_THROUGH_WEB_API_V2(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_with_extra_fields_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
     status = send_rtp_v2_and_get_status_by_notice_number_via_rest(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_rjct_extra_field_fiscal_code_v2,
@@ -562,12 +569,12 @@ def test_send_rtp_sync_rejected_with_extra_fields_THROUGH_WEB_API_V2(
 @pytest.mark.send
 @pytest.mark.unhappy_path
 def test_send_rtp_sync_rejected_no_links_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_a,
+    debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
     status = send_rtp_v2_and_get_status_by_notice_number_via_rest(
-        debtor_service_provider_token_a,
+        debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_rjct_no_links_fiscal_code_v2,
