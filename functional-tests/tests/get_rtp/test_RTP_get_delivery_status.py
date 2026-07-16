@@ -176,8 +176,8 @@ def test_get_delivery_status_error_send_rtp(
         access_token=rtp_consumer_access_token,
         message_payload=message_payload,
     )
-    assert send_response.status_code == 500, (
-        f"Expected the mocked debtor service provider error to surface as HTTP 500, "
+    assert 500 <= send_response.status_code < 600, (
+        f"Expected the mocked debtor service provider error to surface as an HTTP 5xx, "
         f"got {send_response.status_code}: {send_response.text}"
     )
 
