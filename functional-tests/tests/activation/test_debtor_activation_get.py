@@ -141,6 +141,16 @@ def test_get_activation_by_id_not_found(debtor_service_provider_token_a):
     random_id = str(uuid.uuid4())
     res = get_activation_by_id(debtor_service_provider_token_a, random_id)
     assert res.status_code == 404
+    
+    error_body = res.json()
+    assert "errors" in error_body
+    assert isinstance(error_body["errors"], list)
+    assert len(error_body["errors"]) > 0
+    for err in error_body["errors"]:
+        assert "code" in err
+        assert "description" in err
+        assert isinstance(err["code"], str)
+        assert isinstance(err["description"], str)
 
 
 @allure.epic("Debtor Activation")
