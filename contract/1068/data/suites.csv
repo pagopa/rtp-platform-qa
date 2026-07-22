@@ -1,0 +1,18 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","57136","test_activation_contract[GET /activations/payer]","contract-tests.tests","Wed Jul 22 07:19:19 UTC 2026","passed","Wed Jul 22 07:20:17 UTC 2026","","test_activation","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","122466","test_send_api_contract[POST /gpd/message]","contract-tests.tests","Wed Jul 22 07:24:21 UTC 2026","passed","Wed Jul 22 07:26:24 UTC 2026","","test_api_send_rtp","",""
