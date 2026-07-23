@@ -147,10 +147,8 @@ def test_get_activation_by_id_not_found(debtor_service_provider_token_a):
     assert isinstance(error_body["errors"], list)
     assert len(error_body["errors"]) > 0
     for err in error_body["errors"]:
-        assert "code" in err
-        assert "description" in err
-        assert isinstance(err["code"], str)
-        assert isinstance(err["description"], str)
+        assert err["code"] == "01041000E"
+        assert err["description"] == "Activation not found."
 
 
 @allure.epic("Debtor Activation")
