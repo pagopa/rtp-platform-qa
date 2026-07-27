@@ -1,7 +1,7 @@
 import requests
 
-from api.utils.api_version import CALLBACK_VERSION, RFC_CALLBACK_VERSION
-from api.utils.endpoints import CALLBACK_URL, RFC_CALLBACK_URL
+from api.utils.api_version import CALLBACK_VERSION, CALLBACK_VERSION_V2, RFC_CALLBACK_VERSION, RFC_CALLBACK_VERSION_V2
+from api.utils.endpoints import CALLBACK_URL, CALLBACK_URL_V2, RFC_CALLBACK_URL, RFC_CALLBACK_URL_V2
 from api.utils.http_utils import HTTP_TIMEOUT
 
 
@@ -10,6 +10,29 @@ def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_he
     return requests.post(
         cert=(cert_path, key_path),
         url=CALLBACK_URL,
+        headers=headers,
+        json=rtp_payload,
+        timeout=HTTP_TIMEOUT,
+    )
+
+
+def srtp_callback_v2(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
+    """
+    Send a callback to the v2 RTP callback endpoint.
+
+    Args:
+        cert_path: Path to the certificate file
+        key_path: Path to the key file
+        rtp_payload: The callback payload
+        include_version_header: When True, adds the Version header to the request
+
+    Returns:
+        Response object from the callback request
+    """
+    headers = {"Version": CALLBACK_VERSION_V2} if include_version_header else {}
+    return requests.post(
+        cert=(cert_path, key_path),
+        url=CALLBACK_URL_V2,
         headers=headers,
         json=rtp_payload,
         timeout=HTTP_TIMEOUT,
