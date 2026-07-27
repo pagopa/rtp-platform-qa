@@ -13,14 +13,27 @@ import uuid
 
 import requests
 
-from api.utils.api_version import GET_RTP_VERSION
+from api.utils.api_version import GET_RTP_VERSION, GET_RTP_VERSION_V2
 from api.utils.endpoints import GET_RTP_BY_NOTICE_NUMBER_URL, GET_RTP_DELIVERY_STATUS_URL, GET_RTP_URL
 from api.utils.http_utils import APPLICATION_JSON_HEADER, HTTP_TIMEOUT
 
 
+def _get_rtp(access_token: str, rtp_id: str, version: str):
+    url = GET_RTP_URL.format(rtpId=rtp_id)
+    headers = {
+        "Authorization": access_token,
+        "Version": version,
+        "RequestId": str(uuid.uuid4()),
+        **APPLICATION_JSON_HEADER,
+    }
+
+    resp = requests.get(url=url, headers=headers, timeout=HTTP_TIMEOUT)
+    return resp
+
+
 def get_rtp(access_token: str, rtp_id: str):
     """
-    Retrieve an RTP resource by its unique RTP identifier.
+    Retrieve an RTP resource by its unique RTP identifier (Version: v1).
 
     Args:
         access_token (str): The bearer token used for authentication.
@@ -29,16 +42,21 @@ def get_rtp(access_token: str, rtp_id: str):
     Returns:
         requests.Response: The HTTP response object returned by the API.
     """
-    url = GET_RTP_URL.format(rtpId=rtp_id)
-    headers = {
-        "Authorization": access_token,
-        "Version": GET_RTP_VERSION,
-        "RequestId": str(uuid.uuid4()),
-        **APPLICATION_JSON_HEADER,
-    }
+    return _get_rtp(access_token, rtp_id, GET_RTP_VERSION)
 
-    resp = requests.get(url=url, headers=headers, timeout=HTTP_TIMEOUT)
-    return resp
+
+def get_rtp_v2(access_token: str, rtp_id: str):
+    """
+    Retrieve an RTP resource by its unique RTP identifier (Version: v2).
+
+    Args:
+        access_token (str): The bearer token used for authentication.
+        rtp_id (str): The identifier of the RTP resource to fetch.
+
+    Returns:
+        requests.Response: The HTTP response object returned by the API.
+    """
+    return _get_rtp(access_token, rtp_id, GET_RTP_VERSION_V2)
 
 
 def get_rtp_by_notice_number(access_token: str, notice_number: str):
