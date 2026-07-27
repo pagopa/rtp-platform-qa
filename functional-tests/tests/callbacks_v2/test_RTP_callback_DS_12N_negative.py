@@ -96,6 +96,7 @@ def test_receive_rfc_callback_DS_12N_negative_compliant(
 def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_compliant(
     creditor_service_provider_token_a,
     debtor_service_provider_token_c,
+    rtp_reader_access_token,
     debtor_sp_mock_cert_key,
     random_fiscal_code,
 ):
@@ -108,6 +109,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_complia
     3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
     4. Send DS12N callback with assignee_bic='MOCKSP01' (doesn't match certificate identity)
     5. Verify callback is rejected with 403 (certificate mismatch)
+    6. Verify RTP status is still RFC_SENT
     """
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
@@ -149,6 +151,14 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_complia
         f"Expecting error from callback, expected 403 got {callback_response.status_code}"
     )
 
+    get_response = get_rtp_v2(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    body = get_response.json()
+    assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
+
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Callback DS_12N - Negative")
@@ -160,6 +170,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_complia
 def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_negative_compliant(
     creditor_service_provider_token_a,
     debtor_service_provider_token_c,
+    rtp_reader_access_token,
     debtor_sp_mock_cert_key,
     random_fiscal_code,
 ):
@@ -172,6 +183,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_negative_co
     3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
     4. Send DS12N callback with non-existing BIC (MOCKSP99)
     5. Verify callback is rejected with 400 (service provider not found)
+    6. Verify RTP status is still RFC_SENT
     """
     message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
 
@@ -212,6 +224,14 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_negative_co
     assert callback_response.status_code == 400, (
         f"Expecting error from callback, expected 400 got {callback_response.status_code}"
     )
+
+    get_response = get_rtp_v2(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert get_response.status_code == 200
+    body = get_response.json()
+    assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
 
 
 @allure.epic("RTP Callback V2")
