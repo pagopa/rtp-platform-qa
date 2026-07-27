@@ -41,7 +41,7 @@ def send_gpd_message(access_token: str, message_payload: dict):
 def send_gpd_message_v2(access_token: str, message_payload: dict):
     """Send an RTP message to the GPD sender service (Version: v2).
 
-    :param access_token: Bearer token for the Creditor Service Provider client
+    :param access_token: Bearer token for RTP Consumer client
     :param message_payload: RTP message payload (CREATE/UPDATE/DELETE operation)
     :returns: The response of the call
     :rtype: requests.Response

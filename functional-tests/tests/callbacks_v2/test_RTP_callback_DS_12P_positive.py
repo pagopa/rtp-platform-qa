@@ -16,7 +16,7 @@ from utils.dataset_gpd_message import generate_gpd_delete_message_payload, gener
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Callback DS_12P - Positive")
 @allure.story("Service provider sends a v2 RFC callback with CNCL status")
-@allure.title("A v2 RFC callback DS12P CNCL is successfully received and RTP status is CANCEL")
+@allure.title("A v2 RFC callback DS12P CNCL is successfully received and RTP status is CANCELLED")
 @allure.tag("functional", "happy_path", "rtp_callback", "v2", "ds_12p_positive_compliant", "rfc")
 @pytest.mark.callback
 @pytest.mark.happy_path
