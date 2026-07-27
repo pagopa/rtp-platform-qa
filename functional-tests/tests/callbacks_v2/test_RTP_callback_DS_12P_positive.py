@@ -21,7 +21,7 @@ from utils.dataset_gpd_message import generate_gpd_delete_message_payload, gener
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rfc_callback_DS_12P_positive_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
@@ -47,7 +47,7 @@ def test_receive_rfc_callback_DS_12P_positive_compliant(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -56,7 +56,7 @@ def test_receive_rfc_callback_DS_12P_positive_compliant(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(
-        access_token=creditor_service_provider_token_a, message_payload=delete_payload
+        access_token=rtp_consumer_access_token, message_payload=delete_payload
     )
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
@@ -94,7 +94,7 @@ def test_receive_rfc_callback_DS_12P_positive_compliant(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
@@ -120,7 +120,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_complia
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -129,7 +129,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_complia
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(
-        access_token=creditor_service_provider_token_a, message_payload=delete_payload
+        access_token=rtp_consumer_access_token, message_payload=delete_payload
     )
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
@@ -168,7 +168,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_complia
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_positive_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
@@ -194,7 +194,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_positive_co
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -203,7 +203,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_positive_co
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(
-        access_token=creditor_service_provider_token_a, message_payload=delete_payload
+        access_token=rtp_consumer_access_token, message_payload=delete_payload
     )
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
@@ -242,7 +242,7 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_positive_co
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_rfc_callback_DS_12P_positive_invalid(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     debtor_sp_mock_cert_key,
@@ -268,7 +268,7 @@ def test_receive_rfc_callback_DS_12P_positive_invalid(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -277,7 +277,7 @@ def test_receive_rfc_callback_DS_12P_positive_invalid(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(
-        access_token=creditor_service_provider_token_a, message_payload=delete_payload
+        access_token=rtp_consumer_access_token, message_payload=delete_payload
     )
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 

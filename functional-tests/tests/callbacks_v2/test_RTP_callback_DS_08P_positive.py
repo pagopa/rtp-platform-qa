@@ -23,7 +23,7 @@ from utils.dataset_gpd_message import generate_gpd_message_payload
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08P_positive_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -38,7 +38,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -104,7 +104,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant(
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_rtp_callback_DS_08P_positive_compliant_without_DS_05(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -123,7 +123,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant_without_DS_05(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -174,7 +174,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant_without_DS_05(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08P_positive_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -189,7 +189,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08P_positive_complia
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -231,7 +231,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08P_positive_complia
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_non_existing_service_provider_DS_08P_positive_compliant(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -246,7 +246,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_08P_positive_co
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -288,7 +288,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_08P_positive_co
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_fail_send_rtp_callback_non_compliant_payload_DS_08P_positive(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -303,7 +303,7 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_08P_positive(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]

@@ -60,7 +60,7 @@ def _assert_version_header_rejected(callback_response):
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_rtp_callback_DS_05_redirect_with_version_header(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -75,7 +75,7 @@ def test_rtp_callback_DS_05_redirect_with_version_header(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -117,7 +117,7 @@ def test_rtp_callback_DS_05_redirect_with_version_header(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_rtp_callback_DS_08P_positive_with_version_header(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -132,7 +132,7 @@ def test_rtp_callback_DS_08P_positive_with_version_header(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -174,7 +174,7 @@ def test_rtp_callback_DS_08P_positive_with_version_header(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_rtp_callback_DS_08N_negative_with_version_header(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -189,7 +189,7 @@ def test_rtp_callback_DS_08N_negative_with_version_header(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -231,7 +231,7 @@ def test_rtp_callback_DS_08N_negative_with_version_header(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_rtp_callback_DS_document_rjct_with_version_header(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -246,7 +246,7 @@ def test_rtp_callback_DS_document_rjct_with_version_header(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -293,7 +293,7 @@ def test_rtp_callback_DS_document_rjct_with_version_header(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_rfc_callback_DS_12P_positive_with_version_header(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -308,7 +308,7 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -317,7 +317,7 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(
-        access_token=creditor_service_provider_token_a, message_payload=delete_payload
+        access_token=rtp_consumer_access_token, message_payload=delete_payload
     )
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
@@ -355,7 +355,7 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_rfc_callback_DS_12N_negative_with_version_header(
-    creditor_service_provider_token_a,
+    rtp_consumer_access_token,
     debtor_service_provider_token_c,
     rtp_reader_access_token,
     random_fiscal_code,
@@ -370,7 +370,7 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
     )
     assert activation_response.status_code == 201
 
-    send_response = send_gpd_message_v2(access_token=creditor_service_provider_token_a, message_payload=message_payload)
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
     assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
 
     resource_id = send_response.json()["resourceId"]
@@ -379,7 +379,7 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(
-        access_token=creditor_service_provider_token_a, message_payload=delete_payload
+        access_token=rtp_consumer_access_token, message_payload=delete_payload
     )
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
