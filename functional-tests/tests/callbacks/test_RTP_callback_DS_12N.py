@@ -99,7 +99,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
     1. Activate payer
     2. Send an RTP via GPD message (CREATE VALID)
     3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
-    4. Send DS12N callback with assignee_bic='MOCKSP01' (doesn't match certificate identity MOCKSP04)
+    4. Send DS12N callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
     5. Verify callback is rejected with 403 (certificate mismatch)
     """
 
@@ -122,7 +122,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant(
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
         original_msg_id=original_msg_id,
-        assignee_bic="MOCKSP01",
+        assignee_bic="FAKESP01",
     )
 
     cert, key = debtor_sp_mock_cert_key
@@ -360,7 +360,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant_T
     1. Activate payer
     2. Send an RTP via GPD message (CREATE VALID)
     3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
-    4. Send DS12N callback with assignee_bic='MOCKSP01' (doesn't match certificate identity MOCKSP04)
+    4. Send DS12N callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
     5. Verify callback is rejected with 403 (certificate mismatch)
     """
 
@@ -382,7 +382,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_RJCR_compliant_T
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
         original_msg_id=original_msg_id,
-        assignee_bic="MOCKSP01",
+        assignee_bic="FAKESP01",
     )
 
     cert, key = debtor_sp_mock_cert_key

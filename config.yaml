@@ -56,16 +56,16 @@ service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
 
 # ============================
-# CALLBACK URL
+# CALLBACK URL - v1
 # ============================
-callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/send"
+callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/v1/send"
 callback_api_version: 'v1'
 
 # ============================
-# RFC (REQUEST FOR CANCELLATION) CALLBACK URL
-rfc_callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/cancel"
-rfc_callback_api_version: 'v1'
+# RFC (REQUEST FOR CANCELLATION) CALLBACK URL - v1
 # ============================
+rfc_callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/v1/cancel"
+rfc_callback_api_version: 'v1'
 
 # ============================
 # CALLBACK URL - v2
