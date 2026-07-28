@@ -230,3 +230,10 @@ def test_cannot_get_activation_lower_fiscal_code(debtor_service_provider_token_a
 
     res = get_activation_by_payer_id(debtor_service_provider_token_a, random_fiscal_code.lower())
     assert res.status_code == 400
+    error_body = res.json()
+    assert "errors" in error_body
+    assert isinstance(error_body["errors"], list)
+    assert len(error_body["errors"]) > 0
+    for err in error_body["errors"]:
+        assert err["code"] == "01021013E"
+        assert err["description"] == "Invalid Payer ID format."
