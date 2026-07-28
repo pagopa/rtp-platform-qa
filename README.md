@@ -95,7 +95,8 @@ pytest functional-tests/tests/ -q
 | `activation/` | Debtor activation create, get, list, deactivation, payer status (GET /activations/payer/{payerId}/status), security |
 | `auth/` | OAuth2 / Keycloak token retrieval and bearer token format |
 | `availability/` | Service availability checks |
-| `callbacks/` | RTP callback scenarios DS-04, DS-05, DS-08, DS-12N, DS-12P |
+| `callbacks/` | RTP callback scenarios DS-04, DS-05, DS-08, DS-12N, DS-12P (v1 endpoints) |
+| `callbacks_v2/` | RTP/RFC callback scenarios on v2 endpoints: DS-05 redirect, DS-08N negative, DS-08P positive, DS-12N negative, DS-12P positive, document RJCT, plus regression tests rejecting the legacy `Version` header |
 | `cancel_rtp/` | RTP cancellation flows |
 | `get_rtp/` | RTP retrieval and delivery status |
 | `gpd_availability/` | GPD (Gestione Posizioni Debitorie) availability |
@@ -476,6 +477,7 @@ rtp-platform-qa/
 │       ├── auth/
 │       ├── availability/
 │       ├── callbacks/
+│       ├── callbacks_v2/
 │       ├── cancel_rtp/
 │       ├── get_rtp/
 │       ├── gpd_availability/
