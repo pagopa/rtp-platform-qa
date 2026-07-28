@@ -188,9 +188,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_document_rjct_c
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Callback DS_document - Rejection")
 @allure.story("Service provider sends a v2 document callback referred to an RTP with invalid status")
-@allure.title(
-    "A v2 document RTP callback with invalid status is rejected without affecting the RTP status"
-)
+@allure.title("A v2 document RTP callback with invalid status is rejected without affecting the RTP status")
 @allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "non_ds_document_rjct_compliant")
 @pytest.mark.callback
 @pytest.mark.unhappy_path

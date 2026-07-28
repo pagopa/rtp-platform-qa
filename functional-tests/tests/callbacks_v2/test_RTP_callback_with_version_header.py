@@ -316,9 +316,7 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
     original_msg_id = resource_id.replace("-", "")
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
-    cancel_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token, message_payload=delete_payload
-    )
+    cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
@@ -378,9 +376,7 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
     original_msg_id = resource_id.replace("-", "")
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
-    cancel_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token, message_payload=delete_payload
-    )
+    cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
     assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)

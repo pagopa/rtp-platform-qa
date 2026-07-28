@@ -59,9 +59,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant(
         key_path=key,
         include_version_header=False,
     )
-    assert ds05_response.status_code == 200, (
-        f"DS_05 setup step failed: expected 200 got {ds05_response.status_code}"
-    )
+    assert ds05_response.status_code == 200, f"DS_05 setup step failed: expected 200 got {ds05_response.status_code}"
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,

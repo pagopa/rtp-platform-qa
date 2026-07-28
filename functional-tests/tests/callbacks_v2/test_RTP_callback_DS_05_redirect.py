@@ -188,9 +188,7 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_05_redirect_com
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Callback DS_05 - Redirect")
 @allure.story("Service provider sends a v2 redirect callback referred to an RTP with invalid status")
-@allure.title(
-    "A v2 redirect RTP callback with invalid status is rejected without affecting the RTP status"
-)
+@allure.title("A v2 redirect RTP callback with invalid status is rejected without affecting the RTP status")
 @allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "non_ds_05_redirect_compliant")
 @pytest.mark.callback
 @pytest.mark.unhappy_path

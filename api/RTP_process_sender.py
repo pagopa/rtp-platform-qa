@@ -2,8 +2,7 @@ import uuid
 
 import requests
 
-from api.utils.api_version import SEND_GPD_MESSAGE_VERSION, \
-    SEND_GPD_MESSAGE_VERSION_V2
+from api.utils.api_version import SEND_GPD_MESSAGE_VERSION, SEND_GPD_MESSAGE_VERSION_V2
 from api.utils.endpoints import RTP_SENDER_GPD_MESSAGE_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 from utils.idempotency_key_utils import generate_idempotency_key

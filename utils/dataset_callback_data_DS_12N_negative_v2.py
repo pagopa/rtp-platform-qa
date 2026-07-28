@@ -137,9 +137,7 @@ def _generate_rfc_callback_data_v2(
                                 "PmtTpInf": {"SvcLvl": {"Cd": "SRTP"}, "LclInstrm": {"Cd": "INST"}},
                                 "DbtrAgt": {"FinInstnId": {"BICFI": bic}},
                                 "CdtrAgt": {"FinInstnId": {"BICFI": ASSIGNOR_BIC}},
-                                "Cdtr": {
-                                    "Pty": {"Nm": "Acme Merchant Srl", "Id": {"OrgId": {"AnyBIC": ASSIGNOR_BIC}}}
-                                },
+                                "Cdtr": {"Pty": {"Nm": "Acme Merchant Srl", "Id": {"OrgId": {"AnyBIC": ASSIGNOR_BIC}}}},
                                 "CdtrAcct": {"Id": {"IBAN": "IT60X0542811101000000123456"}},
                             },
                         }
