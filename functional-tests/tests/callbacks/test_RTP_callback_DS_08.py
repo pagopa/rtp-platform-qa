@@ -273,7 +273,7 @@ def test_receive_rtp_callback_DS_08P_compliant_ACWC(
 def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08N_compliant(
     debtor_sp_mock_cert_key,
 ):
-    callback_data = generate_callback_data_DS_08N_compliant(bic="MOCKSP01")
+    callback_data = generate_callback_data_DS_08N_compliant(bic="FAKESP01")
 
     cert, key = debtor_sp_mock_cert_key
 
