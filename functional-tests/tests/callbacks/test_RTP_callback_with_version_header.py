@@ -32,7 +32,6 @@ from utils.dataset_callback_data_DS_12N_RJCR_compliant import generate_callback_
 from utils.dataset_callback_data_DS_12P_CNCL_compliant import generate_callback_data_DS_12P_CNCL_compliant
 from utils.dataset_gpd_message import generate_gpd_delete_message_payload, generate_gpd_message_payload
 
-
 # ---------------------------------------------------------------------------
 # RTP callback endpoint (DS_04, DS_05, DS_08)
 # ---------------------------------------------------------------------------
@@ -171,9 +170,7 @@ def test_rtp_callback_DS_05_ACTC_with_version_header(
     get_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
     assert get_response.status_code == 200
     body = get_response.json()
-    assert body["status"] == "SENT", (
-        f"RTP status must remain SENT when Version header is present, got {body['status']}"
-    )
+    assert body["status"] == "SENT", f"RTP status must remain SENT when Version header is present, got {body['status']}"
 
 
 @allure.epic("RTP Callback")
@@ -226,9 +223,7 @@ def test_rtp_callback_DS_08P_ACCP_with_version_header(
         key_path=key,
         include_version_header=False,
     )
-    assert ds05_response.status_code == 200, (
-        f"DS_05 setup step failed: expected 200 got {ds05_response.status_code}"
-    )
+    assert ds05_response.status_code == 200, f"DS_05 setup step failed: expected 200 got {ds05_response.status_code}"
 
     # Now send DS_08P ACCP with Version header
     callback_data = build_callback_with_original_msg_id(
@@ -321,9 +316,7 @@ def test_rtp_callback_DS_08N_with_version_header(
     get_response = get_rtp(access_token=rtp_reader_access_token, rtp_id=resource_id)
     assert get_response.status_code == 200
     body = get_response.json()
-    assert body["status"] == "SENT", (
-        f"RTP status must remain SENT when Version header is present, got {body['status']}"
-    )
+    assert body["status"] == "SENT", f"RTP status must remain SENT when Version header is present, got {body['status']}"
 
 
 # ---------------------------------------------------------------------------
@@ -370,9 +363,7 @@ def test_rfc_callback_DS_12P_CNCL_with_version_header(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, (
-        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
-    )
+    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12P_CNCL_compliant(
         resource_id=resource_id,
@@ -442,9 +433,7 @@ def test_rfc_callback_DS_12N_RJCR_with_version_header(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, (
-        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
-    )
+    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
 
     callback_data = generate_callback_data_DS_12N_RJCR_compliant(
         resource_id=resource_id,
