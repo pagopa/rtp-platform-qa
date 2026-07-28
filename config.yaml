@@ -43,6 +43,7 @@ get_rtp_path: "rtps/{rtpId}"
 get_rtp_by_notice_number_path: "rtps"
 get_rtp_delivery_status_path: "rtps/delivery-status"
 get_api_version: 'v1'
+get_api_version_v2: 'v2'
 
 # ============================
 # REGISTRIES (PAYEES / SERVICE PROVIDERS)
@@ -65,6 +66,18 @@ callback_api_version: 'v1'
 rfc_callback_url: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/cancel"
 rfc_callback_api_version: 'v1'
 # ============================
+
+# ============================
+# CALLBACK URL - v2
+# ============================
+callback_url_v2: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/v2/send"
+callback_api_version_v2: 'v2'
+
+# ============================
+# RFC (REQUEST FOR CANCELLATION) CALLBACK URL - v2
+# ============================
+rfc_callback_url_v2: "https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/v2/cancel"
+rfc_callback_api_version_v2: 'v2'
 
 # ============================
 # MOCK SERVICES & API SPECIFICATIONS
@@ -117,4 +130,5 @@ debt_positions_dev_update_path: "/gpd/debt-positions-service/v1/organizations/{o
 # SEND API
 # ============================
 send_api_version: 'v1'
+send_api_version_v2: 'v2'
 send_gpd_message_path: 'gpd/message'
