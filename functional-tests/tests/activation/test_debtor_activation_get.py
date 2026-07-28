@@ -4,7 +4,7 @@ from datetime import datetime
 import allure
 import pytest
 
-from api.debtor_activation_api import get_activation_by_id
+from api.debtor_activation_api import get_activation_by_id, get_activation_by_payer_id
 from config.configuration import secrets
 
 
@@ -164,3 +164,48 @@ def test_get_activation_by_id_invalid_uuid(debtor_service_provider_token_a):
     invalid_id = "not-a-valid-uuid"
     res = get_activation_by_id(debtor_service_provider_token_a, invalid_id)
     assert res.status_code == 400
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Get Debtor activation by Payer ID")
+@allure.title("Retrieving non-existent activation by payer id returns 404")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_by_payer_id_not_found(debtor_service_provider_token_a, random_fiscal_code):
+
+    res = get_activation_by_payer_id(debtor_service_provider_token_a, random_fiscal_code)
+    assert res.status_code == 404
+    
+    error_body = res.json()
+    assert "errors" in error_body
+    assert isinstance(error_body["errors"], list)
+    assert len(error_body["errors"]) > 0
+    for err in error_body["errors"]:
+        assert err["code"] == "01041000E"
+        assert err["description"] == "Activation not found."
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Get Debtor activation by Payer ID")
+@allure.title("Retrieving activation with malformed payer id returns 400")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_by_payer_id_malformed(debtor_service_provider_token_a):
+
+    invalid_payer_id = "INVALID_PAYER_ID"
+    res = get_activation_by_payer_id(debtor_service_provider_token_a, invalid_payer_id)
+    assert res.status_code == 400
+    
+    error_body = res.json()
+    assert "errors" in error_body
+    assert isinstance(error_body["errors"], list)
+    assert len(error_body["errors"]) > 0
+    for err in error_body["errors"]:
+        assert err["code"] == "01021013E"
+        assert err["description"] == "Invalid Payer ID format."
