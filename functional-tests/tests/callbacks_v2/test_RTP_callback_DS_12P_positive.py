@@ -107,7 +107,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_complia
     1. Activate payer
     2. Send an RTP via GPD message v2 (CREATE VALID)
     3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
-    4. Send DS12P callback with assignee_bic='MOCKSP01' (doesn't match certificate identity)
+    4. Send DS12P callback with assignee_bic='FAKESP01' (doesn't match certificate identity)
     5. Verify callback is rejected with 403 (certificate mismatch)
     6. Verify RTP status is still RFC_SENT
     """
@@ -136,7 +136,7 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_complia
     callback_data = generate_callback_data_DS_12P_positive_compliant(
         resource_id=resource_id,
         original_msg_id=original_msg_id,
-        assignee_bic="MOCKSP01",
+        assignee_bic="FAKESP01",
     )
 
     cert, key = debtor_sp_mock_cert_key

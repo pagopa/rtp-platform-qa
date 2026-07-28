@@ -102,7 +102,7 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_document_rjct_compli
     original_msg_id = resource_id.replace("-", "")
 
     callback_data = build_callback_with_original_msg_id(
-        lambda: generate_callback_data_DS_document_rjct_compliant(bic="MOCKSP01"),
+        lambda: generate_callback_data_DS_document_rjct_compliant(bic="FAKESP01"),
         original_msg_id,
         is_document=False,
     )
