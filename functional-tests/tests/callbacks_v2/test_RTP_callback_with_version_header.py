@@ -39,7 +39,7 @@ VERSION_HEADER_ERROR_MESSAGE = "Header 'Version' must not be sent for callback A
 
 def _assert_version_header_rejected(callback_response):
     assert callback_response.status_code == 400, (
-        f"Expected 400 (Version header should be rejected) but got {callback_response.status_code}"
+        f"Expected 400 (Version header should be rejected) but got {callback_response.status_code}. Response: {callback_response.text}"
     )
     error_body = callback_response.json()
     assert error_body["status"] == 400
@@ -73,17 +73,23 @@ def test_rtp_callback_DS_05_redirect_with_version_header(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert pre_callback_response.status_code == 200
+    assert pre_callback_response.status_code == 200, (
+        f"Expected 200, got {pre_callback_response.status_code}. Response: {pre_callback_response.text}"
+    )
     initial_status = pre_callback_response.json()["status"]
 
     callback_data = build_callback_with_original_msg_id(
@@ -103,7 +109,9 @@ def test_rtp_callback_DS_05_redirect_with_version_header(
     _assert_version_header_rejected(callback_response)
 
     post_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert post_callback_response.status_code == 200
+    assert post_callback_response.status_code == 200, (
+        f"Expected 200, got {post_callback_response.status_code}. Response: {post_callback_response.text}"
+    )
     assert post_callback_response.json()["status"] == initial_status, (
         f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )
@@ -130,17 +138,23 @@ def test_rtp_callback_DS_08P_positive_with_version_header(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert pre_callback_response.status_code == 200
+    assert pre_callback_response.status_code == 200, (
+        f"Expected 200, got {pre_callback_response.status_code}. Response: {pre_callback_response.text}"
+    )
     initial_status = pre_callback_response.json()["status"]
 
     callback_data = build_callback_with_original_msg_id(
@@ -160,7 +174,9 @@ def test_rtp_callback_DS_08P_positive_with_version_header(
     _assert_version_header_rejected(callback_response)
 
     post_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert post_callback_response.status_code == 200
+    assert post_callback_response.status_code == 200, (
+        f"Expected 200, got {post_callback_response.status_code}. Response: {post_callback_response.text}"
+    )
     assert post_callback_response.json()["status"] == initial_status, (
         f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )
@@ -187,17 +203,23 @@ def test_rtp_callback_DS_08N_negative_with_version_header(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert pre_callback_response.status_code == 200
+    assert pre_callback_response.status_code == 200, (
+        f"Expected 200, got {pre_callback_response.status_code}. Response: {pre_callback_response.text}"
+    )
     initial_status = pre_callback_response.json()["status"]
 
     callback_data = build_callback_with_original_msg_id(
@@ -217,7 +239,9 @@ def test_rtp_callback_DS_08N_negative_with_version_header(
     _assert_version_header_rejected(callback_response)
 
     post_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert post_callback_response.status_code == 200
+    assert post_callback_response.status_code == 200, (
+        f"Expected 200, got {post_callback_response.status_code}. Response: {post_callback_response.text}"
+    )
     assert post_callback_response.json()["status"] == initial_status, (
         f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )
@@ -244,17 +268,23 @@ def test_rtp_callback_DS_document_rjct_with_version_header(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert pre_callback_response.status_code == 200
+    assert pre_callback_response.status_code == 200, (
+        f"Expected 200, got {pre_callback_response.status_code}. Response: {pre_callback_response.text}"
+    )
     initial_status = pre_callback_response.json()["status"]
 
     callback_data = build_callback_with_original_msg_id(
@@ -274,7 +304,9 @@ def test_rtp_callback_DS_document_rjct_with_version_header(
     _assert_version_header_rejected(callback_response)
 
     post_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert post_callback_response.status_code == 200
+    assert post_callback_response.status_code == 200, (
+        f"Expected 200, got {post_callback_response.status_code}. Response: {post_callback_response.text}"
+    )
     assert post_callback_response.json()["status"] == initial_status, (
         f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )
@@ -306,10 +338,14 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
@@ -317,10 +353,14 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert pre_callback_response.status_code == 200
+    assert pre_callback_response.status_code == 200, (
+        f"Expected 200, got {pre_callback_response.status_code}. Response: {pre_callback_response.text}"
+    )
     initial_status = pre_callback_response.json()["status"]
 
     callback_data = generate_callback_data_DS_12P_positive_compliant(
@@ -339,7 +379,9 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
     _assert_version_header_rejected(callback_response)
 
     post_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert post_callback_response.status_code == 200
+    assert post_callback_response.status_code == 200, (
+        f"Expected 200, got {post_callback_response.status_code}. Response: {post_callback_response.text}"
+    )
     assert post_callback_response.json()["status"] == initial_status, (
         f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )
@@ -366,10 +408,14 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
@@ -377,10 +423,14 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
 
     pre_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert pre_callback_response.status_code == 200
+    assert pre_callback_response.status_code == 200, (
+        f"Expected 200, got {pre_callback_response.status_code}. Response: {pre_callback_response.text}"
+    )
     initial_status = pre_callback_response.json()["status"]
 
     callback_data = generate_callback_data_DS_12N_negative_compliant(
@@ -399,7 +449,9 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
     _assert_version_header_rejected(callback_response)
 
     post_callback_response = get_rtp_v2(access_token=rtp_reader_access_token, rtp_id=resource_id)
-    assert post_callback_response.status_code == 200
+    assert post_callback_response.status_code == 200, (
+        f"Expected 200, got {post_callback_response.status_code}. Response: {post_callback_response.text}"
+    )
     assert post_callback_response.json()["status"] == initial_status, (
         f"RTP status must be unchanged when Version header is present, got {post_callback_response.json()['status']}"
     )

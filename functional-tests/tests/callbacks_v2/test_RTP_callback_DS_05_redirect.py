@@ -35,10 +35,14 @@ def test_receive_rtp_callback_DS_05_redirect_compliant(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
@@ -59,14 +63,16 @@ def test_receive_rtp_callback_DS_05_redirect_compliant(
         include_version_header=False,
     )
     assert callback_response.status_code == 200, (
-        f"Error from callback, expected 200 got {callback_response.status_code}"
+        f"Error from callback, expected 200 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "ACCEPTED"
 
@@ -92,10 +98,14 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_05_redirect_complian
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
@@ -116,14 +126,16 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_05_redirect_complian
         include_version_header=False,
     )
     assert callback_response.status_code == 403, (
-        f"Expecting error from callback, expected 403 got {callback_response.status_code}"
+        f"Expecting error from callback, expected 403 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "SENT", f"Expected RTP status SENT, got {body['status']}"
 
@@ -149,10 +161,14 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_05_redirect_com
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
@@ -173,14 +189,16 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_05_redirect_com
         include_version_header=False,
     )
     assert callback_response.status_code == 400, (
-        f"Expecting error from callback, expected 400 got {callback_response.status_code}"
+        f"Expecting error from callback, expected 400 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "SENT", f"Expected RTP status SENT, got {body['status']}"
 
@@ -206,10 +224,14 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_05_redirect(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id, "Missing resourceId in send GPD message response"
@@ -219,7 +241,9 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_05_redirect(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response_pre_callback.status_code == 200
+    assert get_response_pre_callback.status_code == 200, (
+        f"Expected 200, got {get_response_pre_callback.status_code}. Response: {get_response_pre_callback.text}"
+    )
     body = get_response_pre_callback.json()
     assert body["status"] == "SENT", f"Expected RTP status SENT before callback, got {body['status']}"
 
@@ -238,14 +262,16 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_05_redirect(
         include_version_header=False,
     )
     assert callback_response.status_code == 400, (
-        f"Error from callback, expected 400 got {callback_response.status_code}"
+        f"Error from callback, expected 400 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response_post_callback = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response_post_callback.status_code == 200
+    assert get_response_post_callback.status_code == 200, (
+        f"Expected 200, got {get_response_post_callback.status_code}. Response: {get_response_post_callback.text}"
+    )
     body = get_response_post_callback.json()
     assert body["status"] == "SENT", (
         f"RTP status should remain unchanged after non compliant callback, got {body['status']}"

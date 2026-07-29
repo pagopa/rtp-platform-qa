@@ -45,10 +45,14 @@ def test_receive_rfc_callback_DS_12N_negative_compliant(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id is not None, "Missing resourceId in send GPD message response"
@@ -56,7 +60,9 @@ def test_receive_rfc_callback_DS_12N_negative_compliant(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
 
     callback_data = generate_callback_data_DS_12N_negative_compliant(
         resource_id=resource_id,
@@ -72,14 +78,16 @@ def test_receive_rfc_callback_DS_12N_negative_compliant(
         include_version_header=False,
     )
     assert callback_response.status_code == 200, (
-        f"Error from callback, expected 200 got {callback_response.status_code}"
+        f"Error from callback, expected 200 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "CANCELLED_REJECTED", f"Expected status CANCELLED_REJECTED, got {body['status']}"
 
@@ -116,10 +124,14 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_complia
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id is not None, "Missing resourceId in send GPD message response"
@@ -127,7 +139,9 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_complia
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
 
     callback_data = generate_callback_data_DS_12N_negative_compliant(
         resource_id=resource_id,
@@ -144,14 +158,16 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12N_negative_complia
         include_version_header=False,
     )
     assert callback_response.status_code == 403, (
-        f"Expecting error from callback, expected 403 got {callback_response.status_code}"
+        f"Expecting error from callback, expected 403 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
 
@@ -188,10 +204,14 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_negative_co
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id is not None, "Missing resourceId in send GPD message response"
@@ -199,7 +219,9 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_negative_co
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
 
     callback_data = generate_callback_data_DS_12N_negative_compliant(
         resource_id=resource_id,
@@ -216,14 +238,16 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12N_negative_co
         include_version_header=False,
     )
     assert callback_response.status_code == 400, (
-        f"Expecting error from callback, expected 400 got {callback_response.status_code}"
+        f"Expecting error from callback, expected 400 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
 
@@ -260,10 +284,14 @@ def test_receive_rfc_callback_DS_12N_negative_invalid(
         random_fiscal_code,
         DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert activation_response.status_code == 201
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
 
     send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
-    assert send_response.status_code == 200, f"Error sending GPD message, expected 200 got {send_response.status_code}"
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
 
     resource_id = send_response.json()["resourceId"]
     assert resource_id is not None, "Missing resourceId in send GPD message response"
@@ -271,7 +299,9 @@ def test_receive_rfc_callback_DS_12N_negative_invalid(
 
     delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
     cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
-    assert cancel_response.status_code == 200, f"Error cancelling RTP via DELETE, got {cancel_response.status_code}"
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
 
     callback_data = generate_non_compliant_callback_data_DS_12N_negative(
         resource_id=resource_id,
@@ -287,13 +317,15 @@ def test_receive_rfc_callback_DS_12N_negative_invalid(
         include_version_header=False,
     )
     assert callback_response.status_code == 400, (
-        f"Error from callback, expected 400 got {callback_response.status_code}"
+        f"Error from callback, expected 400 got {callback_response.status_code}. Response: {callback_response.text}"
     )
 
     get_response = get_rtp_v2(
         access_token=rtp_reader_access_token,
         rtp_id=resource_id,
     )
-    assert get_response.status_code == 200
+    assert get_response.status_code == 200, (
+        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    )
     body = get_response.json()
     assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
