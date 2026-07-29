@@ -2,21 +2,13 @@ import uuid
 
 import requests
 
-from api.utils.api_version import SEND_GPD_MESSAGE_VERSION
+from api.utils.api_version import SEND_GPD_MESSAGE_VERSION, SEND_GPD_MESSAGE_VERSION_V2
 from api.utils.endpoints import RTP_SENDER_GPD_MESSAGE_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 from utils.idempotency_key_utils import generate_idempotency_key
 
 
-def send_gpd_message(access_token: str, message_payload: dict):
-    """Send an RTP message to the GPD sender service.
-
-    :param access_token: Bearer token for RTP Consumer client
-    :param message_payload: RTP message payload (CREATE/UPDATE/DELETE operation)
-    :returns: The response of the call
-    :rtype: requests.Response
-    """
-
+def _send_gpd_message(access_token: str, message_payload: dict, version: str):
     msg_id = str(message_payload.get("id", ""))
     resource_uuid = str(uuid.uuid5(uuid.NAMESPACE_OID, msg_id))
 
@@ -26,9 +18,31 @@ def send_gpd_message(access_token: str, message_payload: dict):
 
     headers = {
         "Authorization": f"{access_token}",
-        "Version": SEND_GPD_MESSAGE_VERSION,
+        "Version": version,
         "RequestId": str(uuid.uuid4()),
         "Idempotency-Key": idempotency_key,
     }
 
     return requests.post(headers=headers, url=RTP_SENDER_GPD_MESSAGE_URL, json=message_payload, timeout=HTTP_TIMEOUT)
+
+
+def send_gpd_message(access_token: str, message_payload: dict):
+    """Send an RTP message to the GPD sender service (Version: v1).
+
+    :param access_token: Bearer token for RTP Consumer client
+    :param message_payload: RTP message payload (CREATE/UPDATE/DELETE operation)
+    :returns: The response of the call
+    :rtype: requests.Response
+    """
+    return _send_gpd_message(access_token, message_payload, SEND_GPD_MESSAGE_VERSION)
+
+
+def send_gpd_message_v2(access_token: str, message_payload: dict):
+    """Send an RTP message to the GPD sender service (Version: v2).
+
+    :param access_token: Bearer token for RTP Consumer client
+    :param message_payload: RTP message payload (CREATE/UPDATE/DELETE operation)
+    :returns: The response of the call
+    :rtype: requests.Response
+    """
+    return _send_gpd_message(access_token, message_payload, SEND_GPD_MESSAGE_VERSION_V2)
