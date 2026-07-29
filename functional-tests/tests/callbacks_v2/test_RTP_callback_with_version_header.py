@@ -98,11 +98,11 @@ def test_rtp_callback_DS_05_redirect_with_version_header(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=True,
     )
@@ -163,11 +163,11 @@ def test_rtp_callback_DS_08P_positive_with_version_header(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=True,
     )
@@ -228,11 +228,11 @@ def test_rtp_callback_DS_08N_negative_with_version_header(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=True,
     )
@@ -293,11 +293,11 @@ def test_rtp_callback_DS_document_rjct_with_version_header(
         is_document=False,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=True,
     )
@@ -368,11 +368,11 @@ def test_rfc_callback_DS_12P_positive_with_version_header(
         original_msg_id=original_msg_id,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_rfc_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=True,
     )
@@ -438,11 +438,11 @@ def test_rfc_callback_DS_12N_negative_with_version_header(
         original_msg_id=original_msg_id,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_rfc_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=True,
     )

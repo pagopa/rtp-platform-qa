@@ -54,11 +54,11 @@ def test_receive_rtp_callback_DS_05_redirect_compliant(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -117,11 +117,11 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_05_redirect_complian
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -180,11 +180,11 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_05_redirect_com
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -253,11 +253,11 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_05_redirect(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )

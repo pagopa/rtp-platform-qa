@@ -69,11 +69,11 @@ def test_receive_rfc_callback_DS_12P_positive_compliant(
         original_msg_id=original_msg_id,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_rfc_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -149,11 +149,11 @@ def test_fail_send_rfc_callback_wrong_certificate_serial_DS_12P_positive_complia
         assignee_bic="FAKESP01",
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_rfc_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -229,11 +229,11 @@ def test_fail_send_rfc_callback_non_existing_service_provider_DS_12P_positive_co
         assignee_bic="MOCKSP99",
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_rfc_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -308,11 +308,11 @@ def test_receive_rfc_callback_DS_12P_positive_invalid(
         original_msg_id=original_msg_id,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_rfc_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )

@@ -49,7 +49,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant(
     assert resource_id, "Missing resourceId in send GPD message response"
     original_msg_id = resource_id.replace("-", "")
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     # Advance to ACCEPTED via DS_05 redirect ACTC
     ds05_callback_data = build_callback_with_original_msg_id(
@@ -59,7 +59,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant(
     )
     ds05_response = srtp_callback_v2(
         rtp_payload=ds05_callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -85,7 +85,7 @@ def test_receive_rtp_callback_DS_08P_positive_compliant(
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -159,11 +159,11 @@ def test_receive_rtp_callback_DS_08P_positive_compliant_without_DS_05(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -222,11 +222,11 @@ def test_fail_send_rtp_callback_wrong_certificate_serial_DS_08P_positive_complia
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -285,11 +285,11 @@ def test_fail_send_rtp_callback_non_existing_service_provider_DS_08P_positive_co
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
@@ -358,11 +358,11 @@ def test_fail_send_rtp_callback_non_compliant_payload_DS_08P_positive(
         is_document=True,
     )
 
-    cert, key = debtor_sp_mock_cert_key
+    certificate, key = debtor_sp_mock_cert_key
 
     callback_response = srtp_callback_v2(
         rtp_payload=callback_data,
-        cert_path=cert,
+        cert_path=certificate,
         key_path=key,
         include_version_header=False,
     )
