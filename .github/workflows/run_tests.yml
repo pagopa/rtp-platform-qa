@@ -148,7 +148,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@53ebb757a2097edc77c53ecef4d454fc2f2f774c
+        uses: simple-elf/allure-report-action@385367cde61ac68c2568a117f7579f7f148dc459 #v1.15 (fixes missing findutils/xargs bug from v1.13)
         if: always()
         continue-on-error: true
         with:
@@ -213,7 +213,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@53ebb757a2097edc77c53ecef4d454fc2f2f774c
+        uses: simple-elf/allure-report-action@385367cde61ac68c2568a117f7579f7f148dc459 #v1.15 (fixes missing findutils/xargs bug from v1.13)
         if: always()
         continue-on-error: true
         with:
@@ -281,7 +281,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@53ebb757a2097edc77c53ecef4d454fc2f2f774c
+        uses: simple-elf/allure-report-action@385367cde61ac68c2568a117f7579f7f148dc459 #v1.15 (fixes missing findutils/xargs bug from v1.13)
         if: always()
         continue-on-error: true
         with:
@@ -346,7 +346,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@53ebb757a2097edc77c53ecef4d454fc2f2f774c
+        uses: simple-elf/allure-report-action@385367cde61ac68c2568a117f7579f7f148dc459 #v1.15 (fixes missing findutils/xargs bug from v1.13)
         if: always()
         continue-on-error: true
         with:
@@ -417,7 +417,7 @@ jobs:
           ref: gh-pages
           path: gh-pages
       - name: Build test report
-        uses: simple-elf/allure-report-action@53ebb757a2097edc77c53ecef4d454fc2f2f774c
+        uses: simple-elf/allure-report-action@385367cde61ac68c2568a117f7579f7f148dc459 #v1.15 (fixes missing findutils/xargs bug from v1.13)
         if: always()
         continue-on-error: true
         with:
