@@ -254,7 +254,7 @@ def test_activate_debtor_with_owned_but_distinct_service_provider_id(
     """MOCKSP04 owns MOCKSP01 as well as its own spId; activation must be allowed on either."""
 
     owned_alt_sp_id = "MOCKSP01"
-    res = activate(debtor_service_provider_token_a, random_fiscal_code, "MOCKSP01")
+    res = activate(debtor_service_provider_token_a, random_fiscal_code, owned_alt_sp_id)
     assert res.status_code == 201, (
         f"Error activating debtor with owned Service Provider ID, expected 201 but got {res.status_code} - {res.text}"
     )
