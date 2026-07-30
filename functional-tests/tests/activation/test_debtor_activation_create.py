@@ -11,6 +11,7 @@ from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 from utils.http_utils import extract_id_from_location
 from utils.regex_utils import uuidv4_pattern
 
+
 @allure.epic("Debtor Activation")
 @allure.feature("Activation")
 @allure.story("Debtor activation")
@@ -237,3 +238,68 @@ def test_cannot_get_activation_lower_fiscal_code(debtor_service_provider_token_a
     for err in error_body["errors"]:
         assert err["code"] == "01021013E"
         assert err["description"] == "Invalid Payer ID format."
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("A debtor is activated using a Service Provider ID the token subject owns but does not itself represent")
+@allure.tag("functional", "happy_path", "activation", "debtor_activation", "ownership")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_activate_debtor_with_owned_but_distinct_service_provider_id(
+    debtor_service_provider_token_a, random_fiscal_code
+):
+    """MOCKSP04 owns MOCKSP01 as well as its own spId; activation must be allowed on either."""
+
+    owned_alt_sp_id = "MOCKSP01"
+    res = activate(debtor_service_provider_token_a, random_fiscal_code, "MOCKSP01")
+    assert res.status_code == 201, (
+        f"Error activating debtor with owned Service Provider ID, expected 201 but got {res.status_code} - {res.text}"
+    )
+
+    res = get_activation_by_payer_id(debtor_service_provider_token_a, random_fiscal_code)
+    assert res.status_code == 200
+    assert res.json()["payer"]["rtpSpId"] == owned_alt_sp_id
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("Activation is forbidden for a Service Provider ID not owned by the token subject")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation", "ownership")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_activate_debtor_forbidden_for_not_owned_service_provider_id(
+    debtor_service_provider_token_b, random_fiscal_code
+):
+    """FAKESP01 does not own MOCKSP01, a Service Provider ID owned by another tspId."""
+
+    res = activate(debtor_service_provider_token_b, random_fiscal_code, "MOCKSP01")
+    assert res.status_code == 403, f"Expected 403 for not-owned Service Provider ID, got {res.status_code}: {res.text}"
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.SERVICE_PROVIDER_ID_NOT_OWNED.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.SERVICE_PROVIDER_ID_NOT_OWNED.description
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Activation")
+@allure.story("Debtor activation")
+@allure.title("Activation is forbidden with the same error code for a Service Provider ID absent from the registry")
+@allure.tag("functional", "unhappy_path", "activation", "debtor_activation", "ownership")
+@pytest.mark.auth
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_activate_debtor_forbidden_for_nonexistent_service_provider_id(
+    debtor_service_provider_token_b, random_fiscal_code
+):
+    """The ownership check fails the same way whether the target spId belongs to someone else
+    or doesn't exist in the registry at all - NOEXIT00 is not a real Service Provider ID."""
+
+    res = activate(debtor_service_provider_token_b, random_fiscal_code, "NOEXIT00")
+    assert res.status_code == 403, (
+        f"Expected 403 for nonexistent Service Provider ID, got {res.status_code}: {res.text}"
+    )
+    assert res.json()["errors"][0]["code"] == ActivationErrorCode.SERVICE_PROVIDER_ID_NOT_OWNED.code
+    assert res.json()["errors"][0]["description"] == ActivationErrorCode.SERVICE_PROVIDER_ID_NOT_OWNED.description
