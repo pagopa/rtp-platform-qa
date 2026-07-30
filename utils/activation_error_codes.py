@@ -11,6 +11,7 @@ class ActivationErrorCode(Enum):
     INVALID_FISCAL_CODE_FORMAT = ("01021002E", "Invalid fiscal code format.")
     INVALID_SERVICE_PROVIDER_ID_FORMAT = ("01021003E", "Invalid RTP Service Provider ID format.")
     USER_ALREADY_ACTIVE = ("01031006E", "User is already active")
+    SERVICE_PROVIDER_ID_NOT_OWNED = ("01011006F", "Payer's RTP Service Provider ID is not owned by the token subject.")
 
     def __init__(self, code: str, description: str):
         self.code = code
