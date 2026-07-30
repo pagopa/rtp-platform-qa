@@ -178,7 +178,7 @@ def test_get_activation_by_payer_id_not_found(debtor_service_provider_token_a, r
 
     res = get_activation_by_payer_id(debtor_service_provider_token_a, random_fiscal_code)
     assert res.status_code == 404
-    
+
     error_body = res.json()
     assert "errors" in error_body
     assert isinstance(error_body["errors"], list)
@@ -201,7 +201,7 @@ def test_get_activation_by_payer_id_malformed(debtor_service_provider_token_a):
     invalid_payer_id = "INVALID_PAYER_ID"
     res = get_activation_by_payer_id(debtor_service_provider_token_a, invalid_payer_id)
     assert res.status_code == 400
-    
+
     error_body = res.json()
     assert "errors" in error_body
     assert isinstance(error_body["errors"], list)
