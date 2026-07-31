@@ -34,7 +34,7 @@ and is extended with structural edge cases from the Italian CF/PIVA specificatio
 import allure
 import pytest
 
-from api.debtor_activation_api import get_activation_status_by_fiscal_code
+from api.debtor_activation_api import activate, get_activation_status_by_fiscal_code
 from api.debtor_deactivation_api import deactivate
 from utils.dataset_payer_id_invalid import INVALID_PAYER_IDS
 
@@ -271,3 +271,49 @@ def test_get_activation_status_empty_payer_id(debtor_service_provider_token_a):
     """Querying activation status with an empty payerId must be rejected with 404."""
     res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, "")
     assert res.status_code == 404, f"Expected 404 Not Found but got {res.status_code}: {res.text}"
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Payer Status")
+@allure.story("Get Activation Status by Fiscal Code")
+@allure.title("An active payer returns isActive true when activated under an owned but distinct Service Provider ID")
+@allure.tag("functional", "happy_path", "activation", "payer_status", "ownership")
+@pytest.mark.activation
+@pytest.mark.happy_path
+def test_get_activation_status_active_payer_owned_alt_service_provider_id(
+    debtor_service_provider_token_a, random_fiscal_code
+):
+    """MOCKSP04 owns MOCKSP01 as well as its own spId; status must reflect the activation either way."""
+
+    owned_alt_sp_id = "MOCKSP01"
+    activation_response = activate(debtor_service_provider_token_a, random_fiscal_code, owned_alt_sp_id)
+    assert activation_response.status_code == 201, f"Error activating debtor: {activation_response.text}"
+
+    res = get_activation_status_by_fiscal_code(debtor_service_provider_token_a, random_fiscal_code)
+    assert res.status_code == 200, f"Expected 200 but got {res.status_code}: {res.text}"
+    assert res.json()["isActive"] is True
+
+
+@allure.epic("Debtor Activation")
+@allure.feature("Payer Status")
+@allure.story("Get Activation Status by Fiscal Code")
+@allure.title(
+    "Get payer status returns isActive false when the token subject does not own the activation's Service Provider ID"
+)
+@allure.tag("functional", "unhappy_path", "activation", "payer_status", "ownership")
+@pytest.mark.activation
+@pytest.mark.unhappy_path
+def test_get_activation_status_not_owned_service_provider_id_returns_inactive(
+    debtor_service_provider_token_a, debtor_service_provider_token_b, random_fiscal_code
+):
+    """Same privacy rule as the cross-SP case: no explicit error, isActive is just false."""
+    activation_response = activate(debtor_service_provider_token_a, random_fiscal_code, "MOCKSP01")
+    assert activation_response.status_code == 201, f"Error activating debtor: {activation_response.text}"
+
+    status_response = get_activation_status_by_fiscal_code(debtor_service_provider_token_b, random_fiscal_code)
+    assert status_response.status_code == 200, (
+        f"Expected 200 but got {status_response.status_code}: {status_response.text}"
+    )
+    assert status_response.json()["isActive"] is False, (
+        f"Expected isActive=false for not-owned spId (privacy rule) but got: {status_response.json()}"
+    )
