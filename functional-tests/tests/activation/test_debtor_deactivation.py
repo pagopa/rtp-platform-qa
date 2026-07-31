@@ -47,6 +47,14 @@ def test_deactivate_nonexistent_debtor(debtor_service_provider_token_a):
         f"Expected 404 status code for non-existent activation, got {deactivation_response.status_code}"
     )
 
+    error_body = deactivation_response.json()
+    assert "errors" in error_body
+    assert isinstance(error_body["errors"], list)
+    assert len(error_body["errors"]) > 0
+    for err in error_body["errors"]:
+        assert err["code"] == "01041000E"
+        assert err["description"] == "Activation not found."
+
 
 @allure.feature("Deactivation")
 @allure.story("Debtor deactivation")
