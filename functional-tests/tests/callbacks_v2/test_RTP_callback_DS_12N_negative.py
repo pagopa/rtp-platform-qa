@@ -329,3 +329,105 @@ def test_receive_rfc_callback_DS_12N_negative_invalid(
     )
     body = get_response.json()
     assert body["status"] == "RFC_SENT", f"Expected status RFC_SENT, got {body['status']}"
+
+
+@allure.epic("RTP Callback V2")
+@allure.feature("RTP Callback DS_12N - Negative")
+@allure.story("Service provider sends a v2 RFC callback with RJCR status")
+@allure.title("Failed v2 RFC callback for invalid RTP transition - DS-12N negative compliant")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "ds_12n_negative_compliant", "rfc")
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rfc_callback_invalid_transition_DS_12N_negative_compliant(
+    rtp_consumer_access_token,
+    debtor_service_provider_token_c,
+    rtp_reader_access_token,
+    debtor_sp_mock_cert_key,
+    random_fiscal_code,
+):
+    """
+    Test v2 RFC callback DS12N with RJCR status applied twice on the same RTP.
+
+    Flow:
+    1. Activate payer
+    2. Send an RTP via GPD message v2 (CREATE VALID)
+    3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+    4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request) -> RTP to CANCELLED_REJECTED
+    5. Send the same DS12N RJCR callback again on the already transitioned RTP
+    6. Verify the second callback is rejected (400) since the transition is no longer valid
+    7. Verify RTP status remains CANCELLED_REJECTED
+    """
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
+
+    activation_response = activate(
+        debtor_service_provider_token_c,
+        random_fiscal_code,
+        DEBTOR_SERVICE_PROVIDER_C_ID,
+    )
+    assert activation_response.status_code == 201, (
+        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+    )
+
+    send_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200, (
+        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+    )
+
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
+    original_msg_id = resource_id.replace("-", "")
+
+    delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
+    cancel_response = send_gpd_message_v2(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+    assert cancel_response.status_code == 200, (
+        f"Error cancelling RTP via DELETE, got {cancel_response.status_code}. Response: {cancel_response.text}"
+    )
+
+    callback_data = generate_callback_data_DS_12N_negative_compliant(
+        resource_id=resource_id,
+        original_msg_id=original_msg_id,
+    )
+
+    certificate, key = debtor_sp_mock_cert_key
+
+    first_callback_response = srtp_rfc_callback_v2(
+        rtp_payload=callback_data,
+        cert_path=certificate,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert first_callback_response.status_code == 200, (
+        f"Error from first callback, expected 200 got {first_callback_response.status_code}. "
+        f"Response: {first_callback_response.text}"
+    )
+
+    first_get_response = get_rtp_v2(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert first_get_response.status_code == 200, (
+        f"Expected 200, got {first_get_response.status_code}. Response: {first_get_response.text}"
+    )
+    body = first_get_response.json()
+    assert body["status"] == "CANCELLED_REJECTED", f"Expected status CANCELLED_REJECTED, got {body['status']}"
+
+    second_callback_response = srtp_rfc_callback_v2(
+        rtp_payload=callback_data,
+        cert_path=certificate,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert second_callback_response.status_code == 400, (
+        f"Error from second callback, expected 400 got {second_callback_response.status_code}. "
+        f"Response: {second_callback_response.text}"
+    )
+
+    second_get_response = get_rtp_v2(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert second_get_response.status_code == 200, (
+        f"Expected 200, got {second_get_response.status_code}. Response: {second_get_response.text}"
+    )
+    body = second_get_response.json()
+    assert body["status"] == "CANCELLED_REJECTED", f"Expected status CANCELLED_REJECTED, got {body['status']}"

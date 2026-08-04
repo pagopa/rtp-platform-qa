@@ -447,3 +447,244 @@ def test_receive_rtp_callback_DS_08N_invalid(
     assert get_response.status_code == 200
     body = get_response.json()
     assert body["status"] == "SENT", f"Expected RTP status SENT after invalid callback, got {body['status']}"
+
+
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_08")
+@allure.story("Service provider sends a callback referred to an RTP")
+@allure.title("Failed callback for invalid RTP transition - DS-08P ACCP compliant")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "DS_08P_ACCP_compliant")
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rtp_callback_invalid_transition_DS_08P_ACCP_compliant(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    debtor_sp_mock_cert_key,
+):
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
+
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201
+
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
+    original_msg_id = resource_id.replace("-", "")
+
+    cert, key = debtor_sp_mock_cert_key
+
+    ds05_callback_data = build_callback_with_original_msg_id(
+        generate_callback_data_DS_05_ACTC_compliant,
+        original_msg_id,
+        is_document=True,
+    )
+    ds05_response = srtp_callback(
+        rtp_payload=ds05_callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert ds05_response.status_code == 200, (
+        f"DS_05 setup step failed: expected 200 got {ds05_response.status_code}"
+    )
+
+    callback_data = build_callback_with_original_msg_id(
+        generate_callback_data_DS_08P_ACCP_compliant,
+        original_msg_id,
+        is_document=True,
+    )
+
+    first_callback_response = srtp_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert first_callback_response.status_code == 200, (
+        f"Error from first callback, expected 200 got {first_callback_response.status_code}"
+    )
+
+    first_get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert first_get_response.status_code == 200
+    body = first_get_response.json()
+    assert body["status"] == "USER_ACCEPTED"
+
+    second_callback_response = srtp_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert second_callback_response.status_code == 400, (
+        f"Error from second callback, expected 400 got {second_callback_response.status_code}"
+    )
+
+    second_get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert second_get_response.status_code == 200
+    body = second_get_response.json()
+    assert body["status"] == "USER_ACCEPTED"
+
+
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_08")
+@allure.story("Service provider sends a callback referred to an RTP")
+@allure.title("Failed callback for invalid RTP transition - DS-08P RJCT compliant")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "ds_08p_RJCT_compliant")
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rtp_callback_invalid_transition_DS_08P_RJCT_compliant(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    debtor_sp_mock_cert_key,
+):
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
+
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201
+
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
+    original_msg_id = resource_id.replace("-", "")
+
+    cert, key = debtor_sp_mock_cert_key
+
+    ds05_callback_data = build_callback_with_original_msg_id(
+        generate_callback_data_DS_05_ACTC_compliant,
+        original_msg_id,
+        is_document=True,
+    )
+    ds05_response = srtp_callback(
+        rtp_payload=ds05_callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert ds05_response.status_code == 200, (
+        f"DS_05 setup step failed: expected 200 got {ds05_response.status_code}"
+    )
+
+    callback_data = build_callback_with_original_msg_id(
+        generate_callback_data_DS_08P_RJCT_compliant,
+        original_msg_id,
+        is_document=True,
+    )
+
+    first_callback_response = srtp_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert first_callback_response.status_code == 200, (
+        f"Error from first callback, expected 200 got {first_callback_response.status_code}"
+    )
+
+    first_get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert first_get_response.status_code == 200
+    body = first_get_response.json()
+    assert body["status"] == "USER_REJECTED"
+
+    second_callback_response = srtp_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert second_callback_response.status_code == 400, (
+        f"Error from second callback, expected 400 got {second_callback_response.status_code}"
+    )
+
+    second_get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert second_get_response.status_code == 200
+    body = second_get_response.json()
+    assert body["status"] == "USER_REJECTED"
+
+
+@allure.epic("RTP Callback")
+@allure.feature("RTP Callback DS_08")
+@allure.story("Service provider sends a callback referred to an RTP")
+@allure.title("Failed callback for invalid RTP transition - DS-08N compliant")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "ds_08n_compliant")
+@pytest.mark.callback
+@pytest.mark.unhappy_path
+def test_fail_send_rtp_callback_invalid_transition_DS_08N_compliant(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    debtor_sp_mock_cert_key,
+):
+    message_payload = generate_gpd_message_payload(fiscal_code=random_fiscal_code, operation="CREATE", status="VALID")
+
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201
+
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    assert resource_id is not None, "Missing resourceId in send GPD message response"
+    original_msg_id = resource_id.replace("-", "")
+
+    callback_data = build_callback_with_original_msg_id(
+        generate_callback_data_DS_08N_compliant,
+        original_msg_id,
+        is_document=True,
+    )
+    cert, key = debtor_sp_mock_cert_key
+
+    first_callback_response = srtp_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert first_callback_response.status_code == 200, (
+        f"Error from first callback, expected 200 got {first_callback_response.status_code}"
+    )
+    first_get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert first_get_response.status_code == 200
+    body = first_get_response.json()
+    assert body["status"] == "REJECTED"
+
+    second_callback_response = srtp_callback(
+        rtp_payload=callback_data,
+        cert_path=cert,
+        key_path=key,
+        include_version_header=False,
+    )
+    assert second_callback_response.status_code == 400, (
+        f"Error from second callback, expected 400 got {second_callback_response.status_code}"
+    )
+
+    second_get_response = get_rtp(
+        access_token=rtp_reader_access_token,
+        rtp_id=resource_id,
+    )
+    assert second_get_response.status_code == 200
+    body = second_get_response.json()
+    assert body["status"] == "REJECTED"
