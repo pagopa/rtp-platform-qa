@@ -144,6 +144,7 @@ def _send_rtp_by_notice_number_via_rest(
     send_fn: Callable[[str, dict], requests.Response],
     expected_send_status: int = 422,
     service_provider_id: str | None = None,
+    expected_error_body: dict | None = None,
 ) -> str:
     """Internal helper: activate a debtor, send an RTP via REST expecting RJCT and return status by notice number."""
     if service_provider_id is None:
@@ -163,6 +164,10 @@ def _send_rtp_by_notice_number_via_rest(
     assert send_response.status_code == expected_send_status, (
         f"Expected status {expected_send_status}, got {send_response.status_code}. Body: {send_response.text[:200]}"
     )
+    if expected_error_body is not None:
+        assert send_response.json() == expected_error_body, (
+            f"Expected error body {expected_error_body}, got {send_response.text[:200]}"
+        )
 
     return get_status_from_notice_number(reader_token, notice_number)
 
@@ -245,6 +250,7 @@ def send_rtp_v2_and_get_status_by_notice_number_via_rest(
     payer_id: str,
     expected_send_status: int = 422,
     service_provider_id: str | None = None,
+    expected_error_body: dict | None = None,
 ) -> str:
     """Activate a debtor, send an RTP via REST API v2 expecting a synchronous RJCT (422),
     then retrieve the RTP status by notice number.
@@ -252,6 +258,7 @@ def send_rtp_v2_and_get_status_by_notice_number_via_rest(
     Args:
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
             to service provider C (MOCKSP05); pass a different one when the test needs it.
+        expected_error_body: If provided, asserted against the JSON body of the send response.
     """
     if service_provider_id is None:
         service_provider_id = secrets.debtor_service_provider_C.service_provider_id
@@ -264,4 +271,5 @@ def send_rtp_v2_and_get_status_by_notice_number_via_rest(
         lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
         expected_send_status,
         service_provider_id=service_provider_id,
+        expected_error_body=expected_error_body,
     )
