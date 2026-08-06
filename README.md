@@ -381,6 +381,18 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 | `MOCK_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous non-compliant ACTC-like response with an unexpected extra field; the RTP status remains `SENT` |
 | `MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT non-compliant with an unexpected extra field |
 | `MOCK_RJCT_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT without the `_links` field |
+| `MOCK_SERVER_ERROR_FISCAL_CODE` | Fiscal code that triggers a 502 server error response from the mock |
+| `MOCK_INVALID_RESPONSE_FISCAL_CODE` | Fiscal code that triggers a malformed/invalid JSON 400 response from the mock (MOCKSP04) |
+| `MOCK_CHK_ERROR_FISCAL_CODE` | Fiscal code that triggers a 400 response with the `RTP_05.CHK.A0007` "unexpected status code" error (MOCKSP04) |
+| `MOCK_ACTC_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a synchronous ACTC response (DS-05) |
+| `MOCK_RJCT_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a synchronous RJCT response (DS-08P N) |
+| `MOCK_NO_LINKS_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a synchronous ACTC response without the `_links` field |
+| `MOCK_EXTRA_FIELD_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a synchronous non-compliant ACTC-like response with an unexpected extra field |
+| `MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a synchronous RJCT non-compliant with an unexpected extra field |
+| `MOCK_RJCT_NO_LINKS_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a synchronous RJCT without the `_links` field |
+| `MOCK_SERVER_ERROR_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a 502 server error response from the mock |
+| `MOCK_INVALID_RESPONSE_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a malformed/invalid JSON 400 response from the mock (MOCKSP05) |
+| `MOCK_CHK_ERROR_FISCAL_CODE_V2` | V2 - Fiscal code that triggers a 400 response with the `RTP_05.CHK.A0007` "unexpected status code" error (MOCKSP05) |
 
 ### Third-Party Providers
 
