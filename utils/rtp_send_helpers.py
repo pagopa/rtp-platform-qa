@@ -104,12 +104,19 @@ def _send_rtp_via_rest(
     reader_token: str,
     payer_id: str,
     send_fn: Callable[[str, dict], requests.Response],
-    expected_send_status: int = 201,
-    service_provider_id: str | None = None,
+    **kwargs,
 ) -> str:
-    """Internal helper: activate a debtor, send an RTP via REST and return the resulting status."""
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider.service_provider_id
+    """Internal helper: activate a debtor, send an RTP via REST and return the resulting status.
+
+    Keyword Args:
+        expected_send_status: Expected HTTP status code from the send response. Defaults to 201.
+        service_provider_id: Debtor service provider ID to activate with. Defaults to
+            secrets.debtor_service_provider.service_provider_id.
+    """
+    expected_send_status = kwargs.pop("expected_send_status", 201)
+    service_provider_id = kwargs.pop("service_provider_id", secrets.debtor_service_provider.service_provider_id)
+    if kwargs:
+        raise TypeError(f"_send_rtp_via_rest() got unexpected keyword arguments: {sorted(kwargs)}")
 
     rtp_data = generate_rtp_data(payer_id=payer_id)
 
@@ -142,12 +149,21 @@ def _send_rtp_by_notice_number_via_rest(
     reader_token: str,
     payer_id: str,
     send_fn: Callable[[str, dict], requests.Response],
-    expected_send_status: int = 422,
-    service_provider_id: str | None = None,
+    **kwargs,
 ) -> str:
-    """Internal helper: activate a debtor, send an RTP via REST expecting RJCT and return status by notice number."""
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider.service_provider_id
+    """Internal helper: activate a debtor, send an RTP via REST expecting RJCT and return status by notice number.
+
+    Keyword Args:
+        expected_send_status: Expected HTTP status code from the send response. Defaults to 422.
+        service_provider_id: Debtor service provider ID to activate with. Defaults to
+            secrets.debtor_service_provider.service_provider_id.
+        expected_error_body: If provided, asserted against the JSON body of the send response.
+    """
+    expected_send_status = kwargs.pop("expected_send_status", 422)
+    service_provider_id = kwargs.pop("service_provider_id", secrets.debtor_service_provider.service_provider_id)
+    expected_error_body = kwargs.pop("expected_error_body", None)
+    if kwargs:
+        raise TypeError(f"_send_rtp_by_notice_number_via_rest() got unexpected keyword arguments: {sorted(kwargs)}")
 
     rtp_data = generate_rtp_data(payer_id=payer_id)
     notice_number = rtp_data["paymentNotice"]["noticeNumber"]
@@ -163,6 +179,10 @@ def _send_rtp_by_notice_number_via_rest(
     assert send_response.status_code == expected_send_status, (
         f"Expected status {expected_send_status}, got {send_response.status_code}. Body: {send_response.text[:200]}"
     )
+    if expected_error_body is not None:
+        assert send_response.json() == expected_error_body, (
+            f"Expected error body {expected_error_body}, got {send_response.text[:200]}"
+        )
 
     return get_status_from_notice_number(reader_token, notice_number)
 
@@ -172,11 +192,14 @@ def send_rtp_and_get_status_via_rest(
     creditor_token: str,
     reader_token: str,
     payer_id: str,
-    expected_send_status: int = 201,
+    **kwargs,
 ) -> str:
     """Activate a debtor, send an RTP via REST API (/rtps), and return the resulting RTP status.
 
     Used for _THROUGH_WEB_API test variants that exercise the legacy REST send endpoint.
+
+    Keyword Args:
+        expected_send_status: Expected HTTP status code from the send response. Defaults to 201.
     """
     return _send_rtp_via_rest(
         debtor_token,
@@ -184,7 +207,7 @@ def send_rtp_and_get_status_via_rest(
         reader_token,
         payer_id,
         lambda token, payload: send_rtp(access_token=token, rtp_payload=payload),
-        expected_send_status,
+        **kwargs,
     )
 
 
@@ -193,20 +216,24 @@ def send_rtp_and_get_status_by_notice_number_via_rest(
     creditor_token: str,
     reader_token: str,
     payer_id: str,
-    expected_send_status: int = 422,
+    **kwargs,
 ) -> str:
     """Activate a debtor, send an RTP via REST API expecting a synchronous RJCT (422),
     then retrieve the RTP status by notice number.
 
     Used for _THROUGH_WEB_API RJCT test variants.
+
+    Keyword Args:
+        expected_send_status: Expected HTTP status code from the send response. Defaults to 422.
     """
+    kwargs.setdefault("expected_send_status", 422)
     return _send_rtp_by_notice_number_via_rest(
         debtor_token,
         creditor_token,
         reader_token,
         payer_id,
         lambda token, payload: send_rtp(access_token=token, rtp_payload=payload),
-        expected_send_status,
+        **kwargs,
     )
 
 
@@ -215,26 +242,23 @@ def send_rtp_v2_and_get_status_via_rest(
     creditor_token: str,
     reader_token: str,
     payer_id: str,
-    expected_send_status: int = 201,
-    service_provider_id: str | None = None,
+    **kwargs,
 ) -> str:
     """Activate a debtor, send an RTP via REST API v2 (/rtps with Version: v2), and return the resulting RTP status.
 
-    Args:
+    Keyword Args:
+        expected_send_status: Expected HTTP status code from the send response. Defaults to 201.
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
             to service provider C (MOCKSP05); pass a different one when the test needs it.
     """
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider_C.service_provider_id
-
+    kwargs.setdefault("service_provider_id", secrets.debtor_service_provider_C.service_provider_id)
     return _send_rtp_via_rest(
         debtor_token,
         creditor_token,
         reader_token,
         payer_id,
         lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
-        expected_send_status,
-        service_provider_id=service_provider_id,
+        **kwargs,
     )
 
 
@@ -243,25 +267,24 @@ def send_rtp_v2_and_get_status_by_notice_number_via_rest(
     creditor_token: str,
     reader_token: str,
     payer_id: str,
-    expected_send_status: int = 422,
-    service_provider_id: str | None = None,
+    **kwargs,
 ) -> str:
     """Activate a debtor, send an RTP via REST API v2 expecting a synchronous RJCT (422),
     then retrieve the RTP status by notice number.
 
-    Args:
+    Keyword Args:
+        expected_send_status: Expected HTTP status code from the send response. Defaults to 422.
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
             to service provider C (MOCKSP05); pass a different one when the test needs it.
+        expected_error_body: If provided, asserted against the JSON body of the send response.
     """
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider_C.service_provider_id
-
+    kwargs.setdefault("expected_send_status", 422)
+    kwargs.setdefault("service_provider_id", secrets.debtor_service_provider_C.service_provider_id)
     return _send_rtp_by_notice_number_via_rest(
         debtor_token,
         creditor_token,
         reader_token,
         payer_id,
         lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
-        expected_send_status,
-        service_provider_id=service_provider_id,
+        **kwargs,
     )

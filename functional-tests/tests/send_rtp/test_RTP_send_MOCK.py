@@ -481,7 +481,7 @@ def test_send_rtp_sync_rejected_ds08p_n_THROUGH_WEB_API_V2(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = send_rtp_v2_and_get_status_by_notice_number_via_rest(
+    status = send_rtp_v2_and_get_status_via_rest(
         debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
@@ -527,11 +527,12 @@ def test_send_rtp_sync_sent_extra_field_THROUGH_WEB_API_V2(
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = send_rtp_v2_and_get_status_via_rest(
+    status = send_rtp_v2_and_get_status_by_notice_number_via_rest(
         debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_extra_field_fiscal_code_v2,
+        expected_error_body={"code": "02031008E", "description": "Service Provider invalid response."},
     )
     assert status == "SENT"
 
@@ -540,7 +541,7 @@ def test_send_rtp_sync_sent_extra_field_THROUGH_WEB_API_V2(
 @allure.feature("RTP Send")
 @allure.story("Service provider sends an RTP with synchronous RJCT response containing extra fields")
 @allure.title(
-    "An RTP sent with synchronous rejection containing extra fields results in status REJECTED - through Web API V2"
+    "An RTP sent with synchronous rejection containing extra fields results in status SENT - through Web API V2"
 )
 @allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_extra_fields")
 @pytest.mark.send
@@ -555,8 +556,9 @@ def test_send_rtp_sync_rejected_with_extra_fields_THROUGH_WEB_API_V2(
         creditor_service_provider_token_a,
         rtp_reader_access_token,
         secrets.mock_rjct_extra_field_fiscal_code_v2,
+        expected_error_body={"code": "02031008E", "description": "Service Provider invalid response."}
     )
-    assert status == "REJECTED"
+    assert status == "SENT"
 
 
 @allure.epic("RTP Send")
@@ -565,15 +567,15 @@ def test_send_rtp_sync_rejected_with_extra_fields_THROUGH_WEB_API_V2(
 @allure.title(
     "An RTP sent with synchronous rejection and missing _links results in status REJECTED - through Web API V2"
 )
-@allure.tag("functional", "unhappy_path", "rtp_send", "mock_422_rjct_no_links")
+@allure.tag("functional", "happy_path", "rtp_send", "mock_rjct_no_links")
 @pytest.mark.send
-@pytest.mark.unhappy_path
+@pytest.mark.happy_path
 def test_send_rtp_sync_rejected_no_links_THROUGH_WEB_API_V2(
     debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
 ):
-    status = send_rtp_v2_and_get_status_by_notice_number_via_rest(
+    status = send_rtp_v2_and_get_status_via_rest(
         debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
