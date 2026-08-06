@@ -114,11 +114,9 @@ def _send_rtp_via_rest(
             secrets.debtor_service_provider.service_provider_id.
     """
     expected_send_status = kwargs.pop("expected_send_status", 201)
-    service_provider_id = kwargs.pop("service_provider_id", None)
+    service_provider_id = kwargs.pop("service_provider_id", secrets.debtor_service_provider.service_provider_id)
     if kwargs:
         raise TypeError(f"_send_rtp_via_rest() got unexpected keyword arguments: {sorted(kwargs)}")
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider.service_provider_id
 
     rtp_data = generate_rtp_data(payer_id=payer_id)
 
@@ -162,12 +160,10 @@ def _send_rtp_by_notice_number_via_rest(
         expected_error_body: If provided, asserted against the JSON body of the send response.
     """
     expected_send_status = kwargs.pop("expected_send_status", 422)
-    service_provider_id = kwargs.pop("service_provider_id", None)
+    service_provider_id = kwargs.pop("service_provider_id", secrets.debtor_service_provider.service_provider_id)
     expected_error_body = kwargs.pop("expected_error_body", None)
     if kwargs:
         raise TypeError(f"_send_rtp_by_notice_number_via_rest() got unexpected keyword arguments: {sorted(kwargs)}")
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider.service_provider_id
 
     rtp_data = generate_rtp_data(payer_id=payer_id)
     notice_number = rtp_data["paymentNotice"]["noticeNumber"]
