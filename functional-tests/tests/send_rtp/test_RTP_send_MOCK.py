@@ -222,6 +222,58 @@ def test_send_rtp_sync_rejected_no_links(
     assert status == "REJECTED"
 
 
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with a malformed synchronous EPC response")
+@allure.title("Sending an RTP when EPC returns a malformed/invalid response body returns 500")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_invalid_response")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_invalid_response(
+    debtor_service_provider_token_a,
+    rtp_consumer_access_token,
+):
+    payer_id = secrets.mock_invalid_response_fiscal_code
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        payer_id,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(fiscal_code=payer_id, operation="CREATE", status="VALID")
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 500
+    assert send_response.json()["code"] == "02091000F"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with an unexpected synchronous EPC error response")
+@allure.title("Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_chk_a0007")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_unexpected_status_error(
+    debtor_service_provider_token_a,
+    rtp_consumer_access_token,
+):
+    payer_id = secrets.mock_chk_error_fiscal_code
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        payer_id,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(fiscal_code=payer_id, operation="CREATE", status="VALID")
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 500
+    assert send_response.json()["code"] == "02091000F"
+
+
 # ── THROUGH_WEB_API variants ─────────────────────────────────────────────────
 # These replicate the above tests using the legacy REST send endpoint (/rtps).
 
@@ -396,6 +448,60 @@ def test_send_rtp_sync_rejected_no_links_THROUGH_WEB_API(
         secrets.mock_rjct_no_links_fiscal_code,
     )
     assert status == "REJECTED"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with a malformed synchronous EPC response")
+@allure.title("Sending an RTP when EPC returns a malformed/invalid response body returns 500 - through Web API")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_invalid_response")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_invalid_response_THROUGH_WEB_API(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+):
+    payer_id = secrets.mock_invalid_response_fiscal_code
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        payer_id,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+    send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
+    assert send_response.status_code == 500
+    assert send_response.json()["code"] == "02091000F"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with an unexpected synchronous EPC error response")
+@allure.title(
+    "Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500 - through Web API"
+)
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_chk_a0007")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_unexpected_status_error_THROUGH_WEB_API(
+    debtor_service_provider_token_a,
+    creditor_service_provider_token_a,
+):
+    payer_id = secrets.mock_chk_error_fiscal_code
+
+    activation_response = activate(
+        debtor_service_provider_token_a,
+        payer_id,
+        secrets.debtor_service_provider.service_provider_id,
+    )
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+    send_response = send_rtp(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
+    assert send_response.status_code == 500
+    assert send_response.json()["code"] == "02091000F"
 
 
 # ── THROUGH_WEB_API_V2 variants ──────────────────────────────────────────────
@@ -582,3 +688,62 @@ def test_send_rtp_sync_rejected_no_links_THROUGH_WEB_API_V2(
         secrets.mock_rjct_no_links_fiscal_code_v2,
     )
     assert status == "REJECTED"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with a malformed synchronous EPC response")
+@allure.title("Sending an RTP when EPC returns a malformed/invalid response body returns 500 - through Web API V2")
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_invalid_response")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_invalid_response_THROUGH_WEB_API_V2(
+    debtor_service_provider_token_c,
+    creditor_service_provider_token_a,
+):
+    payer_id = secrets.mock_invalid_response_fiscal_code_v2
+
+    activation_response = activate(
+        debtor_service_provider_token_c,
+        payer_id,
+        DEBTOR_SERVICE_PROVIDER_C_ID,
+    )
+    assert activation_response.status_code in (201, 409), (
+        f"Error activating debtor: {activation_response.status_code} {activation_response.text}"
+    )
+
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+    send_response = send_rtp_v2(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
+    assert send_response.status_code == 500
+    assert send_response.json()["code"] == "02091000F"
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP Send")
+@allure.story("Service provider sends an RTP with an unexpected synchronous EPC error response")
+@allure.title(
+    "Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500 "
+    "- through Web API V2"
+)
+@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_chk_a0007")
+@pytest.mark.send
+@pytest.mark.unhappy_path
+def test_send_rtp_sync_unexpected_status_error_THROUGH_WEB_API_V2(
+    debtor_service_provider_token_c,
+    creditor_service_provider_token_a,
+):
+    payer_id = secrets.mock_chk_error_fiscal_code_v2
+
+    activation_response = activate(
+        debtor_service_provider_token_c,
+        payer_id,
+        DEBTOR_SERVICE_PROVIDER_C_ID,
+    )
+    assert activation_response.status_code in (201, 409), (
+        f"Error activating debtor: {activation_response.status_code} {activation_response.text}"
+    )
+
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+    send_response = send_rtp_v2(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
+    assert send_response.status_code == 500
+    assert send_response.json()["code"] == "02091000F"
