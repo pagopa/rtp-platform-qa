@@ -11,10 +11,45 @@ const START_TIME = Date.now();
 const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 5;
 const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
 const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
-const resourceIds = JSON.parse(open('../../script/resourceIds.json'));
+
+function loadCallbackIds() {
+    const candidateFiles = [
+        '../../json-file/rtp-sender/resource-id.json',
+        '../../json-file/rtp-sender/gpd-message-id.json',
+        '../../json-file/rtp-sender/resourceIds.json',
+        '../../script/resourceIds.json',
+    ];
+
+    const extractCallbackId = (item) => item?.resourceId || item?.id || item?.operationId || item;
+    const normalizeCallbackIds = (parsed) => Array.from(new Set(
+        (Array.isArray(parsed) ? parsed : [])
+            .map(extractCallbackId)
+            .filter((value) => value != null && value !== '')
+    )).map(String);
+
+    const loadOrEmpty = (file) => {
+        try {
+            return normalizeCallbackIds(JSON.parse(open(file)));
+        } catch (error) {
+            return [];
+        }
+    };
+
+    const loadedIds = candidateFiles
+        .map(loadOrEmpty)
+        .find((ids) => ids.length > 0);
+
+    if (loadedIds) {
+        return loadedIds;
+    }
+
+    throw new Error('Unable to load callback IDs from known files');
+}
+
+const resourceIds = loadCallbackIds();
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
-export let options = {
+export const options = {
     ...getOptions('stress_test_fixed_user', 'callback'),
     setupTimeout: '5m',
     scenarios: {
@@ -22,8 +57,8 @@ export let options = {
             executor: 'shared-iterations',
             vus: VU_COUNT_SET,
             iterations: resourceIds.length,
-            maxDuration: '30m',
-            gracefulStop: '30m',
+            maxDuration: '240m',
+            gracefulStop: '30s',
             exec: 'callback'
         }
     },
@@ -39,7 +74,26 @@ export let options = {
     insecureSkipTLSVerify: true
 };
 
-let testCompleted = false;
+const testCompletedRef = { value: false };
+
+function handleCompletedState() {
+    console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
+    sleep(30);
+    return {
+        status: 200,
+        message: 'Test already completed, waiting for dashboard viewing',
+        noMetrics: true
+    };
+}
+
+function handleMissingChunk() {
+    console.log(`⚠️ VU #${__VU}: No callback chunk assigned. Termination.`);
+    return { status: 400, message: 'No callback chunk assigned', noMetrics: true };
+}
+
+function advanceCallbackIndex(data, vuIndex, totalCallbacks) {
+    data.currentIndices[vuIndex] = (data.currentIndices[vuIndex] + 1) % totalCallbacks;
+}
 
 export function setup() {
 
@@ -49,9 +103,9 @@ export function setup() {
     const callbackChunks = distributeItemsAmongGroups(wrappedIds, VU_COUNT_SET);
 
     console.log(`Callback distributed among ${VU_COUNT_SET} virtual users:`);
-    for (let i = 0; i < VU_COUNT_SET; i++) {
-        console.log(`- VU #${i + 1}: ${callbackChunks[i].length} callback`);
-    }
+    Array.from({ length: VU_COUNT_SET }, (_, i) =>
+        console.log(`- VU #${i + 1}: ${callbackChunks[i].length} callback`)
+    );
 
     return {
         callbackChunks: callbackChunks,
@@ -72,22 +126,15 @@ export function callback(data){
 
     currentRPS.add(1, tags);
 
-    if (testCompleted) {
-        console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
-        sleep(30);
-        return {
-            status: 200,
-            message: 'Test already completed, waiting for dashboard viewing',
-            noMetrics: true
-        };
+    if (testCompletedRef.value) {
+        return handleCompletedState();
     }
 
     const vuIndex = __VU - 1;
     const myCallback = data.callbackChunks[vuIndex];
 
     if (!myCallback) {
-        console.log(`⚠️ VU #${__VU}: No callback chunk assigned. Termination.`);
-        return { status: 400, message: 'No callback chunk assigned', noMetrics: true };
+        return handleMissingChunk();
     }
 
     if (!data.currentIndices) data.currentIndices = {};
@@ -106,7 +153,7 @@ export function callback(data){
     const callbackItem = myCallback[currentIndex];
 
     if (callbackItem.processed) {
-        data.currentIndices[vuIndex] = (currentIndex + 1) % myCallback.length;
+        advanceCallbackIndex(data, vuIndex, myCallback.length);
         return callback(data);
     }
 
@@ -135,7 +182,7 @@ export function callback(data){
 
         if (data.callbackCount >= data.totalCallback && !data.allCompleted) {
             data.allCompleted = true;
-            testCompleted = true;
+            testCompletedRef.value = true;
             console.log(`✅ TEST COMPLETED: All ${data.totalCallback} callback have been processed!`);
             console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
             return { status: 200, message: 'Test completed successfully', noMetrics: false };
@@ -147,21 +194,14 @@ export function callback(data){
 
     check(res, { 'callback: status is 2xx': (r) => r.status >= 200 && r.status < 300 });
 
-    data.currentIndices[vuIndex] = (currentIndex + 1) % myCallback.length;
+    advanceCallbackIndex(data, vuIndex, myCallback.length);
     return res;
 }
-
-const testCompletedRef = { value: false };
 
 export const teardown = createCallbackTeardown({
     START_TIME,
     VU_COUNT: VU_COUNT_SET,
     testCompletedRef
-});
-
-Object.defineProperty(testCompletedRef, 'value', {
-    get: () => testCompleted,
-    set: (newValue) => { testCompleted = newValue; }
 });
 
 export const handleSummary = createHandleSummary({

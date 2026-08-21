@@ -94,7 +94,7 @@ export function createHandleSummary({ START_TIME, testName, countTag, reportPref
 
         let testCompleted = false;
 
-        if (typeof this.testCompleted !== 'undefined') {
+        if (typeof this !== 'undefined' && this !== null && typeof this.testCompleted !== 'undefined') {
             console.log(`Found testCompleted in global scope: ${this.testCompleted}`);
             testCompleted = this.testCompleted;
         }

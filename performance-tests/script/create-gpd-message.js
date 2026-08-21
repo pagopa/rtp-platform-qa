@@ -4,8 +4,10 @@ import {createGpdMessageInBatch} from "../utils/batch-utils.js";
 /**
  * @file GPD Message Creator – Batch setup (k6)
  * @description
- * Generates GPD messages in batches during the k6 `setup()` phase and persists
- * only the resulting `operationId`s to a JSON file via `handleSummary()`.
+ * Generates GPD messages in batches during the k6 `setup()` phase and persists:
+ * - the resulting `operationId`s to `gpd-message-id.json`
+ * - the resulting `resourceId`s to `resource-id.json`
+ * via `handleSummary()`.
  *
  * ## Inputs
  * Environment variables:
@@ -21,6 +23,8 @@ import {createGpdMessageInBatch} from "../utils/batch-utils.js";
  * ## Outputs
  * - JSON file: `json-file/rtp-sender/gpd-message-id.json`
  *   containing generated `operationId`s.
+ * - JSON file: `json-file/rtp-sender/resource-id.json`
+ *   containing generated `resourceId`s.
  */
 
 /** Debtor fiscal code (env: DEBTOR_FISCAL_CODE). @type {string} */
@@ -48,7 +52,10 @@ const BATCH_SIZE = Number(__ENV.BATCH_SIZE) || 1000;
 const DELAY_BETWEEN_BATCHES = Number(__ENV.DELAY_BETWEEN_BATCHES) || 1;
 
 /** Output file path for generated operation IDs. @type {string} */
-const FILE_PATH = 'json-file/rtp-sender/gpd-message-id.json';
+const OPERATION_ID_FILE_PATH = 'json-file/rtp-sender/gpd-message-id.json';
+
+/** Output file path for generated resource IDs. @type {string} */
+const RESOURCE_ID_FILE_PATH = 'json-file/rtp-sender/resource-id.json';
 
 /**
  * k6 test options.
@@ -64,10 +71,11 @@ export const options = {
  * k6 `setup()` lifecycle function.
  *
  * Authenticates as RTP consumer and creates GPD messages in batches
- * using `createGpdMessageInBatch`. The resulting operation IDs are
+ * using `createGpdMessageInBatch`. The resulting operation and resource IDs are
  * returned and passed to `handleSummary()` as `setup_data`.
  *
- * @returns {string[]} List of successfully created operation IDs.
+ * @returns {Array<{operationId: string, resourceId: string}>}
+ * List of successfully created GPD identifiers.
  */
 export function setup(){
 
@@ -98,18 +106,25 @@ export default function createGpdMessage() {
 /**
  * k6 `handleSummary()` lifecycle function.
  *
- * Persists generated operation IDs to a JSON file.
+ * Persists generated operation IDs and resource IDs to JSON files.
  *
- * @param {{ setup_data?: string[] }} data Setup output.
+ * @param {{ setup_data?: Array<{operationId?: string, resourceId?: string, id?: string}> }} data Setup output.
  * @returns {Record<string, string>} Map of output file paths to serialized contents.
  */
 export function handleSummary(data) {
-  const idsOnly = (data.setup_data || [])
-  .filter(Boolean);
+  const rows = data.setup_data || [];
+  const operationIds = rows
+    .map((r) => r?.operationId || r?.id)
+    .filter(Boolean);
+  const resourceIds = rows
+    .map((r) => r?.resourceId || r?.operationId || r?.id)
+    .filter(Boolean);
 
-  console.log(`💾 Saving ${idsOnly.length} operationIds to file: ${FILE_PATH}`);
+  console.log(`💾 Saving ${operationIds.length} operationIds to file: ${OPERATION_ID_FILE_PATH}`);
+  console.log(`💾 Saving ${resourceIds.length} resourceIds to file: ${RESOURCE_ID_FILE_PATH}`);
 
   return {
-    [FILE_PATH]: JSON.stringify(idsOnly, null, 2),
+    [OPERATION_ID_FILE_PATH]: JSON.stringify(operationIds, null, 2),
+    [RESOURCE_ID_FILE_PATH]: JSON.stringify(resourceIds, null, 2),
   };
 }

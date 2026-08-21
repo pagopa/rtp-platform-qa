@@ -207,7 +207,7 @@ export function cancelRtpInBatch({
   console.log(`Cancelling ${resourceIds.length} RTP requests in batches of ${batchSize}...`);
 
   const headers = buildHeaders(accessToken);
-  const basePath = `${senderConfig.sender_base}/rtps`;
+  const cancelUrl = `${senderConfig.sender_base}/rtps/cancel`;
   const cancelledIds = [];
   let successCount = 0;
   let failureCount = 0;
@@ -217,11 +217,13 @@ export function cancelRtpInBatch({
 
     for (let i = 0; i < batchSize && (batch * batchSize + i) < resourceIds.length; i++) {
       const resourceId = resourceIds[batch * batchSize + i].id;
-      const fullUrl = `${basePath}/${resourceId}/cancel`;
-
       batchRequests.push({
         method: 'POST',
-        url: fullUrl,
+        url: cancelUrl,
+        body: JSON.stringify({
+          resourceId,
+          reason: 'MODT',
+        }),
         params: { headers },
       });
     }
@@ -251,7 +253,7 @@ export function cancelRtpInBatch({
 }
 
 /**
- * Creates GPD messages in batches and returns the successful operation IDs.
+ * Creates GPD messages in batches and returns both operation IDs and resource IDs.
  *
  * @param {Object} params - Function parameters.
  * @param {string} params.accessToken - Access token used to authorize the requests.
@@ -263,7 +265,7 @@ export function cancelRtpInBatch({
  * @param {string} params.status - GPD message status.
  * @param {string} params.ecTaxCode - Entity creditor tax code.
  * @param {string|null} [params.psp_tax_code] - PSP tax code.
- * @returns {string[]} List of successful operation IDs.
+ * @returns {Array<{operationId: string, resourceId: string}>} List of successful GPD identifiers.
  */
 export function createGpdMessageInBatch({
   accessToken,
@@ -298,7 +300,7 @@ export function createGpdMessageInBatch({
     throw new Error("❌ ecTaxCode cannot be null");
   }
 
-  const operationIds = [];
+  const identifiers = [];
   let totalSuccess = 0;
   let totalFailure = 0;
 
@@ -339,7 +341,27 @@ export function createGpdMessageInBatch({
     responses.forEach((res, index) => {
       if (res.status >= 200 && res.status < 300) {
         batchSuccess++;
-        operationIds.push(batchOperationIds[index]);
+        let responseId = null;
+
+        if (res.headers?.['Location']) {
+          responseId = res.headers['Location'].split('/').pop();
+        }
+
+        if (!responseId) {
+          try {
+            const body = JSON.parse(res.body);
+            responseId = body?.resourceId || body?.operationId || body?.id || null;
+          } catch (e) {
+            console.warn(`⚠️ Failed to parse GpdMessage response body. ex: ${e}`);
+          }
+        }
+
+        const operationIdValue = String(batchOperationIds[index]);
+        const resourceIdValue = String(responseId || batchOperationIds[index]);
+        identifiers.push({
+          operationId: operationIdValue,
+          resourceId: resourceIdValue,
+        });
       } else {
         console.error(
             `❌ GpdMessage create failed: ${res.status}`
@@ -351,7 +373,7 @@ export function createGpdMessageInBatch({
     totalFailure += (responses.length - batchSuccess);
 
     console.log(
-        `Batch ${batch + 1}: ${batchSuccess} GpdMessage requests sent (${responses.length - batchSuccess} failed), total: ${operationIds.length}`
+        `Batch ${batch + 1}: ${batchSuccess} GpdMessage requests sent (${responses.length - batchSuccess} failed), total: ${identifiers.length}`
     );
 
     if (batch < Math.ceil(targetRequests / batchSize) - 1) {
@@ -360,10 +382,10 @@ export function createGpdMessageInBatch({
   }
 
   console.log(
-      `Batch send completed: ${operationIds.length} GpdMessage ready (${totalSuccess} success, ${totalFailure} failed)`
+      `Batch send completed: ${identifiers.length} GpdMessage ready (${totalSuccess} success, ${totalFailure} failed)`
   );
 
-  return operationIds;
+  return identifiers;
 }
 
 /**

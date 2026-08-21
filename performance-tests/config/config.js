@@ -16,5 +16,5 @@ export const serviceRegistryConfig = {
 };
 
 export const callbackConfig = {
-    callback_base: 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp'
+    callback_base: 'https://api-rtp-cb.uat.cstar.pagopa.it/rtp/cb/v1'
 }
