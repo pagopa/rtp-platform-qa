@@ -64,7 +64,7 @@ const RESOURCE_ID_FILE_PATH = 'json-file/rtp-sender/resource-id.json';
  * @type {{ setupTimeout: string }}
  */
 export const options = {
-  setupTimeout: '120m',
+  setupTimeout: '240m',
 };
 
 /**
