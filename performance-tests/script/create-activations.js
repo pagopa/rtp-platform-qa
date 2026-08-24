@@ -36,7 +36,7 @@ const FILE_PATH = 'json-file/rtp-activator/activations.json';
  * @type {{ setupTimeout: string }}
  */
 export let options = {
-    setupTimeout: "30m",
+    setupTimeout: "240m",
 };
 
 /**
@@ -53,7 +53,7 @@ function getConfig() {
     return {
         debtorServiceProviderId: DEBTOR_SERVICE_PROVIDER_ID,
         targetRequests: Number(__ENV.TARGET_REQUESTS) || 2000,
-        batchSize: Number(__ENV.BATCH_SIZE) || 50,
+        batchSize: Number(__ENV.BATCH_SIZE) || 1000,
         delayBetweenBatches: Number(__ENV.DELAY_BETWEEN_BATCHES) || 1,
     };
 }
