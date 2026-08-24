@@ -305,6 +305,7 @@ export const endpoints = {
   callbackCancel: `${callbackConfig.callback_base}/cb/cancel`,
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
   gpdMessage: `${senderConfig.sender_base}/gpd/message`,
+  deliveryStatus: `${senderConfig.sender_base}/rtps/delivery-status`,
 };
 
 /**
