@@ -398,3 +398,143 @@ export function distributeItemsAmongGroups(items, groupCount) {
 
   return chunks;
 }
+
+/**
+ * Creates GPD messages in batches and collects the `noticeNumber` (nav) and
+ * `payeeId` (ec_tax_code) from each successful response.
+ *
+ * These pairs are the required input parameters for the
+ * `GET /rtps/delivery-status?noticeNumber=<nav>&payeeId=<ec_tax_code>` endpoint,
+ * and the output of this function is intended to be persisted as a JSON fixture file
+ * that feeds the `delivery-status-finder.js` stress test.
+ *
+ * @param {Object} params - Function parameters.
+ * @param {string} params.accessToken - Access token for the RTP Consumer actor.
+ * @param {number} [params.targetRequests=10000] - Total number of GPD messages to create.
+ * @param {number} [params.batchSize=100] - Number of requests per batch.
+ * @param {number} [params.delayBetweenBatches=2] - Delay in seconds between batches.
+ * @param {string} params.debtorFiscalCode - Debtor fiscal code used in each payload.
+ * @param {string} params.operation - GPD operation type (e.g. "CREATE").
+ * @param {string} params.status - GPD message status (e.g. "VALID").
+ * @param {string} params.ecTaxCode - Creditor entity tax code (used as payeeId).
+ * @param {string|null} [params.psp_tax_code] - Optional PSP tax code.
+ *
+ * @returns {Array<{ noticeNumber: string, payeeId: string }>}
+ *   List of objects containing the `noticeNumber` (nav) and `payeeId` (ec_tax_code)
+ *   from each successfully sent GPD message.
+ */
+export function createDeliveryStatusDataInBatch({
+  accessToken,
+  targetRequests = 10000,
+  batchSize = 1000,
+  delayBetweenBatches = 1,
+  debtorFiscalCode,
+  operation,
+  status,
+  ecTaxCode,
+  psp_tax_code,
+}) {
+  // Validate numeric parameters early so callers get a clear error instead of
+  // a silent NaN that causes Math.ceil(NaN / batchSize) to be NaN and the
+  // loop to execute 0 iterations, collecting 0 inputs with no warning.
+  const parsedTargetRequests = Number(targetRequests);
+  if (!Number.isFinite(parsedTargetRequests) || parsedTargetRequests < 1) {
+    throw new Error(
+      `❌ targetRequests must be a positive number, got: ${JSON.stringify(targetRequests)}`
+    );
+  }
+  const parsedBatchSize = Number(batchSize);
+  if (!Number.isFinite(parsedBatchSize) || parsedBatchSize < 1) {
+    throw new Error(
+      `❌ batchSize must be a positive number, got: ${JSON.stringify(batchSize)}`
+    );
+  }
+
+  console.log(`Sending ${parsedTargetRequests} GPD messages for delivery-status data in batches of ${parsedBatchSize}...`);
+
+  if (!accessToken) {
+    throw new Error('❌ accessToken cannot be null');
+  }
+  if (!debtorFiscalCode) {
+    throw new Error('❌ debtorFiscalCode cannot be null');
+  }
+  if (!operation) {
+    throw new Error('❌ operation cannot be null');
+  }
+  if (!status) {
+    throw new Error('❌ status cannot be null');
+  }
+  if (!ecTaxCode) {
+    throw new Error('❌ ecTaxCode cannot be null');
+  }
+
+  const deliveryStatusInputs = [];
+  let totalSuccess = 0;
+  let totalFailure = 0;
+
+  for (let batch = 0; batch < Math.ceil(parsedTargetRequests / parsedBatchSize); batch++) {
+    const batchRequests = [];
+    const batchNavs = [];
+
+    for (let i = 0; i < parsedBatchSize && (batch * parsedBatchSize + i) < parsedTargetRequests; i++) {
+      const operationId = String(generatePositiveLong());
+
+      const payload = buildGpdMessagePayload(
+        debtorFiscalCode,
+        operationId,
+        operation,
+        status,
+        ecTaxCode,
+        psp_tax_code
+      );
+
+      // Persist nav (noticeNumber) before sending so we can correlate with the response
+      batchNavs.push(payload.nav);
+
+      batchRequests.push({
+        method: 'POST',
+        url: endpoints.gpdMessage,
+        body: JSON.stringify(payload),
+        params: {
+          headers: {
+            ...buildHeaders(accessToken),
+            'Idempotency-Key': uuidv4(),
+          },
+        },
+      });
+    }
+
+    const responses = http.batch(batchRequests);
+    let batchSuccess = 0;
+
+    responses.forEach((res, index) => {
+      if (res.status >= 200 && res.status < 300) {
+        batchSuccess++;
+        deliveryStatusInputs.push({
+          noticeNumber: batchNavs[index],
+          payeeId: ecTaxCode,
+        });
+      } else {
+        console.error(`❌ GPD message create failed (delivery-status data): ${res.status}`);
+      }
+    });
+
+    totalSuccess += batchSuccess;
+    totalFailure += responses.length - batchSuccess;
+
+    console.log(
+      `Batch ${batch + 1}: ${batchSuccess}/${responses.length} ok — total inputs collected: ${deliveryStatusInputs.length}`
+    );
+
+    if (batch < Math.ceil(parsedTargetRequests / parsedBatchSize) - 1) {
+      sleep(delayBetweenBatches);
+    }
+  }
+
+  console.log(
+    `Batch send completed: ${deliveryStatusInputs.length} delivery-status inputs ready (${totalSuccess} success, ${totalFailure} failed)`
+  );
+
+  return deliveryStatusInputs;
+}
+
