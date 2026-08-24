@@ -31,11 +31,31 @@ import { createDeliveryStatusDataInBatch } from '../utils/batch-utils.js';
  *   Array of `{ noticeNumber: string, payeeId: string }` objects.
  */
 
-/** Debtor fiscal code (env: DEBTOR_FISCAL_CODE). @type {string} */
-const DEBTOR_FISCAL_CODE = String(__ENV.DEBTOR_FISCAL_CODE);
+/**
+ * Reads a required environment variable and throws at init time if it is
+ * absent or was coerced to the literal string "undefined" by k6.
+ *
+ * @param {string} name - Environment variable name.
+ * @returns {string} The variable value.
+ * @throws {Error} If the variable is not set or equals "undefined".
+ */
+function requireEnv(name) {
+  const value = __ENV[name];
+  if (value === undefined || value === null || value === 'undefined' || value.trim() === '') {
+    throw new Error(
+      `❌ Required environment variable "${name}" is not set.\n` +
+      `Make sure it is defined in ../.env or passed explicitly:\n` +
+      `  ${name}=<value> ./run-tests.sh script/create-delivery-status.js console`
+    );
+  }
+  return value;
+}
 
-/** Creditor entity tax code, used as payeeId (env: EC_TAX_CODE). @type {string} */
-const EC_TAX_CODE = String(__ENV.EC_TAX_CODE);
+/** Debtor fiscal code — required (env: DEBTOR_FISCAL_CODE). @type {string} */
+const DEBTOR_FISCAL_CODE = requireEnv('DEBTOR_FISCAL_CODE');
+
+/** Creditor entity tax code, used as payeeId — required (env: EC_TAX_CODE). @type {string} */
+const EC_TAX_CODE = requireEnv('EC_TAX_CODE');
 
 /** GPD operation type (env: OPERATION, default: CREATE). @type {string} */
 const OPERATION = __ENV.OPERATION || 'CREATE';
@@ -49,14 +69,15 @@ const PSP_TAX_CODE = __ENV.PSP_TAX_CODE || null;
 /** Total messages to generate (env: TARGET_REQUESTS, default: 10000). @type {number} */
 const TARGET_REQUESTS = Number(__ENV.TARGET_REQUESTS) || 10000;
 
-/** Requests per batch (env: BATCH_SIZE, default: 100). @type {number} */
-const BATCH_SIZE = Number(__ENV.BATCH_SIZE) || 100;
+/** Requests per batch (env: BATCH_SIZE, default: 1000). @type {number} */
+const BATCH_SIZE = Number(__ENV.BATCH_SIZE) || 1000;
 
 /** Delay in seconds between batches (env: DELAY_BETWEEN_BATCHES, default: 1). @type {number} */
 const DELAY_BETWEEN_BATCHES = Number(__ENV.DELAY_BETWEEN_BATCHES) || 1;
 
 /** Output file path for the generated delivery-status inputs. @type {string} */
 const FILE_PATH = 'json-file/rtp-sender/delivery-status-inputs.json';
+
 
 /**
  * k6 test options.

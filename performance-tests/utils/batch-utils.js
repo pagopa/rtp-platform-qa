@@ -425,16 +425,32 @@ export function distributeItemsAmongGroups(items, groupCount) {
  */
 export function createDeliveryStatusDataInBatch({
   accessToken,
-  targetRequests,
-  batchSize = 100,
-  delayBetweenBatches = 2,
+  targetRequests = 10000,
+  batchSize = 1000,
+  delayBetweenBatches = 1,
   debtorFiscalCode,
   operation,
   status,
   ecTaxCode,
   psp_tax_code,
 }) {
-  console.log(`Sending ${targetRequests} GPD messages for delivery-status data in batches of ${batchSize}...`);
+  // Validate numeric parameters early so callers get a clear error instead of
+  // a silent NaN that causes Math.ceil(NaN / batchSize) to be NaN and the
+  // loop to execute 0 iterations, collecting 0 inputs with no warning.
+  const parsedTargetRequests = Number(targetRequests);
+  if (!Number.isFinite(parsedTargetRequests) || parsedTargetRequests < 1) {
+    throw new Error(
+      `❌ targetRequests must be a positive number, got: ${JSON.stringify(targetRequests)}`
+    );
+  }
+  const parsedBatchSize = Number(batchSize);
+  if (!Number.isFinite(parsedBatchSize) || parsedBatchSize < 1) {
+    throw new Error(
+      `❌ batchSize must be a positive number, got: ${JSON.stringify(batchSize)}`
+    );
+  }
+
+  console.log(`Sending ${parsedTargetRequests} GPD messages for delivery-status data in batches of ${parsedBatchSize}...`);
 
   if (!accessToken) {
     throw new Error('❌ accessToken cannot be null');
@@ -456,11 +472,11 @@ export function createDeliveryStatusDataInBatch({
   let totalSuccess = 0;
   let totalFailure = 0;
 
-  for (let batch = 0; batch < Math.ceil(targetRequests / batchSize); batch++) {
+  for (let batch = 0; batch < Math.ceil(parsedTargetRequests / parsedBatchSize); batch++) {
     const batchRequests = [];
     const batchNavs = [];
 
-    for (let i = 0; i < batchSize && (batch * batchSize + i) < targetRequests; i++) {
+    for (let i = 0; i < parsedBatchSize && (batch * parsedBatchSize + i) < parsedTargetRequests; i++) {
       const operationId = String(generatePositiveLong());
 
       const payload = buildGpdMessagePayload(
@@ -510,7 +526,7 @@ export function createDeliveryStatusDataInBatch({
       `Batch ${batch + 1}: ${batchSuccess}/${responses.length} ok — total inputs collected: ${deliveryStatusInputs.length}`
     );
 
-    if (batch < Math.ceil(targetRequests / batchSize) - 1) {
+    if (batch < Math.ceil(parsedTargetRequests / parsedBatchSize) - 1) {
       sleep(delayBetweenBatches);
     }
   }

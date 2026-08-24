@@ -202,7 +202,10 @@ export function checkDeliveryStatus(data) {
   vuIterIndex[vu]++;
 
   const headers = buildHeaders(data.accessToken);
-  const url = `${endpoints.deliveryStatus}?noticeNumber=${input.noticeNumber}&payeeId=${input.payeeId}`;
+  const url =
+    `${endpoints.deliveryStatus}` +
+    `?noticeNumber=${encodeURIComponent(input.noticeNumber)}` +
+    `&payeeId=${encodeURIComponent(input.payeeId)}`;
 
   const start = Date.now();
   const res = http.get(url, { headers });
