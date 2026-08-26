@@ -5,13 +5,12 @@ import allure
 import pytest
 
 from api.debtor_activation_api import activate
-from api.RTP_get_api import get_rtp_delivery_status
+from api.RTP_get_api import get_rtp_by_notice_number, get_rtp_delivery_status
 from api.RTP_process_sender import send_gpd_message
 from config.configuration import secrets
 from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.fiscal_code_utils import fake_fc
 from utils.generators_utils import generate_notice_number, generate_random_organization_id
-from utils.rtp_send_helpers import get_rtp_by_notice_number
 
 _SEND_PROCESSING_WAIT_S = 5
 
@@ -154,10 +153,12 @@ def test_get_delivery_status_error_send_rtp(
     Given a debtor is activated with the mock fiscal code that makes the debtor
     service provider mock reply with a server error, when a GPD message (CREATE)
     is sent via POST /gpd/message, then the rtp-sender fails to deliver the RTP
-    and records an ERROR_SEND_RTP event (RTP status becomes ERROR_SEND). When the
-    payee then queries the delivery-status endpoint with the matching noticeNumber
-    and payeeId, the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED
-    and processingDate absent or null.
+    and records an ERROR_SEND_RTP event (RTP status becomes ERROR_SEND). RTPs in
+    ERROR_SEND status are purged from both Cosmos and ADX, so querying by
+    noticeNumber returns an empty list. When the payee then queries the
+    delivery-status endpoint with the matching noticeNumber and payeeId, the
+    response must still be HTTP 200 with status=PD_RTP_NOT_DELIVERED and
+    processingDate absent or null.
     """
     fiscal_code: str = secrets.mock_server_error_fiscal_code
 
@@ -183,16 +184,14 @@ def test_get_delivery_status_error_send_rtp(
 
     time.sleep(_SEND_PROCESSING_WAIT_S)
 
-    rtp = get_rtp_by_notice_number(rtp_reader_access_token, message_payload["nav"])
-    assert rtp.get("status") == "ERROR_SEND", (
-        f"Expected RTP status='ERROR_SEND', got status='{rtp.get('status')}'"
+    notice_response = get_rtp_by_notice_number(rtp_reader_access_token, message_payload["nav"])
+    assert notice_response.status_code == 200, (
+        f"Expected HTTP 200, got {notice_response.status_code}: {notice_response.text}"
     )
-
-    error_send_event = next(
-        (e for e in rtp.get("events", []) if e.get("triggerEvent") == "ERROR_SEND_RTP"),
-        None,
+    assert notice_response.json() == [], (
+        "Expected an empty list once the ERROR_SEND RTP is purged from Cosmos/ADX, "
+        f"got: {notice_response.text}"
     )
-    assert error_send_event is not None, "No ERROR_SEND_RTP event found in the RTP events"
 
     delivery_response = get_rtp_delivery_status(
         access_token=debtor_service_provider_token_a,
