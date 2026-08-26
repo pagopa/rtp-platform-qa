@@ -184,13 +184,13 @@ def test_get_delivery_status_error_send_rtp(
 
     time.sleep(_SEND_PROCESSING_WAIT_S)
 
-    by_notice_response = get_rtp_by_notice_number(rtp_reader_access_token, message_payload["nav"])
-    assert by_notice_response.status_code == 200, (
-        f"Expected HTTP 200, got {by_notice_response.status_code}: {by_notice_response.text}"
+    notice_response = get_rtp_by_notice_number(rtp_reader_access_token, message_payload["nav"])
+    assert notice_response.status_code == 200, (
+        f"Expected HTTP 200, got {notice_response.status_code}: {notice_response.text}"
     )
-    assert by_notice_response.json() == [], (
+    assert notice_response.json() == [], (
         "Expected an empty list once the ERROR_SEND RTP is purged from Cosmos/ADX, "
-        f"got: {by_notice_response.text}"
+        f"got: {notice_response.text}"
     )
 
     delivery_response = get_rtp_delivery_status(
