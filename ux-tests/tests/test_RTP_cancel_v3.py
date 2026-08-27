@@ -7,7 +7,7 @@ _CANCEL_PAID_BUTTON = 'button:has-text("Cancella PAID v3.2")'
 _CONFIRM_CANCEL_BUTTON = 'button:has-text("Cancella richiesta")'
 _DIALOG_NAME = "Vuoi cancellare la richiesta?"
 _DIALOG_DESCRIPTION = "Proseguendo, la richiesta di pagamento appena creata verrà cancellata."
-_SUCCESS_MESSAGE = "La richiesta è stata cancellata"
+_SUCCESS_MESSAGE = "La richiesta di cancellazione è stata inviata con successo"
 
 
 def _assert_cancel_modal_and_confirm(page, trigger_button_selector: str):
