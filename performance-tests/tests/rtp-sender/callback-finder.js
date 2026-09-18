@@ -1,6 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { endpoints, determineStage, getOptions} from "../../utils/utils.js";
+import { HOST_SUFFIX } from "../../config/config.js";
 import { createStandardMetrics } from "../../utils/metrics-utils.js";
 import { shuffleArray, distributeItemsAmongGroups} from "../../utils/batch-utils.js";
 import { createHandleSummary } from "../../utils/summary-utils.js";
@@ -30,7 +31,7 @@ export let options = {
 
     tlsAuth: [
         {
-            domains: ['api-rtp-cb.dev.cstar.pagopa.it'],
+            domains: [`api-rtp-cb.${HOST_SUFFIX}`],
             cert: open(MTLS_CERT_PATH),
             key: open(MTLS_KEY_PATH),
         }

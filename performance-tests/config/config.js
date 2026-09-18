@@ -12,11 +12,14 @@ const HOST_SUFFIXES = {
   uat: 'uat.cstar.pagopa.it'
 };
 
-if (!HOST_SUFFIXES[ENVIRONMENT]) {
+if (!Object.prototype.hasOwnProperty.call(HOST_SUFFIXES, ENVIRONMENT)) {
   throw new Error(`❌ Unsupported ENVIRONMENT '${ENVIRONMENT}'. Supported values: ${Object.keys(HOST_SUFFIXES).join(', ')}`);
 }
 
-const HOST_SUFFIX = HOST_SUFFIXES[ENVIRONMENT];
+/** Host suffix for the selected environment (e.g. `dev.cstar.pagopa.it`). Exported for
+ * modules that need to build environment-aware values outside of this file's configs
+ * (e.g. mTLS `tlsAuth.domains` in the rtp-sender callback test scripts). */
+export const HOST_SUFFIX = HOST_SUFFIXES[ENVIRONMENT];
 const ACCESS_TOKEN_URL = `https://api-mcshared.${HOST_SUFFIX}/auth-itn/realms/srtp/protocol/openid-connect/token`;
 
 export const activationConfig = {
