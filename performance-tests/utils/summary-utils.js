@@ -89,14 +89,14 @@ export function createTestSummary({ data, startTime, testCompleted, vuCount, tes
  *   VU_COUNT: VU_COUNT_SET
  * });
  */
-export function createHandleSummary({ START_TIME, testName, countTag, reportPrefix, VU_COUNT }) {
+export function createHandleSummary({ START_TIME, testName, countTag, reportPrefix, VU_COUNT, testCompletedRef }) {
     return function(data) {
 
         let testCompleted = false;
 
-        if (typeof this.testCompleted !== 'undefined') {
-            console.log(`Found testCompleted in global scope: ${this.testCompleted}`);
-            testCompleted = this.testCompleted;
+        if (testCompletedRef && typeof testCompletedRef.value !== 'undefined') {
+            console.log(`Found testCompleted in testCompletedRef: ${testCompletedRef.value}`);
+            testCompleted = testCompletedRef.value;
         }
         else if (data.setupData && typeof data.setupData.testCompleted !== 'undefined') {
             console.log(`Found testCompleted in setupData: ${data.setupData.testCompleted}`);
