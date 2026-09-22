@@ -161,6 +161,11 @@ function buildStaircaseStages(startRate, peakRate, steps, stepDuration) {
   const stages = [];
   for (let i = 1; i <= steps; i++) {
     const target = Math.round(startRate + (peakRate - startRate) * i / steps);
+    // In k6's ramping-arrival-rate, a stage's `duration` is the time spent
+    // *ramping toward* `target`, not time spent holding it. To actually hold
+    // each step for `stepDuration` (as documented above), ramp to the target
+    // quickly first, then add a second stage with the same target to hold it.
+    stages.push({ target, duration: '1s' });
     stages.push({ target, duration: stepDuration });
   }
   return stages;
@@ -177,6 +182,16 @@ function buildStaircaseStages(startRate, peakRate, steps, stepDuration) {
  * - `RAMP_STEP_DURATION` (default '30s'): how long each step is held.
  * - `RAMP_PRE_ALLOCATED_VUS` / `RAMP_MAX_VUS` (optional): override the k6 VU
  *   pool sizing; if omitted, sized automatically from `RAMP_PEAK_RATE`.
+ *
+ * BREAKING CHANGE vs. the previous hardcoded `stress_test`: when no `RAMP_*`
+ * env vars are set (e.g. running the script locally without `-e` flags), the
+ * default shape is now 10 monotonically increasing steps up to a peak of
+ * 5000 req/s, with no repeated holds and no recovery ramp-down. The legacy
+ * default had 17 stages (holds at each level) and ramped back down to 50
+ * req/s at the end. This is intentional: the scenario is now meant to be
+ * driven by the ADO pipeline parameters (see `srtp-deploy-aks/.devops/k6-stress-test.yml`)
+ * rather than by a fixed hardcoded shape. If you need the old recovery-ramp
+ * behavior for a local run, set `RAMP_*` env vars explicitly to replicate it.
  *
  * @returns {Object} k6 `ramping-arrival-rate` scenario definition.
  */

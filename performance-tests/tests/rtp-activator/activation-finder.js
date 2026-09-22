@@ -187,11 +187,14 @@ export const teardown = createActivationTeardown({
 /**
  * k6 `handleSummary` export.
  *
- * Ensures `testCompletedRef` is set to true before delegating to the shared summary factory,
- * which generates aggregated artifacts and annotates results.
+ * Delegates to the shared summary factory, which generates aggregated artifacts
+ * and annotates results. `testCompletedRef` is NOT forced to `true` here: it is
+ * already set from the real completion signal (`data.allCompleted`) inside
+ * `teardown` (see `createActivationTeardown`/`createBatchProcessingTeardown`),
+ * which always runs before `handleSummary`. Overriding it here would mark
+ * interrupted/partial runs as `COMPLETED` regardless of what actually happened.
  */
 export const handleSummary = (opts) => {
-    testCompletedRef.value = true;
     return createHandleSummary({
         START_TIME,
         testName: 'ACTIVATION STRESS TEST',

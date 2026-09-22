@@ -94,9 +94,9 @@ export function createHandleSummary({ START_TIME, testName, countTag, reportPref
 
         let testCompleted = false;
 
-        if (testCompletedRef && typeof testCompletedRef.value !== 'undefined') {
+        if (testCompletedRef && testCompletedRef.value === true) {
             console.log(`Found testCompleted in testCompletedRef: ${testCompletedRef.value}`);
-            testCompleted = testCompletedRef.value;
+            testCompleted = true;
         }
         else if (data.setupData && typeof data.setupData.testCompleted !== 'undefined') {
             console.log(`Found testCompleted in setupData: ${data.setupData.testCompleted}`);
