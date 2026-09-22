@@ -292,7 +292,7 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 | PagoPA Integration | `PAGOPA_INTEGRATION_*_CLIENT_ID`, `*_CLIENT_SECRET` (3 clients) |
 | CBI | `CBI_CLIENT_ID`, `_SECRET`, `_PFX_BASE64`, `_PFX_PASSWORD_BASE64`, `CBI_ACTIVATED_FISCAL_CODE`, `CBI_PAYEE_ID`, `CREDITOR_AGENT_ID` |
 | Third-Party Providers | `POSTE_CLIENT_ID`, `_SECRET`, `POSTE_ACTIVATED_FISCAL_CODE`, `ICCREA_ACTIVATED_FISCAL_CODE` |
-| Mock Service Provider | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64`, `_PASSWORD_BASE64`, `MOCK_*_FISCAL_CODE` (6 vars) |
+| Mock Service Provider | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64`, `_PASSWORD_BASE64`, `DEBTOR_SERVICE_PROVIDER_MOCK_QSEALC_PFX_BASE64`, `_PASSWORD_BASE64`, `MOCK_*_FISCAL_CODE` |
 | GPD (Debt Positions) | `DEBT_POSITIONS_SUBSCRIPTION_KEY`, `_ORGANIZATION_ID` (UAT + DEV), `EC_TAX_CODE` |
 | Web Application | `WEBPAGE_USERNAME`, `WEBPAGE_PASSWORD`, `WEBPAGE_CLIENT_ID` |
 
@@ -375,6 +375,8 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 |----------|-------------|
 | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64` | Base64-encoded PFX certificate for mock debtor service provider |
 | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_PASSWORD_BASE64` | Base64-encoded PFX password for mock debtor service provider |
+| `DEBTOR_SERVICE_PROVIDER_MOCK_QSEALC_PFX_BASE64` | Base64-encoded mock QSealC PFX certificate used for v2 callback signing |
+| `DEBTOR_SERVICE_PROVIDER_MOCK_QSEALC_PFX_PASSWORD_BASE64` | Base64-encoded password for the mock QSealC PFX certificate |
 | `MOCK_ACTC_FISCAL_CODE` | Fiscal code that triggers a synchronous ACTC response (DS-05) |
 | `MOCK_RJCT_FISCAL_CODE` | Fiscal code that triggers a synchronous RJCT response (DS-08P N) |
 | `MOCK_NO_LINKS_FISCAL_CODE` | Fiscal code that triggers a synchronous ACTC response without the `_links` field |

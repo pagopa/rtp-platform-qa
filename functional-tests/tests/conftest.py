@@ -7,7 +7,7 @@ from _pytest.reports import TestReport
 from api.auth_api import get_keycloak_access_token, get_keycloak_password_token, get_valid_access_token
 from api.debtor_activation_api import activate
 from config.configuration import config, secrets
-from utils.cryptography_utils import pfx_to_pem
+from utils.cryptography_utils import QsealcKeyMaterial, load_qsealc_key_material, pfx_to_pem
 from utils.extract_next_activation_id import extract_next_activation_id
 from utils.fiscal_code_utils import fake_fc, fake_fc_foreign, fake_omocodia_fc, fake_vat
 from utils.log_sanitizer_helper import sanitize_bearer_token
@@ -274,6 +274,15 @@ def debtor_sp_mock_cert_key() -> tuple[str, str]:
         config.key_path,
     )
     return cert, key
+
+
+@pytest.fixture
+def debtor_sp_mock_qsealc_key_material() -> QsealcKeyMaterial:
+    """Returns the mock debtor service provider QSealC key material."""
+    return load_qsealc_key_material(
+        secrets.debtor_service_provider_mock_qsealc_PFX_base64,
+        secrets.debtor_service_provider_mock_qsealc_PFX_password_base64,
+    )
 
 
 # ============================================================
