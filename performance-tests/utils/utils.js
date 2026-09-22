@@ -256,8 +256,14 @@ export function buildHeaders(token) {
 }
 
 /**
- * Determines the current test stage based on elapsed time.
- * Maps time windows to named stages that correspond with the stress test profile.
+ * Legacy stage classifier: maps elapsed time to named stages using hardcoded
+ * time thresholds. Kept only as a fallback for the `custom`/`shared-iterations`
+ * mode, which has no rate/VU ramp to derive a stage from.
+ *
+ * NOTE: these thresholds do NOT match the current `stress_test`/`soak_test`/
+ * `spike_test` scenario definitions above (durations have since changed) — use
+ * `getStageLabel()` instead for any of the `PREDEFINED_SCENARIOS`, which derives
+ * the stage from the actual scenario config instead of a hardcoded guess.
  *
  * @param {number} sec - Elapsed seconds since test start
  * @returns {string} Current stage name
@@ -280,6 +286,64 @@ export function determineStage(sec) {
   if (sec <= 480) return 'recovery-1000';
   if (sec <= 510) return 'recovery-250';
   return 'recovery-50';
+}
+
+/**
+ * Parses a k6-style duration string (e.g. '30s', '1m', '1m30s') into seconds.
+ *
+ * @param {string} duration - Duration string using ms/s/m/h unit suffixes.
+ * @returns {number} Total duration in seconds.
+ */
+function parseDurationToSeconds(duration) {
+  const matches = String(duration).matchAll(/(\d+)(ms|s|m|h)/g);
+  const unitSeconds = { ms: 0.001, s: 1, m: 60, h: 3600 };
+  let total = 0;
+  for (const [, amount, unit] of matches) {
+    total += Number(amount) * unitSeconds[unit];
+  }
+  return total;
+}
+
+/**
+ * Determines the current stage label for one of the `PREDEFINED_SCENARIOS`,
+ * derived directly from that scenario's actual `stages`/`rate`/`vus` config
+ * (unlike the legacy `determineStage()`, this always matches reality since it
+ * doesn't rely on hardcoded time thresholds).
+ *
+ * @param {string} scenarioName - Scenario name (key in `progressiveOptions.scenarios`),
+ *   or any other value for the `custom`/`shared-iterations` fallback.
+ * @param {number} elapsedSeconds - Elapsed seconds since test start.
+ * @returns {string} Current stage label.
+ */
+export function getStageLabel(scenarioName, elapsedSeconds) {
+  const scenario = progressiveOptions.scenarios[scenarioName];
+
+  // custom/shared-iterations has no rate/VU ramp concept; keep legacy behavior.
+  if (!scenario) {
+    return determineStage(elapsedSeconds);
+  }
+
+  if (Array.isArray(scenario.stages)) {
+    let cumulative = 0;
+    for (const stage of scenario.stages) {
+      cumulative += parseDurationToSeconds(stage.duration);
+      if (elapsedSeconds <= cumulative) {
+        return `rate-${stage.target}`;
+      }
+    }
+    const lastStage = scenario.stages[scenario.stages.length - 1];
+    return `rate-${lastStage.target}`;
+  }
+
+  if (scenario.executor === 'constant-arrival-rate') {
+    return `rate-${scenario.rate}`;
+  }
+
+  if (scenario.executor === 'constant-vus') {
+    return `vus-${scenario.vus}`;
+  }
+
+  return 'n/a';
 }
 
 /**
@@ -334,6 +398,35 @@ export function getOptions(scenarioName, execFunction) {
     },
     thresholds: progressiveOptions.thresholds
   };
+}
+
+/**
+ * Builds a human-readable description of the VU allocation for a given
+ * predefined scenario, for use in end-of-test reports. Arrival-rate executors
+ * (`stress_test`, `soak_test`, `spike_test`) don't run a fixed number of VUs
+ * (k6 allocates VUs dynamically between `preAllocatedVUs` and `maxVUs` to hit
+ * the target rate), so reporting a single static VU count for them would be
+ * misleading; `constant-vus`/`shared-iterations` executors do use a fixed count.
+ *
+ * @param {string} scenarioName - One of `PREDEFINED_SCENARIOS`, or any other
+ *   value (treated as the `custom` shared-iterations case).
+ * @param {number} fallbackVuCount - VU count to report for the `custom` case
+ *   (i.e. the `VU_COUNT_SET` env var driving the `shared-iterations` executor).
+ * @returns {string} Human-readable VU allocation description.
+ */
+export function describeScenarioVUs(scenarioName, fallbackVuCount) {
+  const scenario = progressiveOptions.scenarios[scenarioName];
+
+  if (!scenario) {
+    return `${fallbackVuCount} (custom, shared-iterations)`;
+  }
+
+  if (scenario.executor === 'constant-vus') {
+    return `${scenario.vus} (fixed, ${scenario.executor})`;
+  }
+
+  // ramping-arrival-rate / constant-arrival-rate: VUs scale dynamically.
+  return `dynamic, preAllocatedVUs=${scenario.preAllocatedVUs}, maxVUs=${scenario.maxVUs} (${scenario.executor})`;
 }
 
 /**
