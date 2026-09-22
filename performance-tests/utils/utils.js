@@ -147,65 +147,145 @@ export const commonOptions = {
 };
 
 /**
+/**
+ * Builds a staircase of ramp stages from `startRate` to `peakRate`, split into
+ * `steps` equal increments, each held for `stepDuration`. Used by `stress_test`.
+ *
+ * @param {number} startRate - Starting request rate (req/s).
+ * @param {number} peakRate - Target/peak request rate (req/s).
+ * @param {number} steps - Number of staircase steps.
+ * @param {string} stepDuration - k6 duration string held at each step (e.g. '30s').
+ * @returns {Array<{target: number, duration: string}>} k6 ramping-arrival-rate stages.
+ */
+function buildStaircaseStages(startRate, peakRate, steps, stepDuration) {
+  const stages = [];
+  for (let i = 1; i <= steps; i++) {
+    const target = Math.round(startRate + (peakRate - startRate) * i / steps);
+    stages.push({ target, duration: stepDuration });
+  }
+  return stages;
+}
+
+/**
+ * Builds the `stress_test` scenario: a staircase ramp from a start rate up to
+ * a peak rate, meant to find the system's breaking point.
+ *
+ * Configurable via env vars (all optional, defaults shown):
+ * - `RAMP_START_RATE` (default 10): starting req/s.
+ * - `RAMP_PEAK_RATE` (default 5000): peak req/s to ramp up to.
+ * - `RAMP_STEPS` (default 10): number of staircase steps between start and peak.
+ * - `RAMP_STEP_DURATION` (default '30s'): how long each step is held.
+ * - `RAMP_PRE_ALLOCATED_VUS` / `RAMP_MAX_VUS` (optional): override the k6 VU
+ *   pool sizing; if omitted, sized automatically from `RAMP_PEAK_RATE`.
+ *
+ * @returns {Object} k6 `ramping-arrival-rate` scenario definition.
+ */
+function buildStressTestScenario() {
+  const startRate = Number(__ENV.RAMP_START_RATE) || 10;
+  const peakRate = Number(__ENV.RAMP_PEAK_RATE) || 5000;
+  const steps = Number(__ENV.RAMP_STEPS) || 10;
+  const stepDuration = __ENV.RAMP_STEP_DURATION || '30s';
+  const preAllocatedVUs = Number(__ENV.RAMP_PRE_ALLOCATED_VUS) || Math.max(10, Math.round(peakRate / 25));
+  const maxVUs = Number(__ENV.RAMP_MAX_VUS) || Math.max(preAllocatedVUs, peakRate);
+
+  return {
+    executor: 'ramping-arrival-rate',
+    startRate,
+    timeUnit: '1s',
+    preAllocatedVUs,
+    maxVUs,
+    exec: 'activate',
+    stages: buildStaircaseStages(startRate, peakRate, steps, stepDuration)
+  };
+}
+
+/**
+ * Builds the `soak_test` scenario: a constant, moderate request rate held for
+ * an extended period, meant to surface slow leaks/degradation over time.
+ *
+ * Configurable via env vars (all optional, defaults shown):
+ * - `SOAK_RATE` (default 20): constant req/s.
+ * - `SOAK_DURATION` (default '5m'): total test duration.
+ * - `SOAK_PRE_ALLOCATED_VUS` / `SOAK_MAX_VUS` (optional): override the k6 VU
+ *   pool sizing; if omitted, sized automatically from `SOAK_RATE`.
+ *
+ * @returns {Object} k6 `constant-arrival-rate` scenario definition.
+ */
+function buildSoakTestScenario() {
+  const rate = Number(__ENV.SOAK_RATE) || 20;
+  const duration = __ENV.SOAK_DURATION || '5m';
+  const preAllocatedVUs = Number(__ENV.SOAK_PRE_ALLOCATED_VUS) || Math.max(10, Math.round(rate * 2.5));
+  const maxVUs = Number(__ENV.SOAK_MAX_VUS) || Math.max(preAllocatedVUs, rate * 10);
+
+  return {
+    executor: 'constant-arrival-rate',
+    rate,
+    timeUnit: '1s',
+    duration,
+    preAllocatedVUs,
+    maxVUs,
+    exec: 'activate'
+  };
+}
+
+/**
+ * Builds the `spike_test` scenario: a baseline rate, a sudden burst to a peak
+ * rate, held briefly, then back to baseline — meant to test recovery behavior.
+ *
+ * Configurable via env vars (all optional, defaults shown):
+ * - `SPIKE_BASE_RATE` (default 10): baseline req/s before/after the spike.
+ * - `SPIKE_PEAK_RATE` (default 300): req/s reached during the spike.
+ * - `SPIKE_RAMP_DURATION` (default '10s'): time to ramp up to / down from the peak.
+ * - `SPIKE_HOLD_DURATION` (default '30s'): time held at the peak rate.
+ * - `SPIKE_BASE_HOLD_DURATION` (default '10s'): time held at baseline before the spike.
+ * - `SPIKE_PRE_ALLOCATED_VUS` / `SPIKE_MAX_VUS` (optional): override the k6 VU
+ *   pool sizing; if omitted, sized automatically from `SPIKE_PEAK_RATE`.
+ *
+ * @returns {Object} k6 `ramping-arrival-rate` scenario definition.
+ */
+function buildSpikeTestScenario() {
+  const baseRate = Number(__ENV.SPIKE_BASE_RATE) || 10;
+  const peakRate = Number(__ENV.SPIKE_PEAK_RATE) || 300;
+  const rampDuration = __ENV.SPIKE_RAMP_DURATION || '10s';
+  const holdDuration = __ENV.SPIKE_HOLD_DURATION || '30s';
+  const baseHoldDuration = __ENV.SPIKE_BASE_HOLD_DURATION || '10s';
+  const preAllocatedVUs = Number(__ENV.SPIKE_PRE_ALLOCATED_VUS) || Math.max(10, Math.round(peakRate / 15));
+  const maxVUs = Number(__ENV.SPIKE_MAX_VUS) || Math.max(preAllocatedVUs, peakRate);
+
+  return {
+    executor: 'ramping-arrival-rate',
+    startRate: baseRate,
+    timeUnit: '1s',
+    preAllocatedVUs,
+    maxVUs,
+    exec: 'activate',
+    stages: [
+      { target: baseRate, duration: baseHoldDuration },
+      { target: peakRate, duration: rampDuration },
+      { target: peakRate, duration: holdDuration },
+      { target: baseRate, duration: rampDuration }
+    ]
+  };
+}
+
+/**
  * Progressive test options with different test scenarios.
  * Contains predefined scenarios for different load testing strategies:
  * - stress_test: Gradually increases load to find system breaking points
  * - soak_test: Maintains constant moderate load for extended periods
  * - spike_test: Creates sudden burst of traffic to test recovery
+ *
+ * Each scenario's shape/rates/durations are configurable via env vars (see
+ * `buildStressTestScenario`/`buildSoakTestScenario`/`buildSpikeTestScenario`
+ * above for the accepted env vars and their defaults) so they can be tuned
+ * from the ADO pipeline parameters without code changes.
  */
 export const progressiveOptions = {
   ...commonOptions,
   scenarios: {
-    stress_test: {
-      executor: 'ramping-arrival-rate',
-      startRate: 10,
-      timeUnit: '1s',
-      preAllocatedVUs: 200,
-      maxVUs: 6000,
-      exec: 'activate',
-      stages: [
-        { target: 30, duration: '1m' },
-        { target: 50, duration: '30s' },
-        { target: 100, duration: '30s' },
-        { target: 100, duration: '30s' },
-        { target: 250, duration: '30s' },
-        { target: 250, duration: '30s' },
-        { target: 500, duration: '30s' },
-        { target: 500, duration: '30s' },
-        { target: 1000, duration: '30s' },
-        { target: 1000, duration: '30s' },
-        { target: 2500, duration: '30s' },
-        { target: 2500, duration: '30s' },
-        { target: 5000, duration: '30s' },
-        { target: 5000, duration: '60s' },
-        { target: 1000, duration: '30s' },
-        { target: 250, duration: '30s' },
-        { target: 50, duration: '30s' }
-      ]
-    },
-    soak_test: {
-      executor: 'constant-arrival-rate',
-      rate: 20,
-      timeUnit: '1s',
-      duration: '5m',
-      preAllocatedVUs: 50,
-      maxVUs: 200,
-      exec: 'activate'
-    },
-    spike_test: {
-      executor: 'ramping-arrival-rate',
-      startRate: 10,
-      timeUnit: '1s',
-      preAllocatedVUs: 20,
-      maxVUs: 500,
-      exec: 'activate',
-      stages: [
-        { target: 10, duration: '10s' },
-        { target: 300, duration: '10s' },
-        { target: 300, duration: '30s' },
-        { target: 10, duration: '10s' }
-      ]
-    }
+    stress_test: buildStressTestScenario(),
+    soak_test: buildSoakTestScenario(),
+    spike_test: buildSpikeTestScenario()
   },
   thresholds: {
     http_req_duration: ['p(95)<5000'],
