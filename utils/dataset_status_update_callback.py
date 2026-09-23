@@ -22,7 +22,7 @@ def generate_status_update_callback_data(
         reason_code: Optional EPC 4.0 status reason code.
     """
     resource_id = resource_id or str(uuid.uuid4())
-    original_msg_id = original_msg_id or resource_id
+    original_msg_id = original_msg_id or resource_id.replace("-", "")
     transaction_info: dict[str, JsonType] = {}
 
     if reason_code is not None:
