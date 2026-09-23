@@ -55,6 +55,12 @@ const PREDEFINED_SCENARIOS = [
   'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
 ];
 
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
+
 if (!__ENV.DEBTOR_SERVICE_PROVIDER_ID) {
     throw new Error("❌ DEBTOR_SERVICE_PROVIDER_ID cannot be null or undefined");
 }

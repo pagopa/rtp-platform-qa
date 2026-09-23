@@ -389,7 +389,7 @@ export function determineStage(sec) {
  * @returns {number} Total duration in seconds.
  */
 export function parseDurationToSeconds(duration) {
-  const matches = String(duration).matchAll(/(\d+)(ms|s|m|h)/g);
+  const matches = String(duration).matchAll(/(\d+(?:\.\d+)?)(ms|s|m|h)/g);
   const unitSeconds = { ms: 0.001, s: 1, m: 60, h: 3600 };
   let total = 0;
   for (const [, amount, unit] of matches) {
