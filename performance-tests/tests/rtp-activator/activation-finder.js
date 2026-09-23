@@ -193,6 +193,13 @@ export const teardown = createActivationTeardown({
  * `teardown` (see `createActivationTeardown`/`createBatchProcessingTeardown`),
  * which always runs before `handleSummary`. Overriding it here would mark
  * interrupted/partial runs as `COMPLETED` regardless of what actually happened.
+ *
+ * `activate()` has no batch-tracking signal (unlike deactivation/get-activations),
+ * so for the arrival-rate scenarios (stress_test/soak_test/spike_test and their
+ * `_fixed_user` variants use a fixed VU count instead, no scenarioConfig needed
+ * there) completion is derived from `evaluateArrivalRateCompletion` (schedule vs.
+ * actual iterations/duration), NOT from the success/failure ratio — a high failure
+ * rate is an expected/legitimate outcome of these tests, not a sign of interruption.
  */
 export const handleSummary = (opts) => {
     return createHandleSummary({
@@ -204,6 +211,7 @@ export const handleSummary = (opts) => {
         // dynamically, so raw VU_COUNT would be misleading in the report;
         // describeScenarioVUs() reports the real allocation for the active SCENARIO.
         VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT),
-        testCompletedRef
+        testCompletedRef,
+        scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
     })(opts);
 };

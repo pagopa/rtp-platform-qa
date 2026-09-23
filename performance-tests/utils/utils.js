@@ -182,11 +182,12 @@ function buildStaircaseStages(startRate, peakRate, steps, stepDuration) {
  * - `RAMP_STEP_DURATION` (default '30s'): how long each step is held.
  * - `RAMP_PRE_ALLOCATED_VUS` / `RAMP_MAX_VUS` (optional): override the k6 VU
  *   pool sizing; if omitted, sized automatically from `RAMP_PEAK_RATE`.
+ *   `maxVUs` is always clamped to be >= `preAllocatedVUs`.
  *
  * BREAKING CHANGE vs. the previous hardcoded `stress_test`: when no `RAMP_*`
  * env vars are set (e.g. running the script locally without `-e` flags), the
- * default shape is now 10 monotonically increasing steps up to a peak of
- * 5000 req/s, with no repeated holds and no recovery ramp-down. The legacy
+ * default shape has 10 staircase levels (20 k6 stages: a 1s ramp plus a 30s
+ * hold per level), ending at 5000 req/s with no recovery ramp-down. The legacy
  * default had 17 stages (holds at each level) and ramped back down to 50
  * req/s at the end. This is intentional: the scenario is now meant to be
  * driven by the ADO pipeline parameters (see `srtp-deploy-aks/.devops/k6-stress-test.yml`)
@@ -201,7 +202,7 @@ function buildStressTestScenario() {
   const steps = Number(__ENV.RAMP_STEPS) || 10;
   const stepDuration = __ENV.RAMP_STEP_DURATION || '30s';
   const preAllocatedVUs = Number(__ENV.RAMP_PRE_ALLOCATED_VUS) || Math.max(10, Math.round(peakRate / 25));
-  const maxVUs = Number(__ENV.RAMP_MAX_VUS) || Math.max(preAllocatedVUs, peakRate);
+  const maxVUs = Math.max(preAllocatedVUs, Number(__ENV.RAMP_MAX_VUS) || peakRate);
 
   return {
     executor: 'ramping-arrival-rate',
@@ -223,6 +224,7 @@ function buildStressTestScenario() {
  * - `SOAK_DURATION` (default '5m'): total test duration.
  * - `SOAK_PRE_ALLOCATED_VUS` / `SOAK_MAX_VUS` (optional): override the k6 VU
  *   pool sizing; if omitted, sized automatically from `SOAK_RATE`.
+ *   `maxVUs` is always clamped to be >= `preAllocatedVUs`.
  *
  * @returns {Object} k6 `constant-arrival-rate` scenario definition.
  */
@@ -230,7 +232,7 @@ function buildSoakTestScenario() {
   const rate = Number(__ENV.SOAK_RATE) || 20;
   const duration = __ENV.SOAK_DURATION || '5m';
   const preAllocatedVUs = Number(__ENV.SOAK_PRE_ALLOCATED_VUS) || Math.max(10, Math.round(rate * 2.5));
-  const maxVUs = Number(__ENV.SOAK_MAX_VUS) || Math.max(preAllocatedVUs, rate * 10);
+  const maxVUs = Math.max(preAllocatedVUs, Number(__ENV.SOAK_MAX_VUS) || rate * 10);
 
   return {
     executor: 'constant-arrival-rate',
@@ -255,6 +257,7 @@ function buildSoakTestScenario() {
  * - `SPIKE_BASE_HOLD_DURATION` (default '10s'): time held at baseline before the spike.
  * - `SPIKE_PRE_ALLOCATED_VUS` / `SPIKE_MAX_VUS` (optional): override the k6 VU
  *   pool sizing; if omitted, sized automatically from `SPIKE_PEAK_RATE`.
+ *   `maxVUs` is always clamped to be >= `preAllocatedVUs`.
  *
  * @returns {Object} k6 `ramping-arrival-rate` scenario definition.
  */
@@ -265,7 +268,7 @@ function buildSpikeTestScenario() {
   const holdDuration = __ENV.SPIKE_HOLD_DURATION || '30s';
   const baseHoldDuration = __ENV.SPIKE_BASE_HOLD_DURATION || '10s';
   const preAllocatedVUs = Number(__ENV.SPIKE_PRE_ALLOCATED_VUS) || Math.max(10, Math.round(peakRate / 15));
-  const maxVUs = Number(__ENV.SPIKE_MAX_VUS) || Math.max(preAllocatedVUs, peakRate);
+  const maxVUs = Math.max(preAllocatedVUs, Number(__ENV.SPIKE_MAX_VUS) || peakRate);
 
   return {
     executor: 'ramping-arrival-rate',
@@ -389,7 +392,7 @@ export function determineStage(sec) {
  * @param {string} duration - Duration string using ms/s/m/h unit suffixes.
  * @returns {number} Total duration in seconds.
  */
-function parseDurationToSeconds(duration) {
+export function parseDurationToSeconds(duration) {
   const matches = String(duration).matchAll(/(\d+)(ms|s|m|h)/g);
   const unitSeconds = { ms: 0.001, s: 1, m: 60, h: 3600 };
   let total = 0;
@@ -397,6 +400,117 @@ function parseDurationToSeconds(duration) {
     total += Number(amount) * unitSeconds[unit];
   }
   return total;
+}
+
+/**
+ * Computes the total expected iterations and total planned duration (ms) for an
+ * arrival-rate scenario (`constant-arrival-rate` / `ramping-arrival-rate`), purely
+ * from its static configuration (rate/stages/duration) — no dependency on actual
+ * success/failure counts. Used to determine whether a run reached its full
+ * planned schedule, regardless of how many requests failed along the way.
+ *
+ * For `ramping-arrival-rate`, the rate varies linearly within each stage, so the
+ * expected iterations for that stage are the area under the ramp (trapezoidal:
+ * `(previousRate + stageTarget) / 2 * stageDurationSec`).
+ *
+ * @param {Object} scenarioConfig - A resolved k6 scenario definition (as returned
+ *   by `buildStressTestScenario`/`buildSoakTestScenario`/`buildSpikeTestScenario`
+ *   or any `constant-arrival-rate`/`ramping-arrival-rate` scenario object).
+ * @returns {{expectedIterations: number, expectedDurationMs: number} | null}
+ *   `null` if `scenarioConfig` is not an arrival-rate executor (e.g. `shared-iterations`,
+ *   `constant-vus`), for which this computation doesn't apply.
+ */
+export function computeExpectedArrivalRateSchedule(scenarioConfig) {
+  if (!scenarioConfig) return null;
+
+  const timeUnitSec = parseDurationToSeconds(scenarioConfig.timeUnit || '1s') || 1;
+
+  if (scenarioConfig.executor === 'constant-arrival-rate') {
+    const durationSec = parseDurationToSeconds(scenarioConfig.duration);
+    return {
+      expectedIterations: (scenarioConfig.rate * durationSec) / timeUnitSec,
+      expectedDurationMs: durationSec * 1000
+    };
+  }
+
+  if (scenarioConfig.executor === 'ramping-arrival-rate' && Array.isArray(scenarioConfig.stages)) {
+    let previousRate = scenarioConfig.startRate || 0;
+    let expectedIterations = 0;
+    let expectedDurationMs = 0;
+
+    for (const stage of scenarioConfig.stages) {
+      const stageDurationSec = parseDurationToSeconds(stage.duration);
+      const avgRate = (previousRate + stage.target) / 2;
+      expectedIterations += (avgRate * stageDurationSec) / timeUnitSec;
+      expectedDurationMs += stageDurationSec * 1000;
+      previousRate = stage.target;
+    }
+
+    return { expectedIterations, expectedDurationMs };
+  }
+
+  return null;
+}
+
+/**
+ * Determines whether an arrival-rate scenario (`stress_test`/`soak_test`/`spike_test`)
+ * ran to completion, using two independent, failure-rate-agnostic signals instead of
+ * a success/failure ratio heuristic (which incorrectly treats a high failure rate as
+ * "interrupted", even though a high failure rate is often the *expected outcome* of a
+ * stress/soak/spike test):
+ *
+ * 1. **Duration** (lower-bound check): `data.state.testRunDurationMs` is the actual
+ *    wall-clock time k6 ran for. If it's meaningfully less than the planned total
+ *    stage/duration time, the run was cut short.
+ * 2. **Iterations** (primary check, robust to failure rate): k6's built-in `iterations`
+ *    + `dropped_iterations` metrics count every iteration k6 *attempted* to start,
+ *    regardless of whether the underlying HTTP request succeeded or failed. Comparing
+ *    this against the analytically-computed expected iteration count (see
+ *    `computeExpectedArrivalRateSchedule`) tells us whether the full planned schedule
+ *    ran, independent of the error rate.
+ *
+ * A small tolerance (`maxVUs` + 2% of expected iterations) accounts for iterations
+ * still in-flight when the run ends and for scheduling rounding.
+ *
+ * @param {Object} data - The `data` object k6 passes to `handleSummary`.
+ * @param {Object} scenarioConfig - The resolved scenario definition (see
+ *   `computeExpectedArrivalRateSchedule`).
+ * @returns {{status: 'COMPLETED'|'INTERRUPTED'|'UNKNOWN', reason: string}}
+ */
+export function evaluateArrivalRateCompletion(data, scenarioConfig) {
+  const schedule = computeExpectedArrivalRateSchedule(scenarioConfig);
+  if (!schedule) {
+    return { status: 'UNKNOWN', reason: 'Scenario is not an arrival-rate executor; cannot evaluate schedule completion.' };
+  }
+
+  const actualDurationMs = data && data.state ? data.state.testRunDurationMs : undefined;
+  if (typeof actualDurationMs === 'number' && actualDurationMs < schedule.expectedDurationMs * 0.95) {
+    return {
+      status: 'INTERRUPTED',
+      reason: `Actual run duration (${Math.round(actualDurationMs)}ms) is well below the planned duration (${Math.round(schedule.expectedDurationMs)}ms).`
+    };
+  }
+
+  const iterationsMetric = data && data.metrics ? data.metrics.iterations : undefined;
+  const droppedMetric = data && data.metrics ? data.metrics.dropped_iterations : undefined;
+  const actualIterations =
+    (iterationsMetric && iterationsMetric.values ? iterationsMetric.values.count : 0) +
+    (droppedMetric && droppedMetric.values ? droppedMetric.values.count : 0);
+
+  const maxVUs = scenarioConfig.maxVUs || scenarioConfig.preAllocatedVUs || 10;
+  const tolerance = maxVUs + Math.ceil(schedule.expectedIterations * 0.02);
+
+  if (actualIterations < schedule.expectedIterations - tolerance) {
+    return {
+      status: 'INTERRUPTED',
+      reason: `Only ${actualIterations} of ~${Math.round(schedule.expectedIterations)} expected iterations were attempted (tolerance ${tolerance}).`
+    };
+  }
+
+  return {
+    status: 'COMPLETED',
+    reason: `Ran ${actualIterations} of ~${Math.round(schedule.expectedIterations)} expected iterations, full planned duration reached.`
+  };
 }
 
 /**
