@@ -306,7 +306,7 @@ export const progressiveOptions = {
     failures: [],
     successes: [],
     current_rps: ['rate>0'],
-    checks: []
+    checks: ['rate>0.01']
   }
 };
 
