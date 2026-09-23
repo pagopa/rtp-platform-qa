@@ -161,10 +161,6 @@ function buildStaircaseStages(startRate, peakRate, steps, stepDuration) {
   const stages = [];
   for (let i = 1; i <= steps; i++) {
     const target = Math.round(startRate + (peakRate - startRate) * i / steps);
-    // In k6's ramping-arrival-rate, a stage's `duration` is the time spent
-    // *ramping toward* `target`, not time spent holding it. To actually hold
-    // each step for `stepDuration` (as documented above), ramp to the target
-    // quickly first, then add a second stage with the same target to hold it.
     stages.push({ target, duration: '1s' });
     stages.push({ target, duration: stepDuration });
   }
@@ -462,12 +458,17 @@ export function computeExpectedArrivalRateSchedule(scenarioConfig) {
  * 1. **Duration** (lower-bound check): `data.state.testRunDurationMs` is the actual
  *    wall-clock time k6 ran for. If it's meaningfully less than the planned total
  *    stage/duration time, the run was cut short.
- * 2. **Iterations** (primary check, robust to failure rate): k6's built-in `iterations`
- *    + `dropped_iterations` metrics count every iteration k6 *attempted* to start,
- *    regardless of whether the underlying HTTP request succeeded or failed. Comparing
- *    this against the analytically-computed expected iteration count (see
- *    `computeExpectedArrivalRateSchedule`) tells us whether the full planned schedule
- *    ran, independent of the error rate.
+ * 2. **Executed iterations** (primary check, robust to *HTTP* failure rate — but
+ *    NOT to VU starvation): k6's built-in `iterations` metric counts every
+ *    iteration k6 actually *started*, regardless of whether the underlying HTTP
+ *    request succeeded or failed. Comparing this against the analytically-computed
+ *    expected iteration count (see `computeExpectedArrivalRateSchedule`) tells us
+ *    whether the full planned schedule ran, independent of the error rate.
+ *    `dropped_iterations` (arrivals k6 could NOT start because no VU was free) are
+ *    deliberately NOT credited here — they represent a load shortfall (VU pool
+ *    starved by a saturated/slow backend), not executed work, so a run with
+ *    significant drops correctly falls short of `expectedIterations` and is
+ *    reported as `INTERRUPTED` rather than being masked as `COMPLETED`.
  *
  * A small tolerance (`maxVUs` + 2% of expected iterations) accounts for iterations
  * still in-flight when the run ends and for scheduling rounding.
@@ -491,25 +492,25 @@ export function evaluateArrivalRateCompletion(data, scenarioConfig) {
     };
   }
 
-  const iterationsMetric = data && data.metrics ? data.metrics.iterations : undefined;
-  const droppedMetric = data && data.metrics ? data.metrics.dropped_iterations : undefined;
-  const actualIterations =
-    (iterationsMetric && iterationsMetric.values ? iterationsMetric.values.count : 0) +
-    (droppedMetric && droppedMetric.values ? droppedMetric.values.count : 0);
+  const executedIterations = data?.metrics?.iterations?.values?.count ?? 0;
+  const droppedIterations = data?.metrics?.dropped_iterations?.values?.count ?? 0;
 
   const maxVUs = scenarioConfig.maxVUs || scenarioConfig.preAllocatedVUs || 10;
   const tolerance = maxVUs + Math.ceil(schedule.expectedIterations * 0.02);
 
-  if (actualIterations < schedule.expectedIterations - tolerance) {
+  if (executedIterations < schedule.expectedIterations - tolerance) {
     return {
       status: 'INTERRUPTED',
-      reason: `Only ${actualIterations} of ~${Math.round(schedule.expectedIterations)} expected iterations were attempted (tolerance ${tolerance}).`
+      reason: `Only ${executedIterations} of ~${Math.round(schedule.expectedIterations)} expected iterations were executed` +
+        (droppedIterations > 0 ? ` (${droppedIterations} additionally dropped due to VU starvation)` : '') +
+        ` (tolerance ${tolerance}).`
     };
   }
 
   return {
     status: 'COMPLETED',
-    reason: `Ran ${actualIterations} of ~${Math.round(schedule.expectedIterations)} expected iterations, full planned duration reached.`
+    reason: `Ran ${executedIterations} of ~${Math.round(schedule.expectedIterations)} expected iterations, full planned duration reached` +
+      (droppedIterations > 0 ? ` (${droppedIterations} dropped due to VU starvation, within tolerance)` : '') + '.'
   };
 }
 
@@ -527,7 +528,6 @@ export function evaluateArrivalRateCompletion(data, scenarioConfig) {
 export function getStageLabel(scenarioName, elapsedSeconds) {
   const scenario = progressiveOptions.scenarios[scenarioName];
 
-  // custom/shared-iterations has no rate/VU ramp concept; keep legacy behavior.
   if (!scenario) {
     return determineStage(elapsedSeconds);
   }
@@ -634,7 +634,6 @@ export function describeScenarioVUs(scenarioName, fallbackVuCount) {
     return `${scenario.vus} (fixed, ${scenario.executor})`;
   }
 
-  // ramping-arrival-rate / constant-arrival-rate: VUs scale dynamically.
   return `dynamic, preAllocatedVUs=${scenario.preAllocatedVUs}, maxVUs=${scenario.maxVUs} (${scenario.executor})`;
 }
 
