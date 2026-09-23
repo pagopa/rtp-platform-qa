@@ -470,8 +470,12 @@ export function computeExpectedArrivalRateSchedule(scenarioConfig) {
  *    significant drops correctly falls short of `expectedIterations` and is
  *    reported as `INTERRUPTED` rather than being masked as `COMPLETED`.
  *
- * A small tolerance (`maxVUs` + 2% of expected iterations) accounts for iterations
- * still in-flight when the run ends and for scheduling rounding.
+ * A small tolerance accounts for iterations still in-flight when the run ends and
+ * for scheduling rounding: up to `min(maxVUs, 10% of expectedIterations)` plus 2%
+ * of expectedIterations. The `maxVUs` contribution is capped at 10% of the planned
+ * workload so a large VU pool relative to a short profile can't swallow a real
+ * shortfall. `data.state.isInterrupted` is checked first and is authoritative,
+ * bypassing these tolerances entirely.
  *
  * @param {Object} data - The `data` object k6 passes to `handleSummary`.
  * @param {Object} scenarioConfig - The resolved scenario definition (see
@@ -482,6 +486,10 @@ export function evaluateArrivalRateCompletion(data, scenarioConfig) {
   const schedule = computeExpectedArrivalRateSchedule(scenarioConfig);
   if (!schedule) {
     return { status: 'UNKNOWN', reason: 'Scenario is not an arrival-rate executor; cannot evaluate schedule completion.' };
+  }
+
+  if (data?.state?.isInterrupted) {
+    return { status: 'INTERRUPTED', reason: 'k6 reported that the run was interrupted.' };
   }
 
   const actualDurationMs = data && data.state ? data.state.testRunDurationMs : undefined;
@@ -496,7 +504,8 @@ export function evaluateArrivalRateCompletion(data, scenarioConfig) {
   const droppedIterations = data?.metrics?.dropped_iterations?.values?.count ?? 0;
 
   const maxVUs = scenarioConfig.maxVUs || scenarioConfig.preAllocatedVUs || 10;
-  const tolerance = maxVUs + Math.ceil(schedule.expectedIterations * 0.02);
+  const inFlightAllowance = Math.min(maxVUs, Math.ceil(schedule.expectedIterations * 0.1));
+  const tolerance = inFlightAllowance + Math.ceil(schedule.expectedIterations * 0.02);
 
   if (executedIterations < schedule.expectedIterations - tolerance) {
     return {
