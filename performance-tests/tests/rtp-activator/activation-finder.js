@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, randomFiscalCode, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
+import { setupAuth, randomFiscalCode, buildHeaders, endpoints, getStageLabel, getOptions, describeScenarioVUs, ActorCredentials } from '../../utils/utils.js';
 import { createHandleSummary } from '../../utils/summary-utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createActivationTeardown } from '../../utils/teardown-utils.js';
@@ -8,16 +8,21 @@ import { createActivationTeardown } from '../../utils/teardown-utils.js';
 /**
  * @file Activation Stress Test (k6)
  * @description
- * High-throughput activations using a shared-iterations scenario. Each iteration generates
- * a random debtor fiscal code and posts an activation payload to the configured endpoint.
- * Custom metrics track RPS, success/failure counts, and response time trends. The run can
- * optionally sleep between iterations. A teardown helper summarizes results at the end.
+ * High-throughput activations. Each iteration generates a random debtor fiscal code and
+ * posts an activation payload to the configured endpoint. Custom metrics track RPS,
+ * success/failure counts, and response time trends. A teardown helper summarizes results
+ * at the end.
  *
  * ## Inputs
  * - Environment variables:
  * - `DEBTOR_SERVICE_PROVIDER_ID` (required): Debtor Service Provider identifier used in payloads.
- * - `VU_COUNT_SET` (number, optional, default: 10): number of virtual users.
- * - `ITERATIONS` (number, optional, default: 30000): total iterations across all VUs.
+ * - `SCENARIO` (string, optional, default: 'custom'): selects the load profile. One of
+ *   `stress_test`, `soak_test`, `spike_test` (arrival-rate based, see `progressiveOptions`
+ *   in `utils.js` for the exact ramps/durations), their `_fixed_user` variants (same
+ *   ramps/durations but constant-VUs), or `custom` (default) to use the simple
+ *   `shared-iterations` executor below, controlled by `VU_COUNT_SET`/`ITERATIONS`/`SLEEP_ITER`.
+ * - `VU_COUNT_SET` (number, optional, default: 10): number of virtual users (only used when SCENARIO='custom').
+ * - `ITERATIONS` (number, optional, default: 30000): total iterations across all VUs (only used when SCENARIO='custom').
  * - `SLEEP_ITER` (number, seconds, optional, default: 0): sleep after each iteration.
  *
  * ## Behavior
@@ -40,6 +45,21 @@ const ITERATIONS = Number(__ENV.ITERATIONS) || 30000;
 
 /** Optional per-iteration sleep (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
+
+/** Load profile to use. See file-level doc comment above for the accepted values. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
+
+/** Scenario names backed by the predefined ramps/durations in `progressiveOptions` (utils.js). */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
 
 if (!__ENV.DEBTOR_SERVICE_PROVIDER_ID) {
     throw new Error("❌ DEBTOR_SERVICE_PROVIDER_ID cannot be null or undefined");
@@ -67,20 +87,25 @@ const testCompletedRef = { value: false };
  *
  * @type {import('k6/options').Options}
  */
-export let options = {
-  ...getOptions('stress_test_fixed_user', 'activate'),
-  setupTimeout: '5m',
-    scenarios: {
-        stress_test_fixed_user: {
-            executor: 'shared-iterations',
-            vus: VU_COUNT,
-            iterations: ITERATIONS,
-            maxDuration: '30m',
-            gracefulStop: '30m',
-            exec: 'activate'
-        }
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
+  ? {
+      ...getOptions(SCENARIO, 'activate'),
+      setupTimeout: '5m'
     }
-};
+  : {
+      ...getOptions('stress_test_fixed_user', 'activate'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT,
+          iterations: ITERATIONS,
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'activate'
+        }
+      }
+    };
 
 /**
  * @typedef {Object} SetupAuthResult
@@ -115,7 +140,7 @@ export function activate(data) {
 
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
-    stage: determineStage(elapsedSeconds)
+    stage: getStageLabel(SCENARIO, elapsedSeconds)
   };
 
   currentRPS.add(1, tags);
@@ -168,17 +193,31 @@ export const teardown = createActivationTeardown({
 /**
  * k6 `handleSummary` export.
  *
- * Ensures `testCompletedRef` is set to true before delegating to the shared summary factory,
- * which generates aggregated artifacts and annotates results.
+ * Delegates to the shared summary factory, which generates aggregated artifacts
+ * and annotates results. `testCompletedRef` is NOT forced to `true` here: it is
+ * already set from the real completion signal (`data.allCompleted`) inside
+ * `teardown` (see `createActivationTeardown`/`createBatchProcessingTeardown`),
+ * which always runs before `handleSummary`. Overriding it here would mark
+ * interrupted/partial runs as `COMPLETED` regardless of what actually happened.
+ *
+ * `activate()` has no batch-tracking signal (unlike deactivation/get-activations),
+ * so for the arrival-rate scenarios (stress_test/soak_test/spike_test and their
+ * `_fixed_user` variants use a fixed VU count instead, no scenarioConfig needed
+ * there) completion is derived from `evaluateArrivalRateCompletion` (schedule vs.
+ * actual iterations/duration), NOT from the success/failure ratio — a high failure
+ * rate is an expected/legitimate outcome of these tests, not a sign of interruption.
  */
 export const handleSummary = (opts) => {
-    testCompletedRef.value = true;
     return createHandleSummary({
         START_TIME,
         testName: 'ACTIVATION STRESS TEST',
         countTag: 'requestCount',
         reportPrefix: 'activation',
-        VU_COUNT,
-        testCompletedRef
+        // Arrival-rate scenarios (stress_test/soak_test/spike_test) scale VUs
+        // dynamically, so raw VU_COUNT would be misleading in the report;
+        // describeScenarioVUs() reports the real allocation for the active SCENARIO.
+        VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT),
+        testCompletedRef,
+        scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
     })(opts);
 };
