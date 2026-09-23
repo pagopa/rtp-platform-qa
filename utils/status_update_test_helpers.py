@@ -18,7 +18,7 @@ def assert_status_update_transition(
     callback_data = generate_status_update_callback_data(
         bic=DEBTOR_SERVICE_PROVIDER_C_ID,
         resource_id=context.resource_id,
-        original_msg_id=context.resource_id,
+        original_msg_id=context.resource_id.replace("-", ""),
         reason_code=reason_code,
     )
     callback_response = srtp_status_update_callback(
