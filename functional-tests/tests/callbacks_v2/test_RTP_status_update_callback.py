@@ -1,236 +1,177 @@
 import uuid
+from collections.abc import Callable
 
 import allure
 import pytest
 
-from api.debtor_activation_api import activate
 from api.RTP_callback_api import srtp_status_update_callback
-from api.RTP_get_api import get_rtp_v2
-from api.RTP_process_sender import send_gpd_message_v2
+from api.RTP_get_api import get_rtp_by_notice_number, get_rtp_delivery_status
 from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_C_ID
-from utils.dataset_gpd_message import generate_gpd_message_payload
 from utils.dataset_status_update_callback import generate_status_update_callback_data
+from utils.response_assertions_utils import assert_response_code
+from utils.status_update_test_context import StatusUpdateRtpContext
+from utils.status_update_test_helpers import assert_status_update_transition
+
+_STATUS_NOT_DELIVERED = "PD_RTP_NOT_DELIVERED"
 
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Callback")
-@allure.story("The debtor service provider transitions an RTP through a status update callback")
-@allure.title("A status update callback with reason code {reason_code} transitions SENT to {expected_status}")
+@allure.story("The debtor service provider accepts an RTP through a status update callback")
+@allure.title("An ALAC status update transitions SENT to USER_ACCEPTED")
 @allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
 @pytest.mark.callback
 @pytest.mark.happy_path
-@pytest.mark.parametrize(
-    ("reason_code", "expected_status"),
-    [
-        ("ALAC", "USER_ACCEPTED"),
-        ("ARFR", "USER_REJECTED"),
-        ("ARJR", "REJECTED"),
-        ("AEXR", "EXPIRED"),
-        ("IRNR", "ERROR_SEND"),
-    ],
-)
-def test_receive_status_update_callback_sent_transitions(
-    rtp_consumer_access_token,
-    debtor_service_provider_token_c,
-    rtp_reader_access_token,
-    random_fiscal_code,
-    debtor_sp_mock_cert_key,
-    reason_code,
-    expected_status,
-):
-    message_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="CREATE",
-        status="VALID",
+def test_receive_status_update_callback_alac(
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code="ALAC",
+        expected_status="USER_ACCEPTED",
     )
 
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        random_fiscal_code,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code == 201, (
-        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
+
+@allure.epic("RTP Callback V2")
+@allure.feature("RTP Status Update Callback")
+@allure.story("The debtor service provider rejects an RTP already rejected by the debtor")
+@allure.title("An ARFR status update transitions SENT to USER_REJECTED")
+@allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
+@pytest.mark.callback
+@pytest.mark.happy_path
+def test_receive_status_update_callback_arfr(
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code="ARFR",
+        expected_status="USER_REJECTED",
     )
 
-    send_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=message_payload,
-    )
-    assert send_response.status_code == 200, (
-        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
+
+@allure.epic("RTP Callback V2")
+@allure.feature("RTP Status Update Callback")
+@allure.story("The debtor service provider rejects an RTP already rejected by the service provider")
+@allure.title("An ARJR status update transitions SENT to REJECTED")
+@allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
+@pytest.mark.callback
+@pytest.mark.happy_path
+def test_receive_status_update_callback_arjr(
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code="ARJR",
+        expected_status="REJECTED",
     )
 
-    resource_id = send_response.json()["resourceId"]
-    assert resource_id, "Missing resourceId in send GPD message response"
 
-    get_response_pre_callback = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert get_response_pre_callback.status_code == 200, (
-        f"Expected 200, got {get_response_pre_callback.status_code}. Response: {get_response_pre_callback.text}"
-    )
-    assert get_response_pre_callback.json()["status"] == "SENT", (
-        f"Expected RTP status SENT before callback, got {get_response_pre_callback.json()['status']}"
-    )
-
-    callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
-        reason_code=reason_code,
+@allure.epic("RTP Callback V2")
+@allure.feature("RTP Status Update Callback")
+@allure.story("The debtor service provider reports an expired RTP")
+@allure.title("An AEXR status update transitions SENT to EXPIRED")
+@allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
+@pytest.mark.callback
+@pytest.mark.happy_path
+def test_receive_status_update_callback_aexr(
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code="AEXR",
+        expected_status="EXPIRED",
     )
 
-    certificate, key = debtor_sp_mock_cert_key
-    callback_response = srtp_status_update_callback(
-        rtp_payload=callback_data,
-        cert_path=certificate,
-        key_path=key,
-    )
-    assert callback_response.status_code == 200, (
-        f"Error from callback, expected 200 got {callback_response.status_code}. Response: {callback_response.text}"
+
+@allure.epic("RTP Callback V2")
+@allure.feature("RTP Status Update Callback")
+@allure.story("The debtor service provider reports that no initial RTP was received")
+@allure.title("An IRNR status update transitions SENT to ERROR_SEND and marks delivery as lost")
+@allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
+@pytest.mark.callback
+@pytest.mark.happy_path
+def test_receive_status_update_callback_irnr(
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code="IRNR",
+        expected_status="ERROR_SEND",
     )
 
-    get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
+    notice_response = get_rtp_by_notice_number(
+        access_token=context.reader_access_token,
+        notice_number=context.notice_number,
     )
-    assert get_response.status_code == 200, (
-        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
+    assert_response_code(
+        notice_response,
+        200,
+        "GET RTP by notice number",
+        "ERROR_SEND",
     )
-    assert get_response.json()["status"] == expected_status
+    assert notice_response.json() == [], (
+        f"Expected no RTP for notice number {context.notice_number} after ERROR_SEND, got {notice_response.text}"
+    )
+
+    delivery_response = get_rtp_delivery_status(
+        access_token=context.delivery_status_access_token,
+        notice_number=context.notice_number,
+        payee_id=context.payee_id,
+    )
+    assert_response_code(
+        delivery_response,
+        200,
+        "GET RTP delivery status",
+        "ERROR_SEND",
+    )
+    delivery_body = delivery_response.json()
+    assert delivery_body.get("status") == _STATUS_NOT_DELIVERED, (
+        f"Expected delivery status {_STATUS_NOT_DELIVERED}, got {delivery_body.get('status')}"
+    )
+    assert delivery_body.get("processingDate") is None, (
+        f"Expected no processing date for an undelivered RTP, got {delivery_body.get('processingDate')}"
+    )
 
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Callback")
 @allure.story("The debtor service provider reports that an RTP is still being processed")
-@allure.title("A status update callback with reason code REPR leaves SENT unchanged")
+@allure.title("A REPR status update leaves SENT unchanged")
 @allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_status_update_callback_repr_keeps_sent(
-    rtp_consumer_access_token,
-    debtor_service_provider_token_c,
-    rtp_reader_access_token,
-    random_fiscal_code,
-    debtor_sp_mock_cert_key,
-):
-    message_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="CREATE",
-        status="VALID",
-    )
-
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        random_fiscal_code,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code == 201, (
-        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
-    )
-
-    send_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=message_payload,
-    )
-    assert send_response.status_code == 200, (
-        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
-    )
-
-    resource_id = send_response.json()["resourceId"]
-    assert resource_id, "Missing resourceId in send GPD message response"
-
-    callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
         reason_code="REPR",
+        expected_status="SENT",
     )
-    certificate, key = debtor_sp_mock_cert_key
-    callback_response = srtp_status_update_callback(
-        rtp_payload=callback_data,
-        cert_path=certificate,
-        key_path=key,
-    )
-    assert callback_response.status_code == 200, (
-        f"Error from callback, expected 200 got {callback_response.status_code}. Response: {callback_response.text}"
-    )
-
-    get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert get_response.status_code == 200, (
-        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
-    )
-    assert get_response.json()["status"] == "SENT"
 
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Callback")
 @allure.story("The debtor service provider sends a status update without a reason code")
-@allure.title("A status update callback without StsRsnInf leaves SENT unchanged")
+@allure.title("A status update without StsRsnInf leaves SENT unchanged")
 @allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_status_update_callback_without_reason_keeps_sent(
-    rtp_consumer_access_token,
-    debtor_service_provider_token_c,
-    rtp_reader_access_token,
-    random_fiscal_code,
-    debtor_sp_mock_cert_key,
-):
-    message_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="CREATE",
-        status="VALID",
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code=None,
+        expected_status="SENT",
     )
-
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        random_fiscal_code,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code == 201, (
-        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
-    )
-
-    send_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=message_payload,
-    )
-    assert send_response.status_code == 200, (
-        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
-    )
-
-    resource_id = send_response.json()["resourceId"]
-    assert resource_id, "Missing resourceId in send GPD message response"
-
-    callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
-    )
-    certificate, key = debtor_sp_mock_cert_key
-    callback_response = srtp_status_update_callback(
-        rtp_payload=callback_data,
-        cert_path=certificate,
-        key_path=key,
-    )
-    assert callback_response.status_code == 200, (
-        f"Error from callback, expected 200 got {callback_response.status_code}. Response: {callback_response.text}"
-    )
-
-    get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert get_response.status_code == 200, (
-        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
-    )
-    assert get_response.json()["status"] == "SENT"
 
 
 @allure.epic("RTP Callback V2")
@@ -241,88 +182,19 @@ def test_receive_status_update_callback_without_reason_keeps_sent(
 @pytest.mark.callback
 @pytest.mark.happy_path
 def test_receive_status_update_callback_alac_is_idempotent(
-    rtp_consumer_access_token,
-    debtor_service_provider_token_c,
-    rtp_reader_access_token,
-    random_fiscal_code,
-    debtor_sp_mock_cert_key,
-):
-    message_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="CREATE",
-        status="VALID",
-    )
-
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        random_fiscal_code,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code == 201, (
-        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
-    )
-
-    send_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=message_payload,
-    )
-    assert send_response.status_code == 200, (
-        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
-    )
-
-    resource_id = send_response.json()["resourceId"]
-    assert resource_id, "Missing resourceId in send GPD message response"
-
-    certificate, key = debtor_sp_mock_cert_key
-    first_callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
         reason_code="ALAC",
+        expected_status="USER_ACCEPTED",
     )
-    first_callback_response = srtp_status_update_callback(
-        rtp_payload=first_callback_data,
-        cert_path=certificate,
-        key_path=key,
-    )
-    assert first_callback_response.status_code == 200, (
-        f"Error from first callback, expected 200 got {first_callback_response.status_code}. "
-        f"Response: {first_callback_response.text}"
-    )
-
-    first_get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert first_get_response.status_code == 200, (
-        f"Expected 200, got {first_get_response.status_code}. Response: {first_get_response.text}"
-    )
-    assert first_get_response.json()["status"] == "USER_ACCEPTED"
-
-    second_callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
+    assert_status_update_transition(
+        context=context,
         reason_code="ALAC",
+        expected_status="USER_ACCEPTED",
     )
-    second_callback_response = srtp_status_update_callback(
-        rtp_payload=second_callback_data,
-        cert_path=certificate,
-        key_path=key,
-    )
-    assert second_callback_response.status_code == 200, (
-        f"Error from repeated callback, expected 200 got {second_callback_response.status_code}. "
-        f"Response: {second_callback_response.text}"
-    )
-
-    second_get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert second_get_response.status_code == 200, (
-        f"Expected 200, got {second_get_response.status_code}. Response: {second_get_response.text}"
-    )
-    assert second_get_response.json()["status"] == "USER_ACCEPTED"
 
 
 @allure.epic("RTP Callback V2")
@@ -333,87 +205,15 @@ def test_receive_status_update_callback_alac_is_idempotent(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_status_update_callback_aexr_conflicts_with_paid(
-    rtp_consumer_access_token,
-    debtor_service_provider_token_c,
-    rtp_reader_access_token,
-    random_fiscal_code,
-    debtor_sp_mock_cert_key,
-):
-    create_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="CREATE",
-        status="VALID",
-    )
-
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        random_fiscal_code,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code == 201, (
-        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
-    )
-
-    create_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=create_payload,
-    )
-    assert create_response.status_code == 200, (
-        f"Error sending GPD CREATE message, expected 200 got {create_response.status_code}. "
-        f"Response: {create_response.text}"
-    )
-
-    resource_id = create_response.json()["resourceId"]
-    assert resource_id, "Missing resourceId in send GPD message response"
-
-    paid_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="UPDATE",
-        status="PAID",
-        iuv=create_payload["iuv"],
-        msg_id=create_payload["id"],
-    )
-    paid_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=paid_payload,
-    )
-    assert paid_response.status_code == 200, (
-        f"Error sending GPD PAID update, expected 200 got {paid_response.status_code}. Response: {paid_response.text}"
-    )
-
-    paid_get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert paid_get_response.status_code == 200, (
-        f"Expected 200, got {paid_get_response.status_code}. Response: {paid_get_response.text}"
-    )
-    assert paid_get_response.json()["status"] == "PAID"
-
-    callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp("PAID")
+    assert_status_update_transition(
+        context=context,
         reason_code="AEXR",
+        expected_status="PAID",
+        expected_response_code=400,
     )
-    certificate, key = debtor_sp_mock_cert_key
-    callback_response = srtp_status_update_callback(
-        rtp_payload=callback_data,
-        cert_path=certificate,
-        key_path=key,
-    )
-    assert callback_response.status_code == 400, (
-        f"Expected 400 for PAID/AEXR conflict, got {callback_response.status_code}. Response: {callback_response.text}"
-    )
-
-    final_get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert final_get_response.status_code == 200, (
-        f"Expected 200, got {final_get_response.status_code}. Response: {final_get_response.text}"
-    )
-    assert final_get_response.json()["status"] == "PAID"
 
 
 @allure.epic("RTP Callback V2")
@@ -424,8 +224,8 @@ def test_receive_status_update_callback_aexr_conflicts_with_paid(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_status_update_callback_unknown_rtp(
-    debtor_sp_mock_cert_key,
-):
+    debtor_sp_mock_cert_key: tuple[str, str],
+) -> None:
     resource_id = str(uuid.uuid4())
     callback_data = generate_status_update_callback_data(
         bic=DEBTOR_SERVICE_PROVIDER_C_ID,
@@ -433,15 +233,17 @@ def test_receive_status_update_callback_unknown_rtp(
         original_msg_id=resource_id,
         reason_code="AEXR",
     )
-    certificate, key = debtor_sp_mock_cert_key
     callback_response = srtp_status_update_callback(
         rtp_payload=callback_data,
-        cert_path=certificate,
-        key_path=key,
+        cert_path=debtor_sp_mock_cert_key[0],
+        key_path=debtor_sp_mock_cert_key[1],
     )
 
-    assert callback_response.status_code == 400, (
-        f"Expected 400 for an unknown RTP, got {callback_response.status_code}. Response: {callback_response.text}"
+    assert_response_code(
+        callback_response,
+        400,
+        "status-update callback",
+        "unknown RTP",
     )
 
 
@@ -453,61 +255,13 @@ def test_receive_status_update_callback_unknown_rtp(
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_status_update_callback_invalid_certificate_serial(
-    rtp_consumer_access_token,
-    debtor_service_provider_token_c,
-    rtp_reader_access_token,
-    random_fiscal_code,
-    debtor_sp_mock_cert_key,
-):
-    message_payload = generate_gpd_message_payload(
-        fiscal_code=random_fiscal_code,
-        operation="CREATE",
-        status="VALID",
-    )
-
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        random_fiscal_code,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code == 201, (
-        f"Expected 201, got {activation_response.status_code}. Response: {activation_response.text}"
-    )
-
-    send_response = send_gpd_message_v2(
-        access_token=rtp_consumer_access_token,
-        message_payload=message_payload,
-    )
-    assert send_response.status_code == 200, (
-        f"Error sending GPD message, expected 200 got {send_response.status_code}. Response: {send_response.text}"
-    )
-
-    resource_id = send_response.json()["resourceId"]
-    assert resource_id, "Missing resourceId in send GPD message response"
-
-    callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
-        resource_id=resource_id,
-        original_msg_id=resource_id,
+    make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
+) -> None:
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
         reason_code="ALAC",
-    )
-    certificate, key = debtor_sp_mock_cert_key
-    callback_response = srtp_status_update_callback(
-        rtp_payload=callback_data,
-        cert_path=certificate,
-        key_path=key,
+        expected_status="SENT",
+        expected_response_code=403,
         extra_headers={"X-Client-Certificate-Serial": "unregistered-status-update-serial"},
     )
-    assert callback_response.status_code == 403, (
-        f"Expected 403 for an invalid certificate serial, got {callback_response.status_code}. "
-        f"Response: {callback_response.text}"
-    )
-
-    get_response = get_rtp_v2(
-        access_token=rtp_reader_access_token,
-        rtp_id=resource_id,
-    )
-    assert get_response.status_code == 200, (
-        f"Expected 200, got {get_response.status_code}. Response: {get_response.text}"
-    )
-    assert get_response.json()["status"] == "SENT"
