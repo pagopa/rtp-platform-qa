@@ -1,4 +1,5 @@
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import requests
@@ -92,42 +93,57 @@ def _wait_for_rtp_status(
     resource_id: str,
     expected_status: str,
 ) -> str:
-    deadline = time.monotonic() + STATUS_POLL_TIMEOUT_SECONDS
-    last_response = None
+    def is_expected_status(response: requests.Response) -> bool:
+        if response.status_code != 200:
+            return False
 
-    while time.monotonic() < deadline:
-        last_response = get_rtp_v2(access_token=reader_token, rtp_id=resource_id)
-        if last_response.status_code == 200:
-            response_body: JsonType = last_response.json()
-            if isinstance(response_body, dict) and response_body.get("status") == expected_status:
-                return expected_status
+        response_body: JsonType = get_response_body_safe(response)
+        assert isinstance(response_body, dict), (
+            f"Expected a JSON object while polling RTP {resource_id}, got {response_body!r}. Response: {response.text}"
+        )
+        return response_body.get("status") == expected_status
 
-        time.sleep(STATUS_POLL_INTERVAL_SECONDS)
-
-    assert last_response is not None, f"No response received while polling RTP {resource_id}"
-    raise AssertionError(
-        f"Expected RTP {resource_id} to reach {expected_status}, but the last response was "
-        f"{last_response.status_code}: {last_response.text}"
+    _poll_rtp_response(
+        reader_token=reader_token,
+        resource_id=resource_id,
+        is_ready=is_expected_status,
+        expected_outcome=f"reach status {expected_status}",
     )
+    return expected_status
 
 
 def assert_rtp_deleted_after_status_update(
     reader_token: str,
     resource_id: str,
 ) -> None:
+    _poll_rtp_response(
+        reader_token=reader_token,
+        resource_id=resource_id,
+        is_ready=lambda response: response.status_code == 404,
+        expected_outcome="be deleted after status update",
+    )
+
+
+def _poll_rtp_response(
+    *,
+    reader_token: str,
+    resource_id: str,
+    is_ready: Callable[[requests.Response], bool],
+    expected_outcome: str,
+) -> requests.Response:
     deadline = time.monotonic() + STATUS_POLL_TIMEOUT_SECONDS
-    last_response = None
+    last_response: requests.Response | None = None
 
     while time.monotonic() < deadline:
         last_response = get_rtp_v2(access_token=reader_token, rtp_id=resource_id)
-        if last_response.status_code == 404:
-            return
+        if is_ready(last_response):
+            return last_response
 
         time.sleep(STATUS_POLL_INTERVAL_SECONDS)
 
-    assert last_response is not None, f"No response received while checking RTP {resource_id} deletion"
+    assert last_response is not None, f"No response received while waiting for RTP {resource_id} to {expected_outcome}"
     raise AssertionError(
-        f"Expected RTP {resource_id} to be deleted after status update, but the last response "
+        f"Expected RTP {resource_id} to {expected_outcome}, but the last response "
         f"was {last_response.status_code}: {last_response.text}"
     )
 
