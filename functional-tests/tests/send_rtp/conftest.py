@@ -26,6 +26,12 @@ def status_update_rtp_resource_factory(
         payer_id: str,
         notice_number: str,
     ) -> CreatedRtpContext:
+        """Activate a payer and create an RTP tracked for fixture cleanup.
+
+        The fixture yields this callback to tests that need a fresh RTP
+        resource. Each invocation creates and records its activation ID so
+        the fixture can deactivate all resources after the test completes.
+        """
         activation_response = activate(
             access_token=debtor_service_provider_token_c,
             payer_fiscal_code=payer_id,
