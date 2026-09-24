@@ -3,7 +3,6 @@ from collections.abc import Callable
 import pytest
 
 from api.debtor_activation_api import activate
-from api.debtor_deactivation_api import deactivate
 from config.configuration import secrets
 from utils.rtp_status_update_helpers import (
     CreatedRtpContext,
@@ -19,18 +18,15 @@ def status_update_rtp_resource_factory(
     creditor_service_provider_token_a: str,
     rtp_reader_access_token: str,
 ) -> Callable[..., CreatedRtpContext]:
-    activation_ids: list[str] = []
-
     def _create(
         *,
         payer_id: str,
         notice_number: str,
     ) -> CreatedRtpContext:
-        """Activate a payer and create an RTP tracked for fixture cleanup.
+        """Activate a payer and create an RTP for a status-update test.
 
-        The fixture yields this callback to tests that need a fresh RTP
-        resource. Each invocation creates and records its activation ID so
-        the fixture can deactivate all resources after the test completes.
+        The fixture returns this callback to tests that need a fresh RTP
+        resource. Each invocation creates an isolated activation and RTP.
         """
         activation_response = activate(
             access_token=debtor_service_provider_token_c,
@@ -41,9 +37,6 @@ def status_update_rtp_resource_factory(
             f"Expected activation status 201, got {activation_response.status_code}: {activation_response.text}"
         )
 
-        activation_id = activation_response.headers["Location"].rstrip("/").split("/")[-1]
-        activation_ids.append(activation_id)
-
         return create_rtp_for_status_update_v2(
             creditor_token=creditor_service_provider_token_a,
             reader_token=rtp_reader_access_token,
@@ -51,17 +44,7 @@ def status_update_rtp_resource_factory(
             notice_number=notice_number,
         )
 
-    yield _create
-
-    for activation_id in activation_ids:
-        deactivation_response = deactivate(
-            access_token=debtor_service_provider_token_c,
-            activation_id=activation_id,
-        )
-        assert deactivation_response.status_code in (204, 404), (
-            f"Expected activation cleanup status 204 or 404, got {deactivation_response.status_code}: "
-            f"{deactivation_response.text}"
-        )
+    return _create
 
 
 @pytest.fixture
