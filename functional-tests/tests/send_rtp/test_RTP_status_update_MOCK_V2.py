@@ -3,6 +3,7 @@ from uuid import uuid4
 import allure
 import pytest
 
+from api.RTP_cancel_api import cancel_rtp_v2
 from api.RTP_send_api import status_update_rtp_v2
 from utils.constants_epc_status_update_mock import (
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_400,
@@ -29,26 +30,32 @@ from utils.constants_epc_status_update_mock import (
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_RSPR,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_TRUNCATED_JSON,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_UNKNOWN_REASON,
-    RTP_STATUS_ERROR_SEND,
+    RTP_STATUS_CANCELLED,
     RTP_STATUS_EXPIRED,
     RTP_STATUS_REJECTED,
     RTP_STATUS_SENT,
     RTP_STATUS_USER_ACCEPTED,
     RTP_STATUS_USER_REJECTED,
     STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_RESPONSE,
+    STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_TRANSITION,
     STATUS_UPDATE_ERROR_DESCRIPTION_RTP_NOT_FOUND,
     STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER,
     STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
     STATUS_UPDATE_ERROR_INVALID_RESPONSE,
+    STATUS_UPDATE_ERROR_INVALID_TRANSITION,
     STATUS_UPDATE_ERROR_RTP_NOT_FOUND,
     STATUS_UPDATE_ERROR_SERVICE_PROVIDER,
     STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
 )
+from utils.constants_text_helper import CANCEL_REASON_PAID
 from utils.dataset_status_update_rtp import generate_status_update_rtp_data
 from utils.rtp_status_update_helpers import (
+    StatusUpdateRtpContext,
     assert_rtp_deleted_after_status_update,
     assert_status_update_error_response,
     assert_status_update_result,
+    update_rtp_status_v2,
+    wait_for_rtp_status,
 )
 
 STATUS_UPDATE_SUCCESS_SCENARIOS = [
@@ -56,56 +63,42 @@ STATUS_UPDATE_SUCCESS_SCENARIOS = [
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_AEXR,
         "AEXR",
         RTP_STATUS_EXPIRED,
-        False,
         id="aexr-expired",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_ALAC,
         "ALAC",
         RTP_STATUS_USER_ACCEPTED,
-        False,
         id="alac-user-accepted",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARFR,
         "ARFR",
         RTP_STATUS_USER_REJECTED,
-        False,
         id="arfr-user-rejected",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARJR,
         "ARJR",
         RTP_STATUS_REJECTED,
-        False,
         id="arjr-rejected",
-    ),
-    pytest.param(
-        MOCK_STATUS_UPDATE_NOTICE_NUMBER_IRNR,
-        "IRNR",
-        RTP_STATUS_ERROR_SEND,
-        True,
-        id="irnr-error-send",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_REPR,
         "REPR",
         RTP_STATUS_SENT,
-        False,
         id="repr-no-transition",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_RSPR,
         "RSPR",
         RTP_STATUS_SENT,
-        False,
         id="rspr-no-transition",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_NO_MATCH,
         None,
         RTP_STATUS_SENT,
-        False,
         id="fallback-no-match",
     ),
 ]
@@ -120,7 +113,7 @@ STATUS_UPDATE_SUCCESS_SCENARIOS = [
 @pytest.mark.mock
 @pytest.mark.happy_path
 @pytest.mark.parametrize(
-    "notice_number, expected_reason, expected_rtp_status, expect_rtp_deleted",
+    "notice_number, expected_reason, expected_rtp_status",
     STATUS_UPDATE_SUCCESS_SCENARIOS,
 )
 def test_status_update_rtp_mock_success_scenarios(
@@ -130,26 +123,145 @@ def test_status_update_rtp_mock_success_scenarios(
     notice_number,
     expected_reason,
     expected_rtp_status,
-    expect_rtp_deleted,
 ):
     context = status_update_rtp_factory(
         payer_id=random_fiscal_code,
         notice_number=notice_number,
-        expected_final_status=None if expect_rtp_deleted else expected_rtp_status,
+        expected_final_status=expected_rtp_status,
     )
 
     assert_status_update_result(
         context=context,
         expected_response_status=200,
-        expected_rtp_status=None if expect_rtp_deleted else expected_rtp_status,
+        expected_rtp_status=expected_rtp_status,
         expected_reason=expected_reason,
     )
 
-    if expect_rtp_deleted:
-        assert_rtp_deleted_after_status_update(
-            reader_token=rtp_reader_access_token,
-            resource_id=context.resource_id,
-        )
+
+@allure.epic("RTP Send")
+@allure.feature("RTP status update")
+@allure.story("The EPC service provider returns IRNR and the RTP enters ERROR_SEND")
+@allure.title("An IRNR status update returns ERROR_SEND and purges the RTP")
+@allure.tag("functional", "happy_path", "rtp_status_update", "mock")
+@pytest.mark.send
+@pytest.mark.mock
+@pytest.mark.happy_path
+def test_status_update_rtp_mock_irnr_error_send_outcome(
+    status_update_rtp_factory,
+    random_fiscal_code,
+    rtp_reader_access_token,
+):
+    """Verify the public ERROR_SEND outcome represented by IRNR and read-API purge."""
+    context = status_update_rtp_factory(
+        payer_id=random_fiscal_code,
+        notice_number=MOCK_STATUS_UPDATE_NOTICE_NUMBER_IRNR,
+        expected_final_status=None,
+    )
+
+    assert_status_update_result(
+        context=context,
+        expected_response_status=200,
+        expected_rtp_status=None,
+        expected_reason="IRNR",
+    )
+    assert_rtp_deleted_after_status_update(
+        reader_token=rtp_reader_access_token,
+        resource_id=context.resource_id,
+    )
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP status update")
+@allure.story("The same successful status update is processed more than once")
+@allure.title("Repeating a status update is idempotent")
+@allure.tag("functional", "happy_path", "rtp_status_update", "mock")
+@pytest.mark.send
+@pytest.mark.mock
+@pytest.mark.happy_path
+def test_status_update_rtp_mock_is_idempotent(
+    status_update_rtp_factory,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    context = status_update_rtp_factory(
+        payer_id=random_fiscal_code,
+        notice_number=MOCK_STATUS_UPDATE_NOTICE_NUMBER_AEXR,
+        expected_final_status=RTP_STATUS_EXPIRED,
+    )
+    repeated_response, repeated_status = update_rtp_status_v2(
+        creditor_token=creditor_service_provider_token_a,
+        reader_token=rtp_reader_access_token,
+        resource_id=context.resource_id,
+        expected_final_status=RTP_STATUS_EXPIRED,
+    )
+
+    repeated_context = StatusUpdateRtpContext(
+        resource_id=context.resource_id,
+        initial_status=context.final_status or context.initial_status,
+        final_status=repeated_status,
+        status_update_response=repeated_response,
+    )
+    assert_status_update_result(
+        context=repeated_context,
+        expected_response_status=200,
+        expected_rtp_status=RTP_STATUS_EXPIRED,
+        expected_reason="AEXR",
+    )
+
+
+@allure.epic("RTP Send")
+@allure.feature("RTP status update")
+@allure.story("The RTP status does not allow the requested transition")
+@allure.title("An invalid status transition is rejected")
+@allure.tag("functional", "unhappy_path", "rtp_status_update", "mock")
+@pytest.mark.send
+@pytest.mark.mock
+@pytest.mark.unhappy_path
+def test_status_update_rtp_mock_rejects_invalid_transition(
+    status_update_rtp_resource_factory,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+    rtp_reader_access_token,
+):
+    created_context = status_update_rtp_resource_factory(
+        payer_id=random_fiscal_code,
+        notice_number=MOCK_STATUS_UPDATE_NOTICE_NUMBER_ALAC,
+    )
+    cancel_response = cancel_rtp_v2(
+        access_token=creditor_service_provider_token_a,
+        resource_id=created_context.resource_id,
+        reason=CANCEL_REASON_PAID,
+    )
+    assert cancel_response.status_code == 204, (
+        f"Expected cancellation status 204, got {cancel_response.status_code}: {cancel_response.text}"
+    )
+    cancelled_status = wait_for_rtp_status(
+        reader_token=rtp_reader_access_token,
+        resource_id=created_context.resource_id,
+        expected_status=RTP_STATUS_CANCELLED,
+    )
+    assert cancelled_status == RTP_STATUS_CANCELLED, f"Expected {RTP_STATUS_CANCELLED}, got {cancelled_status}"
+
+    status_update_response, final_status = update_rtp_status_v2(
+        creditor_token=creditor_service_provider_token_a,
+        reader_token=rtp_reader_access_token,
+        resource_id=created_context.resource_id,
+        expected_final_status=RTP_STATUS_CANCELLED,
+    )
+    context = StatusUpdateRtpContext(
+        resource_id=created_context.resource_id,
+        initial_status=created_context.initial_status,
+        final_status=final_status,
+        status_update_response=status_update_response,
+    )
+    assert_status_update_result(
+        context=context,
+        expected_response_status=422,
+        expected_rtp_status=RTP_STATUS_CANCELLED,
+        expected_error_code=STATUS_UPDATE_ERROR_INVALID_TRANSITION,
+        expected_error_description=STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_TRANSITION,
+    )
 
 
 STATUS_UPDATE_ERROR_SCENARIOS = [

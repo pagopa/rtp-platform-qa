@@ -17,6 +17,12 @@ STATUS_POLL_TIMEOUT_SECONDS = 30
 
 
 @dataclass(frozen=True)
+class CreatedRtpContext:
+    resource_id: str
+    initial_status: str
+
+
+@dataclass(frozen=True)
 class StatusUpdateRtpContext:
     resource_id: str
     initial_status: str
@@ -24,14 +30,13 @@ class StatusUpdateRtpContext:
     status_update_response: requests.Response
 
 
-def send_and_status_update_rtp_v2(
+def create_rtp_for_status_update_v2(
     creditor_token: str,
     reader_token: str,
     payer_id: str,
     notice_number: str,
-    expected_final_status: str | None,
     expected_initial_status: str = RTP_STATUS_SENT,
-) -> StatusUpdateRtpContext:
+) -> CreatedRtpContext:
     rtp_data = generate_rtp_data(payer_id=payer_id, notice_number=notice_number)
 
     send_response = send_rtp_v2(access_token=creditor_token, rtp_payload=rtp_data)
@@ -43,19 +48,28 @@ def send_and_status_update_rtp_v2(
     )
     resource_id = send_response.headers["Location"].split("/")[-1]
 
-    initial_status = _wait_for_rtp_status(
+    initial_status = wait_for_rtp_status(
         reader_token=reader_token,
         resource_id=resource_id,
         expected_status=expected_initial_status,
     )
 
+    return CreatedRtpContext(resource_id=resource_id, initial_status=initial_status)
+
+
+def update_rtp_status_v2(
+    creditor_token: str,
+    reader_token: str,
+    resource_id: str,
+    expected_final_status: str | None,
+) -> tuple[requests.Response, str | None]:
     status_update_response = status_update_rtp_v2(
         access_token=creditor_token,
         status_update_payload=generate_status_update_rtp_data(resource_id),
     )
 
     final_status = (
-        _wait_for_rtp_status(
+        wait_for_rtp_status(
             reader_token=reader_token,
             resource_id=resource_id,
             expected_status=expected_final_status,
@@ -64,15 +78,10 @@ def send_and_status_update_rtp_v2(
         else None
     )
 
-    return StatusUpdateRtpContext(
-        resource_id=resource_id,
-        initial_status=initial_status,
-        final_status=final_status,
-        status_update_response=status_update_response,
-    )
+    return status_update_response, final_status
 
 
-def _wait_for_rtp_status(
+def wait_for_rtp_status(
     reader_token: str,
     resource_id: str,
     expected_status: str,
