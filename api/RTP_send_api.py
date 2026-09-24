@@ -57,7 +57,11 @@ def status_update_rtp_v2(
     :returns: the response of the call.
     :rtype: requests.Response
     """
-    return _post_status_update(access_token, status_update_payload, "v2")
+    return _post_status_update(
+        access_token=access_token,
+        status_update_payload=status_update_payload,
+        version="v2",
+    )
 
 
 def send_rtp_to_mock(rtp_payload):

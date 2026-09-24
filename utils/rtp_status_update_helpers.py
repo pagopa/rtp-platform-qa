@@ -41,20 +41,18 @@ def send_and_status_update_rtp_v2(
     rtp_data = generate_rtp_data(payer_id=payer_id, notice_number=notice_number)
 
     activation_response = activate(
-        debtor_token,
-        rtp_data["payer"]["payerId"],
-        service_provider_id,
+        access_token=debtor_token,
+        payer_fiscal_code=rtp_data["payer"]["payerId"],
+        service_provider_id=service_provider_id,
     )
     assert activation_response.status_code in (201, 409), "Error activating debtor"
 
     send_response = send_rtp_v2(access_token=creditor_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201, (
-        f"Expected status 201 sending RTP, got {send_response.status_code}. "
-        f"Body: {send_response.text[:200]}"
+        f"Expected status 201 sending RTP, got {send_response.status_code}. Body: {send_response.text[:200]}"
     )
     assert "Location" in send_response.headers, (
-        f"Expected Location header in response but got status {send_response.status_code}. "
-        f"Body: {send_response.text}"
+        f"Expected Location header in response but got status {send_response.status_code}. Body: {send_response.text}"
     )
     resource_id = send_response.headers["Location"].split("/")[-1]
 
@@ -140,18 +138,17 @@ def assert_status_update_result(
     expected_error_code: str | None = None,
 ) -> None:
     assert_response_code(
-        context.status_update_response,
-        expected_response_status,
-        "status update",
-        context.final_status,
+        response=context.status_update_response,
+        expected_status=expected_response_status,
+        operation="status update",
+        expected_rtp_status=context.final_status,
     )
     if expected_rtp_status is not None:
         assert context.final_status == expected_rtp_status
 
     body: JsonType = get_response_body_safe(context.status_update_response)
     assert isinstance(body, dict), (
-        f"Expected a JSON object from status update, got {body!r}. "
-        f"Response: {context.status_update_response.text}"
+        f"Expected a JSON object from status update, got {body!r}. Response: {context.status_update_response.text}"
     )
 
     if expected_response_status == 200:
@@ -171,11 +168,15 @@ def assert_status_update_error_response(
     expected_response_status: int,
     expected_error_code: str,
 ) -> None:
-    assert_response_code(response, expected_response_status, "status update", "unknown")
+    assert_response_code(
+        response=response,
+        expected_status=expected_response_status,
+        operation="status update",
+        expected_rtp_status="unknown",
+    )
 
     body: JsonType = get_response_body_safe(response)
     assert isinstance(body, dict), (
-        f"Expected a JSON error object from status update, got {body!r}. "
-        f"Response: {response.text}"
+        f"Expected a JSON error object from status update, got {body!r}. Response: {response.text}"
     )
     assert body.get("code") == expected_error_code
