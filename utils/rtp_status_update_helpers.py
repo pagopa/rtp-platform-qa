@@ -151,9 +151,9 @@ def assert_status_update_result(
 ) -> None:
     assert_response_code(
         response=context.status_update_response,
-        expected_status=expected_response_status,
+        expected_code=expected_response_status,
         operation="status update",
-        expected_rtp_status=context.final_status,
+        status=context.final_status,
     )
     if expected_rtp_status is not None:
         assert context.final_status == expected_rtp_status, (
@@ -198,9 +198,9 @@ def assert_status_update_error_response(
 ) -> None:
     assert_response_code(
         response=response,
-        expected_status=expected_response_status,
+        expected_code=expected_response_status,
         operation="status update",
-        expected_rtp_status="unknown",
+        status="unknown",
     )
 
     body: JsonType = get_response_body_safe(response)
