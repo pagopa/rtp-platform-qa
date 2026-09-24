@@ -170,7 +170,8 @@ def assert_status_update_result(
             f"Expected response resourceId {context.resource_id}, got {body.get('resourceId')!r}"
         )
         if expected_reason is None:
-            assert "reason" not in body, f"Fallback response must omit reason, got {body!r}"
+            assert set(body) <= {"resourceId", "reason"}, f"Unexpected fallback response fields: {body!r}"
+            assert body.get("reason") is None, f"Fallback response reason must be null, got {body.get('reason')!r}"
         else:
             assert body.get("reason") == expected_reason, (
                 f"Expected response reason {expected_reason}, got {body.get('reason')!r}"

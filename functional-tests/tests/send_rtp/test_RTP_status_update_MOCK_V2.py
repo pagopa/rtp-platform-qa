@@ -188,14 +188,14 @@ def test_status_update_rtp_mock_is_idempotent(
 ):
     context = status_update_rtp_factory(
         payer_id=random_fiscal_code,
-        notice_number=MOCK_STATUS_UPDATE_NOTICE_NUMBER_AEXR,
-        expected_final_status=RTP_STATUS_EXPIRED,
+        notice_number=MOCK_STATUS_UPDATE_NOTICE_NUMBER_ALAC,
+        expected_final_status=RTP_STATUS_USER_ACCEPTED,
     )
     repeated_response, repeated_status = update_rtp_status_v2(
         creditor_token=creditor_service_provider_token_a,
         reader_token=rtp_reader_access_token,
         resource_id=context.resource_id,
-        expected_final_status=RTP_STATUS_EXPIRED,
+        expected_final_status=RTP_STATUS_USER_ACCEPTED,
     )
 
     repeated_context = StatusUpdateRtpContext(
@@ -207,8 +207,8 @@ def test_status_update_rtp_mock_is_idempotent(
     assert_status_update_result(
         context=repeated_context,
         expected_response_status=200,
-        expected_rtp_status=RTP_STATUS_EXPIRED,
-        expected_reason="AEXR",
+        expected_rtp_status=RTP_STATUS_USER_ACCEPTED,
+        expected_reason="ALAC",
     )
 
 
