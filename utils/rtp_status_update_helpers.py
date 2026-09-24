@@ -4,10 +4,8 @@ from dataclasses import dataclass
 
 import requests
 
-from api.debtor_activation_api import activate
 from api.RTP_get_api import get_rtp_v2
 from api.RTP_send_api import send_rtp_v2, status_update_rtp_v2
-from config.configuration import secrets
 from utils.constants_epc_status_update_mock import RTP_STATUS_SENT
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.dataset_status_update_rtp import generate_status_update_rtp_data
@@ -27,28 +25,14 @@ class StatusUpdateRtpContext:
 
 
 def send_and_status_update_rtp_v2(
-    debtor_token: str,
     creditor_token: str,
     reader_token: str,
     payer_id: str,
     notice_number: str,
     expected_final_status: str | None,
-    service_provider_id: str | None = None,
     expected_initial_status: str = RTP_STATUS_SENT,
 ) -> StatusUpdateRtpContext:
-    if service_provider_id is None:
-        service_provider_id = secrets.debtor_service_provider_C.service_provider_id
-
     rtp_data = generate_rtp_data(payer_id=payer_id, notice_number=notice_number)
-
-    activation_response = activate(
-        access_token=debtor_token,
-        payer_fiscal_code=rtp_data["payer"]["payerId"],
-        service_provider_id=service_provider_id,
-    )
-    assert activation_response.status_code in (201, 409), (
-        f"Expected activation status 201 or 409, got {activation_response.status_code}: {activation_response.text}"
-    )
 
     send_response = send_rtp_v2(access_token=creditor_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201, (

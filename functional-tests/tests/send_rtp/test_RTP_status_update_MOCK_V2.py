@@ -4,7 +4,6 @@ import allure
 import pytest
 
 from api.RTP_send_api import status_update_rtp_v2
-from config.configuration import secrets
 from utils.constants_epc_status_update_mock import (
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_400,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_401,
@@ -50,7 +49,6 @@ from utils.rtp_status_update_helpers import (
     assert_rtp_deleted_after_status_update,
     assert_status_update_error_response,
     assert_status_update_result,
-    send_and_status_update_rtp_v2,
 )
 
 STATUS_UPDATE_SUCCESS_SCENARIOS = [
@@ -126,19 +124,16 @@ STATUS_UPDATE_SUCCESS_SCENARIOS = [
     STATUS_UPDATE_SUCCESS_SCENARIOS,
 )
 def test_status_update_rtp_mock_success_scenarios(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
+    status_update_rtp_factory,
+    random_fiscal_code,
     rtp_reader_access_token,
     notice_number,
     expected_reason,
     expected_rtp_status,
     expect_rtp_deleted,
 ):
-    context = send_and_status_update_rtp_v2(
-        debtor_token=debtor_service_provider_token_c,
-        creditor_token=creditor_service_provider_token_a,
-        reader_token=rtp_reader_access_token,
-        payer_id=secrets.mock_actc_fiscal_code_v2,
+    context = status_update_rtp_factory(
+        payer_id=random_fiscal_code,
         notice_number=notice_number,
         expected_final_status=None if expect_rtp_deleted else expected_rtp_status,
     )
@@ -286,19 +281,15 @@ STATUS_UPDATE_ERROR_SCENARIOS = [
     STATUS_UPDATE_ERROR_SCENARIOS,
 )
 def test_status_update_rtp_mock_error_scenarios(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
+    status_update_rtp_factory,
+    random_fiscal_code,
     notice_number,
     expected_response_status,
     expected_error_code,
     expected_error_description,
 ):
-    context = send_and_status_update_rtp_v2(
-        debtor_token=debtor_service_provider_token_c,
-        creditor_token=creditor_service_provider_token_a,
-        reader_token=rtp_reader_access_token,
-        payer_id=secrets.mock_actc_fiscal_code_v2,
+    context = status_update_rtp_factory(
+        payer_id=random_fiscal_code,
         notice_number=notice_number,
         expected_final_status=RTP_STATUS_SENT,
     )
