@@ -6,10 +6,6 @@ import pytest
 from api.RTP_send_api import status_update_rtp_v2
 from config.configuration import secrets
 from utils.constants_epc_status_update_mock import (
-    MOCK_STATUS_UPDATE_NOTICE_NUMBER_AEXR,
-    MOCK_STATUS_UPDATE_NOTICE_NUMBER_ALAC,
-    MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARFR,
-    MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARJR,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_400,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_401,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_404,
@@ -22,6 +18,10 @@ from utils.constants_epc_status_update_mock import (
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_502,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_503,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_504,
+    MOCK_STATUS_UPDATE_NOTICE_NUMBER_AEXR,
+    MOCK_STATUS_UPDATE_NOTICE_NUMBER_ALAC,
+    MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARFR,
+    MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARJR,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_EMPTY_BODY,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_IRNR,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_MALFORMED_REASON,
@@ -36,6 +36,10 @@ from utils.constants_epc_status_update_mock import (
     RTP_STATUS_SENT,
     RTP_STATUS_USER_ACCEPTED,
     RTP_STATUS_USER_REJECTED,
+    STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_RESPONSE,
+    STATUS_UPDATE_ERROR_DESCRIPTION_RTP_NOT_FOUND,
+    STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER,
+    STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
     STATUS_UPDATE_ERROR_INVALID_RESPONSE,
     STATUS_UPDATE_ERROR_RTP_NOT_FOUND,
     STATUS_UPDATE_ERROR_SERVICE_PROVIDER,
@@ -48,7 +52,6 @@ from utils.rtp_status_update_helpers import (
     assert_status_update_result,
     send_and_status_update_rtp_v2,
 )
-
 
 STATUS_UPDATE_SUCCESS_SCENARIOS = [
     pytest.param(
@@ -159,96 +162,112 @@ STATUS_UPDATE_ERROR_SCENARIOS = [
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_400,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-400",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_401,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-401",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_404,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-404",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_406,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-406",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_410,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-410",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_415,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-415",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_422,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-422",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_429,
         422,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER_REJECTION,
         id="provider-429",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_UNKNOWN_REASON,
         422,
         STATUS_UPDATE_ERROR_INVALID_RESPONSE,
+        STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_RESPONSE,
         id="unknown-reason",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_500,
         500,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER,
         id="provider-500",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_502,
         500,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER,
         id="provider-502",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_503,
         500,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER,
         id="provider-503",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_504,
         500,
         STATUS_UPDATE_ERROR_SERVICE_PROVIDER,
+        STATUS_UPDATE_ERROR_DESCRIPTION_SERVICE_PROVIDER,
         id="provider-504",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_EMPTY_BODY,
         422,
         STATUS_UPDATE_ERROR_INVALID_RESPONSE,
+        STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_RESPONSE,
         id="empty-provider-error-body",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_MALFORMED_REASON,
         422,
         STATUS_UPDATE_ERROR_INVALID_RESPONSE,
+        STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_RESPONSE,
         id="malformed-reason",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_TRUNCATED_JSON,
         422,
         STATUS_UPDATE_ERROR_INVALID_RESPONSE,
+        STATUS_UPDATE_ERROR_DESCRIPTION_INVALID_RESPONSE,
         id="truncated-json",
     ),
 ]
@@ -263,7 +282,7 @@ STATUS_UPDATE_ERROR_SCENARIOS = [
 @pytest.mark.mock
 @pytest.mark.unhappy_path
 @pytest.mark.parametrize(
-    "notice_number, expected_response_status, expected_error_code",
+    "notice_number, expected_response_status, expected_error_code, expected_error_description",
     STATUS_UPDATE_ERROR_SCENARIOS,
 )
 def test_status_update_rtp_mock_error_scenarios(
@@ -273,6 +292,7 @@ def test_status_update_rtp_mock_error_scenarios(
     notice_number,
     expected_response_status,
     expected_error_code,
+    expected_error_description,
 ):
     context = send_and_status_update_rtp_v2(
         debtor_token=debtor_service_provider_token_c,
@@ -288,6 +308,7 @@ def test_status_update_rtp_mock_error_scenarios(
         expected_response_status=expected_response_status,
         expected_rtp_status=RTP_STATUS_SENT,
         expected_error_code=expected_error_code,
+        expected_error_description=expected_error_description,
     )
 
 
@@ -311,4 +332,5 @@ def test_status_update_rtp_unknown_resource(
         response=response,
         expected_response_status=404,
         expected_error_code=STATUS_UPDATE_ERROR_RTP_NOT_FOUND,
+        expected_error_description=STATUS_UPDATE_ERROR_DESCRIPTION_RTP_NOT_FOUND,
     )

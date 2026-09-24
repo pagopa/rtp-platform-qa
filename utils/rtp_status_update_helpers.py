@@ -45,7 +45,9 @@ def send_and_status_update_rtp_v2(
         payer_fiscal_code=rtp_data["payer"]["payerId"],
         service_provider_id=service_provider_id,
     )
-    assert activation_response.status_code in (201, 409), "Error activating debtor"
+    assert activation_response.status_code in (201, 409), (
+        f"Expected activation status 201 or 409, got {activation_response.status_code}: {activation_response.text}"
+    )
 
     send_response = send_rtp_v2(access_token=creditor_token, rtp_payload=rtp_data)
     assert send_response.status_code == 201, (
@@ -102,7 +104,7 @@ def _wait_for_rtp_status(
 
         time.sleep(STATUS_POLL_INTERVAL_SECONDS)
 
-    assert last_response is not None
+    assert last_response is not None, f"No response received while polling RTP {resource_id}"
     raise AssertionError(
         f"Expected RTP {resource_id} to reach {expected_status}, but the last response was "
         f"{last_response.status_code}: {last_response.text}"
@@ -123,7 +125,7 @@ def assert_rtp_deleted_after_status_update(
 
         time.sleep(STATUS_POLL_INTERVAL_SECONDS)
 
-    assert last_response is not None
+    assert last_response is not None, f"No response received while checking RTP {resource_id} deletion"
     raise AssertionError(
         f"Expected RTP {resource_id} to be deleted after status update, but the last response "
         f"was {last_response.status_code}: {last_response.text}"
@@ -136,6 +138,7 @@ def assert_status_update_result(
     expected_rtp_status: str | None,
     expected_reason: str | None = None,
     expected_error_code: str | None = None,
+    expected_error_description: str | None = None,
 ) -> None:
     assert_response_code(
         response=context.status_update_response,
@@ -144,7 +147,9 @@ def assert_status_update_result(
         expected_rtp_status=context.final_status,
     )
     if expected_rtp_status is not None:
-        assert context.final_status == expected_rtp_status
+        assert context.final_status == expected_rtp_status, (
+            f"Expected RTP status {expected_rtp_status}, got {context.final_status} for resource {context.resource_id}"
+        )
 
     body: JsonType = get_response_body_safe(context.status_update_response)
     assert isinstance(body, dict), (
@@ -152,21 +157,35 @@ def assert_status_update_result(
     )
 
     if expected_response_status == 200:
-        assert body.get("resourceId") == context.resource_id
+        assert body.get("resourceId") == context.resource_id, (
+            f"Expected response resourceId {context.resource_id}, got {body.get('resourceId')!r}"
+        )
         if expected_reason is None:
-            assert body.get("reason") is None
+            assert "reason" not in body, f"Fallback response must omit reason, got {body!r}"
         else:
-            assert body.get("reason") == expected_reason
+            assert body.get("reason") == expected_reason, (
+                f"Expected response reason {expected_reason}, got {body.get('reason')!r}"
+            )
         return
 
-    assert expected_error_code is not None
-    assert body.get("code") == expected_error_code
+    assert expected_error_code is not None, "Expected an error code for a non-success status update response"
+    assert expected_error_description is not None, (
+        "Expected an error description for a non-success status update response"
+    )
+    assert body.get("code") == expected_error_code, (
+        f"Expected error code {expected_error_code}, got {body.get('code')!r}. Response: {body!r}"
+    )
+    assert body.get("description") == expected_error_description, (
+        f"Expected error description {expected_error_description!r}, "
+        f"got {body.get('description')!r}. Response: {body!r}"
+    )
 
 
 def assert_status_update_error_response(
     response: requests.Response,
     expected_response_status: int,
     expected_error_code: str,
+    expected_error_description: str,
 ) -> None:
     assert_response_code(
         response=response,
@@ -179,4 +198,10 @@ def assert_status_update_error_response(
     assert isinstance(body, dict), (
         f"Expected a JSON error object from status update, got {body!r}. Response: {response.text}"
     )
-    assert body.get("code") == expected_error_code
+    assert body.get("code") == expected_error_code, (
+        f"Expected error code {expected_error_code}, got {body.get('code')!r}. Response: {body!r}"
+    )
+    assert body.get("description") == expected_error_description, (
+        f"Expected error description {expected_error_description!r}, "
+        f"got {body.get('description')!r}. Response: {body!r}"
+    )
