@@ -31,6 +31,7 @@ activation_base_url_path_dev: "https://api-rtp.dev.cstar.pagopa.it/rtp/activatio
 # RTP OPERATIONS PATHS
 # ============================
 send_rtp_path: "rtps"
+status_update_rtp_path: "rtps/status-update"
 activation_path: "/activations"
 activation_api_version: 'v1'
 deactivation_path: "/activations"
