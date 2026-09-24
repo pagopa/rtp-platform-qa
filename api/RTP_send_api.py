@@ -1,3 +1,5 @@
+import uuid
+
 import requests
 
 from api.utils.endpoints import SEND_RTP_URL, SERVICE_PROVIDER_MOCK_URL, STATUS_UPDATE_RTP_URL
@@ -35,7 +37,11 @@ def _post_status_update(
     version: str,
 ) -> requests.Response:
     return requests.post(
-        headers={"Authorization": f"{access_token}", "Version": version},
+        headers={
+            "Authorization": f"{access_token}",
+            "Version": version,
+            "RequestId": str(uuid.uuid4()),
+        },
         url=STATUS_UPDATE_RTP_URL,
         json=status_update_payload,
         timeout=HTTP_TIMEOUT,

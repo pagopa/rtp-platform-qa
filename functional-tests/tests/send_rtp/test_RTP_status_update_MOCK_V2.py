@@ -30,7 +30,6 @@ from utils.constants_epc_status_update_mock import (
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_RSPR,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_TRUNCATED_JSON,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_UNKNOWN_REASON,
-    RTP_STATUS_ERROR_SEND,
     RTP_STATUS_EXPIRED,
     RTP_STATUS_REJECTED,
     RTP_STATUS_SENT,
@@ -77,7 +76,7 @@ STATUS_UPDATE_SUCCESS_SCENARIOS = [
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_IRNR,
         "IRNR",
-        RTP_STATUS_ERROR_SEND,
+        None,
         id="irnr-error-send",
     ),
     pytest.param(
@@ -127,6 +126,7 @@ def test_status_update_rtp_mock_success_scenarios(
         reader_token=rtp_reader_access_token,
         payer_id=secrets.mock_actc_fiscal_code_v2,
         notice_number=notice_number,
+        expected_final_status=expected_rtp_status,
     )
 
     assert_status_update_result(
@@ -263,6 +263,7 @@ def test_status_update_rtp_mock_error_scenarios(
         reader_token=rtp_reader_access_token,
         payer_id=secrets.mock_actc_fiscal_code_v2,
         notice_number=notice_number,
+        expected_final_status=RTP_STATUS_SENT,
     )
 
     assert_status_update_result(
