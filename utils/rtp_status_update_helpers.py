@@ -11,6 +11,7 @@ from utils.constants_epc_status_update_mock import RTP_STATUS_SENT
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.dataset_status_update_rtp import generate_status_update_rtp_data
 from utils.response_assertions_utils import assert_response_code, get_response_body_safe
+from utils.type_utils import JsonType
 
 STATUS_POLL_INTERVAL_SECONDS = 1
 STATUS_POLL_TIMEOUT_SECONDS = 30
@@ -97,9 +98,9 @@ def _wait_for_rtp_status(
     while time.monotonic() < deadline:
         last_response = get_rtp_v2(access_token=reader_token, rtp_id=resource_id)
         if last_response.status_code == 200:
-            current_status = last_response.json().get("status")
-            if current_status == expected_status:
-                return current_status
+            response_body: JsonType = last_response.json()
+            if isinstance(response_body, dict) and response_body.get("status") == expected_status:
+                return expected_status
 
         time.sleep(STATUS_POLL_INTERVAL_SECONDS)
 
@@ -147,7 +148,7 @@ def assert_status_update_result(
     if expected_rtp_status is not None:
         assert context.final_status == expected_rtp_status
 
-    body = get_response_body_safe(context.status_update_response)
+    body: JsonType = get_response_body_safe(context.status_update_response)
     assert isinstance(body, dict), (
         f"Expected a JSON object from status update, got {body!r}. "
         f"Response: {context.status_update_response.text}"
@@ -172,7 +173,7 @@ def assert_status_update_error_response(
 ) -> None:
     assert_response_code(response, expected_response_status, "status update", "unknown")
 
-    body = get_response_body_safe(response)
+    body: JsonType = get_response_body_safe(response)
     assert isinstance(body, dict), (
         f"Expected a JSON error object from status update, got {body!r}. "
         f"Response: {response.text}"
