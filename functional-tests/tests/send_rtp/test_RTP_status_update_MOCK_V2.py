@@ -3,6 +3,7 @@ from uuid import uuid4
 import allure
 import pytest
 
+from api.RTP_callback_api import srtp_rfc_callback_v2
 from api.RTP_cancel_api import cancel_rtp_v2
 from api.RTP_send_api import status_update_rtp_v2
 from utils.constants_epc_status_update_mock import (
@@ -48,6 +49,7 @@ from utils.constants_epc_status_update_mock import (
     STATUS_UPDATE_ERROR_SERVICE_PROVIDER_REJECTION,
 )
 from utils.constants_text_helper import CANCEL_REASON_PAID
+from utils.dataset_callback_data_DS_12P_positive_v2 import generate_callback_data_DS_12P_positive_compliant
 from utils.dataset_status_update_rtp import generate_status_update_rtp_data
 from utils.rtp_status_update_helpers import (
     StatusUpdateRtpContext,
@@ -223,6 +225,7 @@ def test_status_update_rtp_mock_rejects_invalid_transition(
     random_fiscal_code,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
+    debtor_sp_mock_cert_key,
 ):
     created_context = status_update_rtp_resource_factory(
         payer_id=random_fiscal_code,
@@ -235,6 +238,20 @@ def test_status_update_rtp_mock_rejects_invalid_transition(
     )
     assert cancel_response.status_code == 204, (
         f"Expected cancellation status 204, got {cancel_response.status_code}: {cancel_response.text}"
+    )
+    callback_data = generate_callback_data_DS_12P_positive_compliant(
+        resource_id=created_context.resource_id,
+        original_msg_id=created_context.resource_id.replace("-", ""),
+    )
+    certificate, key = debtor_sp_mock_cert_key
+    callback_response = srtp_rfc_callback_v2(
+        cert_path=certificate,
+        key_path=key,
+        rtp_payload=callback_data,
+        include_version_header=False,
+    )
+    assert callback_response.status_code == 200, (
+        f"Expected cancellation callback status 200, got {callback_response.status_code}: {callback_response.text}"
     )
     cancelled_status = wait_for_rtp_status(
         reader_token=rtp_reader_access_token,
