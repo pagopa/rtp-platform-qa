@@ -31,6 +31,7 @@ LANDING_PAGE_URL = config.landing_page_path
 PAYEES_URL = config.rtp_creation_base_url_path + config.payees_registry_path
 PAYEES_CONSENTS_URL = config.rtp_creation_base_url_path + config.payees_consents_path
 SEND_RTP_URL = config.rtp_creation_base_url_path + config.send_rtp_path
+STATUS_UPDATE_RTP_URL = config.rtp_creation_base_url_path + config.status_update_rtp_path
 SERVICE_PROVIDER_MOCK_URL = config.mock_service_provider_url
 SERVICE_PROVIDERS_URL = config.rtp_creation_base_url_path + config.service_providers_registry
 ACTIVATION_PAYER_STATUS_URL = config.activation_base_url_path + config.activation_payer_status_path
