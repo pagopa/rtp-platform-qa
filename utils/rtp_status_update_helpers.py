@@ -110,6 +110,27 @@ def _wait_for_rtp_status(
     )
 
 
+def assert_rtp_deleted_after_status_update(
+    reader_token: str,
+    resource_id: str,
+) -> None:
+    deadline = time.monotonic() + STATUS_POLL_TIMEOUT_SECONDS
+    last_response = None
+
+    while time.monotonic() < deadline:
+        last_response = get_rtp_v2(access_token=reader_token, rtp_id=resource_id)
+        if last_response.status_code == 404:
+            return
+
+        time.sleep(STATUS_POLL_INTERVAL_SECONDS)
+
+    assert last_response is not None
+    raise AssertionError(
+        f"Expected RTP {resource_id} to be deleted after status update, but the last response "
+        f"was {last_response.status_code}: {last_response.text}"
+    )
+
+
 def assert_status_update_result(
     context: StatusUpdateRtpContext,
     expected_response_status: int,

@@ -30,6 +30,7 @@ from utils.constants_epc_status_update_mock import (
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_RSPR,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_TRUNCATED_JSON,
     MOCK_STATUS_UPDATE_NOTICE_NUMBER_UNKNOWN_REASON,
+    RTP_STATUS_ERROR_SEND,
     RTP_STATUS_EXPIRED,
     RTP_STATUS_REJECTED,
     RTP_STATUS_SENT,
@@ -42,6 +43,7 @@ from utils.constants_epc_status_update_mock import (
 )
 from utils.dataset_status_update_rtp import generate_status_update_rtp_data
 from utils.rtp_status_update_helpers import (
+    assert_rtp_deleted_after_status_update,
     assert_status_update_error_response,
     assert_status_update_result,
     send_and_status_update_rtp_v2,
@@ -53,48 +55,56 @@ STATUS_UPDATE_SUCCESS_SCENARIOS = [
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_AEXR,
         "AEXR",
         RTP_STATUS_EXPIRED,
+        False,
         id="aexr-expired",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_ALAC,
         "ALAC",
         RTP_STATUS_USER_ACCEPTED,
+        False,
         id="alac-user-accepted",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARFR,
         "ARFR",
         RTP_STATUS_USER_REJECTED,
+        False,
         id="arfr-user-rejected",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_ARJR,
         "ARJR",
         RTP_STATUS_REJECTED,
+        False,
         id="arjr-rejected",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_IRNR,
         "IRNR",
-        None,
+        RTP_STATUS_ERROR_SEND,
+        True,
         id="irnr-error-send",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_REPR,
         "REPR",
         RTP_STATUS_SENT,
+        False,
         id="repr-no-transition",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_RSPR,
         "RSPR",
         RTP_STATUS_SENT,
+        False,
         id="rspr-no-transition",
     ),
     pytest.param(
         MOCK_STATUS_UPDATE_NOTICE_NUMBER_NO_MATCH,
         None,
         RTP_STATUS_SENT,
+        False,
         id="fallback-no-match",
     ),
 ]
@@ -109,7 +119,7 @@ STATUS_UPDATE_SUCCESS_SCENARIOS = [
 @pytest.mark.mock
 @pytest.mark.happy_path
 @pytest.mark.parametrize(
-    "notice_number, expected_reason, expected_rtp_status",
+    "notice_number, expected_reason, expected_rtp_status, expect_rtp_deleted",
     STATUS_UPDATE_SUCCESS_SCENARIOS,
 )
 def test_status_update_rtp_mock_success_scenarios(
@@ -119,6 +129,7 @@ def test_status_update_rtp_mock_success_scenarios(
     notice_number,
     expected_reason,
     expected_rtp_status,
+    expect_rtp_deleted,
 ):
     context = send_and_status_update_rtp_v2(
         debtor_token=debtor_service_provider_token_c,
@@ -126,15 +137,21 @@ def test_status_update_rtp_mock_success_scenarios(
         reader_token=rtp_reader_access_token,
         payer_id=secrets.mock_actc_fiscal_code_v2,
         notice_number=notice_number,
-        expected_final_status=expected_rtp_status,
+        expected_final_status=None if expect_rtp_deleted else expected_rtp_status,
     )
 
     assert_status_update_result(
         context=context,
         expected_response_status=200,
-        expected_rtp_status=expected_rtp_status,
+        expected_rtp_status=None if expect_rtp_deleted else expected_rtp_status,
         expected_reason=expected_reason,
     )
+
+    if expect_rtp_deleted:
+        assert_rtp_deleted_after_status_update(
+            reader_token=rtp_reader_access_token,
+            resource_id=context.resource_id,
+        )
 
 
 STATUS_UPDATE_ERROR_SCENARIOS = [
