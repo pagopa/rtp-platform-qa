@@ -112,3 +112,18 @@ def assert_status_update_result(
 
     assert expected_error_code is not None
     assert body.get("code") == expected_error_code
+
+
+def assert_status_update_error_response(
+    response: requests.Response,
+    expected_response_status: int,
+    expected_error_code: str,
+) -> None:
+    assert_response_code(response, expected_response_status, "status update", "unknown")
+
+    body = get_response_body_safe(response)
+    assert isinstance(body, dict), (
+        f"Expected a JSON error object from status update, got {body!r}. "
+        f"Response: {response.text}"
+    )
+    assert body.get("code") == expected_error_code
