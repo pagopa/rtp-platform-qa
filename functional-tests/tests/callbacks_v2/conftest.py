@@ -3,8 +3,8 @@ from collections.abc import Callable
 import pytest
 
 from utils.rtp_status_update_helpers import wait_for_rtp_status
+from utils.status_update_fixture_helpers import create_status_update_rtp, update_gpd_rtp
 from utils.status_update_test_context import StatusUpdateRtpContext
-from utils.status_update_fixture_helpers import create_status_update_rtp, update_status_update_rtp
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def make_status_update_rtp(
         )
 
         if update_status is not None:
-            update_status_update_rtp(
+            update_gpd_rtp(
                 access_token=rtp_consumer_access_token,
                 fiscal_code=random_fiscal_code,
                 create_payload=create_payload,

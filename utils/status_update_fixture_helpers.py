@@ -46,7 +46,7 @@ def create_status_update_rtp(
     return create_payload, resource_id
 
 
-def update_status_update_rtp(
+def update_gpd_rtp(
     *,
     access_token: str,
     fiscal_code: str,
