@@ -5,10 +5,11 @@ import allure
 import pytest
 
 from api.RTP_callback_api import srtp_status_update_callback
-from api.RTP_get_api import get_rtp_by_notice_number, get_rtp_delivery_status
+from api.RTP_get_api import get_rtp_delivery_status
 from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_C_ID
 from utils.dataset_status_update_callback import generate_status_update_callback_data
 from utils.response_assertions_utils import assert_response_code
+from utils.rtp_status_update_helpers import assert_rtp_absent_by_notice_number_after_status_update
 from utils.status_update_test_context import StatusUpdateRtpContext
 from utils.status_update_test_helpers import assert_status_update_transition
 
@@ -102,21 +103,12 @@ def test_receive_status_update_callback_irnr(
         context=context,
         reason_code="IRNR",
         expected_status="ERROR_SEND",
-        expected_resource_response_code=404,
+        resource_should_be_deleted=True,
     )
 
-    notice_response = get_rtp_by_notice_number(
-        access_token=context.reader_access_token,
+    assert_rtp_absent_by_notice_number_after_status_update(
+        reader_token=context.reader_access_token,
         notice_number=context.notice_number,
-    )
-    assert_response_code(
-        notice_response,
-        200,
-        "GET RTP by notice number",
-        "ERROR_SEND",
-    )
-    assert notice_response.json() == [], (
-        f"Expected no RTP for notice number {context.notice_number} after ERROR_SEND, got {notice_response.text}"
     )
 
     delivery_response = get_rtp_delivery_status(
@@ -256,12 +248,12 @@ def test_receive_status_update_callback_unknown_rtp(
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Callback")
-@allure.story("An unregistered certificate serial attempts a status update")
-@allure.title("A status update callback with an invalid certificate serial is forbidden")
-@allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "status_update")
+@allure.story("A service provider with a mismatched certificate identity attempts a status update")
+@allure.title("A status update callback with a mismatched debtor BIC is forbidden")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "status_update", "certificate_mismatch")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
-def test_receive_status_update_callback_invalid_certificate_serial(
+def test_receive_status_update_callback_certificate_bic_mismatch(
     make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
 ) -> None:
     context = make_status_update_rtp(None)

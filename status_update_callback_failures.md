@@ -277,17 +277,21 @@ rather than reverting the new top-level `Document`, object-shaped
 
 The callback tests were updated according to the exposed API contract:
 
-- IRNR now accepts `404` for the resource GET after `ERROR_SEND`, while
-  retaining the notice-number and delivery-status assertions.
+- IRNR now polls until the resource GET returns `404` after `ERROR_SEND`, then
+  polls the notice-number lookup until it returns an empty list before checking
+  delivery status.
+- All callback transition assertions now use the shared deadline-based status
+  polling helper, including no-op and rejected-callback scenarios.
 - A missing reason code now expects the contractually invalid `400` response.
 - The AEXR conflict scenario first moves the RTP to `USER_REJECTED` through an
   accepted callback flow, then verifies that AEXR returns `400` without changing
   that state.
-- Certificate mismatch is represented by a callback BIC that does not match
-  the certificate identity, rather than by adding an arbitrary serial header.
+- Certificate mismatch is represented by a callback BIC that does not match the
+  certificate identity, and the scenario name and Allure metadata describe that
+  contract.
 
 Verification after these changes:
 
 ```text
-11 passed in 32.81s
+11 passed in 32.84s
 ```
