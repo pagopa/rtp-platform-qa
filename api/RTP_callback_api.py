@@ -1,8 +1,18 @@
+from collections.abc import Mapping
+
 import requests
+from requests import Response
 
 from api.utils.api_version import CALLBACK_VERSION, CALLBACK_VERSION_V2, RFC_CALLBACK_VERSION, RFC_CALLBACK_VERSION_V2
-from api.utils.endpoints import CALLBACK_URL, CALLBACK_URL_V2, RFC_CALLBACK_URL, RFC_CALLBACK_URL_V2
+from api.utils.endpoints import (
+    CALLBACK_URL,
+    CALLBACK_URL_V2,
+    RFC_CALLBACK_URL,
+    RFC_CALLBACK_URL_V2,
+    STATUS_UPDATE_CALLBACK_URL,
+)
 from api.utils.http_utils import HTTP_TIMEOUT
+from utils.type_utils import JsonType
 
 
 def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
@@ -33,6 +43,23 @@ def srtp_callback_v2(cert_path: str, key_path: str, rtp_payload, include_version
     return requests.post(
         cert=(cert_path, key_path),
         url=CALLBACK_URL_V2,
+        headers=headers,
+        json=rtp_payload,
+        timeout=HTTP_TIMEOUT,
+    )
+
+
+def srtp_status_update_callback(
+    cert_path: str,
+    key_path: str,
+    rtp_payload: JsonType,
+    extra_headers: Mapping[str, str] | None = None,
+) -> Response:
+    """Send a status-update callback to the v2 RTP callback endpoint."""
+    headers = dict(extra_headers or {})
+    return requests.post(
+        cert=(cert_path, key_path),
+        url=STATUS_UPDATE_CALLBACK_URL,
         headers=headers,
         json=rtp_payload,
         timeout=HTTP_TIMEOUT,

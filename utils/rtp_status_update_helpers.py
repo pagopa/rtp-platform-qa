@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import requests
 
-from api.RTP_get_api import get_rtp_v2
+from api.RTP_get_api import get_rtp_by_notice_number, get_rtp_v2
 from api.RTP_send_api import send_rtp_v2, status_update_rtp_v2
 from utils.constants_epc_status_update_mock import RTP_STATUS_SENT
 from utils.dataset_RTP_data import generate_rtp_data
@@ -114,6 +114,32 @@ def assert_rtp_deleted_after_status_update(
         resource_id=resource_id,
         is_ready=lambda response: response.status_code == 404,
         expected_outcome="be deleted after status update",
+    )
+
+
+def assert_rtp_absent_by_notice_number_after_status_update(
+    reader_token: str,
+    notice_number: str,
+) -> None:
+    deadline = time.monotonic() + STATUS_POLL_TIMEOUT_SECONDS
+    last_response: requests.Response | None = None
+
+    while time.monotonic() < deadline:
+        last_response = get_rtp_by_notice_number(
+            access_token=reader_token,
+            notice_number=notice_number,
+        )
+        if last_response.status_code == 200 and get_response_body_safe(last_response) == []:
+            return
+
+        time.sleep(STATUS_POLL_INTERVAL_SECONDS)
+
+    assert last_response is not None, (
+        f"No response received while waiting for notice number {notice_number} to be absent"
+    )
+    raise AssertionError(
+        f"Expected no RTP for notice number {notice_number}, but the last response "
+        f"was {last_response.status_code}: {last_response.text}"
     )
 
 

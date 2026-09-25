@@ -11,6 +11,7 @@ CALLBACK_URL = config.callback_url
 RFC_CALLBACK_URL = config.rfc_callback_url
 CALLBACK_URL_V2 = config.callback_url_v2
 RFC_CALLBACK_URL_V2 = config.rfc_callback_url_v2
+STATUS_UPDATE_CALLBACK_URL = config.status_update_callback_url
 CANCEL_RTP_OPERATION = config.cancel
 CANCEL_RTP_URL = config.rtp_creation_base_url_path + config.cancel_rtp_path
 DEACTIVATION_URL = config.activation_base_url_path + config.deactivation_path
