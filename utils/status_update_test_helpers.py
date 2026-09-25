@@ -14,11 +14,13 @@ def assert_status_update_transition(
     expected_status: str,
     expected_response_code: int = 200,
     extra_headers: Mapping[str, str] | None = None,
+    callback_bic: str = DEBTOR_SERVICE_PROVIDER_C_ID,
+    expected_resource_response_code: int = 200,
 ) -> None:
     callback_data = generate_status_update_callback_data(
-        bic=DEBTOR_SERVICE_PROVIDER_C_ID,
+        bic=callback_bic,
         resource_id=context.resource_id,
-        original_msg_id=context.resource_id.replace("-", ""),
+        original_msg_id=context.resource_id,
         reason_code=reason_code,
     )
     callback_response = srtp_status_update_callback(
@@ -40,10 +42,11 @@ def assert_status_update_transition(
     )
     assert_response_code(
         get_response,
-        200,
+        expected_resource_response_code,
         "GET RTP",
         expected_status,
     )
-    assert get_response.json()["status"] == expected_status, (
-        f"Expected RTP status {expected_status}, got {get_response.json()['status']}"
-    )
+    if expected_resource_response_code == 200:
+        assert get_response.json()["status"] == expected_status, (
+            f"Expected RTP status {expected_status}, got {get_response.json()['status']}"
+        )

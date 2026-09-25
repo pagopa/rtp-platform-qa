@@ -22,33 +22,31 @@ def generate_status_update_callback_data(
         reason_code: Optional EPC 4.0 status reason code.
     """
     resource_id = resource_id or str(uuid.uuid4())
-    original_msg_id = original_msg_id or resource_id.replace("-", "")
+    original_msg_id = original_msg_id or resource_id
     transaction_info: dict[str, JsonType] = {}
 
     if reason_code is not None:
-        transaction_info["StsRsnInf"] = [{"Rsn": {"Cd": reason_code}}]
+        transaction_info["StsRsnInf"] = {"Rsn": {"Cd": reason_code}}
 
     return {
-        "SepaRequestToPayStatusUpdateResponseResource": {
-            "Document": {
-                "CdtrPmtActvtnReqStsRpt": {
-                    "GrpHdr": {
-                        "MsgId": str(uuid.uuid4()),
-                        "CreDtTm": generate_create_time(),
-                        "InitgPty": {"Id": {"OrgId": {"AnyBIC": bic}}},
+        "Document": {
+            "CdtrPmtActvtnReqStsRpt": {
+                "GrpHdr": {
+                    "MsgId": str(uuid.uuid4()),
+                    "CreDtTm": generate_create_time(),
+                    "InitgPty": {"Id": {"OrgId": {"AnyBIC": bic}}},
+                },
+                "OrgnlGrpInfAndSts": {
+                    "OrgnlMsgId": original_msg_id,
+                    "OrgnlMsgNmId": "pain.013.001.07",
+                    "OrgnlCreDtTm": generate_create_time(),
+                },
+                "OrgnlPmtInfAndSts": [
+                    {
+                        "OrgnlPmtInfId": str(uuid.uuid4()),
+                        "TxInfAndSts": [transaction_info],
                     },
-                    "OrgnlGrpInfAndSts": {
-                        "OrgnlMsgId": original_msg_id,
-                        "OrgnlMsgNmId": "pain.013.001.07",
-                        "OrgnlCreDtTm": generate_create_time(),
-                    },
-                    "OrgnlPmtInfAndSts": [
-                        {
-                            "OrgnlPmtInfId": str(uuid.uuid4()),
-                            "TxInfAndSts": [transaction_info],
-                        }
-                    ],
-                }
+                ],
             }
         }
     }

@@ -102,6 +102,7 @@ def test_receive_status_update_callback_irnr(
         context=context,
         reason_code="IRNR",
         expected_status="ERROR_SEND",
+        expected_resource_response_code=404,
     )
 
     notice_response = get_rtp_by_notice_number(
@@ -158,11 +159,11 @@ def test_receive_status_update_callback_repr_keeps_sent(
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Callback")
-@allure.story("The debtor service provider sends a status update without a reason code")
-@allure.title("A status update without StsRsnInf leaves SENT unchanged")
-@allure.tag("functional", "happy_path", "rtp_callback", "v2", "status_update")
+@allure.story("The debtor service provider sends an invalid status update without a reason code")
+@allure.title("A status update without StsRsnInf is rejected")
+@allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "status_update")
 @pytest.mark.callback
-@pytest.mark.happy_path
+@pytest.mark.unhappy_path
 def test_receive_status_update_callback_without_reason_keeps_sent(
     make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
 ) -> None:
@@ -171,6 +172,7 @@ def test_receive_status_update_callback_without_reason_keeps_sent(
         context=context,
         reason_code=None,
         expected_status="SENT",
+        expected_response_code=400,
     )
 
 
@@ -199,19 +201,24 @@ def test_receive_status_update_callback_alac_is_idempotent(
 
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Callback")
-@allure.story("The debtor service provider reports an expired RTP after it was paid")
-@allure.title("An AEXR status update conflicts with a PAID RTP")
+@allure.story("The debtor service provider reports an expired RTP after it was rejected")
+@allure.title("An AEXR status update conflicts with a USER_REJECTED RTP")
 @allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "status_update")
 @pytest.mark.callback
 @pytest.mark.unhappy_path
-def test_receive_status_update_callback_aexr_conflicts_with_paid(
+def test_receive_status_update_callback_aexr_conflicts_with_user_rejected(
     make_status_update_rtp: Callable[[str | None], StatusUpdateRtpContext],
 ) -> None:
-    context = make_status_update_rtp("PAID")
+    context = make_status_update_rtp(None)
+    assert_status_update_transition(
+        context=context,
+        reason_code="ARFR",
+        expected_status="USER_REJECTED",
+    )
     assert_status_update_transition(
         context=context,
         reason_code="AEXR",
-        expected_status="PAID",
+        expected_status="USER_REJECTED",
         expected_response_code=400,
     )
 
@@ -263,5 +270,5 @@ def test_receive_status_update_callback_invalid_certificate_serial(
         reason_code="ALAC",
         expected_status="SENT",
         expected_response_code=403,
-        extra_headers={"X-Client-Certificate-Serial": "unregistered-status-update-serial"},
+        callback_bic="FAKESP01",
     )
