@@ -68,10 +68,22 @@ def test_sign_srtp_message_returns_a_verifiable_signature_and_headers(
 @pytest.mark.functional
 @pytest.mark.happy_path
 @pytest.mark.callback
+@pytest.mark.parametrize(
+    ("algorithm", "hash_algorithm_type", "expected_algorithm", "hashlib_algorithm"),
+    (
+        ("SHA512", hashes.SHA512, "sha512", "sha512"),
+        ("SHA3-256", hashes.SHA3_256, "sha3-256", "sha3-256"),
+    ),
+    ids=("sha512", "sha3-256"),
+)
 def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
     qsealc_key_material,
     ds_08p_callback_payload,
     callback_body_factory,
+    algorithm,
+    hash_algorithm_type,
+    expected_algorithm,
+    hashlib_algorithm,
 ) -> None:
     body = callback_body_factory(
         method="POST",
@@ -84,7 +96,7 @@ def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
         headers=SIGNING_HEADERS,
         body=body,
         key_material=qsealc_key_material,
-        algorithm="SHA512",
+        algorithm=algorithm,
     )
     canonical = b"POST\n" + CALLBACK_URL_V2.encode() + b"\ncontent-type: application/json\n" + body
 
@@ -92,11 +104,14 @@ def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
         signature=base64.b64decode(signed_message.signature_base64),
         data=canonical,
         padding=PKCS1v15(),
-        algorithm=hashes.SHA512(),
+        algorithm=hash_algorithm_type(),
     )
 
-    assert signed_message.algorithm == "sha512", "Expected digest algorithm names to be normalized"
-    assert signed_message.as_headers()[SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER] == "sha512", (
+    assert signed_message.algorithm == expected_algorithm, "Expected digest algorithm names to be normalized"
+    assert signed_message.digest_base64 == base64.b64encode(
+        hashlib.new(hashlib_algorithm, canonical).digest()
+    ).decode(), "Expected the selected digest to cover the canonical message"
+    assert signed_message.as_headers()[SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER] == expected_algorithm, (
         "Expected the selected digest algorithm to be advertised"
     )
 

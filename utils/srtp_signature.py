@@ -27,7 +27,16 @@ SRTP_SIGNATURE_CERTIFICATE_HEADER: Final = "X-SRTP-Signature-Certificate"
 SRTP_CERTIFICATE_CHAIN_HEADER: Final = "X-SRTP-Signature-Certificate-Chain"
 SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER: Final = "X-SRTP-Signature-Algorithm-Digest"
 DEFAULT_SIGNATURE_ALGORITHM: Final = "sha256"
-ALLOWED_SIGNATURE_DIGEST_ALGORITHMS: Final = frozenset({"sha256", "sha384", "sha512"})
+ALLOWED_SIGNATURE_DIGEST_ALGORITHMS: Final = frozenset(
+    {
+        "sha256",
+        "sha384",
+        "sha512",
+        "sha3-256",
+        "sha3-384",
+        "sha3-512",
+    }
+)
 
 
 class RevocationStatus(StrEnum):
@@ -246,7 +255,7 @@ def verify_srtp_message(
 
 
 def normalize_signature_algorithm(algorithm: str) -> str:
-    normalized_algorithm = algorithm.lower()
+    normalized_algorithm = algorithm.lower().replace("_", "-")
     if normalized_algorithm not in ALLOWED_SIGNATURE_DIGEST_ALGORITHMS:
         allowed_algorithms = ", ".join(sorted(ALLOWED_SIGNATURE_DIGEST_ALGORITHMS))
         raise ValueError(
@@ -260,6 +269,9 @@ def signature_hash_algorithm(algorithm: str) -> hashes.HashAlgorithm:
         "sha256": hashes.SHA256,
         "sha384": hashes.SHA384,
         "sha512": hashes.SHA512,
+        "sha3-256": hashes.SHA3_256,
+        "sha3-384": hashes.SHA3_384,
+        "sha3-512": hashes.SHA3_512,
     }
     return hash_algorithms[algorithm]()
 
