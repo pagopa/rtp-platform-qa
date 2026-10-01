@@ -88,7 +88,6 @@ def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_versio
         key_path: Path to the key file
         rtp_payload: The RFC callback payload (DS12P or DS12N)
         include_version_header: When True, adds the Version header to the request
-        qsealc_key_material: Optional QSealC material used to sign the request
 
     Returns:
         Response object from the callback request
@@ -121,6 +120,7 @@ def srtp_rfc_callback_v2(
         key_path: Path to the key file
         rtp_payload: The RFC callback payload (DS12P or DS12N)
         include_version_header: When True, adds the Version header to the request
+        qsealc_key_material: Optional QSealC material used to sign the request
 
     Returns:
         Response object from the callback request
