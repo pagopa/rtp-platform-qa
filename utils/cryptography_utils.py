@@ -77,7 +77,10 @@ def load_qsealc_key_material(base64_pfx: str, base64_password: str) -> QsealcKey
     """Load QSealC signing material from a base64-encoded PKCS#12 bundle."""
     pfx_data = base64.b64decode(base64_pfx)
     pfx_password = base64.b64decode(base64_password) if base64_password else None
-    private_key, certificate, additional_certificates = load_key_and_certificates(pfx_data, pfx_password)
+    private_key, certificate, additional_certificates = load_key_and_certificates(
+        data=pfx_data,
+        password=pfx_password,
+    )
 
     if private_key is None or certificate is None:
         raise ValueError("QSealC PFX must contain both a private key and a certificate")
