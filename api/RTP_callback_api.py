@@ -17,21 +17,14 @@ from utils.cryptography_utils import QsealcKeyMaterial
 from utils.srtp_signature import sign_srtp_message
 
 
-def srtp_callback(
-    cert_path: str,
-    key_path: str,
-    rtp_payload,
-    include_version_header: bool = False,
-    qsealc_key_material: QsealcKeyMaterial | None = None,
-):
+def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
     headers = {"Version": CALLBACK_VERSION} if include_version_header else {}
-    return _send_callback(
-        cert_path=cert_path,
-        key_path=key_path,
+    return requests.post(
+        cert=(cert_path, key_path),
         url=CALLBACK_URL,
         headers=headers,
-        rtp_payload=rtp_payload,
-        qsealc_key_material=qsealc_key_material,
+        json=rtp_payload,
+        timeout=HTTP_TIMEOUT,
     )
 
 
@@ -82,13 +75,7 @@ def srtp_status_update_callback(
     )
 
 
-def srtp_rfc_callback(
-    cert_path: str,
-    key_path: str,
-    rtp_payload,
-    include_version_header: bool = False,
-    qsealc_key_material: QsealcKeyMaterial | None = None,
-):
+def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
     """
     Send RFC (Request for Cancellation) callback.
 
@@ -105,13 +92,12 @@ def srtp_rfc_callback(
         Response object from the callback request
     """
     headers = {"Version": RFC_CALLBACK_VERSION} if include_version_header else {}
-    return _send_callback(
-        cert_path=cert_path,
-        key_path=key_path,
+    return requests.post(
+        cert=(cert_path, key_path),
         url=RFC_CALLBACK_URL,
         headers=headers,
-        rtp_payload=rtp_payload,
-        qsealc_key_material=qsealc_key_material,
+        json=rtp_payload,
+        timeout=HTTP_TIMEOUT,
     )
 
 

@@ -8,20 +8,16 @@ from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from requests import Response
 
 from api.RTP_callback_api import (
-    srtp_callback,
     srtp_callback_v2,
-    srtp_rfc_callback,
     srtp_rfc_callback_v2,
 )
-from api.utils.endpoints import CALLBACK_URL, CALLBACK_URL_V2, RFC_CALLBACK_URL, RFC_CALLBACK_URL_V2
+from api.utils.endpoints import CALLBACK_URL_V2, RFC_CALLBACK_URL_V2
 from api.utils.http_utils import CERT_PATH, HTTP_TIMEOUT, KEY_PATH
 from utils.srtp_message_signing import build_canonical_representation
 from utils.srtp_signature import SRTP_SIGNATURE_HEADER
 
-CALLBACK_FUNCTIONS = (
-    (srtp_callback, CALLBACK_URL),
+V2_CALLBACK_FUNCTIONS = (
     (srtp_callback_v2, CALLBACK_URL_V2),
-    (srtp_rfc_callback, RFC_CALLBACK_URL),
     (srtp_rfc_callback_v2, RFC_CALLBACK_URL_V2),
 )
 
@@ -32,7 +28,7 @@ CALLBACK_FUNCTIONS = (
 @pytest.mark.functional
 @pytest.mark.happy_path
 @pytest.mark.callback
-@pytest.mark.parametrize(("callback_function", "callback_url"), CALLBACK_FUNCTIONS)
+@pytest.mark.parametrize(("callback_function", "callback_url"), V2_CALLBACK_FUNCTIONS)
 def test_callback_helpers_sign_the_exact_prepared_body(
     callback_function,
     callback_url,
