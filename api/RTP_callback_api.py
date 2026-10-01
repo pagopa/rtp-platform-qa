@@ -170,7 +170,7 @@ def _send_callback(
 
     with requests.Session() as session:
         return session.send(
-            prepared_request,
+            request=prepared_request,
             cert=(cert_path, key_path),
             timeout=HTTP_TIMEOUT,
         )
