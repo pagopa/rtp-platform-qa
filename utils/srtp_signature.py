@@ -10,7 +10,7 @@ from enum import StrEnum
 from typing import Final
 
 from cryptography import x509
-from cryptography.exceptions import InvalidSignature
+from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
@@ -181,6 +181,12 @@ def verify_srtp_message(
             reason="UNTRUSTED_ISSUER",
             detail="The signer certificate chain does not terminate at a trusted root",
         )
+    if not _validate_certificate_chain_constraints(validated_chain):
+        return _verification_failure(
+            reason="INVALID_CERTIFICATE_CHAIN",
+            detail="The signer certificate chain violates CA constraints",
+            chain_length=len(validated_chain),
+        )
 
     verification_time = _as_utc(at_time or datetime.now(timezone.utc))
     validity_failure = _validate_certificate_validity(
@@ -195,10 +201,10 @@ def verify_srtp_message(
             chain_length=len(validated_chain),
         )
 
-    if not _has_seal_key_usage(leaf_certificate):
+    if not _is_valid_leaf_certificate(leaf_certificate):
         return _verification_failure(
-            reason="INVALID_KEY_USAGE",
-            detail="The signer certificate does not permit digital signatures",
+            reason="INVALID_CERTIFICATE_PROFILE",
+            detail="The signer certificate is not a valid end-entity signing certificate",
             chain_length=len(validated_chain),
         )
 
@@ -228,12 +234,20 @@ def verify_srtp_message(
             chain_length=len(validated_chain),
         )
 
-    canonical_bytes = build_canonical_representation(
-        method=method,
-        url=url,
-        headers=headers,
-        body=body,
-    )
+    try:
+        canonical_bytes = build_canonical_representation(
+            method=method,
+            url=url,
+            headers=headers,
+            body=body,
+        )
+    except ValueError as error:
+        return _verification_failure(
+            reason="INVALID_MESSAGE",
+            detail=str(error),
+            revocation_status=revocation_status,
+            chain_length=len(validated_chain),
+        )
     if not _verify_signature(
         certificate=leaf_certificate,
         signature=signature,
@@ -402,7 +416,7 @@ def _verify_certificate_signature(certificate: Certificate, issuer: Certificate)
             )
         else:
             return False
-    except (InvalidSignature, ValueError):
+    except (InvalidSignature, UnsupportedAlgorithm, ValueError):
         return False
     return True
 
@@ -424,6 +438,31 @@ def _validate_certificate_validity(
     return None
 
 
+def _validate_certificate_chain_constraints(certificates: tuple[Certificate, ...]) -> bool:
+    for index, certificate in enumerate(certificates[1:], start=1):
+        try:
+            basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
+        except ExtensionNotFound:
+            basic_constraints = None
+
+        if basic_constraints is not None and not basic_constraints.ca:
+            return False
+        if basic_constraints is not None and basic_constraints.path_length is not None:
+            subordinate_ca_count = sum(
+                _is_ca_certificate(subordinate) for subordinate in certificates[1:index]
+            )
+            if subordinate_ca_count > basic_constraints.path_length:
+                return False
+
+        try:
+            key_usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
+        except ExtensionNotFound:
+            continue
+        if not key_usage.key_cert_sign:
+            return False
+    return True
+
+
 def _certificate_datetime(certificate: Certificate, attribute: str) -> datetime:
     utc_attribute = f"{attribute}_utc"
     if hasattr(certificate, utc_attribute):
@@ -437,6 +476,14 @@ def _has_seal_key_usage(certificate: Certificate) -> bool:
     except ExtensionNotFound:
         return True
     return key_usage.digital_signature or key_usage.content_commitment
+
+
+def _is_valid_leaf_certificate(certificate: Certificate) -> bool:
+    try:
+        basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
+    except ExtensionNotFound:
+        basic_constraints = None
+    return (basic_constraints is None or not basic_constraints.ca) and _has_seal_key_usage(certificate)
 
 
 def _validate_revocation(
@@ -473,6 +520,7 @@ def _verify_signature(
         for signature_padding in (
             padding.PKCS1v15(),
             padding.PSS(mgf=padding.MGF1(hash_algorithm), salt_length=padding.PSS.DIGEST_LENGTH),
+            padding.PSS(mgf=padding.MGF1(hash_algorithm), salt_length=padding.PSS.MAX_LENGTH),
         ):
             try:
                 public_key.verify(
@@ -482,7 +530,7 @@ def _verify_signature(
                     algorithm=hash_algorithm,
                 )
                 return True
-            except InvalidSignature:
+            except (InvalidSignature, ValueError):
                 continue
         return False
     if isinstance(public_key, ec.EllipticCurvePublicKey):
@@ -492,7 +540,7 @@ def _verify_signature(
                 data=canonical_bytes,
                 signature_algorithm=ec.ECDSA(hash_algorithm),
             )
-        except InvalidSignature:
+        except (InvalidSignature, ValueError):
             return False
         return True
     return False
