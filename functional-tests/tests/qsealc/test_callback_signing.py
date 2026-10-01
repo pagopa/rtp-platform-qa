@@ -1,3 +1,5 @@
+"""Test QSealC signing integration for v2 callback helpers."""
+
 import base64
 from unittest.mock import patch
 
@@ -36,6 +38,7 @@ def test_callback_helpers_sign_the_exact_prepared_body(
     ds_08p_callback_payload,
     callback_body_factory,
 ) -> None:
+    """Sign the exact request body transmitted by each v2 callback helper."""
     expected_body = callback_body_factory(
         method="POST",
         url=callback_url,
@@ -79,6 +82,7 @@ def test_callback_helpers_sign_the_exact_prepared_body(
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_callback_helper_preserves_unsigned_request_behavior(ds_08p_callback_payload) -> None:
+    """Preserve the existing unsigned v2 path when no key material is supplied."""
     response = Response()
     response.status_code = 200
 
