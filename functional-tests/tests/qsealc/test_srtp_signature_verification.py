@@ -27,21 +27,9 @@ SIGNING_HEADERS = {"Content-Type": "application/json"}
 @pytest.mark.callback
 def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
     qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signature = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signature = signed_callback_message
 
     result = verify_srtp_message(
         method="POST",
@@ -107,21 +95,9 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
 def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
     qsealc_test_chain,
     qsealc_key_material,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signature = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signature = signed_callback_message
 
     result = verify_srtp_message(
         method="POST",
@@ -143,21 +119,9 @@ def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_an_expired_certificate(
     qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signature = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signature = signed_callback_message
 
     result = verify_srtp_message(
         method="POST",
@@ -180,21 +144,9 @@ def test_verify_srtp_message_rejects_an_expired_certificate(
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_a_revoked_certificate(
     qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signature = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signature = signed_callback_message
 
     result = verify_srtp_message(
         method="POST",
@@ -222,21 +174,9 @@ def test_verify_srtp_message_rejects_a_revoked_certificate(
 @pytest.mark.callback
 def test_verify_srtp_message_reports_an_unknown_revocation_status(
     qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signature = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signature = signed_callback_message
 
     result = verify_srtp_message(
         method="POST",
@@ -270,23 +210,11 @@ def test_verify_srtp_message_reports_an_unknown_revocation_status(
 )
 def test_verify_srtp_message_accepts_rsa_pss_signatures(
     qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
     salt_length,
     salt_label,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signed_message = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signed_message = signed_callback_message
     canonical = build_canonical_representation(
         method="POST",
         url=CALLBACK_URL_V2,
@@ -324,22 +252,10 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
 @pytest.mark.parametrize("invalid_url", ("/callback", "mailto:callback@example.com"))
 def test_verify_srtp_message_rejects_an_invalid_target_uri(
     qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
+    signed_callback_message,
     invalid_url,
 ) -> None:
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-    signed_message = sign_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
-        key_material=qsealc_test_chain.key_material,
-    )
+    body, signed_message = signed_callback_message
 
     result = verify_srtp_message(
         method="POST",

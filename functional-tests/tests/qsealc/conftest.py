@@ -12,8 +12,10 @@ from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
 from requests import Request
 
+from api.utils.endpoints import CALLBACK_URL_V2
 from utils.cryptography_utils import QsealcKeyMaterial
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
+from utils.srtp_signature import SrtpSignature, sign_srtp_message
 from utils.type_utils import JsonType
 
 TEST_RSA_PUBLIC_EXPONENT = 65537
@@ -137,3 +139,24 @@ def callback_body_factory() -> Callable[..., bytes]:
 def ds_08p_callback_payload() -> JsonType:
     """Return a valid DS-08P callback payload for signing scenarios."""
     return generate_callback_data_DS_08P_positive_compliant()
+
+
+@pytest.fixture
+def signed_callback_message(
+    qsealc_test_chain,
+    ds_08p_callback_payload,
+    callback_body_factory,
+) -> tuple[bytes, SrtpSignature]:
+    body = callback_body_factory(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        payload=ds_08p_callback_payload,
+    )
+    signature = sign_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers={"Content-Type": "application/json"},
+        body=body,
+        key_material=qsealc_test_chain.key_material,
+    )
+    return body, signature
