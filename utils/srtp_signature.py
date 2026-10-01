@@ -2,7 +2,6 @@
 
 import base64
 import binascii
-import hashlib
 from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -14,6 +13,7 @@ from cryptography.exceptions import InvalidSignature, UnsupportedAlgorithm
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
+from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509 import Certificate
@@ -115,6 +115,8 @@ def sign_srtp_message(
         private_key=key_material.private_key,
         hash_algorithm=hash_algorithm,
     )
+    digest = hashes.Hash(hash_algorithm)
+    digest.update(canonical_bytes)
     certificate = x509.load_pem_x509_certificate(key_material.certificate_pem)
     chain_bytes = key_material.certificate_chain_pem or key_material.certificate_pem
 
@@ -122,7 +124,7 @@ def sign_srtp_message(
         signature_base64=_encode_base64(signature),
         certificate_base64=_encode_base64(certificate.public_bytes(Encoding.DER)),
         certificate_chain_base64=_encode_base64(chain_bytes),
-        digest_base64=_encode_base64(hashlib.new(normalized_algorithm, canonical_bytes).digest()),
+        digest_base64=_encode_base64(digest.finalize()),
         algorithm=normalized_algorithm,
     )
 
@@ -411,26 +413,16 @@ def _is_ca_certificate(certificate: Certificate) -> bool:
 
 def _verify_certificate_signature(certificate: Certificate, issuer: Certificate) -> bool:
     """Verify that an issuer certificate signed the candidate certificate."""
-    issuer_public_key = issuer.public_key()
     try:
-        if isinstance(issuer_public_key, RSAPublicKey):
-            issuer_public_key.verify(
-                signature=certificate.signature,
-                data=certificate.tbs_certificate_bytes,
-                padding=padding.PKCS1v15(),
-                algorithm=certificate.signature_hash_algorithm,
-            )
-        elif isinstance(issuer_public_key, ec.EllipticCurvePublicKey):
-            issuer_public_key.verify(
-                signature=certificate.signature,
-                data=certificate.tbs_certificate_bytes,
-                signature_algorithm=ec.ECDSA(certificate.signature_hash_algorithm),
-            )
-        else:
-            return False
-    except (InvalidSignature, UnsupportedAlgorithm, ValueError):
+        return _verify_with_public_key(
+            public_key=issuer.public_key(),
+            signature=certificate.signature,
+            data=certificate.tbs_certificate_bytes,
+            hash_algorithm=certificate.signature_hash_algorithm,
+            rsa_paddings=(padding.PKCS1v15(),),
+        )
+    except (UnsupportedAlgorithm, ValueError):
         return False
-    return True
 
 
 def _validate_certificate_validity(
@@ -534,32 +526,49 @@ def _verify_signature(
     hash_algorithm: hashes.HashAlgorithm,
 ) -> bool:
     """Verify RSA PKCS#1/PSS or elliptic-curve signatures over canonical bytes."""
-    public_key = certificate.public_key()
-    if isinstance(public_key, RSAPublicKey):
-        for signature_padding in (
+    return _verify_with_public_key(
+        public_key=certificate.public_key(),
+        signature=signature,
+        data=canonical_bytes,
+        hash_algorithm=hash_algorithm,
+        rsa_paddings=(
             padding.PKCS1v15(),
             padding.PSS(mgf=padding.MGF1(hash_algorithm), salt_length=padding.PSS.DIGEST_LENGTH),
             padding.PSS(mgf=padding.MGF1(hash_algorithm), salt_length=padding.PSS.MAX_LENGTH),
-        ):
+        ),
+    )
+
+
+def _verify_with_public_key(
+    *,
+    public_key: RSAPublicKey | ec.EllipticCurvePublicKey,
+    signature: bytes,
+    data: bytes,
+    hash_algorithm: hashes.HashAlgorithm,
+    rsa_paddings: Iterable[AsymmetricPadding],
+) -> bool:
+    """Verify a signature with an RSA or elliptic-curve public key."""
+    if isinstance(public_key, RSAPublicKey):
+        for signature_padding in rsa_paddings:
             try:
                 public_key.verify(
                     signature=signature,
-                    data=canonical_bytes,
+                    data=data,
                     padding=signature_padding,
                     algorithm=hash_algorithm,
                 )
                 return True
-            except (InvalidSignature, ValueError):
+            except (InvalidSignature, UnsupportedAlgorithm, ValueError):
                 continue
         return False
     if isinstance(public_key, ec.EllipticCurvePublicKey):
         try:
             public_key.verify(
                 signature=signature,
-                data=canonical_bytes,
+                data=data,
                 signature_algorithm=ec.ECDSA(hash_algorithm),
             )
-        except (InvalidSignature, ValueError):
+        except (InvalidSignature, UnsupportedAlgorithm, ValueError):
             return False
         return True
     return False
