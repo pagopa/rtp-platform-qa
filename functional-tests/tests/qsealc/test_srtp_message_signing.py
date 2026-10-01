@@ -1,3 +1,5 @@
+"""Test EPC canonicalization for SRTP messages."""
+
 import allure
 import pytest
 
@@ -14,6 +16,7 @@ HTTP_METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "T
 @pytest.mark.callback
 @pytest.mark.parametrize("url", ("/v1/resource", "mailto:api@example.com"))
 def test_canonical_representation_requires_a_complete_target_uri(url: str) -> None:
+    """Reject target values that are not complete HTTP URIs."""
     with pytest.raises(ValueError, match="requires a complete target URI"):
         build_canonical_representation(method="GET", url=url, headers={}, body=b"")
 
@@ -25,6 +28,7 @@ def test_canonical_representation_requires_a_complete_target_uri(url: str) -> No
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_sorts_headers() -> None:
+    """Sort and normalize headers in the canonical representation."""
     canonical = build_canonical_representation(
         method="GET",
         url="https://api.example.com",
@@ -45,6 +49,7 @@ def test_canonical_representation_sorts_headers() -> None:
 @pytest.mark.callback
 @pytest.mark.parametrize("method", HTTP_METHODS)
 def test_canonical_representation_emits_an_uppercase_method(method: str) -> None:
+    """Emit each supported HTTP method in uppercase."""
     canonical = build_canonical_representation(
         method=method,
         url="https://example.com",
@@ -64,6 +69,7 @@ def test_canonical_representation_emits_an_uppercase_method(method: str) -> None
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_filters_headers_outside_the_epc_api_set() -> None:
+    """Exclude transport headers outside the EPC API whitelist."""
     canonical = build_canonical_representation(
         method="POST",
         url="https://api.example.com",
@@ -93,6 +99,7 @@ def test_canonical_representation_filters_headers_outside_the_epc_api_set() -> N
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_matches_epc_headers_case_insensitively() -> None:
+    """Match EPC headers regardless of their input casing."""
     canonical = build_canonical_representation(
         method="POST",
         url="https://api.example.com",
@@ -112,6 +119,7 @@ def test_canonical_representation_matches_epc_headers_case_insensitively() -> No
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_epc_header_filter_matches_swagger_headers_case_insensitively() -> None:
+    """Validate the EPC header whitelist with case-insensitive names."""
     assert epc_header_filter("Content-Type"), "Content-Type should be included in the EPC header set"
     assert epc_header_filter("IDEMPOTENCY-KEY"), "Idempotency-Key should be included in the EPC header set"
     assert epc_header_filter("x-request-id"), "X-Request-ID should be included in the EPC header set"
@@ -126,6 +134,7 @@ def test_epc_header_filter_matches_swagger_headers_case_insensitively() -> None:
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_applies_a_caller_provided_header_filter() -> None:
+    """Apply a caller-provided predicate when selecting canonical headers."""
     canonical = build_canonical_representation(
         method="POST",
         url="https://api.example.com",
@@ -146,6 +155,7 @@ def test_canonical_representation_applies_a_caller_provided_header_filter() -> N
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_has_no_separator_for_an_empty_body() -> None:
+    """Avoid adding a body separator when the payload is empty."""
     canonical = build_canonical_representation(
         method="GET",
         url="https://example.com",
@@ -163,6 +173,7 @@ def test_canonical_representation_has_no_separator_for_an_empty_body() -> None:
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_preserves_body_bytes_without_headers() -> None:
+    """Preserve binary payload bytes when no headers are present."""
     canonical = build_canonical_representation(
         method="POST",
         url="https://example.com",
@@ -180,6 +191,7 @@ def test_canonical_representation_preserves_body_bytes_without_headers() -> None
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_preserves_payload_bytes_after_headers() -> None:
+    """Preserve binary payload bytes after canonical headers."""
     payload = bytes((0x7B, 0xFF, 0x00, 0x0A, 0x7D))
     canonical = build_canonical_representation(
         method="POST",
@@ -200,6 +212,7 @@ def test_canonical_representation_preserves_payload_bytes_after_headers() -> Non
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_canonical_representation_does_not_append_a_closing_line_feed() -> None:
+    """Do not append a trailing line feed to the canonical message."""
     canonical = build_canonical_representation(
         method="POST",
         url="https://example.com",
