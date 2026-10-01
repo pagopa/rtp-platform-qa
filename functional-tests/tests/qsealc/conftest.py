@@ -10,11 +10,12 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509.oid import NameOID
-from requests import Request
 
 from api.utils.endpoints import CALLBACK_URL_V2
+from api.utils.http_utils import APPLICATION_JSON_HEADER
 from utils.cryptography_utils import QsealcKeyMaterial
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
+from utils.srtp_message_signing import serialize_json_request_body
 from utils.srtp_signature import SrtpSignature, sign_srtp_message
 from utils.type_utils import JsonType
 
@@ -124,16 +125,8 @@ def qsealc_test_chain() -> QsealcTestChain:
 
 @pytest.fixture
 def callback_body_factory() -> Callable[..., bytes]:
-    """Return a factory that serializes callback payloads like requests does."""
-
-    def _serialize(*, method: str, url: str, payload: JsonType) -> bytes:
-        """Serialize one callback payload into the exact prepared-request body."""
-        prepared_request = Request(method=method, url=url, json=payload).prepare()
-        if prepared_request.body is None:
-            raise ValueError("Expected a serialized callback body")
-        return prepared_request.body if isinstance(prepared_request.body, bytes) else prepared_request.body.encode()
-
-    return _serialize
+    """Return a factory that serializes callback payloads like Requests does."""
+    return serialize_json_request_body
 
 
 @pytest.fixture
@@ -143,22 +136,26 @@ def ds_08p_callback_payload() -> JsonType:
 
 
 @pytest.fixture
-def signed_callback_message(
-    qsealc_test_chain,
-    ds_08p_callback_payload,
-    callback_body_factory,
-) -> tuple[bytes, SrtpSignature]:
-    """Return a serialized DS-08P body and its trusted-chain signature."""
-    body = callback_body_factory(
+def callback_body(ds_08p_callback_payload, callback_body_factory) -> bytes:
+    """Return the prepared body for the standard v2 callback."""
+    return callback_body_factory(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
     )
+
+
+@pytest.fixture
+def signed_callback_message(
+    qsealc_test_chain,
+    callback_body,
+) -> tuple[bytes, SrtpSignature]:
+    """Return a serialized DS-08P body and its trusted-chain signature."""
     signature = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={"Content-Type": "application/json"},
-        body=body,
+        headers=APPLICATION_JSON_HEADER,
+        body=callback_body,
         key_material=qsealc_test_chain.key_material,
     )
-    return body, signature
+    return callback_body, signature
