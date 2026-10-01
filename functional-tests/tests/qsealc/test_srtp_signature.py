@@ -1,3 +1,5 @@
+"""Test QSealC signature generation and certificate-header encoding."""
+
 import base64
 import hashlib
 
@@ -31,6 +33,7 @@ def test_sign_srtp_message_returns_a_verifiable_signature_and_headers(
     ds_08p_callback_payload,
     callback_body_factory,
 ) -> None:
+    """Generate a verifiable signature and all required transport headers."""
     body = callback_body_factory(
         method="POST",
         url=CALLBACK_URL_V2,
@@ -85,6 +88,7 @@ def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
     expected_algorithm,
     hashlib_algorithm,
 ) -> None:
+    """Generate signatures for each supported explicit digest algorithm."""
     body = callback_body_factory(
         method="POST",
         url=CALLBACK_URL_V2,
@@ -127,6 +131,7 @@ def test_sign_srtp_message_rejects_unsupported_digest_algorithms(
     ds_08p_callback_payload,
     callback_body_factory,
 ) -> None:
+    """Reject digest algorithms outside the supported set."""
     body = callback_body_factory(
         method="POST",
         url=CALLBACK_URL_V2,
@@ -155,6 +160,7 @@ def test_sign_srtp_message_encodes_leaf_der_and_chain_pem(
     ds_08p_callback_payload,
     callback_body_factory,
 ) -> None:
+    """Encode the leaf certificate as DER and the chain as PEM."""
     body = callback_body_factory(
         method="POST",
         url=CALLBACK_URL_V2,
