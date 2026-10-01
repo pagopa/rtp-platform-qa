@@ -43,6 +43,7 @@ def srtp_callback_v2(
         key_path: Path to the key file
         rtp_payload: The callback payload
         include_version_header: When True, adds the Version header to the request
+        qsealc_key_material: Optional QSealC material used to sign the request
 
     Returns:
         Response object from the callback request
@@ -87,6 +88,7 @@ def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_versio
         key_path: Path to the key file
         rtp_payload: The RFC callback payload (DS12P or DS12N)
         include_version_header: When True, adds the Version header to the request
+        qsealc_key_material: Optional QSealC material used to sign the request
 
     Returns:
         Response object from the callback request
@@ -143,6 +145,7 @@ def _send_callback(
     rtp_payload,
     qsealc_key_material: QsealcKeyMaterial | None,
 ):
+    """Send a v2 callback through the unsigned or QSealC-signed request path."""
     if qsealc_key_material is None:
         return requests.post(
             cert=(cert_path, key_path),
@@ -177,6 +180,7 @@ def _send_callback(
 
 
 def _prepared_body(prepared_request: requests.PreparedRequest) -> bytes:
+    """Return a prepared callback body as bytes for canonicalization and signing."""
     if prepared_request.body is None:
         return b""
     if isinstance(prepared_request.body, bytes):
