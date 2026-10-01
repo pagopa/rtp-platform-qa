@@ -269,6 +269,7 @@ def verify_srtp_message(
 
 
 def normalize_signature_algorithm(algorithm: str) -> str:
+    """Normalize and validate a supported signature digest algorithm name."""
     normalized_algorithm = algorithm.lower().replace("_", "-")
     if normalized_algorithm not in ALLOWED_SIGNATURE_DIGEST_ALGORITHMS:
         allowed_algorithms = ", ".join(sorted(ALLOWED_SIGNATURE_DIGEST_ALGORITHMS))
@@ -279,6 +280,7 @@ def normalize_signature_algorithm(algorithm: str) -> str:
 
 
 def signature_hash_algorithm(algorithm: str) -> hashes.HashAlgorithm:
+    """Return the cryptography hash implementation for a normalized algorithm."""
     hash_algorithms = {
         "sha256": hashes.SHA256,
         "sha384": hashes.SHA384,
@@ -295,6 +297,7 @@ def _sign(
     private_key: RSAPrivateKey | EllipticCurvePrivateKey,
     hash_algorithm: hashes.HashAlgorithm,
 ) -> bytes:
+    """Sign canonical message bytes with the supported QSealC key type."""
     if isinstance(private_key, RSAPrivateKey):
         return private_key.sign(
             data=canonical_bytes,
@@ -310,14 +313,17 @@ def _sign(
 
 
 def _encode_base64(value: bytes) -> str:
+    """Encode binary transport data as ASCII Base64."""
     return base64.b64encode(value).decode("ascii")
 
 
 def _header_value(headers: Mapping[str, str], name: str) -> str | None:
+    """Return a header value using case-insensitive header-name matching."""
     return next((value for header_name, value in headers.items() if header_name.lower() == name.lower()), None)
 
 
 def _decode_certificates(value: bytes) -> tuple[Certificate, ...]:
+    """Decode a DER certificate or one or more concatenated PEM certificates."""
     if not value:
         raise ValueError("Certificate value is empty")
     if b"-----BEGIN CERTIFICATE-----" in value:
@@ -326,6 +332,7 @@ def _decode_certificates(value: bytes) -> tuple[Certificate, ...]:
 
 
 def _load_trusted_roots(trusted_roots: Iterable[TrustedRoot] | TrustedRoot) -> tuple[Certificate, ...]:
+    """Load trusted-root certificates from certificate objects or encoded bytes."""
     if isinstance(trusted_roots, (bytes, str, Certificate)):
         roots = (trusted_roots,)
     else:
@@ -348,6 +355,7 @@ def _build_certificate_chain(
     trusted_roots: Iterable[Certificate],
     max_depth: int = 10,
 ) -> tuple[Certificate, ...] | None:
+    """Build and cryptographically validate a leaf-to-trusted-root certificate chain."""
     trusted_by_fingerprint = {
         certificate.fingerprint(hashes.SHA256()): certificate for certificate in trusted_roots
     }
@@ -381,6 +389,7 @@ def _build_certificate_chain(
 
 
 def _deduplicate_certificates(certificates: Iterable[Certificate]) -> tuple[Certificate, ...]:
+    """Remove duplicate certificates while preserving their first-seen order."""
     unique_certificates: dict[bytes, Certificate] = {}
     for certificate in certificates:
         unique_certificates.setdefault(_certificate_fingerprint(certificate), certificate)
@@ -388,10 +397,12 @@ def _deduplicate_certificates(certificates: Iterable[Certificate]) -> tuple[Cert
 
 
 def _certificate_fingerprint(certificate: Certificate) -> bytes:
+    """Return the SHA-256 fingerprint used to identify a certificate."""
     return certificate.fingerprint(hashes.SHA256())
 
 
 def _is_ca_certificate(certificate: Certificate) -> bool:
+    """Return whether a certificate may act as a certificate authority."""
     try:
         return certificate.extensions.get_extension_for_class(x509.BasicConstraints).value.ca
     except ExtensionNotFound:
@@ -399,6 +410,7 @@ def _is_ca_certificate(certificate: Certificate) -> bool:
 
 
 def _verify_certificate_signature(certificate: Certificate, issuer: Certificate) -> bool:
+    """Verify that an issuer certificate signed the candidate certificate."""
     issuer_public_key = issuer.public_key()
     try:
         if isinstance(issuer_public_key, RSAPublicKey):
@@ -427,6 +439,7 @@ def _validate_certificate_validity(
     at_time: datetime,
     clock_skew_seconds: int,
 ) -> str | None:
+    """Return a validity failure for the chain, accounting for clock skew."""
     at_timestamp = at_time.timestamp()
     for certificate in certificates:
         not_before = _certificate_datetime(certificate=certificate, attribute="not_valid_before")
@@ -439,6 +452,7 @@ def _validate_certificate_validity(
 
 
 def _validate_certificate_chain_constraints(certificates: tuple[Certificate, ...]) -> bool:
+    """Validate CA, key-usage, and path-length constraints on a certificate chain."""
     for index, certificate in enumerate(certificates[1:], start=1):
         try:
             basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
@@ -464,6 +478,7 @@ def _validate_certificate_chain_constraints(certificates: tuple[Certificate, ...
 
 
 def _certificate_datetime(certificate: Certificate, attribute: str) -> datetime:
+    """Return a certificate validity datetime as a timezone-aware UTC value."""
     utc_attribute = f"{attribute}_utc"
     if hasattr(certificate, utc_attribute):
         return getattr(certificate, utc_attribute)
@@ -471,6 +486,7 @@ def _certificate_datetime(certificate: Certificate, attribute: str) -> datetime:
 
 
 def _has_seal_key_usage(certificate: Certificate) -> bool:
+    """Return whether a leaf certificate permits electronic-signature operations."""
     try:
         key_usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
     except ExtensionNotFound:
@@ -479,6 +495,7 @@ def _has_seal_key_usage(certificate: Certificate) -> bool:
 
 
 def _is_valid_leaf_certificate(certificate: Certificate) -> bool:
+    """Return whether a certificate is a usable end-entity signing certificate."""
     try:
         basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
     except ExtensionNotFound:
@@ -491,6 +508,7 @@ def _validate_revocation(
     certificates: tuple[Certificate, ...],
     revocation_checker: RevocationChecker | None,
 ) -> tuple[RevocationStatus, str | None]:
+    """Aggregate revocation results for every certificate and issuer pair."""
     if revocation_checker is None or len(certificates) < 2:
         return RevocationStatus.SKIPPED, None
 
@@ -515,6 +533,7 @@ def _verify_signature(
     canonical_bytes: bytes,
     hash_algorithm: hashes.HashAlgorithm,
 ) -> bool:
+    """Verify RSA PKCS#1/PSS or elliptic-curve signatures over canonical bytes."""
     public_key = certificate.public_key()
     if isinstance(public_key, RSAPublicKey):
         for signature_padding in (
@@ -547,6 +566,7 @@ def _verify_signature(
 
 
 def _as_utc(value: datetime) -> datetime:
+    """Normalize a datetime to timezone-aware UTC."""
     if value.tzinfo is None:
         return value.replace(tzinfo=timezone.utc)
     return value.astimezone(timezone.utc)
@@ -559,6 +579,7 @@ def _verification_failure(
     revocation_status: RevocationStatus = RevocationStatus.SKIPPED,
     chain_length: int = 0,
 ) -> SrtpVerificationResult:
+    """Build a structured verification failure result."""
     return SrtpVerificationResult(
         is_valid=False,
         failure_reason=reason,
