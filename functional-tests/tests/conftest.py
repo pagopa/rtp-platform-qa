@@ -268,10 +268,10 @@ def debtor_sp_mock_cert_key() -> tuple[str, str]:
     Returns (cert_path, key_path) for the debtor service provider mock PFX.
     """
     cert, key = pfx_to_pem(
-        secrets.debtor_service_provider_mock_PFX_base64,
-        secrets.debtor_service_provider_mock_PFX_password_base64,
-        config.cert_path,
-        config.key_path,
+        base64_pfx=secrets.debtor_service_provider_mock_PFX_base64,
+        base64_password=secrets.debtor_service_provider_mock_PFX_password_base64,
+        cert_destination_path=config.cert_path,
+        key_destination_path=config.key_path,
     )
     return cert, key
 
@@ -280,8 +280,8 @@ def debtor_sp_mock_cert_key() -> tuple[str, str]:
 def debtor_sp_mock_qsealc_key_material() -> QsealcKeyMaterial:
     """Returns the mock debtor service provider QSealC key material."""
     return load_qsealc_key_material(
-        secrets.debtor_service_provider_mock_qsealc_PFX_base64,
-        secrets.debtor_service_provider_mock_qsealc_PFX_password_base64,
+        base64_pfx=secrets.debtor_service_provider_mock_qsealc_PFX_base64,
+        base64_password=secrets.debtor_service_provider_mock_qsealc_PFX_password_base64,
     )
 
 
