@@ -1,3 +1,5 @@
+"""Test QSealC signature, trust-chain, validity, and revocation verification."""
+
 import base64
 from datetime import timedelta
 
@@ -29,6 +31,7 @@ def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
     qsealc_test_chain,
     signed_callback_message,
 ) -> None:
+    """Accept a signature whose chain terminates at a trusted root."""
     body, signature = signed_callback_message
 
     result = verify_srtp_message(
@@ -56,6 +59,7 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
     ds_08p_callback_payload,
     callback_body_factory,
 ) -> None:
+    """Reject a signature after the canonicalized body has changed."""
     body = callback_body_factory(
         method="POST",
         url=CALLBACK_URL_V2,
@@ -97,6 +101,7 @@ def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
     qsealc_key_material,
     signed_callback_message,
 ) -> None:
+    """Reject a valid signature whose certificate chain is untrusted."""
     body, signature = signed_callback_message
 
     result = verify_srtp_message(
@@ -121,6 +126,7 @@ def test_verify_srtp_message_rejects_an_expired_certificate(
     qsealc_test_chain,
     signed_callback_message,
 ) -> None:
+    """Reject a signature whose certificate chain is expired."""
     body, signature = signed_callback_message
 
     result = verify_srtp_message(
@@ -146,6 +152,7 @@ def test_verify_srtp_message_rejects_a_revoked_certificate(
     qsealc_test_chain,
     signed_callback_message,
 ) -> None:
+    """Reject a signature when the revocation checker reports revoked."""
     body, signature = signed_callback_message
 
     result = verify_srtp_message(
@@ -176,6 +183,7 @@ def test_verify_srtp_message_reports_an_unknown_revocation_status(
     qsealc_test_chain,
     signed_callback_message,
 ) -> None:
+    """Preserve an unknown revocation status without rejecting the signature."""
     body, signature = signed_callback_message
 
     result = verify_srtp_message(
@@ -214,6 +222,7 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
     salt_length,
     salt_label,
 ) -> None:
+    """Accept RSA-PSS signatures using supported salt-length conventions."""
     body, signed_message = signed_callback_message
     canonical = build_canonical_representation(
         method="POST",
@@ -255,6 +264,7 @@ def test_verify_srtp_message_rejects_an_invalid_target_uri(
     signed_callback_message,
     invalid_url,
 ) -> None:
+    """Reject a message whose target URI cannot be canonicalized."""
     body, signed_message = signed_callback_message
 
     result = verify_srtp_message(
