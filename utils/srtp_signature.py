@@ -110,7 +110,11 @@ def sign_srtp_message(
         headers=headers,
         body=body,
     )
-    signature = _sign(canonical_bytes, key_material.private_key, hash_algorithm)
+    signature = _sign(
+        canonical_bytes=canonical_bytes,
+        private_key=key_material.private_key,
+        hash_algorithm=hash_algorithm,
+    )
     certificate = x509.load_pem_x509_certificate(key_material.certificate_pem)
     chain_bytes = key_material.certificate_chain_pem or key_material.certificate_pem
 
@@ -135,9 +139,9 @@ def verify_srtp_message(
     revocation_checker: RevocationChecker | None = None,
 ) -> SrtpVerificationResult:
     """Verify an SRTP signature, certificate chain, validity, and revocation status."""
-    signature_value = _header_value(headers, SRTP_SIGNATURE_HEADER)
-    certificate_value = _header_value(headers, SRTP_SIGNATURE_CERTIFICATE_HEADER)
-    chain_value = _header_value(headers, SRTP_CERTIFICATE_CHAIN_HEADER)
+    signature_value = _header_value(headers=headers, name=SRTP_SIGNATURE_HEADER)
+    certificate_value = _header_value(headers=headers, name=SRTP_SIGNATURE_CERTIFICATE_HEADER)
+    chain_value = _header_value(headers=headers, name=SRTP_CERTIFICATE_CHAIN_HEADER)
     if not signature_value or not certificate_value or not chain_value:
         return _verification_failure(
             reason="MISSING_MANDATORY_HEADERS",
@@ -210,7 +214,9 @@ def verify_srtp_message(
             chain_length=len(validated_chain),
         )
 
-    algorithm_value = _header_value(headers, SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER) or DEFAULT_SIGNATURE_ALGORITHM
+    algorithm_value = (
+        _header_value(headers=headers, name=SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER) or DEFAULT_SIGNATURE_ALGORITHM
+    )
     try:
         normalized_algorithm = normalize_signature_algorithm(algorithm_value)
         hash_algorithm = signature_hash_algorithm(normalized_algorithm)
@@ -348,7 +354,7 @@ def _build_certificate_chain(
                 if _certificate_fingerprint(candidate) not in {_certificate_fingerprint(item) for item in chain}
                 and candidate.subject == current.issuer
                 and _is_ca_certificate(candidate)
-                and _verify_certificate_signature(current, candidate)
+                and _verify_certificate_signature(certificate=current, issuer=candidate)
             ),
             None,
         )
@@ -411,8 +417,8 @@ def _validate_certificate_validity(
 ) -> str | None:
     at_timestamp = at_time.timestamp()
     for certificate in certificates:
-        not_before = _certificate_datetime(certificate, "not_valid_before")
-        not_after = _certificate_datetime(certificate, "not_valid_after")
+        not_before = _certificate_datetime(certificate=certificate, attribute="not_valid_before")
+        not_after = _certificate_datetime(certificate=certificate, attribute="not_valid_after")
         if at_timestamp + clock_skew_seconds < not_before.timestamp():
             return "CERTIFICATE_NOT_YET_VALID"
         if at_timestamp - clock_skew_seconds > not_after.timestamp():
