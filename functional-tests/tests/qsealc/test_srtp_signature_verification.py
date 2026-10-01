@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import MGF1, PSS
 
 from api.utils.endpoints import CALLBACK_URL_V2
+from api.utils.http_utils import APPLICATION_JSON_HEADER
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
 from utils.srtp_message_signing import build_canonical_representation
 from utils.srtp_signature import (
@@ -17,9 +18,6 @@ from utils.srtp_signature import (
     sign_srtp_message,
     verify_srtp_message,
 )
-
-SIGNING_HEADERS = {"Content-Type": "application/json"}
-
 
 @allure.epic("QSealC message signing")
 @allure.feature("Signature verification")
@@ -37,7 +35,7 @@ def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
         body=body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
     )
@@ -56,20 +54,15 @@ def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_a_signature_for_changed_body(
     qsealc_test_chain,
-    ds_08p_callback_payload,
+    callback_body,
     callback_body_factory,
 ) -> None:
     """Reject a signature after the canonicalized body has changed."""
-    body = callback_body_factory(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
     signature = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
+        headers=APPLICATION_JSON_HEADER,
+        body=callback_body,
         key_material=qsealc_test_chain.key_material,
     )
     changed_body = callback_body_factory(
@@ -81,7 +74,7 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
         body=changed_body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
     )
@@ -107,7 +100,7 @@ def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
         body=body,
         trusted_roots=(qsealc_key_material.certificate_pem,),
     )
@@ -132,7 +125,7 @@ def test_verify_srtp_message_rejects_an_expired_certificate(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
         body=body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
         at_time=qsealc_test_chain.valid_until + timedelta(minutes=1),
@@ -158,7 +151,7 @@ def test_verify_srtp_message_rejects_a_revoked_certificate(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
         body=body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
         revocation_checker=lambda _certificate, _issuer: RevocationResult(
@@ -189,7 +182,7 @@ def test_verify_srtp_message_reports_an_unknown_revocation_status(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
         body=body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
         revocation_checker=lambda _certificate, _issuer: RevocationResult(
@@ -227,7 +220,7 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
     canonical = build_canonical_representation(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
+        headers=APPLICATION_JSON_HEADER,
         body=body,
     )
     pss_signature = qsealc_test_chain.key_material.private_key.sign(
@@ -236,7 +229,7 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
         algorithm=hashes.SHA256(),
     )
     headers = {
-        **SIGNING_HEADERS,
+        **APPLICATION_JSON_HEADER,
         **signed_message.as_headers(),
         "X-SRTP-Signature": base64.b64encode(pss_signature).decode("ascii"),
     }
@@ -270,7 +263,7 @@ def test_verify_srtp_message_rejects_an_invalid_target_uri(
     result = verify_srtp_message(
         method="POST",
         url=invalid_url,
-        headers={**SIGNING_HEADERS, **signed_message.as_headers()},
+        headers={**APPLICATION_JSON_HEADER, **signed_message.as_headers()},
         body=body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
     )
