@@ -14,6 +14,7 @@ from api.utils.endpoints import (
 from api.utils.http_utils import HTTP_TIMEOUT
 from utils.type_utils import JsonType
 from utils.cryptography_utils import QsealcKeyMaterial
+from utils.srtp_message_signing import prepared_request_body
 from utils.srtp_signature import sign_srtp_message
 
 
@@ -161,7 +162,7 @@ def _send_callback(
         headers=headers,
         json=rtp_payload,
     ).prepare()
-    body = _prepared_body(prepared_request)
+    body = prepared_request_body(prepared_request)
     signature = sign_srtp_message(
         method=prepared_request.method,
         url=prepared_request.url,
@@ -177,14 +178,3 @@ def _send_callback(
             cert=(cert_path, key_path),
             timeout=HTTP_TIMEOUT,
         )
-
-
-def _prepared_body(prepared_request: requests.PreparedRequest) -> bytes:
-    """Return a prepared callback body as bytes for canonicalization and signing."""
-    if prepared_request.body is None:
-        return b""
-    if isinstance(prepared_request.body, bytes):
-        return prepared_request.body
-    if isinstance(prepared_request.body, str):
-        return prepared_request.body.encode()
-    raise TypeError("Prepared callback body must be bytes or text")
