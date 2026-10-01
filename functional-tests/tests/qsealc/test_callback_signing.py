@@ -57,7 +57,7 @@ def test_callback_helpers_sign_the_exact_prepared_body(
             qsealc_key_material=qsealc_key_material,
         )
 
-    prepared_request = send.call_args.args[0]
+    prepared_request = send.call_args.kwargs["request"]
     assert callback_response is response, "Expected the callback helper to return the HTTP response"
     assert prepared_request.body == expected_body, "Expected the signed body to be the body sent on the wire"
     assert prepared_request.url == callback_url, "Expected the signature target URI to match the callback endpoint"
