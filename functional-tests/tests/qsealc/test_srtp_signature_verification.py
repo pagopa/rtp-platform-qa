@@ -1,10 +1,14 @@
+import base64
 from datetime import timedelta
 
 import allure
 import pytest
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric.padding import MGF1, PSS
 
 from api.utils.endpoints import CALLBACK_URL_V2
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
+from utils.srtp_message_signing import build_canonical_representation
 from utils.srtp_signature import (
     RevocationResult,
     RevocationStatus,
@@ -248,3 +252,102 @@ def test_verify_srtp_message_reports_an_unknown_revocation_status(
 
     assert result.is_valid, f"Expected signature verification to succeed: {result.failure_detail}"
     assert result.revocation_status is RevocationStatus.UNKNOWN, "Expected the unknown status to be preserved"
+
+
+@allure.epic("QSealC message signing")
+@allure.feature("Signature verification")
+@allure.story("Accept RSA-PSS signatures")
+@pytest.mark.functional
+@pytest.mark.happy_path
+@pytest.mark.callback
+@pytest.mark.parametrize(
+    ("salt_length", "salt_label"),
+    (
+        (PSS.DIGEST_LENGTH, "digest-length"),
+        (PSS.MAX_LENGTH, "maximum-length"),
+    ),
+    ids=("digest-length", "maximum-length"),
+)
+def test_verify_srtp_message_accepts_rsa_pss_signatures(
+    qsealc_test_chain,
+    ds_08p_callback_payload,
+    callback_body_factory,
+    salt_length,
+    salt_label,
+) -> None:
+    body = callback_body_factory(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        payload=ds_08p_callback_payload,
+    )
+    signed_message = sign_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=SIGNING_HEADERS,
+        body=body,
+        key_material=qsealc_test_chain.key_material,
+    )
+    canonical = build_canonical_representation(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=SIGNING_HEADERS,
+        body=body,
+    )
+    pss_signature = qsealc_test_chain.key_material.private_key.sign(
+        data=canonical,
+        padding=PSS(mgf=MGF1(hashes.SHA256()), salt_length=salt_length),
+        algorithm=hashes.SHA256(),
+    )
+    headers = {
+        **SIGNING_HEADERS,
+        **signed_message.as_headers(),
+        "X-SRTP-Signature": base64.b64encode(pss_signature).decode("ascii"),
+    }
+
+    result = verify_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=headers,
+        body=body,
+        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+    )
+
+    assert result.is_valid, f"Expected RSA-PSS ({salt_label}) verification to succeed: {result.failure_detail}"
+
+
+@allure.epic("QSealC message signing")
+@allure.feature("Signature verification")
+@allure.story("Reject an invalid target URI")
+@pytest.mark.functional
+@pytest.mark.unhappy_path
+@pytest.mark.callback
+@pytest.mark.parametrize("invalid_url", ("/callback", "mailto:callback@example.com"))
+def test_verify_srtp_message_rejects_an_invalid_target_uri(
+    qsealc_test_chain,
+    ds_08p_callback_payload,
+    callback_body_factory,
+    invalid_url,
+) -> None:
+    body = callback_body_factory(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        payload=ds_08p_callback_payload,
+    )
+    signed_message = sign_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=SIGNING_HEADERS,
+        body=body,
+        key_material=qsealc_test_chain.key_material,
+    )
+
+    result = verify_srtp_message(
+        method="POST",
+        url=invalid_url,
+        headers={**SIGNING_HEADERS, **signed_message.as_headers()},
+        body=body,
+        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+    )
+
+    assert not result.is_valid, "Expected an incomplete target URI to be rejected"
+    assert result.failure_reason == "INVALID_MESSAGE", "Expected an invalid-message failure"
