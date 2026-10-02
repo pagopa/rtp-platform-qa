@@ -85,6 +85,7 @@ def sign_srtp_message(
 
 
 def _normalize_algorithm(algorithm: str) -> str:
+    """Normalize and validate a signature digest algorithm name."""
     normalized_algorithm = algorithm.lower().replace("_", "-")
     if normalized_algorithm not in ALLOWED_SIGNATURE_DIGEST_ALGORITHMS:
         allowed_algorithms = ", ".join(sorted(ALLOWED_SIGNATURE_DIGEST_ALGORITHMS))
@@ -95,6 +96,7 @@ def _normalize_algorithm(algorithm: str) -> str:
 
 
 def _hash_algorithm(algorithm: str) -> hashes.HashAlgorithm:
+    """Create the cryptography hash algorithm selected by name."""
     hash_algorithms = {
         "sha256": hashes.SHA256,
         "sha384": hashes.SHA384,
@@ -114,6 +116,7 @@ def _sign(
     private_key: RSAPrivateKey | EllipticCurvePrivateKey,
     hash_algorithm: hashes.HashAlgorithm,
 ) -> bytes:
+    """Sign canonical message bytes with an RSA or elliptic curve private key."""
     if isinstance(private_key, RSAPrivateKey):
         return private_key.sign(
             data=canonical_bytes,
@@ -129,4 +132,5 @@ def _sign(
 
 
 def _encode_base64(value: bytes) -> str:
+    """Encode bytes as an ASCII Base64 string."""
     return base64.b64encode(value).decode("ascii")
