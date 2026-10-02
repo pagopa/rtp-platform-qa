@@ -46,7 +46,7 @@ def test_canonical_representation_sorts_headers() -> None:
         body=b"",
     )
 
-    assert canonical == b"GET\nhttps://api.example.com\ncontent-type: a\nx-request-id: b", (
+    assert canonical == b"GET\nhttps://api.example.com\ncontent-type: a\nx-request-id: b\n", (
         "Expected headers to be lowercased and sorted in the canonical representation"
     )
 
@@ -98,7 +98,7 @@ def test_canonical_representation_filters_headers_outside_the_epc_api_set() -> N
         b"content-type: application/json\n"
         b"idempotency-key: key\n"
         b"location: https://api.example.com/resource/1\n"
-        b"x-request-id: request"
+        b"x-request-id: request\n"
     ), "Expected non-EPC headers to be excluded from the canonical representation"
 
 
@@ -117,7 +117,7 @@ def test_canonical_representation_matches_epc_headers_case_insensitively() -> No
         body=b"",
     )
 
-    assert canonical == b"POST\nhttps://api.example.com\ncontent-type: application/json\nx-request-id: request", (
+    assert canonical == b"POST\nhttps://api.example.com\ncontent-type: application/json\nx-request-id: request\n", (
         "Expected EPC header matching to be case-insensitive"
     )
 
@@ -153,19 +153,19 @@ def test_canonical_representation_applies_a_caller_provided_header_filter() -> N
         header_filter=lambda name: name == "x-request-id",
     )
 
-    assert canonical == b"POST\nhttps://api.example.com\nx-request-id: request", (
+    assert canonical == b"POST\nhttps://api.example.com\nx-request-id: request\n", (
         "Expected the caller-provided header filter to control included headers"
     )
 
 
 @allure.epic("QSealC message signing")
 @allure.feature("Canonical representation")
-@allure.story("Represent an empty message body")
+@allure.story("Frame an empty message body")
 @pytest.mark.functional
 @pytest.mark.happy_path
 @pytest.mark.callback
-def test_canonical_representation_has_no_separator_for_an_empty_body() -> None:
-    """Avoid adding a body separator when the payload is empty."""
+def test_canonical_representation_frames_an_empty_body() -> None:
+    """Frame an empty body so headers and payloads remain distinguishable."""
     canonical = build_canonical_representation(
         method="GET",
         url="https://example.com",
@@ -173,7 +173,31 @@ def test_canonical_representation_has_no_separator_for_an_empty_body() -> None:
         body=b"",
     )
 
-    assert canonical == b"GET\nhttps://example.com", "Expected no separator after a message with an empty body"
+    assert canonical == b"GET\nhttps://example.com\n\n", "Expected an explicit empty body frame"
+
+
+@allure.epic("QSealC message signing")
+@allure.feature("Canonical representation")
+@allure.story("Distinguish headers from body bytes")
+@pytest.mark.functional
+@pytest.mark.happy_path
+@pytest.mark.callback
+def test_canonical_representation_distinguishes_headers_from_body_bytes() -> None:
+    """Keep an empty header block distinct from body bytes that look like headers."""
+    with_header = build_canonical_representation(
+        method="POST",
+        url="https://example.com",
+        headers={"Content-Type": "text/plain"},
+        body=b"",
+    )
+    without_header = build_canonical_representation(
+        method="POST",
+        url="https://example.com",
+        headers={},
+        body=b"content-type: text/plain",
+    )
+
+    assert with_header != without_header, "Expected header and body sections to be unambiguous"
 
 
 @allure.epic("QSealC message signing")
@@ -191,7 +215,7 @@ def test_canonical_representation_preserves_body_bytes_without_headers() -> None
         body=bytes((0xFF, 0x00)),
     )
 
-    assert canonical == b"POST\nhttps://example.com\n\xff\x00", "Expected body bytes to be preserved without headers"
+    assert canonical == b"POST\nhttps://example.com\n\n\xff\x00", "Expected body bytes to be preserved without headers"
 
 
 @allure.epic("QSealC message signing")

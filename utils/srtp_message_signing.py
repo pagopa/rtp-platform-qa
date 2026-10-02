@@ -38,12 +38,14 @@ def build_canonical_representation(
 
     canonical_headers = sorted((name.lower(), value) for name, value in headers.items() if header_filter(name.lower()))
     canonical_header_lines = [f"{name}: {value}".encode() for name, value in canonical_headers]
-    canonical_message = [method.upper().encode(), b"\n", url.encode()]
-
-    if canonical_header_lines:
-        canonical_message.extend([b"\n", b"\n".join(canonical_header_lines)])
-
-    if body:
-        canonical_message.extend([b"\n", body])
+    canonical_message = [
+        method.upper().encode(),
+        b"\n",
+        url.encode(),
+        b"\n",
+        b"\n".join(canonical_header_lines),
+        b"\n",
+        body,
+    ]
 
     return b"".join(canonical_message)
