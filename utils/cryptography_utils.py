@@ -87,12 +87,15 @@ def load_qsealc_key_material(base64_pfx: str, base64_password: str) -> QsealcKey
     if not isinstance(private_key, (RSAPrivateKey, EllipticCurvePrivateKey)):
         raise TypeError("QSealC private key must be RSA or elliptic curve")
 
+    chain_certificates = additional_certificates or ()
+    certificate_chain_pem = b"".join(
+        chain_certificate.public_bytes(Encoding.PEM) for chain_certificate in chain_certificates
+    )
+
     return QsealcKeyMaterial(
         private_key=private_key,
         certificate_pem=certificate.public_bytes(Encoding.PEM),
-        certificate_chain_pem=b"".join(
-            chain_certificate.public_bytes(Encoding.PEM) for chain_certificate in additional_certificates or ()
-        ),
+        certificate_chain_pem=certificate_chain_pem,
     )
 
 
