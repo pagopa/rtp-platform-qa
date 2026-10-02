@@ -8,11 +8,22 @@ This module provides functions to:
 
 import base64
 import os
+from typing import NamedTuple
 
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 from cryptography.hazmat.primitives.serialization import Encoding, NoEncryption, PrivateFormat
 from cryptography.hazmat.primitives.serialization.pkcs12 import load_key_and_certificates
 from cryptography.x509 import load_pem_x509_certificate
+
+
+class QsealcKeyMaterial(NamedTuple):
+    """In-memory key and certificate material used for QSealC signatures."""
+
+    private_key: RSAPrivateKey | EllipticCurvePrivateKey
+    certificate_pem: bytes
+    certificate_chain_pem: bytes
 
 
 def client_credentials_to_auth_token(client_id, client_secret):
@@ -60,6 +71,32 @@ def pfx_to_pem(base64_pfx, base64_password, cert_destination_path=None, key_dest
             key_file.write(private_key.private_bytes(Encoding.PEM, PrivateFormat.TraditionalOpenSSL, NoEncryption()))
 
     return cert_destination_path, key_destination_path
+
+
+def load_qsealc_key_material(base64_pfx: str, base64_password: str) -> QsealcKeyMaterial:
+    """Load QSealC signing material from a base64-encoded PKCS#12 bundle."""
+    pfx_data = base64.b64decode(base64_pfx)
+    pfx_password = base64.b64decode(base64_password) if base64_password else None
+    private_key, certificate, additional_certificates = load_key_and_certificates(
+        data=pfx_data,
+        password=pfx_password,
+    )
+
+    if private_key is None or certificate is None:
+        raise ValueError("QSealC PFX must contain both a private key and a certificate")
+    if not isinstance(private_key, (RSAPrivateKey, EllipticCurvePrivateKey)):
+        raise TypeError("QSealC private key must be RSA or elliptic curve")
+
+    chain_certificates = additional_certificates or ()
+    certificate_chain_pem = b"".join(
+        chain_certificate.public_bytes(Encoding.PEM) for chain_certificate in chain_certificates
+    )
+
+    return QsealcKeyMaterial(
+        private_key=private_key,
+        certificate_pem=certificate.public_bytes(Encoding.PEM),
+        certificate_chain_pem=certificate_chain_pem,
+    )
 
 
 def get_serial_from_pem(pem_data):
