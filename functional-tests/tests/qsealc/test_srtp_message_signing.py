@@ -10,13 +10,21 @@ HTTP_METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "T
 
 @allure.epic("QSealC message signing")
 @allure.feature("Canonical representation")
-@allure.story("Reject an incomplete target URI")
+@allure.story("Reject an invalid HTTP target URI")
 @pytest.mark.functional
 @pytest.mark.unhappy_path
 @pytest.mark.callback
-@pytest.mark.parametrize("url", ("/v1/resource", "mailto:api@example.com"))
+@pytest.mark.parametrize(
+    "url",
+    (
+        "/v1/resource",
+        "mailto:api@example.com",
+        "ftp://example.com/resource",
+        "https://example.com/resource#fragment",
+    ),
+)
 def test_canonical_representation_requires_a_complete_target_uri(url: str) -> None:
-    """Reject target values that are not complete HTTP URIs."""
+    """Reject target values that are not valid HTTP URIs."""
     with pytest.raises(ValueError, match="requires a complete target URI"):
         build_canonical_representation(method="GET", url=url, headers={}, body=b"")
 

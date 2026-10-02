@@ -4,6 +4,7 @@ from collections.abc import Callable, Mapping
 from urllib.parse import urlparse
 
 EPC_API_HEADERS = frozenset({"content-type", "idempotency-key", "location", "x-request-id"})
+HTTP_SCHEMES = frozenset({"http", "https"})
 HeaderFilter = Callable[[str], bool]
 
 
@@ -22,7 +23,11 @@ def build_canonical_representation(
     """Build the canonical byte representation of an SRTP HTTP message."""
     try:
         parsed_url = urlparse(url)
-        complete_target_uri = bool(parsed_url.scheme and parsed_url.hostname)
+        complete_target_uri = (
+            parsed_url.scheme.lower() in HTTP_SCHEMES
+            and bool(parsed_url.hostname)
+            and "#" not in url
+        )
     except ValueError:
         complete_target_uri = False
 
