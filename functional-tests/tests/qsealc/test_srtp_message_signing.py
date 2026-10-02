@@ -55,9 +55,9 @@ def test_canonical_representation_sorts_headers() -> None:
 @pytest.mark.functional
 @pytest.mark.happy_path
 @pytest.mark.callback
-@pytest.mark.parametrize("method", HTTP_METHODS)
+@pytest.mark.parametrize("method", tuple(method.lower() for method in HTTP_METHODS))
 def test_canonical_representation_emits_an_uppercase_method(method: str) -> None:
-    """Emit each supported HTTP method in uppercase."""
+    """Normalize each supported HTTP method to uppercase."""
     canonical = build_canonical_representation(
         method=method,
         url="https://example.com",
@@ -65,7 +65,7 @@ def test_canonical_representation_emits_an_uppercase_method(method: str) -> None
         body=b"",
     )
 
-    assert canonical.split(b"\n", maxsplit=1)[0] == method.encode(), (
+    assert canonical.split(b"\n", maxsplit=1)[0] == method.upper().encode(), (
         f"Expected method {method!r} to be uppercased in the canonical representation"
     )
 
