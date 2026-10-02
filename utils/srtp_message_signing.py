@@ -23,10 +23,12 @@ def build_canonical_representation(
     """Build the canonical byte representation of an SRTP HTTP message."""
     try:
         parsed_url = urlparse(url)
+        port = parsed_url.port
         complete_target_uri = (
             parsed_url.scheme.lower() in HTTP_SCHEMES
             and bool(parsed_url.hostname)
             and "#" not in url
+            and (port is None or port >= 0)
         )
     except ValueError:
         complete_target_uri = False

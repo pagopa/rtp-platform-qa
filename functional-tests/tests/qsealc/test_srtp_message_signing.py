@@ -21,6 +21,8 @@ HTTP_METHODS = ("GET", "HEAD", "POST", "PUT", "DELETE", "CONNECT", "OPTIONS", "T
         "mailto:api@example.com",
         "ftp://example.com/resource",
         "https://example.com/resource#fragment",
+        "https://example.com:not-a-port/path",
+        "https://example.com:70000/path",
     ),
 )
 def test_canonical_representation_requires_a_complete_target_uri(url: str) -> None:
