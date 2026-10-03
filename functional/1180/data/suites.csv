@@ -1,0 +1,1050 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","2942","DS_08N negative v2 callback with Version header returns 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"Reject target values that are not valid HTTP URIs.","1","test_canonical_representation_requires_a_complete_target_uri[ftp://example.com/resource]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","412","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"DS_08N RJCT callback sent directly on a SENT RTP (no prior DS_05 ACTC callback).
+
+The RTP is expected to transition from SENT to REJECTED.
+","3293","A v2 RTP callback with status RJCT is successfully received","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08N_negative","",""
+"`Sts.Conf = ""RJCR""` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_REJECTED, ending in CANCELLED_REJECTED.","2607","Cancelling an RTP - EPC v4 mock happy path scenario: rjcr_rejected","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","409","Retrieving activation with invalid UUID returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","1869","Failed callback for non existing Service Provider - DS-08P positive compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08P_positive","",""
+"Test sending a CREATE operation message via GPD message API","967","A CREATE message is successfully sent through GPD message API","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender","",""
+"","2722","A v2 RTP callback with status ACCP is successfully received","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08P_positive","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","854","An UPDATE message with status PAID before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Keep an empty header block distinct from body bytes that look like headers.","0","test_canonical_representation_distinguishes_headers_from_body_bytes","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","416","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"","2146","An RTP is sent through ICCREA API","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_ICCREA","",""
+"
+Given a debtor is activated and a GPD message (CREATE) is sent via POST /gpd/message,
+when the rtp-sender processes it and the RTP reaches status SENT,
+when the payee queries the delivery-status endpoint with the correct noticeNumber
+(nav) and payeeId (ec_tax_code),
+then the response body must contain status=PD_RTP_DELIVERED, a non-null processingDate
+in ISO 8601 format, and processingDate must match the SEND_RTP event timestamp from
+the GPD message response (truncated to millisecond precision).
+","6403","GPD message sent → RTP SENT → PD_RTP_DELIVERED with processingDate","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get_delivery_status","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","425","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","3711","An AEXR status update conflicts with a USER_REJECTED RTP","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1276","A DELETE message after standalone UPDATE INVALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","416","Get payees consents with invalid date format returns 400","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"","419","Retrieving non-existent activation by payer id returns 404","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","2654","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","385","Retrieving activation without valid token returns 401","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","538","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Test RFC callback DS12P with CNCL status applied twice on the same RTP.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) -> RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request) -> RTP to CANCELLED
+5. Send the same DS12P CNCL callback again on the already cancelled RTP
+6. Verify the second callback is rejected (400) since the transition is no longer valid
+7. Verify RTP status remains CANCELLED
+","3869","Failed RFC callback for invalid RTP transition - DS-12P CNCL compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Test that takeover fails when the service provider is unauthenticated","1254","Test Takeover Fails with Unauthenticated SP","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"","856","Deactivation returns 404 when the token subject does not own the activation's Service Provider ID","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_deactivation","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1839","An UPDATE message with status PAID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","412","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","962","A CREATE message with status VALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","849","An UPDATE message with status INVALID before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"","3665","Failed callback for invalid RTP transition - DS-08P RJCT compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"
+DS_04b callback sent with the Version header must be rejected with 400.
+The RTP state must be unchanged.
+
+Flow:
+1. Activate payer and send an RTP → resource_id
+2. Capture current RTP status
+3. Build a valid DS_04b payload referencing the RTP
+4. POST to callback endpoint WITH Version header
+5. Verify 400 is returned with the expected error body
+6. Verify RTP status is unchanged
+","2599","DS_04b callback with Version header returns 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","411","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2064","A DELETE message after CREATE VALID + UPDATE PUBLISHED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","741","Auth endpoint returns valid token","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_CBI","",""
+"","865","A debtor activated with an owned but distinct Service Provider ID is retrieved by activation id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","1860","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05_redirect","",""
+"","853","Sending a GPD message with null id returns 400","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","884","Get paginated list of payees successfully","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_service_registry_payees_registry","",""
+"","954","Sending an RTP when EPC returns a malformed/invalid response body returns 500 - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","3574","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","851","A debtor with foreign fiscal code is activated successfully","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"UPDATE VALID before any CREATE creates a new RTP; the RTP must be retrievable from the database","1383","An UPDATE VALID before CREATE creates the RTP in the database","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2619","A DELETE message after CREATE VALID + UPDATE PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","2408","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","853","Find by payer id returns 404 when the token subject does not own the activation's Service Provider ID","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","385","The service returns the mocked server error","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_MOCK","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","528","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","10904","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","413","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"DS_08P ACCP callback sent twice on the same RTP (direct SENT -> USER_ACCEPTED).
+
+The second callback must be rejected with 400 since the transition is no
+longer valid once the RTP is already USER_ACCEPTED.
+","2729","Failed v2 callback for invalid RTP transition - DS-08P positive compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08P_positive","",""
+"","3313","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","1490","A debtor is activated by an authenticated service provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","417","Retrieving activation with malformed payer id returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","427","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"","411","Invalid pagination parameters returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"","682","Get list of service providers successfully","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_service_registry_service_providers","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","705","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Payer activated under SP A queried by SP A → isActive must be true.","884","An active payer returns isActive true for the same Service Provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","2818","A DELETE message after CREATE EXPIRED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","847","A debtor activated with an owned but distinct Service Provider ID is retrieved by payer id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 401 Unauthorized scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2567","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_401","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1280","A DELETE message after standalone UPDATE DRAFT","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","3773","An invalid status transition is rejected","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","854","An UPDATE message with status DRAFT before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"","2320","A status update without StsRsnInf is rejected","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"Normalize each supported HTTP method to uppercase.","1","test_canonical_representation_emits_an_uppercase_method[get]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"
+Test v2 RFC callback DS12P with wrong certificate identity.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12P callback with assignee_bic='FAKESP01' (doesn't match certificate identity)
+5. Verify callback is rejected with 403 (certificate mismatch)
+6. Verify RTP status is still RFC_SENT
+","3077","Unauthorized v2 RFC callback due to wrong certificate serial","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P_positive","",""
+"Encode the leaf certificate as DER and the chain as PEM.","1","test_sign_srtp_message_encodes_leaf_der_and_chain_pem","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_signature","",""
+"","2439","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","3155","DS_12P positive RFC v2 callback with Version header returns 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","2972","An ARFR status update transitions SENT to USER_REJECTED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1536","An UPDATE message with status VALID after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","414","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","2569","SP_B cannot retrieve activation by Fiscal Code created by SP_A","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_RTP_activation_security","",""
+"Preserve binary payload bytes when no headers are present.","0","test_canonical_representation_preserves_body_bytes_without_headers","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","3892","An RTP callback is successfully received","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_04","",""
+"","437","Get payees consents with negative page number returns 400","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","421","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"The response cannot be parsed as a cancellation confirmation (malformed, unquoted string), so the RTP stays in RFC_SENT rather than erroring out.","2020","Cancelling an RTP - EPC v4 mock unhappy path scenario: malformed_string","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","1147","SP_B cannot retrieve activation by Activation ID created by SP_A","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_RTP_activation_security","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[patch]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","2325","A REPR status update leaves SENT unchanged","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"","2584","An ALAC status update transitions SENT to USER_ACCEPTED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","1980","A DELETE message after CREATE VALID + UPDATE EXPIRED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"
+Test RFC callback DS12P with non-existing service provider, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+","1839","Failed RFC callback for non existing Service Provider - DS-12P CNCL compliant - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"","1885","Failed callback for non existing Service Provider - DS-05 redirect compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05_redirect","",""
+"Test sending a CREATE operation message with an omocodia fiscal code via GPD message API","974","A CREATE message with omocodia fiscal code is successfully sent through GPD message API","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender","",""
+"
+Test RFC callback DS12N with non-existing service provider, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+","2570","Failed RFC callback for non existing Service Provider - DS-12N RJCR compliant - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"","382","Missing Version header returns 200","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"OTP bound to payer1 should not work for payer2","1284","Test Takeover Fails with OTP Bound to Different Payer","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"Active payer identified by an 11-digit Partita IVA → isActive must be true.","847","An active payer with VAT number (Partita IVA) returns isActive true","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"
+Test RFC callback DS12N with RJCR status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is ERROR_CANCEL
+","4571","An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1391","An UPDATE message with status PARTIALLY_PAID after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"UPDATE VALID with an ec_tax_code that does not exist in GPD returns 422 Payee not found","855","An UPDATE VALID message with a non-existent ec_tax_code is rejected","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"
+Verify that a debt position can be deleted successfully.
+","2308","Happy path: a debt position is deleted in UAT environment","functional-tests.tests.gpd_availability","2026-10-03","passed","2026-10-03","","test_availability_GPD","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","847","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","847","A CREATE message with status PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1417","An UPDATE message with status EXPIRED after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"Reject digest algorithms outside the supported set.","0","test_sign_srtp_message_rejects_unsupported_digest_algorithms","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_signature","",""
+"","959","A debtor with omocodia fiscal code is activated successfully","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Test RFC callback DS12P with wrong certificate identity, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
+5. Verify callback is rejected with 403 (certificate mismatch)
+","1864","Unauthorized RFC callback due to wrong certificate serial - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","847","A CREATE message with status EXPIRED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","856","An UPDATE message with status EXPIRED before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","415","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Sort and normalize headers in the canonical representation.","0","test_canonical_representation_sorts_headers","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","2013","An RTP sent with synchronous rejection containing extra fields results in status REJECTED","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Test the takeover flow where a user changes service provider","3438","Test Takeover Flow","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 422 Unprocessable Entity scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2920","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_422","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","1012","SP_ACTIVATIONS_READ_ALL can retrieve activation by Activation ID created by SP_A","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_RTP_activation_security","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","527","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Test RFC callback DS12N with INVALID status, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2807","An RFC callback DS12N INVALID is rejected with 400 - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[put]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","415","Requesting a status update for an unknown RTP returns not found","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","3342","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","807","Get paginated list of OPT_OUT payees consents successfully","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"","2411","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","412","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"","2237","An RTP sent when EPC response omits _links is in status ACCEPTED","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","1485","An RTP sent with synchronous acceptance is in status ACCEPTED - DS-05 ACTC - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","411","The activation request must contain a validly formatted Service Provider ID","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1307","A DELETE message after standalone UPDATE PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","415","Find by payer id request must contain lower case fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Test v2 RFC callback DS12N with non-existing service provider.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12N callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+6. Verify RTP status is still RFC_SENT
+","2815","Failed v2 RFC callback for non existing Service Provider - DS-12N negative compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N_negative","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","421","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Verify the public ERROR_SEND outcome represented by IRNR and read-API purge.","2423","An IRNR status update returns ERROR_SEND and purges the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","1022","An RTP is sent to Poste service with activated fiscal code","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_POSTE","",""
+"Reject target values that are not valid HTTP URIs.","0","test_canonical_representation_requires_a_complete_target_uri[https://example.com:70000/path]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","3388","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","422","RTP cancellation fails if resource ID does not exist - V2","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"
+Test RFC callback DS12P with INVALID status, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2261","An RFC callback DS12P INVALID is rejected with 400 - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","524","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","1087","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"An EPC response containing fields not declared in the OpenAPI spec is treated as an invalid message and is NOT tolerated for accept/reject purposes (confirmed with rtp-sender-v2 maintainers, PR #26). The extra `invalid-field` property invalidates the whole response, so the CNCL confirmation is not processed and the RTP stays in RFC_SENT.","1969","Cancelling an RTP - EPC v4 mock unhappy path scenario: cncl_extra_field","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","411","A debtor service provider fails activation due to wrong service provider id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"","1951","An RTP sent with synchronous rejection is in status REJECTED - DS-08P N - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","1480","RTP is successfully retrieved","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get","",""
+"Frame an empty body so headers and payloads remain distinguishable.","0","test_canonical_representation_frames_an_empty_body","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","383","Get payees with invalid authorization","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_service_registry_service_providers","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","421","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","411","Invalid NextActivationId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"","851","Deactivation fails for activation by another service provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_deactivation","",""
+"DS_08P ACCP callback sent directly on a SENT RTP (no prior DS_05 ACTC callback).
+
+The RTP is expected to transition straight from SENT to USER_ACCEPTED.
+","3702","A v2 RTP callback with status ACCP is successfully received without a prior DS_05 callback","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08P_positive","",""
+"","947","Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","939","An RTP is sent to Poste service with activated fiscal code - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","failed","2026-10-03","","test_RTP_send_POSTE","",""
+"A valid token that carries neither read_rtp_activations nor read_rtp_all must be rejected with 403.","411","Token without read_rtp_activations or read_rtp_all role returns 403 Forbidden","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","411","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"
+Test RFC callback DS12N with wrong certificate identity, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
+5. Verify callback is rejected with 403 (certificate mismatch)
+","1854","Unauthorized RFC callback due to wrong certificate serial - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Exclude transport headers outside the EPC API whitelist.","0","test_canonical_representation_filters_headers_outside_the_epc_api_set","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","958","A debtor with VAT number (Partita IVA) is activated successfully","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","2286","A v2 redirect RTP callback with invalid status is rejected without affecting the RTP status","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05_redirect","",""
+"
+DS_05 ACTC callback sent with the Version header must be rejected with 400.
+The RTP must remain in SENT (transition to ACCEPTED must not happen).
+
+Flow:
+1. Activate payer and send an RTP → resource_id
+2. Build a valid DS_05 ACTC payload referencing the RTP
+3. POST to callback endpoint WITH Version header
+4. Verify 400 is returned with the expected error body
+5. Verify RTP status is still SENT
+","2478","DS_05 ACTC callback with Version header returns 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","423","Non-existent NextActivationId returns 200 with empty body","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"","856","A debtor with foreign fiscal code is activated and retrieved by activation id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","1124","Cannot send RTP with invalid amount","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_CBI","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1277","A DELETE message after CREATE INVALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","1048","A second service provider triggers takeover when debtor is already active on another service provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","2996","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","848","A CREATE message with status INVALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"Payer that has never been activated → isActive must be false.","416","test_get_activation_status_not_active_payer","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","385","Unauthorized request returns 401","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","416","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","1375","An RTP sent when EPC response omits _links is in status ACCEPTED - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"
+Test v2 RFC callback DS12N with RJCR status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is CANCELLED_REJECTED
+","3080","A v2 RFC callback DS12N RJCR is successfully received and RTP status is CANCELLED_REJECTED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N_negative","",""
+"","1046","Sending an RTP when EPC returns a malformed/invalid response body returns 500 - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","2132","An RTP sent with synchronous acceptance is in status ACCEPTED - DS-05 ACTC","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","3039","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1835","An UPDATE message with status PUBLISHED after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","415","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"
+Test RFC callback DS12P with CNCL status, cancel triggered via REST Web API with explicit reason.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is CANCELLED
+","2301","An RFC callback DS12P CNCL is successfully received and RTP status is CANCEL - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"","3317","Failed v2 document callback for invalid RTP transition - DS-document RJCT compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_document_rjct","",""
+"
+Test v2 RFC callback DS12P with INVALID status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2417","A v2 RFC callback DS12P INVALID is rejected with 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P_positive","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","1879","A DELETE message after CREATE VALID + UPDATE PARTIALLY_PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"
+Tests that sending an RTP payload with an expired date to the POSTE endpoint results in a 400 Bad Request response.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","134991","Cannot send RTP with expired date","functional-tests.tests.availability","2026-10-03","broken","2026-10-03","","test_availability_POSTE","",""
+"
+Test RFC callback DS12P with wrong certificate identity.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12P callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
+5. Verify callback is rejected with 403 (certificate mismatch)
+","1954","Unauthorized RFC callback due to wrong certificate serial","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1318","A DELETE message after CREATE PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"Apply a caller-provided predicate when selecting canonical headers.","0","test_canonical_representation_applies_a_caller_provided_header_filter","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","414","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"","3137","An ARJR status update transitions SENT to REJECTED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"
+Test RFC callback DS12P with CNCL status, cancel triggered via REST Web API with explicit reason.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is CANCELLED
+","2299","An RFC callback DS12P CNCL is successfully received and RTP status is CANCEL - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"","946","Sending an RTP when EPC returns a malformed/invalid response body returns 500","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"
+DS_12P CNCL RFC callback sent with the Version header must be rejected with 400.
+The RTP must remain in RFC_SENT (transition to CANCELLED must not happen).
+
+Flow:
+1. Activate payer, send RTP, trigger cancel via GPD DELETE → RFC_SENT
+2. Build a valid DS_12P CNCL payload
+3. POST to RFC callback endpoint WITH Version header
+4. Verify 400 is returned with the expected error body
+5. Verify RTP status is still RFC_SENT
+","2233","DS_12P CNCL RFC callback with Version header returns 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","849","Sending a GPD message with null operation returns 400","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","381","The service returns the mocked server error","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_MOCK","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","411","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","3524","An AEXR status update transitions SENT to EXPIRED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"","413","Get payees consents with invalid consent value returns 400","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1911","An UPDATE message with status PARTIALLY_PAID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"","2362","A v2 RTP callback with invalid status is rejected without affecting the RTP status","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08P_positive","",""
+"","2489","An RTP callback is received with invalid status","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"","417","A status update callback for an unknown RTP is rejected","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"","388","Get payees with invalid authorization","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_service_registry_payees_registry","",""
+"Active payer with a foreign-country fiscal code (Z + 3 digits municipality) → isActive must be true.","848","An active payer with foreign fiscal code returns isActive true","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1843","An UPDATE message with status EXPIRED after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","414","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"FAKESP01 does not own MOCKSP01, a Service Provider ID owned by another tspId.","414","Activation is forbidden for a Service Provider ID not owned by the token subject","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","416","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Tests that sending an RTP payload with an amount over the POSTE limit results in a 400 Bad Request response.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","135032","Cannot send RTP with an amount over the POSTE limit","functional-tests.tests.availability","2026-10-03","broken","2026-10-03","","test_availability_POSTE","",""
+"","1210","Get a page of activations","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"
+DS_08P ACCP callback sent with the Version header must be rejected with 400.
+The RTP must remain in ACCEPTED (transition to USER_ACCEPTED must not happen).
+
+Flow:
+1. Activate payer, send RTP, advance to ACCEPTED via DS_05 (without header)
+2. Build a valid DS_08P ACCP payload
+3. POST WITH Version header
+4. Verify 400 is returned with the expected error body
+5. Verify RTP status is still ACCEPTED
+","2466","DS_08P ACCP callback with Version header returns 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","11872","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","583","The RTP web page is reachable","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_RTP_webform","",""
+"","2012","An RTP sent with synchronous rejection is in status REJECTED - DS-08P N - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"No `Sts.Conf` confirmation is present (empty JSON object), so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.","2635","Cancelling an RTP - EPC v4 mock happy path scenario: empty_json_object","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","1563","An RTP is sent to a CBI service with activated fiscal code - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","failed","2026-10-03","","test_RTP_send_CBI","",""
+"","1811","An RTP callback is received with invalid status","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"","3339","Repeating a status update is idempotent","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"Authenticated but not authorized: token of SP A tries to use OTP issued for SP B","1286","Test Takeover Fails with Wrong SP Token","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"
+Test RFC callback DS12N with RJCR status, cancel triggered via REST Web API with explicit reason.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is ERROR_CANCEL
+","2842","An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[post]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"
+Test RFC callback DS12P with non-existing service provider, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+","1842","Failed RFC callback for non existing Service Provider - DS-12P CNCL compliant - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"","476","Sending to non-activated debtor returns 422 - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"No `Sts.Conf` confirmation is present (minimal JSON without Sts), so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.","1965","Cancelling an RTP - EPC v4 mock happy path scenario: minimal_json","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1878","An UPDATE message with status DRAFT after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"
+Verify that a debt position can be updated successfully.
+","390","Happy path: a debt position is updated in DEV environment","functional-tests.tests.gpd_availability","2026-10-03","failed","2026-10-03","","test_availability_GPD","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","524","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","977","An RTP is sent to a CBI service with activated fiscal code","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_CBI","",""
+"","384","Get payees consents with invalid authorization returns 401","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"
+Test v2 RFC callback DS12P with CNCL status applied twice on the same RTP.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request) -> RTP to CANCELLED
+5. Send the same DS12P CNCL callback again on the already cancelled RTP
+6. Verify the second callback is rejected (400) since the transition is no longer valid
+7. Verify RTP status remains CANCELLED
+","4390","Failed v2 RFC callback for invalid RTP transition - DS-12P positive compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P_positive","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","1971","A DELETE message after CREATE VALID + UPDATE INVALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","413","Invalid pagination parameters returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","529","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 410 Gone scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2523","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_410","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","1379","RTP cancellation fails with an invalid reason - V2","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"
+Test RFC callback DS12P with INVALID status, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2489","An RFC callback DS12P INVALID is rejected with 400 - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1931","An UPDATE message with status PAID after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"","480","Sending to non-activated debtor returns 422","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Empty OTP should be rejected","444","Test Takeover Fails with Empty OTP","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"The response body is not a recognizable cancellation confirmation (quoted plain string), so the RTP stays in RFC_SENT.","3213","Cancelling an RTP - EPC v4 mock happy path scenario: plain_string","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"DS_08N RJCT callback sent twice on the same RTP (direct SENT -> REJECTED).
+
+The second callback must be rejected with 400 since the transition is no
+longer valid once the RTP is already REJECTED.
+","3616","Failed v2 callback for invalid RTP transition - DS-08N negative compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08N_negative","",""
+"
+Test RFC callback DS12N with RJCR status, cancel triggered via REST Web API with explicit reason.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is ERROR_CANCEL
+","2836","An RFC callback DS12N RJCR is successfully received and RTP status is ERROR_CANCEL - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","412","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1435","A DELETE message after standalone UPDATE VALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"
+Test v2 RFC callback DS12N with RJCR status applied twice on the same RTP.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request) -> RTP to CANCELLED_REJECTED
+5. Send the same DS12N RJCR callback again on the already transitioned RTP
+6. Verify the second callback is rejected (400) since the transition is no longer valid
+7. Verify RTP status remains CANCELLED_REJECTED
+","3909","Failed v2 RFC callback for invalid RTP transition - DS-12N negative compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N_negative","",""
+"
+Test RFC callback DS12N with non-existing service provider.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12N callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+","1851","Failed RFC callback for non existing Service Provider - DS-12N RJCR compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1267","A DELETE message after CREATE PUBLISHED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"
+Payer activated under SP A.
+Token with read_rtp_all can read across all Service Providers:
+the admin client sub does not match SP A, yet isActive must be true.
+","868","read_rtp_all role returns isActive true for a payer on any Service Provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","2236","An RTP callback with status ACWC is successfully received","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"","413","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","410","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","1956","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_document_rjct","",""
+"","2546","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","438","inexistent RTP -> empty body","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","1466","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","2318","An RTP sent when EPC response contains an unknown field is ignored and remains in status SENT","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","2274","A v2 RTP callback with invalid status is rejected without affecting the RTP status","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08N_negative","",""
+"Availability probe for takeover notification mock endpoint: expects 204 No Content","385","Test Takeover Notification Endpoint","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","412","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"
+Send the same CREATE VALID message twice.
+
+Because send_gpd_message derives the Idempotency-Key deterministically from
+the message id (msg_id), reusing the same payload reuses the same key.
+
+Expectations:
+- Both calls return HTTP 200 (idempotent, not an error).
+- The resourceId in both responses is identical, proving the API returned
+  the cached response and did not process the message twice.
+- Querying by notice number returns exactly one RTP, confirming that only
+  one record was written to the database.
+","1821","Two CREATE VALID messages with the same Idempotency-Key both succeed but only one RTP is stored","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_IDEMPOTENCY","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","416","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","2281","DS_05 redirect v2 callback with Version header returns 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","421","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","11189","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","11689","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","419","Get payees consents with wrong token type returns 403","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"","1240","An RTP is sent to ICCREA service with activated fiscal code","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_ICCREA","",""
+"","797","An RTP is sent to ICCREA service with activated fiscal code - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","failed","2026-10-03","","test_RTP_send_ICCREA","",""
+"","1898","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08P_positive","",""
+"MOCKSP04 owns MOCKSP01 as well as its own spId; activation must be allowed on either.","901","A debtor is activated using a Service Provider ID the token subject owns but does not itself represent","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","579","Failed callback for non existing Service Provider - DS-04b compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_04","",""
+"","907","A debtor activated with an owned but distinct Service Provider ID is deactivated","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_deactivation","",""
+"","4019","A v2 document RTP callback with status RJCT is successfully received","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_document_rjct","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","844","A CREATE message with status PUBLISHED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1291","A DELETE message after standalone UPDATE PARTIALLY_PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","1938","An RTP sent with synchronous rejection and missing _links results in status REJECTED - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Test sending a CREATE operation message with a foreign fiscal code via GPD message API","979","A CREATE message with foreign fiscal code is successfully sent through GPD message API","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender","",""
+"","956","An RTP is sent through API - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","2520","Failed callback for non existing Service Provider - DS-08N negative compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08N_negative","",""
+"`Sts.Conf = ""CNCL""` triggers CANCEL_RTP -> CONFIRM_RFC -> CANCEL_RTP_ACCR, ending in CANCELLED_ACCR.","2604","Cancelling an RTP - EPC v4 mock happy path scenario: cncl_confirmed","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Querying activation status with an empty payerId must be rejected with 404.","382","Querying activation status with an empty payerId returns 404","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","425","Retrieving non-existent activation returns 404","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","3286","A repeated ALAC status update is an idempotent no-op","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"","579","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_04","",""
+"","1901","RTP is successfully cancelled with reason MODT","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"","2262","DS_08P positive v2 callback with Version header returns 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","2669","Failed callback for invalid RTP transition - DS-05 ACTC compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05","",""
+"Takeover with syntactically valid but nonsensical body should fail","1280","Test Takeover Fails with Nonsensical Body","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"
+Test RFC callback DS12P with CNCL status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is CANCELLED
+","3298","An RFC callback DS12P CNCL is successfully received and RTP status is CANCEL","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"","2405","An RTP callback with status REJECTED is successfully received","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"
+Test RFC callback DS12N with wrong certificate identity, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
+5. Verify callback is rejected with 403 (certificate mismatch)
+","2623","Unauthorized RFC callback due to wrong certificate serial - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","415","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","950","An RTP is sent through GPD message API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","2117","An RTP is sent through CBI API","functional-tests.tests.availability","2026-10-03","failed","2026-10-03","","test_availability_CBI","",""
+"","3397","DS_12N negative RFC v2 callback with Version header returns 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","1444","A debtor with omocodia fiscal code is activated and retrieved by activation id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","428","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[trace]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"
+Given a debtor is activated with the mock fiscal code that makes the debtor
+service provider mock reply with a server error, when a GPD message (CREATE)
+is sent via POST /gpd/message, then the rtp-sender fails to deliver the RTP
+and records an ERROR_SEND_RTP event (RTP status becomes ERROR_SEND). RTPs in
+ERROR_SEND status are purged from both Cosmos and ADX, so querying by
+noticeNumber returns an empty list. When the payee then queries the
+delivery-status endpoint with the matching noticeNumber and payeeId, the
+response must still be HTTP 200 with status=PD_RTP_NOT_DELIVERED and
+processingDate absent or null.
+","8958","RTP with ERROR_SEND_RTP event → PD_RTP_NOT_DELIVERED","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get_delivery_status","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","862","An UPDATE message with status PARTIALLY_PAID before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1858","An UPDATE message with status VALID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"
+Verify that a debt position can be updated successfully.
+","6232","Happy path: a debt position is updated in UAT environment","functional-tests.tests.gpd_availability","2026-10-03","passed","2026-10-03","","test_availability_GPD","",""
+"","852","A debtor cannot be activated more than once by the same service provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Payer activated under SP A.
+- SP B (read_rtp_activations): isActive must be false - privacy rule hides cross-SP activation.
+- Admin (read_rtp_all): isActive must be true - role grants visibility across all SPs.
+Same payer, same endpoint, different roles → different results.
+","1269","read_rtp_all role returns isActive true while read_rtp_activations returns false for the same cross-SP payer","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","414","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"The ownership check fails the same way whether the target spId belongs to someone else
+or doesn't exist in the registry at all - NOEXIT00 is not a real Service Provider ID.","424","Activation is forbidden with the same error code for a Service Provider ID absent from the registry","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","2979","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","857","A debtor with VAT number is activated and retrieved by activation id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"","412","All auth fixtures expose a valid Bearer token format","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","2019","A DELETE message after CREATE VALID + UPDATE VALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","415","The activation request must contain a Service Provider ID of valid length","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"
+Test RFC callback DS12N with non-existing service provider, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+","1844","Failed RFC callback for non existing Service Provider - DS-12N RJCR compliant - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"No `Sts.Conf` confirmation is present (Sts block omitted entirely), so only CANCEL_RTP is triggered and the RTP stays in RFC_SENT.","1992","Cancelling an RTP - EPC v4 mock happy path scenario: no_sts_block","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","417","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"MOCKSP04 owns MOCKSP01 and triggers the OTP; FAKESP01, which owns neither, must be rejected
+with an explicit ownership error, not merely a generic 403.","1284","Test Takeover Fails when Redeemer Does Not Own the OTP's Service Provider ID","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE VALID + UPDATE","1986","A DELETE message after CREATE VALID + UPDATE DRAFT","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"Preserve binary payload bytes after canonical headers.","0","test_canonical_representation_preserves_payload_bytes_after_headers","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","2406","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1284","A DELETE message after standalone UPDATE PUBLISHED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"MOCKSP04 owns both its own spId and MOCKSP01; redeeming an OTP scoped to MOCKSP01 must
+assign MOCKSP01 to the new activation, not MOCKSP04 (the redeemer's own tspId).","2880","Test Takeover Redemption Assigns the OTP's Owned Service Provider ID","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"Reusing the same OTP after a successful takeover should fail","1774","Test Takeover Fails with Reused OTP","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"
+Tests the retrieval of an access token from the POSTE authentication endpoint using client credentials and mutual TLS.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","186","Auth endpoint returns valid token","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_POSTE","",""
+"The mock policy falls back to its default `{}` response when no notice number matches, so the RTP stays in RFC_SENT.","1991","Cancelling an RTP - EPC v4 mock happy path scenario: no_match_fallback","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","1106","An RTP is sent through API - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","409","A Service Provider with invalid client secret is not authenticated on Keycloak","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"Reject target values that are not valid HTTP URIs.","1","test_canonical_representation_requires_a_complete_target_uri[https://example.com:not-a-port/path]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Test sending a CREATE operation message with an Italian VAT number via GPD message API","972","A CREATE message with VAT number (Partita IVA) is successfully sent through GPD message API","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender","",""
+"","885","Get by activation id returns 404 when the token subject does not own the activation's Service Provider ID","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"
+Test v2 RFC callback DS12N with INVALID status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2440","A v2 RFC callback DS12N INVALID is rejected with 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N_negative","",""
+"","1931","An RTP sent with synchronous rejection and missing _links results in status REJECTED","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"
+Test v2 RFC callback DS12P with non-existing service provider.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12P callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+6. Verify RTP status is still RFC_SENT
+","2425","Failed v2 RFC callback for non existing Service Provider - DS-12P positive compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P_positive","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","416","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"","2407","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","3981","Failed callback for non compliant DS-04b payload","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_04","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","411","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","2390","A status update callback with a mismatched debtor BIC is forbidden","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"","2779","An RTP is sent to ICCREA service with activated fiscal code - through Web API","functional-tests.tests.send_rtp","2026-10-03","failed","2026-10-03","","test_RTP_send_ICCREA","",""
+"","4711","A v2 redirect RTP callback with status ACTC is successfully received","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05_redirect","",""
+"UPDATE PAID with psp_tax_code=None (invalid PSP) results in RTP state RFC_SENT","1491","An UPDATE PAID message with an invalid PSP results in RFC_SENT state","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"","2780","Failed v2 redirect callback for invalid RTP transition - DS-05 ACTC compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05_redirect","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 429 Too Many Requests scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","11828","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_429","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"
+Test RFC callback DS12N with wrong certificate identity.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12N callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
+5. Verify callback is rejected with 403 (certificate mismatch)
+","2488","Unauthorized RFC callback due to wrong certificate serial","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"","617","Sending to non-activated debtor returns 422 - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 415 Unsupported Media Type scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2553","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_415","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Active payer with omocodia fiscal code (digit substitution) → isActive must be true.","848","An active payer with omocodia fiscal code returns isActive true","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1272","A DELETE message after CREATE PARTIALLY_PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"
+Test RFC callback DS12P with INVALID status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2312","An RFC callback DS12P INVALID is rejected with 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"
+Test RFC callback DS12P with wrong certificate identity, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12P callback with assignee_bic='FAKESP01' (doesn't match certificate identity MOCKSP04)
+5. Verify callback is rejected with 403 (certificate mismatch)
+","1964","Unauthorized RFC callback due to wrong certificate serial - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[delete]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","2497","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"
+Test RFC callback DS12N with INVALID status, cancel via REST Web API.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via REST cancel endpoint with cancel_reason → RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","3734","An RFC callback DS12N INVALID is rejected with 400 - through Web API cancel","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1370","An UPDATE message with status PUBLISHED after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","974","An UPDATE message with status VALID before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"MOCKSP04 owns MOCKSP01 as well as its own spId; status must reflect the activation either way.","851","An active payer returns isActive true when activated under an owned but distinct Service Provider ID","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","412","missing token → 401 Unauthorized","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get","",""
+"","1996","An RTP sent with synchronous rejection and missing _links results in status REJECTED - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","3404","An IRNR status update transitions SENT to ERROR_SEND and marks delivery as lost","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_status_update_callback","",""
+"","415","malformed rtp_id → 400 Bad Request","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get","",""
+"
+Given an RTP is sent successfully (status SENT) for a given noticeNumber + payeeId,
+when the payee queries the delivery-status endpoint with the correct noticeNumber
+but a different payeeId,
+then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED, verifying
+that the endpoint filters on both fields.
+","6487","Existing noticeNumber with wrong payeeId → PD_RTP_NOT_DELIVERED","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get_delivery_status","",""
+"","415","Failed callback for non existing Service Provider - DS-08P compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"","3236","Failed callback for invalid RTP transition - DS-08N compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","543","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","failed","2026-10-03","","test_debtor_activation_create","",""
+"","2283","A v2 document RTP callback with invalid status is rejected without affecting the RTP status","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_document_rjct","",""
+"An EPC response containing fields not declared in the OpenAPI spec is treated as an invalid message and is NOT tolerated for accept/reject purposes (confirmed with rtp-sender-v2 maintainers, PR #26). The extra `invalid-field` property invalidates the whole response, so the RJCR confirmation is not processed and the RTP stays in RFC_SENT.","2552","Cancelling an RTP - EPC v4 mock unhappy path scenario: rjcr_extra_field","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Same privacy rule as the cross-SP case: no explicit error, isActive is just false.","852","Get payer status returns isActive false when the token subject does not own the activation's Service Provider ID","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"
+Test RFC callback DS12P with non-existing service provider.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12P callback with non-existing BIC (MOCKSP99)
+5. Verify callback is rejected with 400 (service provider not found)
+","1955","Failed RFC callback for non existing Service Provider - DS-12P CNCL compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P","",""
+"Takeover without a previously issued OTP should fail","852","Test Takeover Fails without Prior OTP","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"","1518","RTP is successfully cancelled with reason PAID - V2","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"
+Verify that a debt position can be created and published successfully.
+","442","Happy path: a debt position is created and published in DEV environment","functional-tests.tests.gpd_availability","2026-10-03","failed","2026-10-03","","test_availability_GPD","",""
+"Generate a verifiable signature and all required transport headers.","1","test_sign_srtp_message_returns_a_verifiable_signature_and_headers","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_signature","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","1177","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"DS_08N RJCT callback sent after a prior DS_05 ACTC callback.
+
+The RTP is expected to transition from SENT to ACCEPTED, then to USER_REJECTED.
+","3315","A v2 RTP callback with status RJCT after DS_05 transitions the RTP to USER_REJECTED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08N_negative","",""
+"
+Test v2 RFC callback DS12N with wrong certificate identity.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12N callback with assignee_bic='FAKESP01' (doesn't match certificate identity)
+5. Verify callback is rejected with 403 (certificate mismatch)
+6. Verify RTP status is still RFC_SENT
+","2422","Unauthorized v2 RFC callback due to wrong certificate serial","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N_negative","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[options]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Each entry in ``INVALID_PAYER_IDS`` (see dataset docstring) must be rejected with 400.","409","The activation request must contain a validly formatted fiscal code","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_create","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","847","A CREATE message with status DRAFT","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"Missing or invalid Bearer token → the endpoint must return 401.","382","Querying activation status without a valid token returns 401","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1277","A DELETE message after CREATE DRAFT","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","1519","An RTP sent with synchronous acceptance is in status ACCEPTED - DS-05 ACTC - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","995","A debtor is activated and retrieved by activation id","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_get","",""
+"
+Verify that a debt position can be created and published successfully.
+","489","Happy path: a debt position is created and published in UAT environment","functional-tests.tests.gpd_availability","2026-10-03","passed","2026-10-03","","test_availability_GPD","",""
+"Reject target values that are not valid HTTP URIs.","0","test_canonical_representation_requires_a_complete_target_uri[mailto:api@example.com]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Generate signatures for each supported explicit digest algorithm.","1","test_sign_srtp_message_uses_an_explicit_digest_algorithm[sha3-256]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_signature","",""
+"","2727","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","2712","An RTP callback with status ACTC is successfully received","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05","",""
+"","3010","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","447","Get payees consents with extreme page size returns 400","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"","1828","An RTP is sent to a CBI service with activated fiscal code - through Web API","functional-tests.tests.send_rtp","2026-10-03","failed","2026-10-03","","test_RTP_send_CBI","",""
+"","1129","SP_ACTIVATIONS_READ_ALL can retrieve activation by Fiscal Code created by SP_A","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_RTP_activation_security","",""
+"","1996","An RTP sent with synchronous rejection containing extra fields results in status REJECTED - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Reject target values that are not valid HTTP URIs.","1","test_canonical_representation_requires_a_complete_target_uri[/v1/resource]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","1869","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08N_negative","",""
+"
+Test RFC callback DS12N with RJCR status applied twice on the same RTP.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) -> RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId RJCR (Rejected Cancellation Request) -> RTP to ERROR_CANCEL
+5. Send the same DS12N RJCR callback again on the already transitioned RTP
+6. Verify the second callback is rejected (400) since the transition is no longer valid
+7. Verify RTP status remains ERROR_CANCEL
+","5442","Failed RFC callback for invalid RTP transition - DS-12N RJCR compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"","1972","Failed callback for non existing Service Provider - DS-document RJCT compliant","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_document_rjct","",""
+"","3109","Failed callback for invalid RTP transition - DS-08P ACCP compliant","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"
+Given a noticeNumber that does not correspond to any RTP in the database,
+when the payee queries the delivery-status endpoint,
+then the response must be HTTP 200 with status=PD_RTP_NOT_DELIVERED and
+processingDate absent or null.
+","526","Non-existent noticeNumber → PD_RTP_NOT_DELIVERED","functional-tests.tests.get_rtp","2026-10-03","passed","2026-10-03","","test_RTP_get_delivery_status","",""
+"CREATE VALID with an ec_tax_code that does not exist in GPD returns 422 Payee not found","855","A CREATE VALID message with a non-existent ec_tax_code is rejected","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"","1467","An RTP sent with synchronous rejection containing extra fields results in status SENT - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","2397","A status-update error is normalized without changing the RTP","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"
+DS_08N callback sent with the Version header must be rejected with 400.
+The RTP must remain in SENT (transition to REJECTED must not happen).
+
+Flow:
+1. Activate payer and send an RTP → resource_id
+2. Build a valid DS_08N payload referencing the RTP
+3. POST to callback endpoint WITH Version header
+4. Verify 400 is returned with the expected error body
+5. Verify RTP status is still SENT
+","1777","DS_08N callback with Version header returns 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"","942","Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500 - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1984","An UPDATE message with status INVALID after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"","1041","Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500 - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Test sending a DELETE operation message via GPD message API after a CREATE","1426","A DELETE message after CREATE VALID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"","926","A debtor is deactivated by an authenticated service provider","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_deactivation","",""
+"Test sending an UPDATE after CREATE VALID + DELETE with different statuses","1859","An UPDATE message with status INVALID after CREATE VALID and DELETE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"","415","A Service Provider with invalid client ID is not authenticated on Keycloak","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[head]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API after a CREATE","1880","An UPDATE message with status DRAFT after CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE","",""
+"","3390","An RTP callback is successfully received with status RJCT","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"
+Tests that sending an RTP payload with an invalid amount to the POSTE endpoint results in a 400 Bad Request response.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","135026","Cannot send RTP with invalid amount","functional-tests.tests.availability","2026-10-03","broken","2026-10-03","","test_availability_POSTE","",""
+"
+DS_12N RJCR RFC callback sent with the Version header must be rejected with 400.
+The RTP must remain in RFC_SENT (transition to ERROR_CANCEL must not happen).
+
+Flow:
+1. Activate payer, send RTP, trigger cancel via GPD DELETE → RFC_SENT
+2. Build a valid DS_12N RJCR payload
+3. POST to RFC callback endpoint WITH Version header
+4. Verify 400 is returned with the expected error body
+5. Verify RTP status is still RFC_SENT
+","2736","DS_12N RJCR RFC callback with Version header returns 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"Test sending a CREATE operation message with different statuses via GPD message API","863","A CREATE message with status PARTIALLY_PAID","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_CREATE","",""
+"","1435","An RTP sent when EPC response omits _links is in status ACCEPTED - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","2273","DS_document RJCT v2 callback with Version header returns 400","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_with_version_header","",""
+"Payer activated then deactivated by SP A → isActive must be false.","1391","A deactivated payer returns isActive false","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 400 Bad Request scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2651","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_400","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"Validate the EPC header whitelist with case-insensitive names.","0","test_epc_header_filter_matches_swagger_headers_case_insensitively","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","414","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","2330","An RTP sent with synchronous rejection is in status REJECTED - DS-08P N","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"","418","Deactivation fails for non-existing activation","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_deactivation","",""
+"","2017","Cannot send RTP with expired date","functional-tests.tests.availability","2026-10-03","passed","2026-10-03","","test_availability_CBI","",""
+"Normalize each supported HTTP method to uppercase.","0","test_canonical_representation_emits_an_uppercase_method[connect]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","432","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","failed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","1481","An RTP sent when EPC response contains an unknown field is ignored and remains in status SENT - through Web API V2","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"Test sending an UPDATE operation message with different statuses via GPD message API before a CREATE","850","An UPDATE message with status PUBLISHED before CREATE","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_UPDATE_before_CREATE","",""
+"
+Tests sending an RTP payload to the POSTE endpoint with valid data and authentication.
+
+:param debtor_sp_mock_cert_key: Certificate and key tuple for mutual TLS authentication.
+:type debtor_sp_mock_cert_key: Tuple[str, str]
+","135157","An RTP is sent through POSTE API","functional-tests.tests.availability","2026-10-03","broken","2026-10-03","","test_availability_POSTE","",""
+"
+SP A activates the payer.
+SP B queries the status → must get isActive=false to avoid disclosing
+that the payer is registered under a competitor SP.
+","848","A payer active on a different Service Provider returns isActive false (privacy)","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","2484","An RTP callback with invalid status is received and processed with success without affecting the RTP status","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_05","",""
+"
+Test v2 RFC callback DS12P with CNCL status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message v2 (CREATE VALID)
+3. Cancel the RTP via GPD message v2 (DELETE) -> RTP to RFC_SENT
+4. Send DS12P callback with CxlStsId CNCL (Cancelled As Per Request)
+5. Verify callback is accepted (200)
+6. Verify RTP status is CANCELLED
+","2509","A v2 RFC callback DS12P CNCL is successfully received and RTP status is CANCELLED","functional-tests.tests.callbacks_v2","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12P_positive","",""
+"Match EPC headers regardless of their input casing.","1","test_canonical_representation_matches_epc_headers_case_insensitively","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Test that takeover fails when an invalid OTP is provided","1270","Test Takeover Fails with Invalid OTP","functional-tests.tests.takeover","2026-10-03","passed","2026-10-03","","test_debtor_takeover","",""
+"Each entry in ``INVALID_PAYER_IDS`` must be rejected with 400.
+
+The ``description`` parameter appears in pytest output to identify which
+case failed without having to inspect the raw value.
+","414","Querying activation status with an invalid payerId format returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_payer_status","",""
+"","1050","An RTP is sent to Poste service with activated fiscal code - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_POSTE","",""
+"","2400","RTP is successfully cancelled with reason PAID","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"","2152","RTP cancellation fails with an invalid reason","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"","3673","An RTP callback is successfully received with status ACCP","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"","413","Non-integer size returns 400","functional-tests.tests.activation","2026-10-03","passed","2026-10-03","","test_debtor_activation_list","",""
+"Reject target values that are not valid HTTP URIs.","0","test_canonical_representation_requires_a_complete_target_uri[https://example.com/resource#fragment]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"Do not append a trailing line feed to the canonical message.","0","test_canonical_representation_does_not_append_a_closing_line_feed","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_message_signing","",""
+"","419","Unauthorized callback due to wrong certificate serial","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_08","",""
+"Generate signatures for each supported explicit digest algorithm.","1","test_sign_srtp_message_uses_an_explicit_digest_algorithm[sha512]","functional-tests.tests.qsealc","2026-10-03","passed","2026-10-03","","test_srtp_signature","",""
+"
+Test RFC callback DS12N with INVALID status.
+
+Flow:
+1. Activate payer
+2. Send an RTP via GPD message (CREATE VALID)
+3. Cancel the RTP via GPD message (DELETE) → RTP to RFC_SENT
+4. Send DS12N callback with CxlStsId INVALID
+5. Verify callback is rejected with 400
+6. Verify RTP status is still RFC_SENT
+","2273","An RFC callback DS12N INVALID is rejected with 400","functional-tests.tests.callbacks","2026-10-03","passed","2026-10-03","","test_RTP_callback_DS_12N","",""
+"","0","A Service Provider is authenticated","functional-tests.tests.auth","2026-10-03","passed","2026-10-03","","test_auth","",""
+"","421","Get payees consents with negative page size returns 400","functional-tests.tests.service_registry","2026-10-03","passed","2026-10-03","","test_get_payees_consents","",""
+"Test sending a DELETE operation message via GPD message API after a standalone UPDATE (no prior CREATE)","1301","A DELETE message after standalone UPDATE EXPIRED","functional-tests.tests.process_messages_sender","2026-10-03","passed","2026-10-03","","test_RTP_process_sender_DELETE","",""
+"
+Verify that a debt position can be deleted successfully.
+","390","Happy path: a debt position is deleted in DEV environment","functional-tests.tests.gpd_availability","2026-10-03","failed","2026-10-03","","test_availability_GPD","",""
+"","1362","An RTP sent when EPC response contains an unknown field is ignored and remains in status SENT - through Web API","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_send_MOCK","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 406 Not Acceptable scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2547","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_406","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"The PSP synchronously rejects the cancellation request with 422 (per standard behaviour for the EPC 404 Not Found scenario). The RTP then transitions to ERROR_CANCEL via ERROR_CANCEL_RTP.","2566","Cancelling an RTP - EPC v4 mock unhappy path scenario: epc_404","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel_MOCK_V2","",""
+"","1768","RTP is successfully cancelled with reason MODT - V2","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
+"","2377","A status-update response maps to the expected RTP result","functional-tests.tests.send_rtp","2026-10-03","passed","2026-10-03","","test_RTP_status_update_MOCK_V2","",""
+"","425","RTP cancellation fails if resource ID does not exist","functional-tests.tests.cancel_rtp","2026-10-03","passed","2026-10-03","","test_RTP_cancel","",""
