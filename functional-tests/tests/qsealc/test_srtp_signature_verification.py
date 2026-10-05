@@ -45,6 +45,28 @@ def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
 
 @allure.epic("QSealC message signing")
 @allure.feature("Signature verification")
+@allure.story("Reject an issuer without CA constraints")
+@pytest.mark.functional
+@pytest.mark.unhappy_path
+@pytest.mark.callback
+def test_verify_srtp_message_rejects_an_issuer_without_ca_constraints(
+    qsealc_verification_context_without_ca_constraints,
+) -> None:
+    """Reject a signer chain whose issuer omits a mandatory CA constraint."""
+    result = verify_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=qsealc_verification_context_without_ca_constraints.headers,
+        body=qsealc_verification_context_without_ca_constraints.body,
+        trusted_roots=qsealc_verification_context_without_ca_constraints.trusted_roots,
+    )
+
+    assert not result.is_valid, "Expected an issuer without CA constraints to be rejected"
+    assert result.failure_reason == "UNTRUSTED_ISSUER", "Expected the incomplete issuer to be untrusted"
+
+
+@allure.epic("QSealC message signing")
+@allure.feature("Signature verification")
 @allure.story("Reject a changed message body")
 @pytest.mark.functional
 @pytest.mark.unhappy_path

@@ -405,10 +405,12 @@ def _certificate_fingerprint(certificate: Certificate) -> bytes:
 
 def _is_ca_certificate(certificate: Certificate) -> bool:
     """Return whether a certificate may act as a certificate authority."""
-    try:
-        return certificate.extensions.get_extension_for_class(x509.BasicConstraints).value.ca
-    except ExtensionNotFound:
-        return True
+    ca_constraints = _certificate_ca_constraints(certificate)
+    return (
+        ca_constraints is not None
+        and ca_constraints[0].ca
+        and ca_constraints[1].key_cert_sign
+    )
 
 
 def _verify_certificate_signature(certificate: Certificate, issuer: Certificate) -> bool:
@@ -446,27 +448,31 @@ def _validate_certificate_validity(
 def _validate_certificate_chain_constraints(certificates: tuple[Certificate, ...]) -> bool:
     """Validate CA, key-usage, and path-length constraints on a certificate chain."""
     for index, certificate in enumerate(certificates[1:], start=1):
-        try:
-            basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
-        except ExtensionNotFound:
-            basic_constraints = None
-
-        if basic_constraints is not None and not basic_constraints.ca:
+        ca_constraints = _certificate_ca_constraints(certificate)
+        if ca_constraints is None:
             return False
-        if basic_constraints is not None and basic_constraints.path_length is not None:
+        basic_constraints, key_usage = ca_constraints
+        if not basic_constraints.ca or not key_usage.key_cert_sign:
+            return False
+        if basic_constraints.path_length is not None:
             subordinate_ca_count = sum(
                 _is_ca_certificate(subordinate) for subordinate in certificates[1:index]
             )
             if subordinate_ca_count > basic_constraints.path_length:
                 return False
-
-        try:
-            key_usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
-        except ExtensionNotFound:
-            continue
-        if not key_usage.key_cert_sign:
-            return False
     return True
+
+
+def _certificate_ca_constraints(
+    certificate: Certificate,
+) -> tuple[x509.BasicConstraints, x509.KeyUsage] | None:
+    """Return the mandatory CA extensions when both are present."""
+    try:
+        basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
+        key_usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
+    except ExtensionNotFound:
+        return None
+    return basic_constraints, key_usage
 
 
 def _certificate_datetime(certificate: Certificate, attribute: str) -> datetime:
