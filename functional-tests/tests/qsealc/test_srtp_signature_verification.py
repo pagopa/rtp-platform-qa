@@ -26,18 +26,15 @@ from utils.srtp_signature import (
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
-    qsealc_test_chain,
-    signed_callback_message,
+    qsealc_verification_context,
 ) -> None:
     """Accept a signature whose chain terminates at a trusted root."""
-    body, signature = signed_callback_message
-
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
-        body=body,
-        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+        headers=qsealc_verification_context.headers,
+        body=qsealc_verification_context.body,
+        trusted_roots=qsealc_verification_context.trusted_roots,
     )
 
     assert result.is_valid, f"Expected the trusted signature to verify: {result.failure_detail}"
@@ -90,18 +87,15 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
 @pytest.mark.unhappy_path
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
-    qsealc_test_chain,
     qsealc_key_material,
-    signed_callback_message,
+    qsealc_verification_context,
 ) -> None:
     """Reject a valid signature whose certificate chain is untrusted."""
-    body, signature = signed_callback_message
-
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
-        body=body,
+        headers=qsealc_verification_context.headers,
+        body=qsealc_verification_context.body,
         trusted_roots=(qsealc_key_material.certificate_pem,),
     )
 
@@ -117,17 +111,15 @@ def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_an_expired_certificate(
     qsealc_test_chain,
-    signed_callback_message,
+    qsealc_verification_context,
 ) -> None:
     """Reject a signature whose certificate chain is expired."""
-    body, signature = signed_callback_message
-
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
-        body=body,
-        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+        headers=qsealc_verification_context.headers,
+        body=qsealc_verification_context.body,
+        trusted_roots=qsealc_verification_context.trusted_roots,
         at_time=qsealc_test_chain.valid_until + timedelta(minutes=1),
     )
 
@@ -142,18 +134,15 @@ def test_verify_srtp_message_rejects_an_expired_certificate(
 @pytest.mark.unhappy_path
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_a_revoked_certificate(
-    qsealc_test_chain,
-    signed_callback_message,
+    qsealc_verification_context,
 ) -> None:
     """Reject a signature when the revocation checker reports revoked."""
-    body, signature = signed_callback_message
-
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
-        body=body,
-        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+        headers=qsealc_verification_context.headers,
+        body=qsealc_verification_context.body,
+        trusted_roots=qsealc_verification_context.trusted_roots,
         revocation_checker=lambda _certificate, _issuer: RevocationResult(
             status=RevocationStatus.REVOKED,
             source="test",
@@ -173,18 +162,15 @@ def test_verify_srtp_message_rejects_a_revoked_certificate(
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_verify_srtp_message_reports_an_unknown_revocation_status(
-    qsealc_test_chain,
-    signed_callback_message,
+    qsealc_verification_context,
 ) -> None:
     """Preserve an unknown revocation status without rejecting the signature."""
-    body, signature = signed_callback_message
-
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
-        body=body,
-        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+        headers=qsealc_verification_context.headers,
+        body=qsealc_verification_context.body,
+        trusted_roots=qsealc_verification_context.trusted_roots,
         revocation_checker=lambda _certificate, _issuer: RevocationResult(
             status=RevocationStatus.UNKNOWN,
             source="test",
@@ -211,17 +197,16 @@ def test_verify_srtp_message_reports_an_unknown_revocation_status(
 )
 def test_verify_srtp_message_accepts_rsa_pss_signatures(
     qsealc_test_chain,
-    signed_callback_message,
+    qsealc_verification_context,
     salt_length,
     salt_label,
 ) -> None:
     """Accept RSA-PSS signatures using supported salt-length conventions."""
-    body, signed_message = signed_callback_message
     canonical = build_canonical_representation(
         method="POST",
         url=CALLBACK_URL_V2,
         headers=APPLICATION_JSON_HEADER,
-        body=body,
+        body=qsealc_verification_context.body,
     )
     pss_signature = qsealc_test_chain.key_material.private_key.sign(
         data=canonical,
@@ -229,8 +214,7 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
         algorithm=hashes.SHA256(),
     )
     headers = {
-        **APPLICATION_JSON_HEADER,
-        **signed_message.as_headers(),
+        **qsealc_verification_context.headers,
         "X-SRTP-Signature": base64.b64encode(pss_signature).decode("ascii"),
     }
 
@@ -238,8 +222,8 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
         method="POST",
         url=CALLBACK_URL_V2,
         headers=headers,
-        body=body,
-        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+        body=qsealc_verification_context.body,
+        trusted_roots=qsealc_verification_context.trusted_roots,
     )
 
     assert result.is_valid, f"Expected RSA-PSS ({salt_label}) verification to succeed: {result.failure_detail}"
@@ -256,19 +240,16 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
     argvalues=("/callback", "mailto:callback@example.com"),
 )
 def test_verify_srtp_message_rejects_an_invalid_target_uri(
-    qsealc_test_chain,
-    signed_callback_message,
+    qsealc_verification_context,
     invalid_url,
 ) -> None:
     """Reject a message whose target URI cannot be canonicalized."""
-    body, signed_message = signed_callback_message
-
     result = verify_srtp_message(
         method="POST",
         url=invalid_url,
-        headers={**APPLICATION_JSON_HEADER, **signed_message.as_headers()},
-        body=body,
-        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+        headers=qsealc_verification_context.headers,
+        body=qsealc_verification_context.body,
+        trusted_roots=qsealc_verification_context.trusted_roots,
     )
 
     assert not result.is_valid, "Expected an incomplete target URI to be rejected"

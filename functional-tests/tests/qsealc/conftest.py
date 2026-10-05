@@ -14,9 +14,9 @@ from api.utils.endpoints import CALLBACK_URL_V2
 from api.utils.http_utils import APPLICATION_JSON_HEADER
 from utils.cryptography_utils import QsealcKeyMaterial
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
-from utils.qsealc_test_utils import QsealcTestChain
+from utils.qsealc_test_utils import QsealcTestChain, QsealcVerificationContext
 from utils.srtp_message_signing import serialize_json_request_body
-from utils.srtp_signature import SrtpSignature, sign_srtp_message
+from utils.srtp_signature import sign_srtp_message
 from utils.type_utils import JsonType
 
 TEST_RSA_PUBLIC_EXPONENT = 65537
@@ -142,10 +142,10 @@ def callback_body(ds_08p_callback_payload, callback_body_factory) -> bytes:
 
 
 @pytest.fixture
-def signed_callback_message(
-    qsealc_test_chain,
-    callback_body,
-) -> tuple[bytes, SrtpSignature]:
+def qsealc_verification_context(
+    qsealc_test_chain: QsealcTestChain,
+    callback_body: bytes,
+) -> QsealcVerificationContext:
     signature = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
@@ -153,4 +153,8 @@ def signed_callback_message(
         body=callback_body,
         key_material=qsealc_test_chain.key_material,
     )
-    return callback_body, signature
+    return QsealcVerificationContext(
+        body=callback_body,
+        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
+        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
+    )
