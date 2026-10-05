@@ -11,7 +11,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.hazmat.primitives.serialization import Encoding
 
 from api.utils.endpoints import CALLBACK_URL_V2
-from utils.http_utils import serialize_json_payload
+from api.utils.http_utils import APPLICATION_JSON_HEADER
 from utils.srtp_signature import (
     SRTP_CERTIFICATE_CHAIN_HEADER,
     SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER,
@@ -19,9 +19,6 @@ from utils.srtp_signature import (
     SRTP_SIGNATURE_HEADER,
     sign_srtp_message,
 )
-
-SIGNING_HEADERS = {"Content-Type": "application/json"}
-
 
 @allure.epic("QSealC message signing")
 @allure.feature("Signature generation")
@@ -31,22 +28,17 @@ SIGNING_HEADERS = {"Content-Type": "application/json"}
 @pytest.mark.callback
 def test_sign_srtp_message_returns_a_verifiable_signature_and_headers(
     qsealc_key_material,
-    ds_08p_callback_payload,
+    callback_body,
 ) -> None:
     """Generate a verifiable signature and all required transport headers."""
-    body = serialize_json_payload(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
     signed_message = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
+        headers=APPLICATION_JSON_HEADER,
+        body=callback_body,
         key_material=qsealc_key_material,
     )
-    canonical = b"POST\n" + CALLBACK_URL_V2.encode() + b"\ncontent-type: application/json\n" + body
+    canonical = b"POST\n" + CALLBACK_URL_V2.encode() + b"\ncontent-type: application/json\n" + callback_body
 
     qsealc_key_material.private_key.public_key().verify(
         signature=base64.b64decode(signed_message.signature_base64),
@@ -81,27 +73,22 @@ def test_sign_srtp_message_returns_a_verifiable_signature_and_headers(
 )
 def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
     qsealc_key_material,
-    ds_08p_callback_payload,
+    callback_body,
     algorithm,
     hash_algorithm_type,
     expected_algorithm,
     hashlib_algorithm,
 ) -> None:
     """Generate signatures for each supported explicit digest algorithm."""
-    body = serialize_json_payload(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
     signed_message = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
+        headers=APPLICATION_JSON_HEADER,
+        body=callback_body,
         key_material=qsealc_key_material,
         algorithm=algorithm,
     )
-    canonical = b"POST\n" + CALLBACK_URL_V2.encode() + b"\ncontent-type: application/json\n" + body
+    canonical = b"POST\n" + CALLBACK_URL_V2.encode() + b"\ncontent-type: application/json\n" + callback_body
 
     qsealc_key_material.private_key.public_key().verify(
         signature=base64.b64decode(signed_message.signature_base64),
@@ -127,21 +114,15 @@ def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
 @pytest.mark.callback
 def test_sign_srtp_message_rejects_unsupported_digest_algorithms(
     qsealc_key_material,
-    ds_08p_callback_payload,
+    callback_body,
 ) -> None:
     """Reject digest algorithms outside the supported set."""
-    body = serialize_json_payload(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
-
     with pytest.raises(ValueError, match="Unsupported signature digest algorithm 'SHA1'"):
         sign_srtp_message(
             method="POST",
             url=CALLBACK_URL_V2,
-            headers=SIGNING_HEADERS,
-            body=body,
+            headers=APPLICATION_JSON_HEADER,
+            body=callback_body,
             key_material=qsealc_key_material,
             algorithm="SHA1",
         )
@@ -155,19 +136,14 @@ def test_sign_srtp_message_rejects_unsupported_digest_algorithms(
 @pytest.mark.callback
 def test_sign_srtp_message_encodes_leaf_der_and_chain_pem(
     qsealc_key_material,
-    ds_08p_callback_payload,
+    callback_body,
 ) -> None:
     """Encode the leaf certificate as DER and the chain as PEM."""
-    body = serialize_json_payload(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        payload=ds_08p_callback_payload,
-    )
     signed_message = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=SIGNING_HEADERS,
-        body=body,
+        headers=APPLICATION_JSON_HEADER,
+        body=callback_body,
         key_material=qsealc_key_material,
     )
 
