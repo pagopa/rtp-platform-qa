@@ -1,7 +1,6 @@
 """Fixtures and generated certificate material for QSealC tests."""
 
 from collections.abc import Callable
-from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import pytest
@@ -15,6 +14,7 @@ from api.utils.endpoints import CALLBACK_URL_V2
 from api.utils.http_utils import APPLICATION_JSON_HEADER
 from utils.cryptography_utils import QsealcKeyMaterial
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
+from utils.qsealc_test_utils import QsealcTestChain
 from utils.srtp_message_signing import serialize_json_request_body
 from utils.srtp_signature import SrtpSignature, sign_srtp_message
 from utils.type_utils import JsonType
@@ -22,13 +22,6 @@ from utils.type_utils import JsonType
 TEST_RSA_PUBLIC_EXPONENT = 65537
 TEST_RSA_KEY_SIZE = 2048
 TEST_CERTIFICATE_LIFETIME = timedelta(days=1)
-
-
-@dataclass(frozen=True)
-class QsealcTestChain:
-    key_material: QsealcKeyMaterial
-    root_certificate_pem: bytes
-    valid_until: datetime
 
 
 @pytest.fixture
