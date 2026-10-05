@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.hazmat.primitives.serialization import Encoding
 
 from api.utils.endpoints import CALLBACK_URL_V2
+from utils.http_utils import serialize_json_payload
 from utils.srtp_signature import (
     SRTP_CERTIFICATE_CHAIN_HEADER,
     SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER,
@@ -31,10 +32,9 @@ SIGNING_HEADERS = {"Content-Type": "application/json"}
 def test_sign_srtp_message_returns_a_verifiable_signature_and_headers(
     qsealc_key_material,
     ds_08p_callback_payload,
-    callback_body_factory,
 ) -> None:
     """Generate a verifiable signature and all required transport headers."""
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
@@ -82,14 +82,13 @@ def test_sign_srtp_message_returns_a_verifiable_signature_and_headers(
 def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
     qsealc_key_material,
     ds_08p_callback_payload,
-    callback_body_factory,
     algorithm,
     hash_algorithm_type,
     expected_algorithm,
     hashlib_algorithm,
 ) -> None:
     """Generate signatures for each supported explicit digest algorithm."""
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
@@ -129,10 +128,9 @@ def test_sign_srtp_message_uses_an_explicit_digest_algorithm(
 def test_sign_srtp_message_rejects_unsupported_digest_algorithms(
     qsealc_key_material,
     ds_08p_callback_payload,
-    callback_body_factory,
 ) -> None:
     """Reject digest algorithms outside the supported set."""
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
@@ -158,10 +156,9 @@ def test_sign_srtp_message_rejects_unsupported_digest_algorithms(
 def test_sign_srtp_message_encodes_leaf_der_and_chain_pem(
     qsealc_key_material,
     ds_08p_callback_payload,
-    callback_body_factory,
 ) -> None:
     """Encode the leaf certificate as DER and the chain as PEM."""
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
