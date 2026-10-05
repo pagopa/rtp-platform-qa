@@ -3,6 +3,7 @@ import pytest
 
 from api.utils.endpoints import CALLBACK_URL_V2
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
+from utils.http_utils import serialize_json_payload
 from utils.srtp_signature import sign_srtp_message, verify_srtp_message
 
 SIGNING_HEADERS = {"Content-Type": "application/json"}
@@ -17,9 +18,8 @@ SIGNING_HEADERS = {"Content-Type": "application/json"}
 def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
     qsealc_test_chain,
     ds_08p_callback_payload,
-    callback_body_factory,
 ) -> None:
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
@@ -55,9 +55,8 @@ def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
 def test_verify_srtp_message_rejects_a_signature_for_changed_body(
     qsealc_test_chain,
     ds_08p_callback_payload,
-    callback_body_factory,
 ) -> None:
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
@@ -69,7 +68,7 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
         body=body,
         key_material=qsealc_test_chain.key_material,
     )
-    changed_body = callback_body_factory(
+    changed_body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=generate_callback_data_DS_08P_positive_compliant(),
@@ -97,9 +96,8 @@ def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
     qsealc_test_chain,
     qsealc_key_material,
     ds_08p_callback_payload,
-    callback_body_factory,
 ) -> None:
-    body = callback_body_factory(
+    body = serialize_json_payload(
         method="POST",
         url=CALLBACK_URL_V2,
         payload=ds_08p_callback_payload,
