@@ -92,6 +92,26 @@ class SrtpVerificationResult:
     validated_certificate_chain_length: int = 0
 
 
+@dataclass(frozen=True)
+class _DecodedVerificationMaterial:
+    """Decoded signature values and certificates needed for validation."""
+
+    signature: bytes
+    leaf_certificate: Certificate
+    candidate_certificates: tuple[Certificate, ...]
+    trusted_roots: tuple[Certificate, ...]
+
+
+@dataclass(frozen=True)
+class _ValidatedVerificationContext:
+    """Validated certificate context used to verify the canonical message."""
+
+    signature: bytes
+    leaf_certificate: Certificate
+    validated_chain: tuple[Certificate, ...]
+    revocation_status: RevocationStatus
+
+
 def sign_srtp_message(
     *,
     method: str,
@@ -141,9 +161,54 @@ def verify_srtp_message(
     revocation_checker: RevocationChecker | None = None,
 ) -> SrtpVerificationResult:
     """Verify an SRTP signature, certificate chain, validity, and revocation status."""
+    decoded_material = _decode_verification_material(
+        headers=headers,
+        trusted_roots=trusted_roots,
+    )
+
+    decoded_material_is_failure = isinstance(decoded_material, SrtpVerificationResult)
+    if decoded_material_is_failure:
+        return decoded_material
+
+    validated_context = _validate_verification_context(
+        decoded_material=decoded_material,
+        at_time=at_time,
+        clock_skew_seconds=clock_skew_seconds,
+        revocation_checker=revocation_checker,
+    )
+
+    validated_context_is_failure = isinstance(validated_context, SrtpVerificationResult)
+    if validated_context_is_failure:
+        return validated_context
+
+    verification_failure = _verify_canonical_message(
+        method=method,
+        url=url,
+        headers=headers,
+        body=body,
+        context=validated_context,
+    )
+
+    if verification_failure is not None:
+        return verification_failure
+
+    return SrtpVerificationResult(
+        is_valid=True,
+        revocation_status=validated_context.revocation_status,
+        validated_certificate_chain_length=len(validated_context.validated_chain),
+    )
+
+
+def _decode_verification_material(
+    *,
+    headers: Mapping[str, str],
+    trusted_roots: Iterable[TrustedRoot] | TrustedRoot,
+) -> _DecodedVerificationMaterial | SrtpVerificationResult:
+    """Decode signature headers and trusted certificates."""
     signature_value = _header_value(headers=headers, name=SRTP_SIGNATURE_HEADER)
     certificate_value = _header_value(headers=headers, name=SRTP_SIGNATURE_CERTIFICATE_HEADER)
     chain_value = _header_value(headers=headers, name=SRTP_CERTIFICATE_CHAIN_HEADER)
+
     if not signature_value or not certificate_value or not chain_value:
         return _verification_failure(
             reason="MISSING_MANDATORY_HEADERS",
@@ -166,24 +231,85 @@ def verify_srtp_message(
             reason="MALFORMED_CERTIFICATE",
             detail="The signer certificate header did not contain a certificate",
         )
+
     if not root_certificates:
         return _verification_failure(
             reason="TRUST_STORE_EMPTY",
             detail="At least one trusted root certificate is required",
         )
 
-    leaf_certificate = signer_certificates[0]
-    validated_chain = _build_certificate_chain(
-        leaf_certificate=leaf_certificate,
+    return _DecodedVerificationMaterial(
+        signature=signature,
+        leaf_certificate=signer_certificates[0],
         candidate_certificates=(*signer_certificates[1:], *chain_certificates),
         trusted_roots=root_certificates,
     )
+
+
+def _validate_verification_context(
+    *,
+    decoded_material: _DecodedVerificationMaterial,
+    at_time: datetime | None,
+    clock_skew_seconds: int,
+    revocation_checker: RevocationChecker | None,
+) -> _ValidatedVerificationContext | SrtpVerificationResult:
+    """Validate the certificate path and apply the revocation adapter."""
+    validated_chain = _validate_certificate_path(
+        leaf_certificate=decoded_material.leaf_certificate,
+        candidate_certificates=decoded_material.candidate_certificates,
+        trusted_roots=decoded_material.trusted_roots,
+        at_time=at_time,
+        clock_skew_seconds=clock_skew_seconds,
+    )
+
+    validated_chain_is_failure = isinstance(validated_chain, SrtpVerificationResult)
+    if validated_chain_is_failure:
+        return validated_chain
+
+    revocation_status, revocation_failure = _validate_revocation(
+        certificates=validated_chain,
+        revocation_checker=revocation_checker,
+    )
+
+    if revocation_failure is not None:
+        return _verification_failure(
+            reason="CERTIFICATE_REVOKED",
+            detail=revocation_failure,
+            revocation_status=revocation_status,
+            chain_length=len(validated_chain),
+        )
+
+    return _ValidatedVerificationContext(
+        signature=decoded_material.signature,
+        leaf_certificate=decoded_material.leaf_certificate,
+        validated_chain=validated_chain,
+        revocation_status=revocation_status,
+    )
+
+
+def _validate_certificate_path(
+    *,
+    leaf_certificate: Certificate,
+    candidate_certificates: Iterable[Certificate],
+    trusted_roots: Iterable[Certificate],
+    at_time: datetime | None,
+    clock_skew_seconds: int,
+) -> tuple[Certificate, ...] | SrtpVerificationResult:
+    """Build and validate the signer certificate path."""
+    validated_chain = _build_certificate_chain(
+        leaf_certificate=leaf_certificate,
+        candidate_certificates=candidate_certificates,
+        trusted_roots=trusted_roots,
+    )
+
     if validated_chain is None:
         return _verification_failure(
             reason="UNTRUSTED_ISSUER",
             detail="The signer certificate chain does not terminate at a trusted root",
         )
-    if not _validate_certificate_chain_constraints(validated_chain):
+
+    chain_constraints_are_valid = _validate_certificate_chain_constraints(validated_chain)
+    if not chain_constraints_are_valid:
         return _verification_failure(
             reason="INVALID_CERTIFICATE_CHAIN",
             detail="The signer certificate chain violates CA constraints",
@@ -196,6 +322,7 @@ def verify_srtp_message(
         at_time=verification_time,
         clock_skew_seconds=clock_skew_seconds,
     )
+
     if validity_failure is not None:
         return _verification_failure(
             reason=validity_failure,
@@ -203,28 +330,30 @@ def verify_srtp_message(
             chain_length=len(validated_chain),
         )
 
-    if not _is_valid_leaf_certificate(leaf_certificate):
+    leaf_certificate_is_valid = _is_valid_leaf_certificate(leaf_certificate)
+    if not leaf_certificate_is_valid:
         return _verification_failure(
             reason="INVALID_CERTIFICATE_PROFILE",
             detail="The signer certificate is not a valid end-entity signing certificate",
             chain_length=len(validated_chain),
         )
 
-    revocation_status, revocation_failure = _validate_revocation(
-        certificates=validated_chain,
-        revocation_checker=revocation_checker,
-    )
-    if revocation_failure is not None:
-        return _verification_failure(
-            reason="CERTIFICATE_REVOKED",
-            detail=revocation_failure,
-            revocation_status=revocation_status,
-            chain_length=len(validated_chain),
-        )
+    return validated_chain
 
+
+def _verify_canonical_message(
+    *,
+    method: str,
+    url: str,
+    headers: Mapping[str, str],
+    body: bytes,
+    context: _ValidatedVerificationContext,
+) -> SrtpVerificationResult | None:
+    """Verify the detached signature against the canonical request bytes."""
     algorithm_value = (
         _header_value(headers=headers, name=SRTP_SIGNATURE_ALGORITHM_DIGEST_HEADER) or DEFAULT_SIGNATURE_ALGORITHM
     )
+
     try:
         normalized_algorithm = normalize_signature_algorithm(algorithm_value)
         hash_algorithm = signature_hash_algorithm(normalized_algorithm)
@@ -232,8 +361,8 @@ def verify_srtp_message(
         return _verification_failure(
             reason="INVALID_SIGNATURE",
             detail=str(error),
-            revocation_status=revocation_status,
-            chain_length=len(validated_chain),
+            revocation_status=context.revocation_status,
+            chain_length=len(context.validated_chain),
         )
 
     try:
@@ -247,27 +376,26 @@ def verify_srtp_message(
         return _verification_failure(
             reason="INVALID_MESSAGE",
             detail=str(error),
-            revocation_status=revocation_status,
-            chain_length=len(validated_chain),
+            revocation_status=context.revocation_status,
+            chain_length=len(context.validated_chain),
         )
-    if not _verify_signature(
-        certificate=leaf_certificate,
-        signature=signature,
+
+    signature_is_valid = _verify_signature(
+        certificate=context.leaf_certificate,
+        signature=context.signature,
         canonical_bytes=canonical_bytes,
         hash_algorithm=hash_algorithm,
-    ):
+    )
+
+    if not signature_is_valid:
         return _verification_failure(
             reason="INVALID_SIGNATURE",
             detail="The signature does not match the canonical message",
-            revocation_status=revocation_status,
-            chain_length=len(validated_chain),
+            revocation_status=context.revocation_status,
+            chain_length=len(context.validated_chain),
         )
 
-    return SrtpVerificationResult(
-        is_valid=True,
-        revocation_status=revocation_status,
-        validated_certificate_chain_length=len(validated_chain),
-    )
+    return None
 
 
 def normalize_signature_algorithm(algorithm: str) -> str:
@@ -405,10 +533,12 @@ def _certificate_fingerprint(certificate: Certificate) -> bytes:
 
 def _is_ca_certificate(certificate: Certificate) -> bool:
     """Return whether a certificate may act as a certificate authority."""
-    try:
-        return certificate.extensions.get_extension_for_class(x509.BasicConstraints).value.ca
-    except ExtensionNotFound:
-        return True
+    ca_constraints = _certificate_ca_constraints(certificate)
+    return (
+        ca_constraints is not None
+        and ca_constraints[0].ca
+        and ca_constraints[1].key_cert_sign
+    )
 
 
 def _verify_certificate_signature(certificate: Certificate, issuer: Certificate) -> bool:
@@ -446,27 +576,31 @@ def _validate_certificate_validity(
 def _validate_certificate_chain_constraints(certificates: tuple[Certificate, ...]) -> bool:
     """Validate CA, key-usage, and path-length constraints on a certificate chain."""
     for index, certificate in enumerate(certificates[1:], start=1):
-        try:
-            basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
-        except ExtensionNotFound:
-            basic_constraints = None
-
-        if basic_constraints is not None and not basic_constraints.ca:
+        ca_constraints = _certificate_ca_constraints(certificate)
+        if ca_constraints is None:
             return False
-        if basic_constraints is not None and basic_constraints.path_length is not None:
+        basic_constraints, key_usage = ca_constraints
+        if not basic_constraints.ca or not key_usage.key_cert_sign:
+            return False
+        if basic_constraints.path_length is not None:
             subordinate_ca_count = sum(
                 _is_ca_certificate(subordinate) for subordinate in certificates[1:index]
             )
             if subordinate_ca_count > basic_constraints.path_length:
                 return False
-
-        try:
-            key_usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
-        except ExtensionNotFound:
-            continue
-        if not key_usage.key_cert_sign:
-            return False
     return True
+
+
+def _certificate_ca_constraints(
+    certificate: Certificate,
+) -> tuple[x509.BasicConstraints, x509.KeyUsage] | None:
+    """Return the mandatory CA extensions when both are present."""
+    try:
+        basic_constraints = certificate.extensions.get_extension_for_class(x509.BasicConstraints).value
+        key_usage = certificate.extensions.get_extension_for_class(x509.KeyUsage).value
+    except ExtensionNotFound:
+        return None
+    return basic_constraints, key_usage
 
 
 def _certificate_datetime(certificate: Certificate, attribute: str) -> datetime:
