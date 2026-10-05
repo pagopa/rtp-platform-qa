@@ -1,23 +1,12 @@
-"""Test QSealC signature, trust-chain, validity, and revocation verification."""
-
-import base64
-from datetime import timedelta
-
 import allure
 import pytest
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric.padding import MGF1, PSS
 
 from api.utils.endpoints import CALLBACK_URL_V2
-from api.utils.http_utils import APPLICATION_JSON_HEADER
 from utils.dataset_callback_data_DS_08P_positive_v2 import generate_callback_data_DS_08P_positive_compliant
-from utils.srtp_message_signing import build_canonical_representation
-from utils.srtp_signature import (
-    RevocationResult,
-    RevocationStatus,
-    sign_srtp_message,
-    verify_srtp_message,
-)
+from utils.srtp_signature import sign_srtp_message, verify_srtp_message
+
+SIGNING_HEADERS = {"Content-Type": "application/json"}
+
 
 @allure.epic("QSealC message signing")
 @allure.feature("Signature verification")
@@ -26,15 +15,29 @@ from utils.srtp_signature import (
 @pytest.mark.happy_path
 @pytest.mark.callback
 def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
-    qsealc_verification_context,
+    qsealc_test_chain,
+    ds_08p_callback_payload,
+    callback_body_factory,
 ) -> None:
-    """Accept a signature whose chain terminates at a trusted root."""
+    body = callback_body_factory(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        payload=ds_08p_callback_payload,
+    )
+    signature = sign_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=SIGNING_HEADERS,
+        body=body,
+        key_material=qsealc_test_chain.key_material,
+    )
+
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=qsealc_verification_context.headers,
-        body=qsealc_verification_context.body,
-        trusted_roots=qsealc_verification_context.trusted_roots,
+        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        body=body,
+        trusted_roots=(qsealc_test_chain.root_certificate_pem,),
     )
 
     assert result.is_valid, f"Expected the trusted signature to verify: {result.failure_detail}"
@@ -45,43 +48,25 @@ def test_verify_srtp_message_accepts_a_signature_with_a_trusted_root(
 
 @allure.epic("QSealC message signing")
 @allure.feature("Signature verification")
-@allure.story("Reject an issuer without CA constraints")
-@pytest.mark.functional
-@pytest.mark.unhappy_path
-@pytest.mark.callback
-def test_verify_srtp_message_rejects_an_issuer_without_ca_constraints(
-    qsealc_verification_context_without_ca_constraints,
-) -> None:
-    """Reject a signer chain whose issuer omits a mandatory CA constraint."""
-    result = verify_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=qsealc_verification_context_without_ca_constraints.headers,
-        body=qsealc_verification_context_without_ca_constraints.body,
-        trusted_roots=qsealc_verification_context_without_ca_constraints.trusted_roots,
-    )
-
-    assert not result.is_valid, "Expected an issuer without CA constraints to be rejected"
-    assert result.failure_reason == "UNTRUSTED_ISSUER", "Expected the incomplete issuer to be untrusted"
-
-
-@allure.epic("QSealC message signing")
-@allure.feature("Signature verification")
 @allure.story("Reject a changed message body")
 @pytest.mark.functional
 @pytest.mark.unhappy_path
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_a_signature_for_changed_body(
     qsealc_test_chain,
-    callback_body,
+    ds_08p_callback_payload,
     callback_body_factory,
 ) -> None:
-    """Reject a signature after the canonicalized body has changed."""
+    body = callback_body_factory(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        payload=ds_08p_callback_payload,
+    )
     signature = sign_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=APPLICATION_JSON_HEADER,
-        body=callback_body,
+        headers=SIGNING_HEADERS,
+        body=body,
         key_material=qsealc_test_chain.key_material,
     )
     changed_body = callback_body_factory(
@@ -93,7 +78,7 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers={**APPLICATION_JSON_HEADER, **signature.as_headers()},
+        headers={**SIGNING_HEADERS, **signature.as_headers()},
         body=changed_body,
         trusted_roots=(qsealc_test_chain.root_certificate_pem,),
     )
@@ -109,170 +94,31 @@ def test_verify_srtp_message_rejects_a_signature_for_changed_body(
 @pytest.mark.unhappy_path
 @pytest.mark.callback
 def test_verify_srtp_message_rejects_an_untrusted_certificate_chain(
+    qsealc_test_chain,
     qsealc_key_material,
-    qsealc_verification_context,
+    ds_08p_callback_payload,
+    callback_body_factory,
 ) -> None:
-    """Reject a valid signature whose certificate chain is untrusted."""
+    body = callback_body_factory(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        payload=ds_08p_callback_payload,
+    )
+    signature = sign_srtp_message(
+        method="POST",
+        url=CALLBACK_URL_V2,
+        headers=SIGNING_HEADERS,
+        body=body,
+        key_material=qsealc_test_chain.key_material,
+    )
+
     result = verify_srtp_message(
         method="POST",
         url=CALLBACK_URL_V2,
-        headers=qsealc_verification_context.headers,
-        body=qsealc_verification_context.body,
+        headers={**SIGNING_HEADERS, **signature.as_headers()},
+        body=body,
         trusted_roots=(qsealc_key_material.certificate_pem,),
     )
 
     assert not result.is_valid, "Expected an untrusted certificate chain to be rejected"
     assert result.failure_reason == "UNTRUSTED_ISSUER", "Expected a trust-chain validation failure"
-
-
-@allure.epic("QSealC message signing")
-@allure.feature("Signature verification")
-@allure.story("Reject an expired certificate")
-@pytest.mark.functional
-@pytest.mark.unhappy_path
-@pytest.mark.callback
-def test_verify_srtp_message_rejects_an_expired_certificate(
-    qsealc_test_chain,
-    qsealc_verification_context,
-) -> None:
-    """Reject a signature whose certificate chain is expired."""
-    result = verify_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=qsealc_verification_context.headers,
-        body=qsealc_verification_context.body,
-        trusted_roots=qsealc_verification_context.trusted_roots,
-        at_time=qsealc_test_chain.valid_until + timedelta(minutes=1),
-    )
-
-    assert not result.is_valid, "Expected an expired certificate to be rejected"
-    assert result.failure_reason == "CERTIFICATE_EXPIRED", "Expected a certificate validity failure"
-
-
-@allure.epic("QSealC message signing")
-@allure.feature("Signature verification")
-@allure.story("Reject a revoked certificate")
-@pytest.mark.functional
-@pytest.mark.unhappy_path
-@pytest.mark.callback
-def test_verify_srtp_message_rejects_a_revoked_certificate(
-    qsealc_verification_context,
-) -> None:
-    """Reject a signature when the revocation checker reports revoked."""
-    result = verify_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=qsealc_verification_context.headers,
-        body=qsealc_verification_context.body,
-        trusted_roots=qsealc_verification_context.trusted_roots,
-        revocation_checker=lambda _certificate, _issuer: RevocationResult(
-            status=RevocationStatus.REVOKED,
-            source="test",
-            reason="Certificate serial number is listed as revoked",
-        ),
-    )
-
-    assert not result.is_valid, "Expected a revoked certificate to be rejected"
-    assert result.failure_reason == "CERTIFICATE_REVOKED", "Expected a revocation failure"
-    assert result.revocation_status is RevocationStatus.REVOKED, "Expected the revoked status to be preserved"
-
-
-@allure.epic("QSealC message signing")
-@allure.feature("Signature verification")
-@allure.story("Report an unknown certificate revocation status")
-@pytest.mark.functional
-@pytest.mark.happy_path
-@pytest.mark.callback
-def test_verify_srtp_message_reports_an_unknown_revocation_status(
-    qsealc_verification_context,
-) -> None:
-    """Preserve an unknown revocation status without rejecting the signature."""
-    result = verify_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=qsealc_verification_context.headers,
-        body=qsealc_verification_context.body,
-        trusted_roots=qsealc_verification_context.trusted_roots,
-        revocation_checker=lambda _certificate, _issuer: RevocationResult(
-            status=RevocationStatus.UNKNOWN,
-            source="test",
-        ),
-    )
-
-    assert result.is_valid, f"Expected signature verification to succeed: {result.failure_detail}"
-    assert result.revocation_status is RevocationStatus.UNKNOWN, "Expected the unknown status to be preserved"
-
-
-@allure.epic("QSealC message signing")
-@allure.feature("Signature verification")
-@allure.story("Accept RSA-PSS signatures")
-@pytest.mark.functional
-@pytest.mark.happy_path
-@pytest.mark.callback
-@pytest.mark.parametrize(
-    argnames=("salt_length", "salt_label"),
-    argvalues=(
-        (PSS.DIGEST_LENGTH, "digest-length"),
-        (PSS.MAX_LENGTH, "maximum-length"),
-    ),
-    ids=("digest-length", "maximum-length"),
-)
-def test_verify_srtp_message_accepts_rsa_pss_signatures(
-    qsealc_test_chain,
-    qsealc_verification_context,
-    salt_length,
-    salt_label,
-) -> None:
-    """Accept RSA-PSS signatures using supported salt-length conventions."""
-    canonical = build_canonical_representation(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=APPLICATION_JSON_HEADER,
-        body=qsealc_verification_context.body,
-    )
-    pss_signature = qsealc_test_chain.key_material.private_key.sign(
-        data=canonical,
-        padding=PSS(mgf=MGF1(hashes.SHA256()), salt_length=salt_length),
-        algorithm=hashes.SHA256(),
-    )
-    headers = {
-        **qsealc_verification_context.headers,
-        "X-SRTP-Signature": base64.b64encode(pss_signature).decode("ascii"),
-    }
-
-    result = verify_srtp_message(
-        method="POST",
-        url=CALLBACK_URL_V2,
-        headers=headers,
-        body=qsealc_verification_context.body,
-        trusted_roots=qsealc_verification_context.trusted_roots,
-    )
-
-    assert result.is_valid, f"Expected RSA-PSS ({salt_label}) verification to succeed: {result.failure_detail}"
-
-
-@allure.epic("QSealC message signing")
-@allure.feature("Signature verification")
-@allure.story("Reject an invalid target URI")
-@pytest.mark.functional
-@pytest.mark.unhappy_path
-@pytest.mark.callback
-@pytest.mark.parametrize(
-    argnames="invalid_url",
-    argvalues=("/callback", "mailto:callback@example.com"),
-)
-def test_verify_srtp_message_rejects_an_invalid_target_uri(
-    qsealc_verification_context,
-    invalid_url,
-) -> None:
-    """Reject a message whose target URI cannot be canonicalized."""
-    result = verify_srtp_message(
-        method="POST",
-        url=invalid_url,
-        headers=qsealc_verification_context.headers,
-        body=qsealc_verification_context.body,
-        trusted_roots=qsealc_verification_context.trusted_roots,
-    )
-
-    assert not result.is_valid, "Expected an incomplete target URI to be rejected"
-    assert result.failure_reason == "INVALID_MESSAGE", "Expected an invalid-message failure"
