@@ -62,8 +62,12 @@ def qsealc_test_chain() -> QsealcTestChain:
         public_exponent=TEST_RSA_PUBLIC_EXPONENT,
         key_size=TEST_RSA_KEY_SIZE,
     )
-    root_subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Test QTSP Root")])
-    leaf_subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "Test QSealC Signer")])
+    root_subject = x509.Name(
+        [x509.NameAttribute(oid=NameOID.COMMON_NAME, value="Test QTSP Root")]
+    )
+    leaf_subject = x509.Name(
+        [x509.NameAttribute(oid=NameOID.COMMON_NAME, value="Test QSealC Signer")]
+    )
     valid_from = datetime.now(timezone.utc) - timedelta(minutes=1)
     valid_until = valid_from + TEST_CERTIFICATE_LIFETIME
     root_certificate = (

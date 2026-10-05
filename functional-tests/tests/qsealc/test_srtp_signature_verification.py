@@ -202,8 +202,8 @@ def test_verify_srtp_message_reports_an_unknown_revocation_status(
 @pytest.mark.happy_path
 @pytest.mark.callback
 @pytest.mark.parametrize(
-    ("salt_length", "salt_label"),
-    (
+    argnames=("salt_length", "salt_label"),
+    argvalues=(
         (PSS.DIGEST_LENGTH, "digest-length"),
         (PSS.MAX_LENGTH, "maximum-length"),
     ),
@@ -251,7 +251,10 @@ def test_verify_srtp_message_accepts_rsa_pss_signatures(
 @pytest.mark.functional
 @pytest.mark.unhappy_path
 @pytest.mark.callback
-@pytest.mark.parametrize("invalid_url", ("/callback", "mailto:callback@example.com"))
+@pytest.mark.parametrize(
+    argnames="invalid_url",
+    argvalues=("/callback", "mailto:callback@example.com"),
+)
 def test_verify_srtp_message_rejects_an_invalid_target_uri(
     qsealc_test_chain,
     signed_callback_message,
