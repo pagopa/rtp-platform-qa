@@ -12,6 +12,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import ec, padding
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
+from cryptography.hazmat.primitives.asymmetric.padding import AsymmetricPadding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey, RSAPublicKey
 from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.x509 import Certificate
@@ -358,32 +359,80 @@ def _verify_signature(
 ) -> bool:
     public_key = certificate.public_key()
     if isinstance(public_key, RSAPublicKey):
+        return _verify_rsa_signature(
+            public_key=public_key,
+            signature=signature,
+            canonical_bytes=canonical_bytes,
+            hash_algorithm=hash_algorithm,
+        )
+    if isinstance(public_key, ec.EllipticCurvePublicKey):
+        return _verify_elliptic_curve_signature(
+            public_key=public_key,
+            signature=signature,
+            canonical_bytes=canonical_bytes,
+            hash_algorithm=hash_algorithm,
+        )
+    return False
+
+
+def _verify_rsa_signature(
+    *,
+    public_key: RSAPublicKey,
+    signature: bytes,
+    canonical_bytes: bytes,
+    hash_algorithm: hashes.HashAlgorithm,
+) -> bool:
+    return any(
+        _verify_rsa_signature_with_padding(
+            public_key=public_key,
+            signature=signature,
+            canonical_bytes=canonical_bytes,
+            hash_algorithm=hash_algorithm,
+            signature_padding=signature_padding,
+        )
         for signature_padding in (
             padding.PKCS1v15(),
             padding.PSS(mgf=padding.MGF1(hash_algorithm), salt_length=padding.PSS.DIGEST_LENGTH),
-        ):
-            try:
-                public_key.verify(
-                    signature=signature,
-                    data=canonical_bytes,
-                    padding=signature_padding,
-                    algorithm=hash_algorithm,
-                )
-                return True
-            except InvalidSignature:
-                continue
+        )
+    )
+
+
+def _verify_rsa_signature_with_padding(
+    *,
+    public_key: RSAPublicKey,
+    signature: bytes,
+    canonical_bytes: bytes,
+    hash_algorithm: hashes.HashAlgorithm,
+    signature_padding: AsymmetricPadding,
+) -> bool:
+    try:
+        public_key.verify(
+            signature=signature,
+            data=canonical_bytes,
+            padding=signature_padding,
+            algorithm=hash_algorithm,
+        )
+    except InvalidSignature:
         return False
-    if isinstance(public_key, ec.EllipticCurvePublicKey):
-        try:
-            public_key.verify(
-                signature=signature,
-                data=canonical_bytes,
-                signature_algorithm=ec.ECDSA(hash_algorithm),
-            )
-        except InvalidSignature:
-            return False
-        return True
-    return False
+    return True
+
+
+def _verify_elliptic_curve_signature(
+    *,
+    public_key: ec.EllipticCurvePublicKey,
+    signature: bytes,
+    canonical_bytes: bytes,
+    hash_algorithm: hashes.HashAlgorithm,
+) -> bool:
+    try:
+        public_key.verify(
+            signature=signature,
+            data=canonical_bytes,
+            signature_algorithm=ec.ECDSA(hash_algorithm),
+        )
+    except InvalidSignature:
+        return False
+    return True
 
 
 def _verification_failure(
