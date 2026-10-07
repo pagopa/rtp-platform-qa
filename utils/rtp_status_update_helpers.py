@@ -4,9 +4,12 @@ from dataclasses import dataclass
 
 import requests
 
+from api.RTP_cancel_api import cancel_rtp_v2
 from api.RTP_get_api import get_rtp_by_notice_number, get_rtp_v2
-from api.RTP_send_api import send_rtp_v2, status_update_rtp_v2
+from api.RTP_send_api import send_rtp_v2, status_update_cancel_rtp_v2, status_update_rtp_v2
+from utils.constants_epc_status_update_cancel_mock import RTP_STATUS_RFC_SENT
 from utils.constants_epc_status_update_mock import RTP_STATUS_SENT
+from utils.constants_text_helper import CANCEL_REASON_PAID
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.dataset_status_update_rtp import generate_status_update_rtp_data
 from utils.response_assertions_utils import assert_response_code, get_response_body_safe
@@ -81,6 +84,53 @@ def update_rtp_status_v2(
     return status_update_response, final_status
 
 
+def cancel_rtp_for_status_update_cancel_v2(
+    creditor_token: str,
+    reader_token: str,
+    resource_id: str,
+) -> CreatedRtpContext:
+    cancel_response = cancel_rtp_v2(
+        access_token=creditor_token,
+        resource_id=resource_id,
+        reason=CANCEL_REASON_PAID,
+    )
+    assert cancel_response.status_code == 204, (
+        f"Expected cancellation status 204, got {cancel_response.status_code}: {cancel_response.text}"
+    )
+
+    initial_status = wait_for_rtp_status(
+        reader_token=reader_token,
+        resource_id=resource_id,
+        expected_status=RTP_STATUS_RFC_SENT,
+    )
+
+    return CreatedRtpContext(resource_id=resource_id, initial_status=initial_status)
+
+
+def update_rtp_cancel_status_v2(
+    creditor_token: str,
+    reader_token: str,
+    resource_id: str,
+    expected_final_status: str | None,
+) -> tuple[requests.Response, str | None]:
+    status_update_response = status_update_cancel_rtp_v2(
+        access_token=creditor_token,
+        status_update_payload=generate_status_update_rtp_data(resource_id),
+    )
+
+    final_status = (
+        wait_for_rtp_status(
+            reader_token=reader_token,
+            resource_id=resource_id,
+            expected_status=expected_final_status,
+        )
+        if expected_final_status is not None
+        else None
+    )
+
+    return status_update_response, final_status
+
+
 def wait_for_rtp_status(
     reader_token: str,
     resource_id: str,
@@ -114,6 +164,29 @@ def assert_rtp_deleted_after_status_update(
         resource_id=resource_id,
         is_ready=lambda response: response.status_code == 404,
         expected_outcome="be deleted after status update",
+    )
+
+
+def assert_rtp_last_trigger_event(
+    reader_token: str,
+    resource_id: str,
+    expected_trigger_event: str,
+) -> None:
+    def is_expected_last_event(response: requests.Response) -> bool:
+        if response.status_code != 200:
+            return False
+
+        response_body: JsonType = get_response_body_safe(response)
+        if not isinstance(response_body, dict):
+            return False
+        events = response_body.get("events")
+        return isinstance(events, list) and bool(events) and events[-1].get("triggerEvent") == expected_trigger_event
+
+    _poll_rtp_response(
+        reader_token=reader_token,
+        resource_id=resource_id,
+        is_ready=is_expected_last_event,
+        expected_outcome=f"record {expected_trigger_event} as its last event",
     )
 
 
