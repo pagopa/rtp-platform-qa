@@ -3,10 +3,11 @@ import uuid
 import requests
 
 from api.utils.endpoints import (
-  SEND_RTP_URL,
-  SERVICE_PROVIDER_MOCK_URL,
-  STATUS_UPDATE_RTP_URL,
-  STATUS_UPDATE_CANCEL_RTP_URL)
+    SEND_RTP_URL,
+    SERVICE_PROVIDER_MOCK_URL,
+    STATUS_UPDATE_CANCEL_RTP_URL,
+    STATUS_UPDATE_RTP_URL,
+)
 from api.utils.http_utils import HTTP_TIMEOUT
 from utils.type_utils import JsonType
 
