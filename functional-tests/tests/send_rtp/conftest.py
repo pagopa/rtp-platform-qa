@@ -7,7 +7,9 @@ from config.configuration import secrets
 from utils.rtp_status_update_helpers import (
     CreatedRtpContext,
     StatusUpdateRtpContext,
+    cancel_rtp_for_status_update_cancel_v2,
     create_rtp_for_status_update_v2,
+    update_rtp_cancel_status_v2,
     update_rtp_status_v2,
 )
 
@@ -72,6 +74,68 @@ def status_update_rtp_factory(
         return StatusUpdateRtpContext(
             resource_id=created_context.resource_id,
             initial_status=created_context.initial_status,
+            final_status=final_status,
+            status_update_response=status_update_response,
+        )
+
+    return _create
+
+
+@pytest.fixture
+def status_update_cancel_rtp_resource_factory(
+    status_update_rtp_resource_factory: Callable[..., CreatedRtpContext],
+    creditor_service_provider_token_a: str,
+    rtp_reader_access_token: str,
+) -> Callable[..., CreatedRtpContext]:
+    def _create(
+        *,
+        payer_id: str,
+        notice_number: str,
+    ) -> CreatedRtpContext:
+        """Create an RTP and request its cancellation, leaving it in RFC_SENT.
+
+        The fixture returns this callback to tests that need an RTP with a
+        pending Request for Cancellation. Each invocation creates an isolated
+        activation and RTP.
+        """
+        created_context = status_update_rtp_resource_factory(
+            payer_id=payer_id,
+            notice_number=notice_number,
+        )
+        return cancel_rtp_for_status_update_cancel_v2(
+            creditor_token=creditor_service_provider_token_a,
+            reader_token=rtp_reader_access_token,
+            resource_id=created_context.resource_id,
+        )
+
+    return _create
+
+
+@pytest.fixture
+def status_update_cancel_rtp_factory(
+    status_update_cancel_rtp_resource_factory: Callable[..., CreatedRtpContext],
+    creditor_service_provider_token_a: str,
+    rtp_reader_access_token: str,
+) -> Callable[..., StatusUpdateRtpContext]:
+    def _create(
+        *,
+        payer_id: str,
+        notice_number: str,
+        expected_final_status: str | None,
+    ) -> StatusUpdateRtpContext:
+        cancelled_context = status_update_cancel_rtp_resource_factory(
+            payer_id=payer_id,
+            notice_number=notice_number,
+        )
+        status_update_response, final_status = update_rtp_cancel_status_v2(
+            creditor_token=creditor_service_provider_token_a,
+            reader_token=rtp_reader_access_token,
+            resource_id=cancelled_context.resource_id,
+            expected_final_status=expected_final_status,
+        )
+        return StatusUpdateRtpContext(
+            resource_id=cancelled_context.resource_id,
+            initial_status=cancelled_context.initial_status,
             final_status=final_status,
             status_update_response=status_update_response,
         )
