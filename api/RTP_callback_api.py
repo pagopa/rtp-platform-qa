@@ -13,6 +13,9 @@ from api.utils.endpoints import (
 )
 from api.utils.http_utils import HTTP_TIMEOUT
 from utils.type_utils import JsonType
+from utils.cryptography_utils import QsealcKeyMaterial
+from utils.srtp_message_signing import prepared_request_body
+from utils.srtp_signature import sign_srtp_message
 
 
 def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
@@ -26,7 +29,13 @@ def srtp_callback(cert_path: str, key_path: str, rtp_payload, include_version_he
     )
 
 
-def srtp_callback_v2(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
+def srtp_callback_v2(
+    cert_path: str,
+    key_path: str,
+    rtp_payload,
+    include_version_header: bool = False,
+    qsealc_key_material: QsealcKeyMaterial | None = None,
+):
     """
     Send a callback to the v2 RTP callback endpoint.
 
@@ -35,17 +44,19 @@ def srtp_callback_v2(cert_path: str, key_path: str, rtp_payload, include_version
         key_path: Path to the key file
         rtp_payload: The callback payload
         include_version_header: When True, adds the Version header to the request
+        qsealc_key_material: Optional QSealC material used to sign the request
 
     Returns:
         Response object from the callback request
     """
     headers = {"Version": CALLBACK_VERSION_V2} if include_version_header else {}
-    return requests.post(
-        cert=(cert_path, key_path),
+    return _send_callback(
+        cert_path=cert_path,
+        key_path=key_path,
         url=CALLBACK_URL_V2,
         headers=headers,
-        json=rtp_payload,
-        timeout=HTTP_TIMEOUT,
+        rtp_payload=rtp_payload,
+        qsealc_key_material=qsealc_key_material,
     )
 
 
@@ -92,7 +103,13 @@ def srtp_rfc_callback(cert_path: str, key_path: str, rtp_payload, include_versio
     )
 
 
-def srtp_rfc_callback_v2(cert_path: str, key_path: str, rtp_payload, include_version_header: bool = False):
+def srtp_rfc_callback_v2(
+    cert_path: str,
+    key_path: str,
+    rtp_payload,
+    include_version_header: bool = False,
+    qsealc_key_material: QsealcKeyMaterial | None = None,
+):
     """
     Send RFC (Request for Cancellation) callback to the v2 endpoint.
 
@@ -104,15 +121,60 @@ def srtp_rfc_callback_v2(cert_path: str, key_path: str, rtp_payload, include_ver
         key_path: Path to the key file
         rtp_payload: The RFC callback payload (DS12P or DS12N)
         include_version_header: When True, adds the Version header to the request
+        qsealc_key_material: Optional QSealC material used to sign the request
 
     Returns:
         Response object from the callback request
     """
     headers = {"Version": RFC_CALLBACK_VERSION_V2} if include_version_header else {}
-    return requests.post(
-        cert=(cert_path, key_path),
+    return _send_callback(
+        cert_path=cert_path,
+        key_path=key_path,
         url=RFC_CALLBACK_URL_V2,
         headers=headers,
-        json=rtp_payload,
-        timeout=HTTP_TIMEOUT,
+        rtp_payload=rtp_payload,
+        qsealc_key_material=qsealc_key_material,
     )
+
+
+def _send_callback(
+    *,
+    cert_path: str,
+    key_path: str,
+    url: str,
+    headers: Mapping[str, str],
+    rtp_payload,
+    qsealc_key_material: QsealcKeyMaterial | None,
+):
+    """Send a v2 callback through the unsigned or QSealC-signed request path."""
+    if qsealc_key_material is None:
+        return requests.post(
+            cert=(cert_path, key_path),
+            url=url,
+            headers=headers,
+            json=rtp_payload,
+            timeout=HTTP_TIMEOUT,
+        )
+
+    prepared_request = requests.Request(
+        method="POST",
+        url=url,
+        headers=headers,
+        json=rtp_payload,
+    ).prepare()
+    body = prepared_request_body(prepared_request)
+    signature = sign_srtp_message(
+        method=prepared_request.method,
+        url=prepared_request.url,
+        headers=prepared_request.headers,
+        body=body,
+        key_material=qsealc_key_material,
+    )
+    prepared_request.headers.update(signature.as_headers())
+
+    with requests.Session() as session:
+        return session.send(
+            request=prepared_request,
+            cert=(cert_path, key_path),
+            timeout=HTTP_TIMEOUT,
+        )
