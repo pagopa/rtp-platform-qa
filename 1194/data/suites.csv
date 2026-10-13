@@ -1,0 +1,42 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","76727","test_activation_contract[GET /activations/payer]","contract-tests.tests","2026-10-13","passed","2026-10-13","","test_activation","",""
+"","3728","Attempt to cancel a non-existing RTP","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Cancellation","RTP","",""
+"","538","A Service Provider tries to activates a debtor without having the correct credentials","bdd-tests","2026-10-13","passed","2026-10-13","Debtor_Activation","RTP","",""
+"","3429","A debtor Service Provider activates a debtor","bdd-tests","2026-10-13","passed","2026-10-13","Debtor_Activation","RTP","",""
+"","2296","A debtor Service Provider cannot send an RTP","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Sending","RTP","",""
+"","2549","RTP form is filled and submitted","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_cancel_v4","",""
+"","3087","RTP form cancellation with reason PAID","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_cancel_v3","",""
+"","3930","An authenticated creditor Service Provider can send an RTP to an activated debtor","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Sending","RTP","",""
+"","5082","A debtor Service Provider successfully takes over an activation from another provider","bdd-tests","2026-10-13","passed","2026-10-13","Debtor_Activation_Takeover","RTP","",""
+"","4373","Attempt to cancel an already cancelled RTP","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Cancellation","RTP","",""
+"","1759","An authenticated Service Provider cannot send an RTP to an unactivated debtor","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Sending","RTP","",""
+"","3531","RTP form cancellation with reason MODT","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_cancel_v3","",""
+"","2342","RTP form is filled and submitted","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_submission_v3","",""
+"","6838","RTP form is filled and submitted","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_cancel_v3","",""
+"","2887","An authenticated Service Provider cannot send an RTP to an activated debtor","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Sending","RTP","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","170077","test_send_api_contract[POST /gpd/message]","contract-tests.tests","2026-10-13","passed","2026-10-13","","test_api_send_rtp","",""
+"","2706","A debtor Service Provider tries to activates a debtor 2 times, failing the second attempt","bdd-tests","2026-10-13","passed","2026-10-13","Debtor_Activation","RTP","",""
+"","1135","Whitespaces is allowed in description and company name field","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_submission_v4","",""
+"","2271","Takeover fails without authentication","bdd-tests","2026-10-13","passed","2026-10-13","Debtor_Activation_Takeover","RTP","",""
+"","1191","Whitespaces is allowed in description and company name field","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_submission_v3","",""
+"","5420","Successfully cancel a Request to Pay","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Cancellation","RTP","",""
+"","2959","RTP form cancellation with reason PAID","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_cancel_v4","",""
+"","3072","Takeover fails with invalid OTP","bdd-tests","2026-10-13","passed","2026-10-13","Debtor_Activation_Takeover","RTP","",""
+"","0","Successful login","bdd-tests","2026-10-13","passed","2026-10-13","RTP_Web_Sending","RTP","",""
+"","3438","RTP form cancellation with reason MODT","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_cancel_v4","",""
+"","2098","RTP form is filled and submitted","ux-tests.tests","2026-10-13","passed","2026-10-13","","test_RTP_submission_v4","",""
