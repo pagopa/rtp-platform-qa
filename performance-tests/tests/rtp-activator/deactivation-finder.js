@@ -32,6 +32,15 @@ const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 7;
 /** Optional sleep between iterations (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
+/** Load profile to use. Defaults to 'stress_test_fixed_user' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'stress_test_fixed_user';
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
 /**
  * Load activations from JSON and normalize to an array of activation IDs.
  * The JSON entries may expose the identifier under different keys (`id`, `activationId`, `activationID`).
@@ -65,19 +74,25 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * @type {import('k6/options').Options}
  */
-export let options = {
-  ...getOptions('stress_test_fixed_user', 'deactivate'),
-  scenarios: {
-    stress_test_fixed_user: {
-      executor: 'shared-iterations',
-      vus: VU_COUNT_SET,
-      iterations: wrappedActivations.length,
-      maxDuration: '30m',
-      gracefulStop: '30m',
-      exec: 'deactivate'
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO) && SCENARIO !== 'stress_test_fixed_user'
+  ? {
+      ...getOptions(SCENARIO, 'deactivate'),
+      setupTimeout: '5m'
     }
-  }
-};
+  : {
+      ...getOptions('stress_test_fixed_user', 'deactivate'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT_SET,
+          iterations: wrappedActivations.length,
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'deactivate'
+        }
+      }
+    };
 
 /**
  * Flag toggled when all activations have been deactivated.
@@ -158,7 +173,7 @@ export function deactivate(data) {
     };
   }
 
-  const vuIndex = __VU - 1;
+  const vuIndex = (__VU - 1) % data.activationChunks.length;
 
   if (!data.activationChunks[vuIndex]) {
     console.log(`⚠️ VU #${__VU}: No activation chunk assigned. Termination.`);

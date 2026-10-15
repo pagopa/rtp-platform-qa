@@ -35,6 +35,15 @@ const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 7;
 /** Total shared iterations. */
 const ITERATIONS = Number(__ENV.ITERATIONS) || 20000;
 
+/** Load profile to use. Defaults to 'stress_test_fixed_user' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'stress_test_fixed_user';
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
 /**
  * Standard custom metrics used by this test.
  * @typedef {Object} StandardMetrics
@@ -56,20 +65,25 @@ const testCompletedRef = {value: false};
  *
  * @type {import('k6/options').Options}
  */
-export let options = {
-    ...getOptions('stress_test_fixed_user', 'findAllByServiceProvider'),
-    setupTimeout: '5m',
-    scenarios: {
-        stress_test_fixed_user: {
-            executor: 'shared-iterations',
-            vus: VU_COUNT_SET,
-            iterations: ITERATIONS,
-            maxDuration: '30m',
-            gracefulStop: '30m',
-            exec: 'findAllByServiceProvider'
-        }
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO) && SCENARIO !== 'stress_test_fixed_user'
+  ? {
+      ...getOptions(SCENARIO, 'findAllByServiceProvider'),
+      setupTimeout: '5m'
     }
-};
+  : {
+      ...getOptions('stress_test_fixed_user', 'findAllByServiceProvider'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT_SET,
+          iterations: ITERATIONS,
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'findAllByServiceProvider'
+        }
+      }
+    };
 
 /**
  * @typedef {Object} SetupData
