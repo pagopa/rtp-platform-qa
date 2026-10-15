@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import {check, sleep} from 'k6';
+import exec from 'k6/execution';
 import {createStandardMetrics} from "../../utils/metrics-utils.js";
 import {
   ActorCredentials,
@@ -35,7 +36,7 @@ import {
  * ## Execution Strategy
  * - Executor: `shared-iterations`
  * - Iterations: equals the number of OTPs loaded from file
- * - OTP mapping: `activationOtps[__ITER]` (1 OTP per iteration)
+ * - OTP mapping: `activationOtps[exec.scenario.iterationInTest]` (1 OTP per iteration)
  */
 
 /** Timestamp (ms) marking the start of the test run. */
@@ -104,7 +105,7 @@ export function setup(){
  *
  * Flow per iteration:
  * - Derives tags for metrics (timeWindow, stage, vu)
- * - Picks an OTP using the global iteration index (`__ITER`)
+ * - Picks an OTP using the scenario iteration index (`exec.scenario.iterationInTest`)
  * - Calls takeover endpoint with the token provided by `setup()`
  * - Records response time and success/failure metrics
  * - Optionally sleeps between iterations
@@ -126,7 +127,7 @@ export function takeover(data){
 
   const token = data.token;
 
-  const otp = activationOtps[__ITER];
+  const otp = activationOtps[exec.scenario.iterationInTest];
 
   const endpoint = `${endpoints.takeover}/${otp}`
   const headers = { ...buildHeaders(token)};
