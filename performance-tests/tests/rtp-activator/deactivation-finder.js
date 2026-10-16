@@ -32,14 +32,20 @@ const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 7;
 /** Optional sleep between iterations (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
-/** Load profile to use. Defaults to 'stress_test_fixed_user' if not specified. */
-const SCENARIO = __ENV.SCENARIO || 'stress_test_fixed_user';
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
 
 /** Scenario names backed by progressiveOptions in utils.js */
 const PREDEFINED_SCENARIOS = [
   'stress_test', 'soak_test', 'spike_test',
   'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
 ];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
 
 /**
  * Load activations from JSON and normalize to an array of activation IDs.
@@ -74,7 +80,7 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * @type {import('k6/options').Options}
  */
-export let options = PREDEFINED_SCENARIOS.includes(SCENARIO) && SCENARIO !== 'stress_test_fixed_user'
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
   ? {
       ...getOptions(SCENARIO, 'deactivate'),
       setupTimeout: '5m'
@@ -157,11 +163,7 @@ export function deactivate(data) {
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
     stage: determineStage(elapsedSeconds),
-    deactivatedCount: data.deactivatedCount,
-    vu: __VU
   };
-
-  currentRPS.add(1, tags);
 
   if (testCompleted) {
     console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
@@ -216,6 +218,8 @@ export function deactivate(data) {
 
   const headers = buildHeaders(data.access_token);
   const url = `${endpoints.deactivations}/${activationItem.id}`;
+
+  currentRPS.add(1, tags);
 
   const start = Date.now();
   const res = http.del(url, null, { headers });

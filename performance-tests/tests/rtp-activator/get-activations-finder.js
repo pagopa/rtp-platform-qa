@@ -35,14 +35,20 @@ const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 7;
 /** Total shared iterations. */
 const ITERATIONS = Number(__ENV.ITERATIONS) || 20000;
 
-/** Load profile to use. Defaults to 'stress_test_fixed_user' if not specified. */
-const SCENARIO = __ENV.SCENARIO || 'stress_test_fixed_user';
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
 
 /** Scenario names backed by progressiveOptions in utils.js */
 const PREDEFINED_SCENARIOS = [
   'stress_test', 'soak_test', 'spike_test',
   'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
 ];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
 
 /**
  * Standard custom metrics used by this test.
@@ -65,7 +71,7 @@ const testCompletedRef = {value: false};
  *
  * @type {import('k6/options').Options}
  */
-export let options = PREDEFINED_SCENARIOS.includes(SCENARIO) && SCENARIO !== 'stress_test_fixed_user'
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
   ? {
       ...getOptions(SCENARIO, 'findAllByServiceProvider'),
       setupTimeout: '5m'

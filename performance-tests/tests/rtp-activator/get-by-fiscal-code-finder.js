@@ -37,14 +37,20 @@ const ITERATIONS = Number(__ENV.ITERATIONS) || 45000;
 /** Optional per-iteration sleep time (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
-/** Load profile to use. Defaults to 'stress_test_fixed_user' if not specified. */
-const SCENARIO = __ENV.SCENARIO || 'stress_test_fixed_user';
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
 
 /** Scenario names backed by progressiveOptions in utils.js */
 const PREDEFINED_SCENARIOS = [
   'stress_test', 'soak_test', 'spike_test',
   'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
 ];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
 
 /**
  * Load unique fiscal codes from the input JSON and prepare a wrapped structure.
@@ -78,7 +84,7 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * @type {import('k6/options').Options}
  */
-export let options = PREDEFINED_SCENARIOS.includes(SCENARIO) && SCENARIO !== 'stress_test_fixed_user'
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
   ? {
       ...getOptions(SCENARIO, 'findByFiscalCode'),
       setupTimeout: '5m'

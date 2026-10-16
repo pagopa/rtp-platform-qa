@@ -50,14 +50,20 @@ const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 10;
 /** Optional per-iteration sleep time (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
-/** Load profile to use. Defaults to 'stress_test_fixed_user' if not specified. */
-const SCENARIO = __ENV.SCENARIO || 'stress_test_fixed_user';
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
 
 /** Scenario names backed by progressiveOptions in utils.js */
 const PREDEFINED_SCENARIOS = [
   'stress_test', 'soak_test', 'spike_test',
   'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
 ];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
 
 /**
  * Loads activation OTPs from file.
@@ -86,7 +92,7 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * @type {import('k6/options').Options}
  */
-export const options = PREDEFINED_SCENARIOS.includes(SCENARIO) && SCENARIO !== 'stress_test_fixed_user'
+export const options = PREDEFINED_SCENARIOS.includes(SCENARIO)
   ? {
       ...getOptions(SCENARIO, 'takeover'),
       setupTimeout: '5m'
@@ -145,11 +151,9 @@ export function takeover(data){
     vu: String(__VU),
   };
 
-  currentRPS.add(1, tags);
-
   const otpIndex = exec.scenario.iterationInTest;
   if (otpIndex >= activationOtps.length) {
-    console.warn(`⚠️ Iteration ${otpIndex} exceeds available OTP count (${activationOtps.length}). Skipping.`);
+    exec.test.abort(`OTPs exhausted (${activationOtps.length})`);
     return;
   }
 
@@ -158,6 +162,8 @@ export function takeover(data){
 
   const endpoint = `${endpoints.takeover}/${otp}`;
   const headers = { ...buildHeaders(token)};
+
+  currentRPS.add(1, tags);
 
   const start = Date.now();
   let res = http.post(endpoint, null, {headers});
