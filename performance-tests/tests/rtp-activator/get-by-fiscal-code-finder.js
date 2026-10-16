@@ -37,6 +37,21 @@ const ITERATIONS = Number(__ENV.ITERATIONS) || 45000;
 /** Optional per-iteration sleep time (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
+
 /**
  * Load unique fiscal codes from the input JSON and prepare a wrapped structure.
  *
@@ -69,20 +84,25 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * @type {import('k6/options').Options}
  */
-export let options = {
-    ...getOptions('stress_test_fixed_user', 'findByFiscalCode'),
-    setupTimeout: '5m',
-    scenarios: {
-        stress_test_fixed_user: {
-            executor: 'shared-iterations',
-            vus: VU_COUNT_SET,
-            iterations: ITERATIONS,
-            maxDuration: '30m',
-            gracefulStop: '30m',
-            exec: 'findByFiscalCode'
-        }
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
+  ? {
+      ...getOptions(SCENARIO, 'findByFiscalCode'),
+      setupTimeout: '5m'
     }
-};
+  : {
+      ...getOptions('stress_test_fixed_user', 'findByFiscalCode'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT_SET,
+          iterations: ITERATIONS,
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'findByFiscalCode'
+        }
+      }
+    };
 
 /**
  * Global flag signaling the test has logically completed.

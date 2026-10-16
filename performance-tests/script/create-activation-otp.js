@@ -24,7 +24,7 @@ import {
  *
  * ## Environment Variables
  * - `DEBTOR_SERVICE_PROVIDER_ID_FAKE` (required): Service Provider ID for the FAKE SP.
- * - `DEBTOR_SERVICE_PROVIDER_ID_MOCK` (required): Service Provider ID for the MOCK SP.
+ * - `DEBTOR_SERVICE_PROVIDER_ID` (required): Service Provider ID for the MOCK SP.
  * - `TARGET_REQUESTS` (optional, default: 1000): Number of OTPs to attempt to generate.
  *
  * ## Output
@@ -36,7 +36,7 @@ import {
 const DEBTOR_SERVICE_PROVIDER_ID_FAKE = __ENV.DEBTOR_SERVICE_PROVIDER_ID_FAKE;
 
 /** Debtor Service Provider ID for the MOCK provider (from env). */
-const DEBTOR_SERVICE_PROVIDER_ID_MOCK = __ENV.DEBTOR_SERVICE_PROVIDER_ID_MOCK;
+const DEBTOR_SERVICE_PROVIDER_ID = __ENV.DEBTOR_SERVICE_PROVIDER_ID;
 
 /** Number of OTPs to attempt to generate. */
 const TARGET_REQUESTS = Number(__ENV.TARGET_REQUESTS) || 1000;
@@ -107,7 +107,7 @@ export function setup(){
 
     if (res.status === 201){
       headers = { ...buildHeaders(mockSpToken)};
-      payload = { payer: {fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID_MOCK}};
+      payload = { payer: {fiscalCode, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID}};
       res = http.post(url, JSON.stringify(payload), {headers});
 
       if (res.status === 409) {
