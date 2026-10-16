@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import {check, sleep} from 'k6';
+import exec from 'k6/execution';
 import {setupAuth, buildHeaders, endpoints, determineStage, getOptions, ActorCredentials} from '../../utils/utils.js';
 import {createStandardMetrics} from '../../utils/metrics-utils.js';
 import {shuffleArray, distributeItemsAmongGroups} from '../../utils/batch-utils.js';
@@ -165,101 +166,34 @@ export function deactivate(data) {
     stage: determineStage(elapsedSeconds),
   };
 
-  if (testCompleted) {
-    console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
-    sleep(30);
-    return {
-      status: 200,
-      message: 'Test already completed, waiting for dashboard viewing',
-      noMetrics: true
-    };
+  const idx = exec.scenario.iterationInTest;
+  if (idx >= wrappedActivations.length) {
+    exec.test.abort('Activation exhausted');
+    return;
   }
 
-  const vuIndex = (__VU - 1) % data.activationChunks.length;
-
-  if (!data.activationChunks[vuIndex]) {
-    console.log(`⚠️ VU #${__VU}: No activation chunk assigned. Termination.`);
-    return { status: 400, message: 'No activation chunk assigned', noMetrics: true };
-  }
-
-  const myActivations = data.activationChunks[vuIndex];
-
-  if (data.currentIndices === undefined) {
-    data.currentIndices = {};
-  }
-  if (data.currentIndices[vuIndex] === undefined) {
-    data.currentIndices[vuIndex] = 0;
-  }
-
-  if (data.vuDeactivatedCount === undefined) {
-    data.vuDeactivatedCount = {};
-  }
-  if (data.vuDeactivatedCount[vuIndex] === undefined) {
-    data.vuDeactivatedCount[vuIndex] = 0;
-  }
-
-  if (data.vuDeactivatedCount[vuIndex] >= myActivations.length) {
-    console.log(`✓ VU #${__VU}: Completed all ${myActivations.length} deactivations assigned.`);
-    sleep(5);
-    return {
-      status: 200,
-      message: `VU #${__VU} completed all deactivations, idle for dashboard`,
-      noMetrics: true
-    };
-  }
-
-  const currentIndex = data.currentIndices[vuIndex];
-  const activationItem = myActivations[currentIndex];
-
-  if (activationItem.deactivated) {
-    data.currentIndices[vuIndex] = (currentIndex + 1) % myActivations.length;
-    return deactivate(data);
-  }
-
+  const activation = wrappedActivations[idx];
   const headers = buildHeaders(data.access_token);
-  const url = `${endpoints.deactivations}/${activationItem.id}`;
 
   currentRPS.add(1, tags);
 
   const start = Date.now();
-  const res = http.del(url, null, { headers });
+  const res = http.del(`${endpoints.deactivations}/${activation.id}`, null, { headers });
   const duration = Date.now() - start;
 
   responseTimeTrend.add(duration, tags);
 
   if (res.status === 204) {
     successCounter.add(1, tags);
-
-    activationItem.deactivated = true;
-    data.vuDeactivatedCount[vuIndex]++;
-    data.deactivatedCount++;
-
-    if (data.deactivatedCount % 50 === 0 || data.vuDeactivatedCount[vuIndex] === data.activationChunks[vuIndex].length) {
-      console.log(`✓ VU #${__VU}: ${data.vuDeactivatedCount[vuIndex]}/${data.activationChunks[vuIndex].length} deactivations completed (Total: ${data.deactivatedCount}/${data.totalActivations})`);
-    }
-
-    if (data.deactivatedCount >= data.totalActivations && !data.allCompleted) {
-      data.allCompleted = true;
-      testCompleted = true;
-      console.log(`✅ TEST COMPLETED: All ${data.totalActivations} activations have been deactivated!`);
-      console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
-      console.log(`Dashboard will remain active for viewing results.`);
-      return {
-        status: 204,
-        message: 'Test completed successfully, dashboard still active',
-        noMetrics: false
-      };
-    }
+    activation.deactivated = true;
   } else {
     failureCounter.add(1, tags);
-    console.error(`❌ VU #${__VU}: Failed deactivation for ID ${activationItem.id}: Status ${res.status}`);
+    console.error(`❌ VU #${__VU}: Failed deactivation for ID ${activation.id}: Status ${res.status}`);
   }
 
   check(res, {
     'deactivation: status is 204': (r) => r.status === 204
   });
-
-  data.currentIndices[vuIndex] = (data.currentIndices[vuIndex] + 1) % myActivations.length;
 
   if (SLEEP_ITER > 0) {
     sleep(SLEEP_ITER);
