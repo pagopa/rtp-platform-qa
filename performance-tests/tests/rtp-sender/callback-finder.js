@@ -82,7 +82,7 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * @type {import('k6/options').Options}
  */
-export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
+export let options = ['stress_test', 'soak_test', 'spike_test'].includes(SCENARIO)
   ? {
       ...getOptions(SCENARIO, 'callback'),
       setupTimeout: '5m',

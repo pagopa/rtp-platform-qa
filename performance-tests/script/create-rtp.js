@@ -12,7 +12,7 @@ import { sendRtpInBatch } from "../utils/batch-utils.js";
  *
  * ## Inputs
  * Environment variables:
- * - `DEBTOR_SERVICE_PROVIDER_ID` (optional/env): Debtor Service Provider identifier.
+ * - `DEBTOR_SERVICE_PROVIDER_ID` (required): Debtor Service Provider identifier.
  * - `TARGET_REQUESTS` (number, optional, default: 10000): Total RTPs to send.
  * - `BATCH_SIZE` (number, optional, default: 1000): Requests per batch.
  * - `DELAY_BETWEEN_BATCHES` (number, seconds, optional, default: 1): Delay between batches.
@@ -22,9 +22,11 @@ import { sendRtpInBatch } from "../utils/batch-utils.js";
  *   containing an array of RTP `resourceId` strings.
  */
 
-const {
-    DEBTOR_SERVICE_PROVIDER_ID
-} = __ENV;
+const DEBTOR_SERVICE_PROVIDER_ID = __ENV.DEBTOR_SERVICE_PROVIDER_ID;
+
+if (!DEBTOR_SERVICE_PROVIDER_ID) {
+    throw new Error('❌ DEBTOR_SERVICE_PROVIDER_ID is required and cannot be null or undefined');
+}
 
 /** Total RTP requests to generate (`TARGET_REQUESTS`, default: 10000). @type {number} */
 const TARGET_REQUESTS = Number(__ENV.TARGET_REQUESTS) || 10000;
