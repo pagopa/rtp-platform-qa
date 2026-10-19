@@ -1,15 +1,18 @@
-import { ActorCredentials, setupAuth } from "../utils/utils.js";
-import { sendRtpInBatch} from "../utils/batch-utils.js";
+import http from 'k6/http';
+import { check } from 'k6';
+import { ActorCredentials, setupAuth, randomFiscalCode, buildHeaders, endpoints } from "../utils/utils.js";
+import { sendRtpInBatch } from "../utils/batch-utils.js";
 
 /**
  * @file RTP Sender – Batch setup (k6)
  * @description
- * Generates and sends RTP requests in batches during the k6 `setup()` phase and persists
- * only the resulting `resourceId`s to a JSON file via `handleSummary()`.
+ * Generates an activation for a random debtor (like activation.js), sends RTP requests
+ * in batches during the k6 `setup()` phase, and persists only the resulting `resourceId`s
+ * to a JSON file via `handleSummary()`.
  *
  * ## Inputs
  * Environment variables:
- * - `DEBTOR_FISCAL_CODE` (required): Fiscal code of the debtor used in RTP payloads.
+ * - `DEBTOR_SERVICE_PROVIDER_ID` (optional/env): Debtor Service Provider identifier.
  * - `TARGET_REQUESTS` (number, optional, default: 10000): Total RTPs to send.
  * - `BATCH_SIZE` (number, optional, default: 1000): Requests per batch.
  * - `DELAY_BETWEEN_BATCHES` (number, seconds, optional, default: 1): Delay between batches.
@@ -19,8 +22,9 @@ import { sendRtpInBatch} from "../utils/batch-utils.js";
  *   containing an array of RTP `resourceId` strings.
  */
 
-/** Debtor fiscal code from `DEBTOR_FISCAL_CODE` env variable. @type {string} */
-const DEBTOR_FISCAL_CODE = String(__ENV.DEBTOR_FISCAL_CODE);
+const {
+    DEBTOR_SERVICE_PROVIDER_ID
+} = __ENV;
 
 /** Total RTP requests to generate (`TARGET_REQUESTS`, default: 10000). @type {number} */
 const TARGET_REQUESTS = Number(__ENV.TARGET_REQUESTS) || 10000;
@@ -56,13 +60,35 @@ export const options = {
 /**
  * k6 `setup()` lifecycle function.
  *
- * Authenticates as a Creditor Service Provider and sends RTP requests
+ * Creates an activation for a randomly generated fiscal code (as in activation.js),
+ * authenticates as a Creditor Service Provider, and sends RTP requests
  * in batches using `sendRtpInBatch`. The returned data is passed to
  * `handleSummary()` as `setup_data`.
  *
  * @returns {Array<{ id: string, payerId: string }>} List of successfully created RTP requests.
  */
 export function setup() {
+    // 1. Create activation like activation.js
+    const debtorAuth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+    const debtorHeaders = buildHeaders(debtorAuth.access_token);
+
+    const debtor_fc = randomFiscalCode();
+    const payload = {
+        payer: {
+            fiscalCode: debtor_fc,
+            rtpSpId: DEBTOR_SERVICE_PROVIDER_ID
+        }
+    };
+
+    const url = endpoints.activations;
+    const activationRes = http.post(url, JSON.stringify(payload), { headers: debtorHeaders });
+    check(activationRes, { 'activation 201': r => r.status === 201 });
+
+    if (activationRes.status !== 201) {
+        throw new Error(`❌ Failed to create activation for ${debtor_fc}. Status: ${activationRes.status}`);
+    }
+
+    // 2. Authenticate as Creditor Service Provider to send RTPs
     if (!token || (Date.now() - tokenCreatedAt) > TOKEN_TTL) {
         const auth = setupAuth(ActorCredentials.CREDITOR_SERVICE_PROVIDER);
         token = auth.access_token;
@@ -75,7 +101,7 @@ export function setup() {
         targetRequests: TARGET_REQUESTS,
         batchSize: BATCH_SIZE,
         delayBetweenBatches: DELAY_BETWEEN_BATCHES,
-        debtorFiscalCode: DEBTOR_FISCAL_CODE,
+        debtorFiscalCode: debtor_fc,
     });
 }
 
