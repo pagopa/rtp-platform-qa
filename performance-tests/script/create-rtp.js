@@ -70,7 +70,6 @@ export const options = {
  * @returns {Array<{ id: string, payerId: string }>} List of successfully created RTP requests.
  */
 export function setup() {
-    // 1. Create activation like activation.js
     const debtorAuth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
     const debtorHeaders = buildHeaders(debtorAuth.access_token);
 

@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import exec from 'k6/execution';
-import { endpoints, determineStage, getOptions } from "../../utils/utils.js";
+import { endpoints, determineStage, getOptions, describeScenarioVUs } from "../../utils/utils.js";
 import { HOST_SUFFIX } from "../../config/config.js";
 import { createStandardMetrics } from "../../utils/metrics-utils.js";
 import { createHandleSummary } from "../../utils/summary-utils.js";
@@ -39,9 +39,12 @@ const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 /** Load profile to use. Defaults to 'custom' if not specified. */
 const SCENARIO = __ENV.SCENARIO || 'custom';
 
+/** Predefined arrival-rate scenarios backed by progressiveOptions in utils.js */
+const ARRIVAL_RATE_SCENARIOS = ['stress_test', 'soak_test', 'spike_test'];
+
 /** Scenario names backed by progressiveOptions in utils.js */
 const PREDEFINED_SCENARIOS = [
-  'stress_test', 'soak_test', 'spike_test',
+  ...ARRIVAL_RATE_SCENARIOS,
   'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
 ];
 
@@ -50,6 +53,8 @@ if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
     `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
   );
 }
+
+const isArrivalRate = ARRIVAL_RATE_SCENARIOS.includes(SCENARIO);
 
 /** Paths to mTLS certificates */
 const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
@@ -78,11 +83,11 @@ const { currentRPS, failureCounter, successCounter, responseTimeTrend } = create
  *
  * Configures the scenario dynamically based on SCENARIO:
  * - Predefined arrival-rate scenarios (stress_test, soak_test, spike_test) use getOptions().
- * - 'custom' or 'stress_test_fixed_user' use a shared-iterations executor across the loaded resource IDs.
+ * - 'custom' or fixed-user scenarios use a shared-iterations executor across the loaded resource IDs.
  *
  * @type {import('k6/options').Options}
  */
-export let options = ['stress_test', 'soak_test', 'spike_test'].includes(SCENARIO)
+export let options = isArrivalRate
   ? {
       ...getOptions(SCENARIO, 'callback'),
       setupTimeout: '5m',
@@ -99,7 +104,7 @@ export let options = ['stress_test', 'soak_test', 'spike_test'].includes(SCENARI
       ...getOptions('stress_test_fixed_user', 'callback'),
       setupTimeout: '5m',
       scenarios: {
-        stress_test_fixed_user: {
+        [SCENARIO === 'custom' ? 'stress_test_fixed_user' : SCENARIO]: {
           executor: 'shared-iterations',
           vus: VU_COUNT_SET,
           iterations: Math.min(ITERATIONS, resourceIds.length),
@@ -137,17 +142,21 @@ export function setup() {
  */
 export function callback(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
-  const tags = {
-    timeWindow: Math.floor(elapsedSeconds / 10) * 10,
-    stage: determineStage(elapsedSeconds),
-    vu: String(__VU)
-  };
+  const iteration = exec.scenario.iterationInTest;
 
-  const idx = exec.scenario.iterationInTest;
-  if (idx >= resourceIds.length) {
+  if (!isArrivalRate && iteration >= resourceIds.length) {
     exec.test.abort(`Resource IDs exhausted (${resourceIds.length})`);
     return;
   }
+
+  const idx = isArrivalRate ? (iteration % resourceIds.length) : iteration;
+
+  const tags = {
+    timeWindow: Math.floor(elapsedSeconds / 10) * 10,
+    stage: determineStage(elapsedSeconds),
+    callbackCount: String(iteration + 1),
+    vu: String(__VU)
+  };
 
   const id = resourceIds[idx];
   const payload = JSON.stringify(buildCallbackPayload(id));
@@ -164,7 +173,8 @@ export function callback(data) {
 
   if (res.status >= 200 && res.status < 300) {
     successCounter.add(1, tags);
-    if (idx + 1 >= Math.min(ITERATIONS, resourceIds.length)) {
+    data.callbackCount = iteration + 1;
+    if (!isArrivalRate && iteration + 1 >= Math.min(ITERATIONS, resourceIds.length)) {
       testCompleted = true;
     }
   } else {
@@ -194,10 +204,14 @@ Object.defineProperty(testCompletedRef, 'value', {
   set: (newValue) => { testCompleted = newValue; }
 });
 
-export const handleSummary = createHandleSummary({
-  START_TIME,
-  testName: 'MULTI-VU CALLBACK STRESS TEST',
-  countTag: 'callbackCount',
-  reportPrefix: 'callback',
-  VU_COUNT: VU_COUNT_SET
-});
+export const handleSummary = (opts) => {
+  return createHandleSummary({
+    START_TIME,
+    testName: 'MULTI-VU CALLBACK STRESS TEST',
+    countTag: 'callbackCount',
+    reportPrefix: 'callback',
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT_SET),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
+  })(opts);
+};

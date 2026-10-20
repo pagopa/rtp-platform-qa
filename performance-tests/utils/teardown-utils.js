@@ -30,6 +30,18 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
       });
     }
 
+    // Fallback for iteration-indexed tests without per-VU chunks (e.g. shared-iterations)
+    if (totalItems === 0 && data) {
+      totalItems = data[`total${testType.charAt(0).toUpperCase() + testType.slice(1)}`] 
+                || data.totalItems 
+                || data.totalCallback 
+                || data.totalActivations 
+                || 0;
+      actualProcessedCount = testCompletedRef?.value 
+        ? totalItems 
+        : (data[countKey] || data[`${testType}Count`] || data.processedCount || 0);
+    }
+
     let vuStats = [];
     if (data && data.vuProcessedCount) {
       for (let i = 0; i < VU_COUNT; i++) {
@@ -67,15 +79,20 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
     } else {
       console.log('====================================');
       console.log('TEST TERMINATED BEFORE COMPLETION');
-      console.log(`Processed ${finalState.processedCount} out of ${finalState.totalItems} items (${(finalState.processedCount / finalState.totalItems * 100).toFixed(1)}%).`);
+      const percentage = finalState.totalItems > 0
+        ? (finalState.processedCount / finalState.totalItems * 100).toFixed(1)
+        : '0.0';
+      console.log(`Processed ${finalState.processedCount} out of ${finalState.totalItems} items (${percentage}%).`);
       console.log(`Total execution time: ${finalState.testDuration} seconds`);
       console.log('====================================');
     }
 
-    console.log(`STATISTICS FOR VIRTUAL USERS:`);
-    vuStats.forEach(stat => {
-      console.log(`- VU #${stat.vu}: ${stat.processed}/${stat.total} (${stat.percentage}%)`);
-    });
+    if (vuStats.length > 0) {
+      console.log(`STATISTICS FOR VIRTUAL USERS:`);
+      vuStats.forEach(stat => {
+        console.log(`- VU #${stat.vu}: ${stat.processed}/${stat.total} (${stat.percentage}%)`);
+      });
+    }
 
     const vuStatsText = generateVuStatsText(vuStats, 'processed');
     finalState.additionalReportContent = generateTeardownInfo(finalState, vuStatsText, testType);
