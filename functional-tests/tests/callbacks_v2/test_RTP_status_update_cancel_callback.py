@@ -7,7 +7,6 @@ import pytest
 from utils.status_update_cancel_helpers import assert_status_update_cancel_transition
 from utils.status_update_test_context import StatusUpdateRtpContext
 
-_TODO_IMPLEMENT_CHECKS = "skeleton: callback send and assertions not implemented yet"
 
 
 @allure.epic("RTP Callback V2")
@@ -94,11 +93,13 @@ def test_receive_status_update_cancel_callback_rcar_is_idempotent(
     make_status_update_cancel_rtp: Callable[[], StatusUpdateRtpContext],
 ) -> None:
     context = make_status_update_cancel_rtp()
+    expected_response_code={0: 200, 1: 400}
     assert_status_update_cancel_transition(
         context=context,
         reason_code="RCAR",
         expected_status="CANCELLED_REJECTED",
         number_of_calls=2,
+        expected_response_code=expected_response_code,
     )
 
 
@@ -154,6 +155,7 @@ def test_receive_status_update_cancel_callback_non_cancellation_reason_keeps_rfc
         context=context,
         reason_code=None,
         expected_status="RFC_SENT",
+        expected_response_code=400,
     )
 
 
@@ -165,20 +167,14 @@ def test_receive_status_update_cancel_callback_non_cancellation_reason_keeps_rfc
 @pytest.mark.callback
 @pytest.mark.unhappy_path
 def test_receive_status_update_cancel_callback_unknown_rtp(
+    make_status_update_cancel_rtp: Callable[[str | None], StatusUpdateRtpContext],
     debtor_sp_mock_cert_key: tuple[str, str],
 ) -> None:
     _resource_id = str(uuid.uuid4())
-
-
-@allure.epic("RTP Callback V2")
-@allure.feature("RTP Status Update Cancel Callback")
-@allure.story("A service provider with a mismatched certificate identity sends a cancel status update")
-@allure.title("A cancel status update callback with a mismatched debtor BIC is forbidden")
-@allure.tag("functional", "unhappy_path", "rtp_callback", "v2", "status_update", "cancel", "certificate_mismatch")
-@pytest.mark.callback
-@pytest.mark.unhappy_path
-def test_receive_status_update_cancel_callback_certificate_bic_mismatch(
-    make_status_update_cancel_rtp: Callable[[], StatusUpdateRtpContext],
-) -> None:
-    make_status_update_cancel_rtp()
-    pytest.skip(_TODO_IMPLEMENT_CHECKS)
+    context = make_status_update_cancel_rtp(provided_resource_id=_resource_id)
+    assert_status_update_cancel_transition(
+        context=context,
+        reason_code=None,
+        expected_status=None,
+        expected_response_code=400,
+    )
