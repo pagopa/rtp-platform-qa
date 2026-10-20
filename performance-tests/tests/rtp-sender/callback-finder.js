@@ -131,6 +131,7 @@ let testCompleted = false;
  */
 export function setup() {
   return {
+    startTime: Date.now(),
     totalCallback: resourceIds.length,
     callbackCount: 0,
     allCompleted: false

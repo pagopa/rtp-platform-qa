@@ -132,9 +132,11 @@ export function createHandleSummary({ START_TIME, testName, countTag, reportPref
 
         console.log(`Report generation - Test completed status: ${testCompleted}`);
 
+        const testStartTime = (data.setupData && data.setupData.startTime) ? data.setupData.startTime : START_TIME;
+
         return createTestSummary({
             data,
-            startTime: START_TIME,
+            startTime: testStartTime,
             testCompleted,
             vuCount: VU_COUNT,
             testName,
