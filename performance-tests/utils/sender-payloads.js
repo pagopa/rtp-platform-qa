@@ -37,9 +37,9 @@ export function buildCallbackPayload(resourceId) {
     const nowIso = new Date().toISOString();
 
     return {
-        resourceId: '71f18650-6025-477e-91b9-a65c212176f0',
+        resourceId: resourceId,
         AsynchronousSepaRequestToPayResponse: {
-            resourceId: '71f18650-6025-477e-91b9-a65c212176f0',
+            resourceId: resourceId,
             Document: {
                 CdtrPmtActvtnReqStsRpt: {
                     GrpHdr: {

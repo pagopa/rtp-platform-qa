@@ -1,174 +1,218 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { endpoints, determineStage, getOptions} from "../../utils/utils.js";
+import exec from 'k6/execution';
+import { endpoints, determineStage, getOptions, describeScenarioVUs } from "../../utils/utils.js";
 import { HOST_SUFFIX } from "../../config/config.js";
 import { createStandardMetrics } from "../../utils/metrics-utils.js";
-import { shuffleArray, distributeItemsAmongGroups} from "../../utils/batch-utils.js";
 import { createHandleSummary } from "../../utils/summary-utils.js";
 import { buildCallbackPayload } from "../../utils/sender-payloads.js";
 import { createCallbackTeardown } from "../../utils/teardown-utils.js";
 
+/**
+ * @file RTP Callback - k6 Test Script
+ *
+ * @description
+ * Executes callback send operations for previously generated RTP resource IDs.
+ * Resource IDs are loaded from JSON and executed using the configured scenario executor.
+ *
+ * ## Environment Variables
+ * - `SCENARIO` (optional, default: 'custom'): Load profile to execute.
+ *   Supports 'stress_test', 'soak_test', 'spike_test', or 'stress_test_fixed_user' / 'custom'.
+ * - `VU_COUNT_SET` (optional, default: 5): Number of Virtual Users.
+ * - `ITERATIONS` (optional, default: resourceIds count): Total iterations across all VUs.
+ * - `SLEEP_ITER` (optional, seconds, default: 0): Sleep time between iterations.
+ *
+ * ## Inputs
+ * - File: `json-file/rtp-sender/resourceIds.json` (fallback: `script/resourceIds.json`)
+ * - Certificates: `utils/certificates/cert.pem`, `utils/certificates/key-unencrypted.pem`
+ */
+
+/** Timestamp (ms) marking the start of the test run. */
 const START_TIME = Date.now();
+
+/** Number of Virtual Users (configurable via environment variable). */
 const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 5;
-const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
-const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
-const resourceIds = JSON.parse(open('../../script/resourceIds.json'));
-const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
-export let options = {
-    ...getOptions('stress_test_fixed_user', 'callback'),
-    setupTimeout: '5m',
-    scenarios: {
-        stress_test_fixed_user: {
-            executor: 'shared-iterations',
-            vus: VU_COUNT_SET,
-            iterations: resourceIds.length,
-            maxDuration: '30m',
-            gracefulStop: '30m',
-            exec: 'callback'
-        }
-    },
+/** Optional per-iteration sleep time (seconds). */
+const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
-    tlsAuth: [
-        {
-            domains: [`api-rtp-cb.${HOST_SUFFIX}`],
-            cert: open(MTLS_CERT_PATH),
-            key: open(MTLS_KEY_PATH),
-        }
-    ],
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
 
-    insecureSkipTLSVerify: true
-};
+/** Predefined arrival-rate scenarios backed by progressiveOptions in utils.js */
+const ARRIVAL_RATE_SCENARIOS = ['stress_test', 'soak_test', 'spike_test'];
 
-let testCompleted = false;
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  ...ARRIVAL_RATE_SCENARIOS,
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
 
-export function setup() {
-
-    const wrappedIds = resourceIds.map(r => ({ id: String(r), processed: false }));
-
-    shuffleArray(wrappedIds);
-    const callbackChunks = distributeItemsAmongGroups(wrappedIds, VU_COUNT_SET);
-
-    console.log(`Callback distributed among ${VU_COUNT_SET} virtual users:`);
-    for (let i = 0; i < VU_COUNT_SET; i++) {
-        console.log(`- VU #${i + 1}: ${callbackChunks[i].length} callback`);
-    }
-
-    return {
-        callbackChunks: callbackChunks,
-        totalCallback: wrappedIds.length,
-        callbackCount: 0,
-        allCompleted: false
-    };
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
 }
 
-export function callback(data){
-    const elapsedSeconds = (Date.now() - START_TIME) / 1000;
-    const tags = {
-        timeWindow: Math.floor(elapsedSeconds / 10) * 10,
-        stage: determineStage(elapsedSeconds),
-        callbackCount: data.callbackCount,
-        vu: __VU
+const isArrivalRate = ARRIVAL_RATE_SCENARIOS.includes(SCENARIO);
+
+/** Paths to mTLS certificates */
+const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
+const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
+
+/**
+ * Loads RTP resource IDs from JSON file.
+ * Tries `json-file/rtp-sender/resourceIds.json` first, then falls back to `script/resourceIds.json`.
+ */
+let rawResourceIds;
+try {
+  rawResourceIds = open('../../json-file/rtp-sender/resourceIds.json');
+} catch (e) {
+  rawResourceIds = open('../../script/resourceIds.json');
+}
+const resourceIds = Array.from(new Set(JSON.parse(rawResourceIds))).map(String);
+
+/** Total shared iterations for the scenario. */
+const ITERATIONS = Number(__ENV.ITERATIONS) || resourceIds.length;
+
+/** Standard performance metrics used in the test. */
+const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
+
+/**
+ * k6 execution options.
+ *
+ * Configures the scenario dynamically based on SCENARIO:
+ * - Predefined arrival-rate scenarios (stress_test, soak_test, spike_test) use getOptions().
+ * - 'custom' or fixed-user scenarios use a shared-iterations executor across the loaded resource IDs.
+ *
+ * @type {import('k6/options').Options}
+ */
+export let options = isArrivalRate
+  ? {
+      ...getOptions(SCENARIO, 'callback'),
+      setupTimeout: '5m',
+      tlsAuth: [
+        {
+          domains: [`api-rtp-cb.${HOST_SUFFIX}`],
+          cert: open(MTLS_CERT_PATH),
+          key: open(MTLS_KEY_PATH),
+        }
+      ],
+      insecureSkipTLSVerify: true
+    }
+  : {
+      ...getOptions('stress_test_fixed_user', 'callback'),
+      setupTimeout: '5m',
+      scenarios: {
+        [SCENARIO === 'custom' ? 'stress_test_fixed_user' : SCENARIO]: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT_SET,
+          iterations: Math.min(ITERATIONS, resourceIds.length),
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'callback'
+        }
+      },
+      tlsAuth: [
+        {
+          domains: [`api-rtp-cb.${HOST_SUFFIX}`],
+          cert: open(MTLS_CERT_PATH),
+          key: open(MTLS_KEY_PATH),
+        }
+      ],
+      insecureSkipTLSVerify: true
     };
 
-    currentRPS.add(1, tags);
+/** Indicates whether the test has completed. @type {boolean} */
+let testCompleted = false;
 
-    if (testCompleted) {
-        console.log(`⏹️ Test already completed. VU #${__VU} staying idle to keep dashboard active...`);
-        sleep(30);
-        return {
-            status: 200,
-            message: 'Test already completed, waiting for dashboard viewing',
-            noMetrics: true
-        };
+/**
+ * k6 setup lifecycle function.
+ */
+export function setup() {
+  return {
+    startTime: Date.now(),
+    totalCallback: resourceIds.length,
+    callbackCount: 0,
+    allCompleted: false
+  };
+}
+
+/**
+ * Callback execution function per iteration.
+ */
+export function callback(data) {
+  const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+  const iteration = exec.scenario.iterationInTest;
+
+  if (!isArrivalRate && iteration >= resourceIds.length) {
+    exec.test.abort(`Resource IDs exhausted (${resourceIds.length})`);
+    return;
+  }
+
+  const idx = isArrivalRate ? (iteration % resourceIds.length) : iteration;
+
+  const tags = {
+    timeWindow: Math.floor(elapsedSeconds / 10) * 10,
+    stage: determineStage(elapsedSeconds),
+    callbackCount: String(iteration + 1),
+    vu: String(__VU)
+  };
+
+  const id = resourceIds[idx];
+  const payload = JSON.stringify(buildCallbackPayload(id));
+  const headers = { 'Content-Type': 'application/json' };
+  const url = endpoints.callbackSend;
+
+  currentRPS.add(1, tags);
+
+  const start = Date.now();
+  const res = http.post(url, payload, { headers });
+  const duration = Date.now() - start;
+
+  responseTimeTrend.add(duration, tags);
+
+  if (res.status >= 200 && res.status < 300) {
+    successCounter.add(1, tags);
+    data.callbackCount = iteration + 1;
+    if (!isArrivalRate && iteration + 1 >= Math.min(ITERATIONS, resourceIds.length)) {
+      testCompleted = true;
     }
+  } else {
+    failureCounter.add(1, tags);
+    console.error(`❌ VU #${__VU}: Failed callback for ID ${id}: Status ${res.status}`);
+  }
 
-    const vuIndex = __VU - 1;
-    const myCallback = data.callbackChunks[vuIndex];
+  check(res, { 'callback: status is 2xx': (r) => r.status >= 200 && r.status < 300 });
 
-    if (!myCallback) {
-        console.log(`⚠️ VU #${__VU}: No callback chunk assigned. Termination.`);
-        return { status: 400, message: 'No callback chunk assigned', noMetrics: true };
-    }
+  if (SLEEP_ITER > 0) {
+    sleep(SLEEP_ITER);
+  }
 
-    if (!data.currentIndices) data.currentIndices = {};
-    if (data.currentIndices[vuIndex] === undefined) data.currentIndices[vuIndex] = 0;
-
-    if (!data.vuCallbackCount) data.vuCallbackCount = {};
-    if (data.vuCallbackCount[vuIndex] === undefined) data.vuCallbackCount[vuIndex] = 0;
-
-    if (data.vuCallbackCount[vuIndex] >= myCallback.length) {
-        console.log(`✓ VU #${__VU}: Completed all ${myCallback.length} callbacks assigned.`);
-        sleep(5);
-        return { status: 200, message: `VU #${__VU} completed`, noMetrics: true };
-    }
-
-    const currentIndex = data.currentIndices[vuIndex];
-    const callbackItem = myCallback[currentIndex];
-
-    if (callbackItem.processed) {
-        data.currentIndices[vuIndex] = (currentIndex + 1) % myCallback.length;
-        return callback(data);
-    }
-
-    const id = callbackItem.id;
-    const payload = JSON.stringify(buildCallbackPayload(id));
-
-    const headers = {'Content-Type': 'application/json'};
-    const url = endpoints.callbackSend;
-
-    const start = Date.now();
-    const res = http.post(url, payload, { headers });
-    const duration = Date.now() - start;
-
-    responseTimeTrend.add(duration, tags);
-
-    if (res.status >= 200 && res.status < 300) {
-        successCounter.add(1, tags);
-
-        callbackItem.processed = true;
-        data.vuCallbackCount[vuIndex]++;
-        data.callbackCount++;
-
-        if (data.callbackCount % 50 === 0 || data.vuCallbackCount[vuIndex] === myCallback.length) {
-            console.log(`✓ VU #${__VU}: ${data.vuCallbackCount[vuIndex]}/${myCallback.length} callback (Total: ${data.callbackCount}/${data.totalCallback})`);
-        }
-
-        if (data.callbackCount >= data.totalCallback && !data.allCompleted) {
-            data.allCompleted = true;
-            testCompleted = true;
-            console.log(`✅ TEST COMPLETED: All ${data.totalCallback} callback have been processed!`);
-            console.log(`Total execution time: ${Math.round(elapsedSeconds)} seconds`);
-            return { status: 200, message: 'Test completed successfully', noMetrics: false };
-        }
-    } else {
-        failureCounter.add(1, tags);
-        console.error(`❌ VU #${__VU}: Failed callback for ID ${id}: Status ${res.status}`);
-    }
-
-    check(res, { 'callback: status is 2xx': (r) => r.status >= 200 && r.status < 300 });
-
-    data.currentIndices[vuIndex] = (currentIndex + 1) % myCallback.length;
-    return res;
+  return res;
 }
 
 const testCompletedRef = { value: false };
 
 export const teardown = createCallbackTeardown({
-    START_TIME,
-    VU_COUNT: VU_COUNT_SET,
-    testCompletedRef
+  START_TIME,
+  VU_COUNT: VU_COUNT_SET,
+  testCompletedRef
 });
 
 Object.defineProperty(testCompletedRef, 'value', {
-    get: () => testCompleted,
-    set: (newValue) => { testCompleted = newValue; }
+  get: () => testCompleted,
+  set: (newValue) => { testCompleted = newValue; }
 });
 
-export const handleSummary = createHandleSummary({
+export const handleSummary = (opts) => {
+  return createHandleSummary({
     START_TIME,
     testName: 'MULTI-VU CALLBACK STRESS TEST',
     countTag: 'callbackCount',
     reportPrefix: 'callback',
-    VU_COUNT: VU_COUNT_SET
-});
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT_SET),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
+  })(opts);
+};
