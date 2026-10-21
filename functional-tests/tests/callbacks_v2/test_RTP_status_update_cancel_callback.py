@@ -8,7 +8,6 @@ from utils.status_update_cancel_helpers import assert_status_update_cancel_trans
 from utils.status_update_test_context import StatusUpdateRtpContext
 
 
-
 @allure.epic("RTP Callback V2")
 @allure.feature("RTP Status Update Cancel Callback")
 @allure.story("The debtor service provider accepts an expired RTP while a cancellation is pending")
@@ -93,12 +92,11 @@ def test_receive_status_update_cancel_callback_rcar_is_idempotent(
     make_status_update_cancel_rtp: Callable[[], StatusUpdateRtpContext],
 ) -> None:
     context = make_status_update_cancel_rtp()
-    expected_response_code={0: 200, 1: 400}
+    expected_response_code = [200, 400]
     assert_status_update_cancel_transition(
         context=context,
         reason_code="RCAR",
         expected_status="CANCELLED_REJECTED",
-        number_of_calls=2,
         expected_response_code=expected_response_code,
     )
 
@@ -168,7 +166,6 @@ def test_receive_status_update_cancel_callback_non_cancellation_reason_keeps_rfc
 @pytest.mark.unhappy_path
 def test_receive_status_update_cancel_callback_unknown_rtp(
     make_status_update_cancel_rtp: Callable[[str | None], StatusUpdateRtpContext],
-    debtor_sp_mock_cert_key: tuple[str, str],
 ) -> None:
     _resource_id = str(uuid.uuid4())
     context = make_status_update_cancel_rtp(provided_resource_id=_resource_id)

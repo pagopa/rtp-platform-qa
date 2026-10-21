@@ -60,11 +60,11 @@ def make_status_update_cancel_rtp(
     rtp_reader_access_token: str,
     random_fiscal_code: str,
     debtor_sp_mock_cert_key: tuple[str, str],
-    ) -> Callable[[str | None], StatusUpdateRtpContext]:
+) -> Callable[[str | None], StatusUpdateRtpContext]:
     def _create(provided_resource_id: str | None = None) -> StatusUpdateRtpContext:
         create_payload = {"nav": not_existing_nav, "ec_tax_code": not_existing_ec_tax_code}
         resource_id = provided_resource_id
-        if provided_resource_id is None:
+        if resource_id is None:
             create_payload, resource_id = create_status_update_rtp(
                 access_token=rtp_consumer_access_token,
                 debtor_service_provider_token=debtor_service_provider_token_c,
