@@ -10,6 +10,7 @@ from api.utils.endpoints import (
     RFC_CALLBACK_URL,
     RFC_CALLBACK_URL_V2,
     STATUS_UPDATE_CALLBACK_URL,
+    STATUS_UPDATE_CANCEL_CALLBACK_URL,
 )
 from api.utils.http_utils import HTTP_TIMEOUT
 from utils.type_utils import JsonType
@@ -60,6 +61,23 @@ def srtp_status_update_callback(
     return requests.post(
         cert=(cert_path, key_path),
         url=STATUS_UPDATE_CALLBACK_URL,
+        headers=headers,
+        json=rtp_payload,
+        timeout=HTTP_TIMEOUT,
+    )
+
+
+def srtp_status_update_cancel_callback(
+    cert_path: str,
+    key_path: str,
+    rtp_payload: JsonType,
+    extra_headers: Mapping[str, str] | None = None,
+) -> Response:
+    """Send a cancellation status-update callback (camt.029) to the v2 endpoint."""
+    headers = dict(extra_headers or {})
+    return requests.post(
+        cert=(cert_path, key_path),
+        url=STATUS_UPDATE_CANCEL_CALLBACK_URL,
         headers=headers,
         json=rtp_payload,
         timeout=HTTP_TIMEOUT,
