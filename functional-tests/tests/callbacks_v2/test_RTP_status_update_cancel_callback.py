@@ -114,8 +114,14 @@ def test_receive_status_update_cancel_callback_aexr_conflicts_with_cancelled_rej
     context = make_status_update_cancel_rtp()
     assert_status_update_cancel_transition(
         context=context,
+        reason_code="RCAR",
+        expected_status="CANCELLED_REJECTED",
+    )
+    assert_status_update_cancel_transition(
+        context=context,
         reason_code="AEXR",
-        expected_status="EXPIRED",
+        expected_status="CANCELLED_REJECTED",
+        expected_response_code=400,
     )
 
 
@@ -151,7 +157,7 @@ def test_receive_status_update_cancel_callback_non_cancellation_reason_keeps_rfc
     context = make_status_update_cancel_rtp()
     assert_status_update_cancel_transition(
         context=context,
-        reason_code=None,
+        reason_code="AC04",
         expected_status="RFC_SENT",
         expected_response_code=400,
     )
@@ -171,7 +177,7 @@ def test_receive_status_update_cancel_callback_unknown_rtp(
     context = make_status_update_cancel_rtp(provided_resource_id=_resource_id)
     assert_status_update_cancel_transition(
         context=context,
-        reason_code=None,
+        reason_code="AEXR",
         expected_status=None,
         expected_response_code=400,
     )

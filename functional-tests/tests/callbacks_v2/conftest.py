@@ -3,6 +3,7 @@ from collections.abc import Callable
 import pytest
 
 from utils.rtp_status_update_helpers import cancel_rtp_for_status_update_cancel_v2, wait_for_rtp_status
+from utils.status_update_cancel_helpers import create_status_update_cancel_rtp
 from utils.status_update_fixture_helpers import create_status_update_rtp, update_gpd_rtp
 from utils.status_update_test_context import StatusUpdateRtpContext
 
@@ -65,7 +66,7 @@ def make_status_update_cancel_rtp(
         create_payload = {"nav": not_existing_nav, "ec_tax_code": not_existing_ec_tax_code}
         resource_id = provided_resource_id
         if resource_id is None:
-            create_payload, resource_id = create_status_update_rtp(
+            create_payload, resource_id = create_status_update_cancel_rtp(
                 access_token=rtp_consumer_access_token,
                 debtor_service_provider_token=debtor_service_provider_token_c,
                 fiscal_code=random_fiscal_code,
