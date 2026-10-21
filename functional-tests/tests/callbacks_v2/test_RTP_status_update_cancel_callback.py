@@ -157,7 +157,7 @@ def test_receive_status_update_cancel_callback_non_cancellation_reason_keeps_rfc
     context = make_status_update_cancel_rtp()
     assert_status_update_cancel_transition(
         context=context,
-        reason_code="AC04",
+        reason_code="INVALID_REASON_CODE",
         expected_status="RFC_SENT",
         expected_response_code=400,
     )
