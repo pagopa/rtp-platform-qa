@@ -38,13 +38,13 @@ class StatusUpdateCancelBody:
     def resource_id_no_dashes(self) -> str:
         return self.resource_id.replace("-", "")
 
-    @property
-    def reason_code_block(self) -> JsonType:
+    def _reason_code_block(self) -> JsonType:
         if self.reason_code is None:
             return {}
         return {"CxlStsRsnInf": {"Rsn": {"Cd": self.reason_code}}}
 
     def to_dict(self) -> JsonType:
+        reason_block = self._reason_code_block()
         return {
             "resourceId": self.resource_id,
             "Document": {
@@ -63,7 +63,7 @@ class StatusUpdateCancelBody:
                                 },
                                 "OrgnlInstrId": self.resource_id_no_dashes,
                                 "OrgnlEndToEndId": self.end_to_end_id,
-                                **self.reason_code_block,
+                                **reason_block,
                             }
                         ]
                     },
