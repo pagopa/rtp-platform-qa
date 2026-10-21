@@ -14,7 +14,7 @@ class StatusUpdateCancelBody:
 
     Args:
         resource_id: RTP resource identifier, with dashes.
-        bic: BIC of the service provider (``rtpSpIdv4``). Defaults to the Debtor SP C BIC.
+        bic: BIC of the service provider. Defaults to the Debtor SP C BIC.
         reason_code: EPC cancellation reason code (AEXR, RCAR, RCNR or RCPR). Omitted when None.
         cancel_status_id: Cancellation status identifier. Random if omitted.
         original_created_at: Creation time of the original message. Current time if omitted.
@@ -38,6 +38,12 @@ class StatusUpdateCancelBody:
     def resource_id_no_dashes(self) -> str:
         return self.resource_id.replace("-", "")
 
+    @property
+    def reason_code_block(self) -> JsonType:
+        if self.reason_code is None:
+            return {}
+        return {"CxlStsRsnInf": {"Rsn": {"Cd": self.reason_code}}}
+
     def to_dict(self) -> JsonType:
         return {
             "resourceId": self.resource_id,
@@ -57,11 +63,7 @@ class StatusUpdateCancelBody:
                                 },
                                 "OrgnlInstrId": self.resource_id_no_dashes,
                                 "OrgnlEndToEndId": self.end_to_end_id,
-                                **(
-                                    {"CxlStsRsnInf": {"Rsn": {"Cd": self.reason_code}}}
-                                    if self.reason_code is not None
-                                    else {}
-                                ),
+                                **self.reason_code_block,
                             }
                         ]
                     },
