@@ -13,7 +13,8 @@ import { generateVuStatsText, generateTeardownInfo } from './reporting-utils.js'
  */
 export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, testCompletedRef }) {
   return function(data) {
-    const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+    const startTime = (data && data.startTime) ? data.startTime : START_TIME;
+    const elapsedSeconds = (Date.now() - startTime) / 1000;
 
     let actualProcessedCount = 0;
     let totalItems = 0;
@@ -28,6 +29,18 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
           actualProcessedCount += chunk.filter(item => item[testType + 'ed']).length;
         }
       });
+    }
+
+    // Fallback for iteration-indexed tests without per-VU chunks (e.g. shared-iterations)
+    if (totalItems === 0 && data) {
+      totalItems = data[`total${testType.charAt(0).toUpperCase() + testType.slice(1)}`] 
+                || data.totalItems 
+                || data.totalCallback 
+                || data.totalActivations 
+                || 0;
+      actualProcessedCount = testCompletedRef?.value 
+        ? totalItems 
+        : (data[countKey] || data[`${testType}Count`] || data.processedCount || 0);
     }
 
     let vuStats = [];
@@ -64,18 +77,29 @@ export function createBatchProcessingTeardown({ START_TIME, VU_COUNT, testType, 
       console.log(`All ${finalState.totalItems} items have been processed.`);
       console.log(`Total execution time: ${finalState.testDuration} seconds`);
       console.log('====================================');
-    } else {
+    } else if (vuStats.length > 0 && finalState.totalItems > 0) {
       console.log('====================================');
       console.log('TEST TERMINATED BEFORE COMPLETION');
-      console.log(`Processed ${finalState.processedCount} out of ${finalState.totalItems} items (${(finalState.processedCount / finalState.totalItems * 100).toFixed(1)}%).`);
+      const percentage = (finalState.processedCount / finalState.totalItems * 100).toFixed(1);
+      console.log(`Processed ${finalState.processedCount} out of ${finalState.totalItems} items (${percentage}%).`);
+      console.log(`Total execution time: ${finalState.testDuration} seconds`);
+      console.log('====================================');
+    } else {
+      console.log('====================================');
+      console.log('TEST EXECUTION COMPLETED');
+      if (finalState.totalItems > 0) {
+        console.log(`Target items: ${finalState.totalItems}`);
+      }
       console.log(`Total execution time: ${finalState.testDuration} seconds`);
       console.log('====================================');
     }
 
-    console.log(`STATISTICS FOR VIRTUAL USERS:`);
-    vuStats.forEach(stat => {
-      console.log(`- VU #${stat.vu}: ${stat.processed}/${stat.total} (${stat.percentage}%)`);
-    });
+    if (vuStats.length > 0) {
+      console.log(`STATISTICS FOR VIRTUAL USERS:`);
+      vuStats.forEach(stat => {
+        console.log(`- VU #${stat.vu}: ${stat.processed}/${stat.total} (${stat.percentage}%)`);
+      });
+    }
 
     const vuStatsText = generateVuStatsText(vuStats, 'processed');
     finalState.additionalReportContent = generateTeardownInfo(finalState, vuStatsText, testType);
