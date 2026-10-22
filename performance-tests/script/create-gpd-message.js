@@ -15,9 +15,6 @@ import {createGpdMessageInBatch} from "../utils/batch-utils.js";
  * for that debtor in batches during the k6 `setup()` phase and persists only the
  * resulting `operationId`s to a JSON file via `handleSummary()`.
  *
- * GPD messages are always created with operation `CREATE`, status `VALID` and
- * EC tax code `77777777777`.
- *
  * ## Inputs
  * Environment variables:
  * - `DEBTOR_SERVICE_PROVIDER_ID` (required): Service Provider ID used as `rtpSpId` in the activation.
