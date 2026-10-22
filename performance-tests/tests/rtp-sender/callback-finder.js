@@ -145,12 +145,12 @@ export function callback(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
   const iteration = exec.scenario.iterationInTest;
 
-  if (!isArrivalRate && iteration >= resourceIds.length) {
+  if (iteration >= resourceIds.length) {
     exec.test.abort(`Resource IDs exhausted (${resourceIds.length})`);
     return;
   }
 
-  const idx = isArrivalRate ? (iteration % resourceIds.length) : iteration;
+  const idx = iteration;
 
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
@@ -175,7 +175,7 @@ export function callback(data) {
   if (res.status >= 200 && res.status < 300) {
     successCounter.add(1, tags);
     data.callbackCount = iteration + 1;
-    if (!isArrivalRate && iteration + 1 >= Math.min(ITERATIONS, resourceIds.length)) {
+    if (iteration + 1 >= Math.min(ITERATIONS, resourceIds.length)) {
       testCompleted = true;
     }
   } else {
