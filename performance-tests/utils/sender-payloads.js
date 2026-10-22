@@ -182,52 +182,40 @@ export function buildGpdMessagePayload(
     psp_tax_code) {
 
     const timestamp = Date.now();
-    const iuv = generateNumericString(17);
-    const dueDate = addDays(timestamp, 30);
-    const nav = generateNumericString(18);
+
+    if (operation === "DELETE") {
+        return {
+            "id": operationId,
+            "operation": operation,
+            "timestamp": timestamp,
+            "iuv": null,
+            "subject": null,
+            "description": null,
+            "ec_tax_code": null,
+            "debtor_tax_code": null,
+            "nav": null,
+            "due_date": null,
+            "amount": null,
+            "status": null,
+            "psp_code": null,
+            "psp_tax_code": null
+        }
+    }
 
     return {
         "id": operationId,
         "operation": operation,
         "timestamp": timestamp,
-        "iuv": iuv,
+        "iuv": generateNumericString(17),
         "subject": "GPD Stress Test Remittance",
         "description": "Automated stress test message - non production data",
         "ec_tax_code": ecTaxCode,
         "debtor_tax_code": debtorFiscalCode,
-        "nav": nav,
-        "due_date": dueDate,
+        "nav": generateNumericString(18),
+        "due_date": addDays(timestamp, 30),
         "amount": 30000,
         "status": status,
         "psp_code": null,
         "psp_tax_code": psp_tax_code ?? null
-    }
-}
-
-/**
- * Builds the payload for deleting a GPD message.
- *
- * @param {string} operationId Identifier of the GPD message to delete.
- * @returns {Object} GPD delete message payload.
- */
-export function buildDeleteGpdMessagePayload(operationId){
-
-    const timestamp = Date.now();
-
-    return {
-        "id": operationId,
-        "operation": "DELETE",
-        "timestamp": timestamp,
-        "iuv": null,
-        "subject": null,
-        "description": null,
-        "ec_tax_code": null,
-        "debtor_tax_code": null,
-        "nav": null,
-        "due_date": null,
-        "amount": null,
-        "status": null,
-        "psp_code": null,
-        "psp_tax_code": null
     }
 }
