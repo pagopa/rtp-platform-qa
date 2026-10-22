@@ -2,9 +2,11 @@ import http from 'k6/http';
 import {check, sleep} from 'k6';
 import exec from 'k6/execution';
 import {createStandardMetrics} from "../../utils/metrics-utils.js";
+import {createHandleSummary} from "../../utils/summary-utils.js";
 import {
   ActorCredentials,
   buildHeaders,
+  describeScenarioVUs,
   determineStage,
   endpoints,
   generatePositiveLong,
@@ -90,6 +92,12 @@ function loadOperationIds() {
 /** Existing operation IDs, loaded only when new IDs are not generated. @type {string[]} */
 const operationIds = GENERATE_NEW_IDS ? [] : loadOperationIds();
 
+/** Iterations of the custom scenario: one per new message, or one per existing operation ID. */
+const CUSTOM_ITERATIONS = GENERATE_NEW_IDS ? ITERATIONS : operationIds.length;
+
+/** Completion state read by `createHandleSummary`; set in `handleSummary` for the custom scenario. */
+const testCompletedRef = { value: false };
+
 /**
  * Standard custom metrics used by this test.
  * @typedef {Object} StandardMetrics
@@ -121,7 +129,7 @@ export const options = PREDEFINED_SCENARIOS.includes(SCENARIO)
         stress_test_fixed_user: {
           executor: 'shared-iterations',
           vus: VU_COUNT_SET,
-          iterations: GENERATE_NEW_IDS ? ITERATIONS : operationIds.length,
+          iterations: CUSTOM_ITERATIONS,
           maxDuration: '30m',
           gracefulStop: '30m',
           exec: 'sendMessage'
@@ -233,3 +241,38 @@ export function sendMessage(data) {
     sleep(SLEEP_ITER);
   }
 }
+
+/**
+ * k6 `handleSummary` export.
+ *
+ * Delegates to the shared summary factory, which prints the standard summary and
+ * writes `gpd-message-<operation>-stress-analysis.json` and `gpd-message-<operation>-report.txt`.
+ *
+ * Completion status:
+ *  - custom scenario: COMPLETED only if all `CUSTOM_ITERATIONS` iterations ran. It is computed
+ *    here from the `iterations` metric because VUs run in separate runtimes and cannot share a
+ *    flag with `handleSummary`. A high failure rate does not mark the run as interrupted.
+ *  - predefined scenarios: derived by the factory from the scenario schedule (`scenarioConfig`).
+ */
+export const handleSummary = (data) => {
+  if (SCENARIO === 'custom') {
+    const executed = data.metrics.iterations?.values?.count ?? 0;
+    const completed = executed >= CUSTOM_ITERATIONS;
+    console.log(`Executed ${executed}/${CUSTOM_ITERATIONS} iterations, completed: ${completed}`);
+
+    testCompletedRef.value = completed;
+    // createHandleSummary only honours a `true` ref: expose `false` too, so a partial
+    // run is not re-evaluated by the success/failure heuristic.
+    data.setup_data = { ...data.setup_data, testCompleted: completed };
+  }
+
+  return createHandleSummary({
+    START_TIME,
+    testName: `GPD MESSAGE ${OPERATION} STRESS TEST`,
+    countTag: 'requestCount',
+    reportPrefix: `gpd-message-${OPERATION.toLowerCase()}`,
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT_SET),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
+  })(data);
+};
