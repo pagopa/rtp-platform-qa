@@ -182,28 +182,8 @@ export function buildGpdMessagePayload(
     psp_tax_code) {
 
     const timestamp = Date.now();
-    const iuv = generateNumericString(17);
-    const dueDate = addDays(timestamp, 30);
-    const nav = generateNumericString(18);
 
-    if (operation !== "DELETE") {
-        return {
-            "id": operationId,
-            "operation": operation,
-            "timestamp": timestamp,
-            "iuv": iuv,
-            "subject": "GPD Stress Test Remittance",
-            "description": "Automated stress test message - non production data",
-            "ec_tax_code": ecTaxCode,
-            "debtor_tax_code": debtorFiscalCode,
-            "nav": nav,
-            "due_date": dueDate,
-            "amount": 30000,
-            "status": status,
-            "psp_code": null,
-            "psp_tax_code": psp_tax_code ?? null
-        }
-    } else {
+    if (operation === "DELETE") {
         return {
             "id": operationId,
             "operation": operation,
@@ -220,5 +200,22 @@ export function buildGpdMessagePayload(
             "psp_code": null,
             "psp_tax_code": null
         }
+    }
+
+    return {
+        "id": operationId,
+        "operation": operation,
+        "timestamp": timestamp,
+        "iuv": generateNumericString(17),
+        "subject": "GPD Stress Test Remittance",
+        "description": "Automated stress test message - non production data",
+        "ec_tax_code": ecTaxCode,
+        "debtor_tax_code": debtorFiscalCode,
+        "nav": generateNumericString(18),
+        "due_date": addDays(timestamp, 30),
+        "amount": 30000,
+        "status": status,
+        "psp_code": null,
+        "psp_tax_code": psp_tax_code ?? null
     }
 }

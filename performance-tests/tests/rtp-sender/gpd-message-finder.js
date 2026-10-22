@@ -44,7 +44,11 @@ const STATUS = __ENV.STATUS || "VALID";
 const GENERATE_NEW_IDS = ["CREATE", "UPDATE"].includes(OPERATION) && STATUS === "VALID";
 
 /** Debtor Service Provider ID used for the activation (env: DEBTOR_SERVICE_PROVIDER_ID). @type {string} */
-const DEBTOR_SERVICE_PROVIDER_ID = String(__ENV.DEBTOR_SERVICE_PROVIDER_ID);
+const DEBTOR_SERVICE_PROVIDER_ID = __ENV.DEBTOR_SERVICE_PROVIDER_ID;
+
+if (!DEBTOR_SERVICE_PROVIDER_ID) {
+  throw new Error('❌ DEBTOR_SERVICE_PROVIDER_ID is required and cannot be null or undefined');
+}
 
 /** Load profile to use. See file-level doc comment above for the accepted values. */
 const SCENARIO = __ENV.SCENARIO || 'custom';

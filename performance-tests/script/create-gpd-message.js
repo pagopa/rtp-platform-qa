@@ -29,7 +29,11 @@ import {createGpdMessageInBatch} from "../utils/batch-utils.js";
  */
 
 /** Debtor Service Provider ID used for the activation (env: DEBTOR_SERVICE_PROVIDER_ID). @type {string} */
-const DEBTOR_SERVICE_PROVIDER_ID = String(__ENV.DEBTOR_SERVICE_PROVIDER_ID);
+const DEBTOR_SERVICE_PROVIDER_ID = __ENV.DEBTOR_SERVICE_PROVIDER_ID;
+
+if (!DEBTOR_SERVICE_PROVIDER_ID) {
+  throw new Error('❌ DEBTOR_SERVICE_PROVIDER_ID is required and cannot be null or undefined');
+}
 
 /** PSP tax code (env: PSP_TAX_CODE). @type {string|null} */
 const PSP_TAX_CODE = __ENV.PSP_TAX_CODE || null;
