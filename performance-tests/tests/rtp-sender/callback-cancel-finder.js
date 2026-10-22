@@ -76,8 +76,14 @@ try {
 }
 const resourceIds = Array.from(new Set(JSON.parse(rawResourceIds))).map(String);
 
+if (resourceIds.length === 0) {
+  throw new Error('❌ No resource IDs found in resourceIds-cancel.json. Ensure the seed script (create-rtp-cancel.js) generated and cancelled RTPs successfully.');
+}
+
 /** Total shared iterations for the scenario. */
 const ITERATIONS = Number(__ENV.ITERATIONS) || resourceIds.length;
+const totalIterations = Math.min(ITERATIONS, resourceIds.length);
+const effectiveVUs = Math.min(VU_COUNT_SET, totalIterations);
 
 /** Standard performance metrics used in the test. */
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
@@ -110,8 +116,8 @@ export let options = isArrivalRate
       scenarios: {
         [SCENARIO === 'custom' ? 'stress_test_fixed_user' : SCENARIO]: {
           executor: 'shared-iterations',
-          vus: VU_COUNT_SET,
-          iterations: Math.min(ITERATIONS, resourceIds.length),
+          vus: effectiveVUs,
+          iterations: totalIterations,
           maxDuration: '30m',
           gracefulStop: '30m',
           exec: 'callbackCancel'

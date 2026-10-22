@@ -583,6 +583,7 @@ export const endpoints = {
   deactivations: `${activationConfig.activation_base}/activations`,
   takeover: `${activationConfig.activation_base}/activations/takeover`,
   sendRtp: `${senderConfig.sender_base}/rtps`,
+  cancelRtp: `${senderConfig.sender_base}/rtps/cancel`,
   callbackSend : `${callbackConfig.callback_base}/cb/v1/send`,
   callbackCancel: `${callbackConfig.callback_base}/cb/cancel`,
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
