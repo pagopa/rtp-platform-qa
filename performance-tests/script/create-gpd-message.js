@@ -4,7 +4,8 @@ import {
   ActorCredentials,
   buildHeaders, endpoints,
   randomFiscalCode,
-  setupAuth
+  setupAuth,
+  TEST_EC_TAX_CODE
 } from "../utils/utils.js";
 import {createGpdMessageInBatch} from "../utils/batch-utils.js";
 
@@ -104,7 +105,7 @@ export function setup(){
     debtorFiscalCode: fiscalCode,
     operation: "CREATE",
     status: "VALID",
-    ecTaxCode: "77777777777",
+    ecTaxCode: TEST_EC_TAX_CODE,
     psp_tax_code: PSP_TAX_CODE
   });
 }

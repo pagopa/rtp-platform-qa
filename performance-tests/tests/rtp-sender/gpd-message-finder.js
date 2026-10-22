@@ -11,7 +11,8 @@ import {
   endpoints,
   generatePositiveLong,
   getOptions, randomFiscalCode,
-  setupAuth
+  setupAuth,
+  TEST_EC_TAX_CODE
 } from "../../utils/utils.js";
 import {buildGpdMessagePayload} from "../../utils/sender-payloads.js";
 import {uuidv4} from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
@@ -176,12 +177,29 @@ export function setup() {
 }
 
 /**
+ * Returns the operation ID for the current iteration: a new one when `GENERATE_NEW_IDS`,
+ * otherwise the next one from `OPERATION_IDS_FILE`. Aborts the test when the IDs are exhausted.
+ *
+ * @returns {string|number} Operation ID to send.
+ */
+function nextOperationId() {
+  if (GENERATE_NEW_IDS) {
+    return generatePositiveLong();
+  }
+
+  const idx = exec.scenario.iterationInTest;
+  if (idx >= operationIds.length) {
+    exec.test.abort('Operation IDs exhausted');
+  }
+  return operationIds[idx];
+}
+
+/**
  * Main stress test scenario function.
  *
  * For each iteration:
  *  - Calculates time-based tags for metrics
- *  - Picks the operation ID: a new one when `GENERATE_NEW_IDS`, otherwise the
- *    next one from `gpd-message-id.json` (aborts the test when exhausted)
+ *  - Picks the operation ID via `nextOperationId`
  *  - Sends a GPD message request
  *  - Tracks success/failure and response time
  *
@@ -203,24 +221,12 @@ export function sendMessage(data) {
     "Idempotency-Key": uuidv4()
   };
 
-  let operationId;
-  if (GENERATE_NEW_IDS) {
-    operationId = generatePositiveLong();
-  } else {
-    const idx = exec.scenario.iterationInTest;
-    if (idx >= operationIds.length) {
-      exec.test.abort('Operation IDs exhausted');
-      return;
-    }
-    operationId = operationIds[idx];
-  }
-
   const payload = buildGpdMessagePayload(
       data.fiscalCode,
-      operationId,
+      nextOperationId(),
       OPERATION,
       STATUS,
-      "77777777777",
+      TEST_EC_TAX_CODE,
       PSP_TAX_CODE
   );
 
