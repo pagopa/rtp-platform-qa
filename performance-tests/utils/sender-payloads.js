@@ -186,48 +186,39 @@ export function buildGpdMessagePayload(
     const dueDate = addDays(timestamp, 30);
     const nav = generateNumericString(18);
 
-    return {
-        "id": operationId,
-        "operation": operation,
-        "timestamp": timestamp,
-        "iuv": iuv,
-        "subject": "GPD Stress Test Remittance",
-        "description": "Automated stress test message - non production data",
-        "ec_tax_code": ecTaxCode,
-        "debtor_tax_code": debtorFiscalCode,
-        "nav": nav,
-        "due_date": dueDate,
-        "amount": 30000,
-        "status": status,
-        "psp_code": null,
-        "psp_tax_code": psp_tax_code ?? null
-    }
-}
-
-/**
- * Builds the payload for deleting a GPD message.
- *
- * @param {string} operationId Identifier of the GPD message to delete.
- * @returns {Object} GPD delete message payload.
- */
-export function buildDeleteGpdMessagePayload(operationId){
-
-    const timestamp = Date.now();
-
-    return {
-        "id": operationId,
-        "operation": "DELETE",
-        "timestamp": timestamp,
-        "iuv": null,
-        "subject": null,
-        "description": null,
-        "ec_tax_code": null,
-        "debtor_tax_code": null,
-        "nav": null,
-        "due_date": null,
-        "amount": null,
-        "status": null,
-        "psp_code": null,
-        "psp_tax_code": null
+    if (operation !== "DELETE") {
+        return {
+            "id": operationId,
+            "operation": operation,
+            "timestamp": timestamp,
+            "iuv": iuv,
+            "subject": "GPD Stress Test Remittance",
+            "description": "Automated stress test message - non production data",
+            "ec_tax_code": ecTaxCode,
+            "debtor_tax_code": debtorFiscalCode,
+            "nav": nav,
+            "due_date": dueDate,
+            "amount": 30000,
+            "status": status,
+            "psp_code": null,
+            "psp_tax_code": psp_tax_code ?? null
+        }
+    } else {
+        return {
+            "id": operationId,
+            "operation": operation,
+            "timestamp": timestamp,
+            "iuv": null,
+            "subject": null,
+            "description": null,
+            "ec_tax_code": null,
+            "debtor_tax_code": null,
+            "nav": null,
+            "due_date": null,
+            "amount": null,
+            "status": null,
+            "psp_code": null,
+            "psp_tax_code": null
+        }
     }
 }
