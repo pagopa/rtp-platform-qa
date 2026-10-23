@@ -47,7 +47,7 @@ export function createTestSummary({ data, startTime, testCompleted, vuCount, tes
         overallStats: overallStats,
         breakingPoint: breakingPoint,
         firstFailure: firstFailure,
-        additionalContent: data.setupData && data.setupData.additionalReportContent ? data.setupData.additionalReportContent : ''
+        additionalContent: data.setup_data && data.setup_data.additionalReportContent ? data.setup_data.additionalReportContent : ''
     });
 
     return {
@@ -112,13 +112,9 @@ export function createHandleSummary({ START_TIME, testName, countTag, reportPref
             console.log(`Found testCompleted in testCompletedRef: ${testCompletedRef.value}`);
             testCompleted = true;
         }
-        else if (data.setupData?.testCompleted !== undefined) {
-            console.log(`Found testCompleted in setupData: ${data.setupData.testCompleted}`);
-            testCompleted = data.setupData.testCompleted;
-        }
-        else if (data.setupData?.allCompleted !== undefined) {
-            console.log(`Found allCompleted in setupData: ${data.setupData.allCompleted}`);
-            testCompleted = data.setupData.allCompleted;
+        else if (data.setup_data?.testCompleted !== undefined) {
+            console.log(`Found testCompleted in setup_data: ${data.setup_data.testCompleted}`);
+            testCompleted = data.setup_data.testCompleted;
         }
         else if (scenarioCompletion && scenarioCompletion.status !== 'UNKNOWN') {
             testCompleted = scenarioCompletion.status === 'COMPLETED';
@@ -132,7 +128,7 @@ export function createHandleSummary({ START_TIME, testName, countTag, reportPref
 
         console.log(`Report generation - Test completed status: ${testCompleted}`);
 
-        const testStartTime = (data.setupData && data.setupData.startTime) ? data.setupData.startTime : START_TIME;
+        const testStartTime = (data.setup_data && data.setup_data.startTime) ? data.setup_data.startTime : START_TIME;
 
         return createTestSummary({
             data,

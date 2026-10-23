@@ -15,6 +15,9 @@ export const ActorCredentials = {
   RTP_CONSUMER: "RTP_CONSUMER"
 };
 
+/** Tax code of the test creditor entity (EC) used in GPD message payloads. */
+export const TEST_EC_TAX_CODE = "77777777777";
+
 
 const ACTOR_CREDENTIALS_MAP = {
   [ActorCredentials.DEBTOR_SERVICE_PROVIDER]: {
