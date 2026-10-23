@@ -1,222 +1,228 @@
 import http from 'k6/http';
-import {check, sleep} from 'k6';
-import {endpoints, determineStage, getOptions} from '../../utils/utils.js';
-import {HOST_SUFFIX} from '../../config/config.js';
-import {createStandardMetrics} from '../../utils/metrics-utils.js';
-import {shuffleArray, distributeItemsAmongGroups} from '../../utils/batch-utils.js';
-import {buildCallbackCancelPayload} from "../../utils/sender-payloads.js";
+import { check, sleep } from 'k6';
+import exec from 'k6/execution';
+import { endpoints, determineStage, getOptions, describeScenarioVUs } from "../../utils/utils.js";
+import { HOST_SUFFIX } from "../../config/config.js";
+import { createStandardMetrics } from "../../utils/metrics-utils.js";
+import { createHandleSummary } from "../../utils/summary-utils.js";
+import { buildCallbackCancelPayload } from "../../utils/sender-payloads.js";
+import { createCallbackTeardown } from "../../utils/teardown-utils.js";
 
 /**
- * @file RTP Callback Cancel Stress Test (k6)
+ * @file RTP Callback Cancel - k6 Test Script
+ *
  * @description
- * Executes callback cancel requests for previously generated RTP resource IDs.
- * Resource IDs are distributed among virtual users (VUs) and executed using
- * a fixed shared-iterations scenario.
+ * Executes callback cancel operations for previously generated RTP resource IDs.
+ * Resource IDs are loaded from JSON and executed using the configured scenario executor.
  *
- * ## Flow
- * 1. Load RTP resource IDs from JSON file.
- * 2. Shuffle IDs to avoid sequential patterns.
- * 3. Distribute IDs evenly among VUs.
- * 4. Each VU performs callback cancel requests for its assigned IDs.
+ * ## Environment Variables
+ * - `SCENARIO` (optional, default: 'custom'): Load profile to execute.
+ *   Supports 'stress_test', 'soak_test', 'spike_test', or 'stress_test_fixed_user' / 'custom'.
+ * - `VU_COUNT_SET` (optional, default: 5): Number of Virtual Users.
+ * - `ITERATIONS` (optional, default: resourceIds count): Total iterations across all VUs.
+ * - `SLEEP_ITER` (optional, seconds, default: 0): Sleep time between iterations.
+ * - `RTP_SP_ID` (optional, default: DEBTOR_SERVICE_PROVIDER_ID): RTP Service Provider identifier.
  *
- * ## Metrics
- * - Requests per second (RPS)
- * - Response time trend
- * - Success / failure counters
- *
- * ## Input file
- * `json-file/rtp-sender/resourceIds-cancel.json`
+ * ## Inputs
+ * - File: `json-file/rtp-sender/resourceIds-cancel.json` (fallback: `script/resourceIds-cancel.json`)
+ * - Certificates: `utils/certificates/cert.pem`, `utils/certificates/key-unencrypted.pem`
  */
 
+/** Timestamp (ms) marking the start of the test run. */
 const START_TIME = Date.now();
 
-/** Number of virtual users (`VU_COUNT_SET`, default: 10). @type {number} */
-const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 10;
+/** Number of Virtual Users (configurable via environment variable). */
+const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 5;
 
-/** Optional sleep between iterations in seconds (`SLEEP_ITER`). @type {number} */
+/** Optional per-iteration sleep time (seconds). */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
 
-/** RTP Service Provider identifier (`RTP_SP_ID`). @type {string} */
-const RTP_SP_ID = String(__ENV.RTP_SP_ID);
+/** Load profile to use. Defaults to 'custom' if not specified. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
 
-/** Path to mTLS certificate used for callback authentication. @type {string} */
+/** RTP Service Provider identifier (`RTP_SP_ID` or fallback to `DEBTOR_SERVICE_PROVIDER_ID`). */
+const RTP_SP_ID = String(__ENV.RTP_SP_ID || __ENV.DEBTOR_SERVICE_PROVIDER_ID || '');
+
+/** Predefined arrival-rate scenarios backed by progressiveOptions in utils.js */
+const ARRIVAL_RATE_SCENARIOS = ['stress_test', 'soak_test', 'spike_test'];
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  ...ARRIVAL_RATE_SCENARIOS,
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
+
+const isArrivalRate = ARRIVAL_RATE_SCENARIOS.includes(SCENARIO);
+
+/** Paths to mTLS certificates */
 const MTLS_CERT_PATH = '../../utils/certificates/cert.pem';
-
-/** Path to mTLS private key used for callback authentication. @type {string} */
-const MTLS_KEY_PATH = '../../utils/certificates/key-unencrypted.pem';
+const MTLS_KEY_PATH  = '../../utils/certificates/key-unencrypted.pem';
 
 /**
- * Unique RTP resource IDs loaded from file.
- * @type {string[]}
+ * Loads RTP resource IDs from JSON file.
+ * Tries `json-file/rtp-sender/resourceIds-cancel.json` first, then falls back to `script/resourceIds-cancel.json`.
  */
-const resourceIds = Array.from(new Set(
-    JSON.parse(open('../../json-file/rtp-sender/resourceIds-cancel.json'))
-)).map(String);
+let rawResourceIds;
+try {
+  rawResourceIds = open('../../json-file/rtp-sender/resourceIds-cancel.json');
+} catch (e) {
+  rawResourceIds = open('../../script/resourceIds-cancel.json');
+}
+const resourceIds = Array.from(new Set(JSON.parse(rawResourceIds))).map(String);
 
-/**
- * Standard performance metrics used in the test.
- */
+if (resourceIds.length === 0) {
+  throw new Error('❌ No resource IDs found in resourceIds-cancel.json. Ensure the seed script (create-rtp-cancel.js) generated and cancelled RTPs successfully.');
+}
+
+/** Total shared iterations for the scenario. */
+const ITERATIONS = Number(__ENV.ITERATIONS) || resourceIds.length;
+const totalIterations = Math.min(ITERATIONS, resourceIds.length);
+const effectiveVUs = Math.min(VU_COUNT_SET, totalIterations);
+
+/** Standard performance metrics used in the test. */
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
 /**
- * k6 test configuration.
- * Defines a shared-iterations scenario where callbacks are distributed
- * across virtual users.
+ * k6 execution options.
+ *
+ * Configures the scenario dynamically based on SCENARIO:
+ * - Predefined arrival-rate scenarios (stress_test, soak_test, spike_test) use getOptions().
+ * - 'custom' or fixed-user scenarios use a shared-iterations executor across the loaded resource IDs.
+ *
+ * @type {import('k6/options').Options}
  */
-export const options = {
-  ...getOptions('stress_test_fixed_user', 'callbackCancel'),
-  scenarios: {
-    stress_test_fixed_user: {
-      executor: 'shared-iterations',
-      vus: VU_COUNT_SET,
-      iterations: resourceIds.length,
-      maxDuration: '30m',
-      gracefulStop: '30m',
-      exec: 'callbackCancel'
+export let options = isArrivalRate
+  ? {
+      ...getOptions(SCENARIO, 'callbackCancel'),
+      setupTimeout: '5m',
+      tlsAuth: [
+        {
+          domains: [`api-rtp-cb.${HOST_SUFFIX}`],
+          cert: open(MTLS_CERT_PATH),
+          key: open(MTLS_KEY_PATH),
+        }
+      ],
+      insecureSkipTLSVerify: true
     }
-  },
-  tlsAuth: [{
-    domains: [`api-rtp-cb.${HOST_SUFFIX}`],
-    cert: open(MTLS_CERT_PATH),
-    key: open(MTLS_KEY_PATH),
-  }],
-  insecureSkipTLSVerify: true
-};
+  : {
+      ...getOptions('stress_test_fixed_user', 'callbackCancel'),
+      setupTimeout: '5m',
+      scenarios: {
+        [SCENARIO === 'custom' ? 'stress_test_fixed_user' : SCENARIO]: {
+          executor: 'shared-iterations',
+          vus: effectiveVUs,
+          iterations: totalIterations,
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'callbackCancel'
+        }
+      },
+      tlsAuth: [
+        {
+          domains: [`api-rtp-cb.${HOST_SUFFIX}`],
+          cert: open(MTLS_CERT_PATH),
+          key: open(MTLS_KEY_PATH),
+        }
+      ],
+      insecureSkipTLSVerify: true
+    };
 
 /** Indicates whether the test has completed. @type {boolean} */
 let testCompleted = false;
 
 /**
- * k6 `setup()` lifecycle function.
- *
- * Randomizes resource IDs and distributes them across virtual users.
- *
- * @returns {{
- *   callbackChunks: Array<Array<string|{id:string}>>,
- *   totalCallbacks: number,
- *   callbackCount: number,
- *   allCompleted: boolean
- * }}
+ * k6 setup lifecycle function.
  */
 export function setup() {
-  shuffleArray(resourceIds);
-  const callbackChunks = distributeItemsAmongGroups(resourceIds, VU_COUNT_SET);
-
-  console.log(`Callbacks distributed among ${VU_COUNT_SET} virtual users:`);
-  for (let i = 0; i < VU_COUNT_SET; i++) {
-    console.log(`- VU #${i + 1}: ${callbackChunks[i].length} callbacks`);
-  }
-
   return {
-    callbackChunks,
-    totalCallbacks: resourceIds.length,
+    startTime: Date.now(),
+    totalCallback: resourceIds.length,
     callbackCount: 0,
     allCompleted: false
   };
 }
 
 /**
- * Scenario execution function.
- *
- * Each virtual user processes its assigned RTP callbacks and sends
- * HTTP POST requests to the callback cancel endpoint.
- *
- /**
- * @param {{
- *  callbackChunks: Array<Array<any>>,
- *  totalCallbacks: number,
- *  callbackCount: number,
- *  allCompleted: boolean,
- *  currentIndices?: Record<number, number>,
- *  vuCallbackCount?: Record<number, number>,
- *  vuCallbacked?: Record<number, boolean>
- * }} data Setup data shared across VUs.
- *
- * @returns {Object} HTTP response or synthetic response when idle.
+ * Callback cancel execution function per iteration.
  */
 export function callbackCancel(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+  const iteration = exec.scenario.iterationInTest;
+
+  if (iteration >= resourceIds.length) {
+    exec.test.abort(`Resource IDs exhausted (${resourceIds.length})`);
+    return;
+  }
+
+  const idx = iteration;
+
   const tags = {
-    timeWindow: String(Math.floor(elapsedSeconds / 10) * 10),
+    timeWindow: Math.floor(elapsedSeconds / 10) * 10,
     stage: determineStage(elapsedSeconds),
-    callbackCount: String(data.callbackCount),
+    callbackCount: String(iteration + 1),
     vu: String(__VU)
   };
 
-  currentRPS.add(1, tags);
-
-  if (testCompleted) {
-    console.log(`⏹️ Test completed. VU #${__VU} idling...`);
-    sleep(30);
-    return { status: 200, message: 'Test completed', noMetrics: true };
-  }
-
-  const vuIndex = __VU - 1;
-  if (!data.callbackChunks[vuIndex]) {
-    console.log(`⚠️ VU #${__VU}: No chunk assigned.`);
-    return { status: 400, message: 'No chunk', noMetrics: true };
-  }
-
-  const myCallbacks = data.callbackChunks[vuIndex];
-
-  if (!data.currentIndices) data.currentIndices = {};
-  if (!data.currentIndices[vuIndex]) data.currentIndices[vuIndex] = 0;
-  if (!data.vuCallbackCount) data.vuCallbackCount = {};
-  if (!data.vuCallbackCount[vuIndex]) data.vuCallbackCount[vuIndex] = 0;
-
-  if (data.vuCallbackCount[vuIndex] >= myCallbacks.length) {
-    console.log(`✓ VU #${__VU}: Completed ${myCallbacks.length} callbacks.`);
-    sleep(5);
-    return { status: 200, message: 'VU done', noMetrics: true };
-  }
-
-  const currentIndex = data.currentIndices[vuIndex];
-
-  const callbackItem = myCallbacks[currentIndex];
-  const resourceId = callbackItem?.id || callbackItem;
-
-  if (data.currentIndices[vuIndex] in (data.vuCallbacked || {})) {
-    data.currentIndices[vuIndex] = (currentIndex + 1) % myCallbacks.length;
-    return callbackCancel(data);
-  }
-
+  const id = resourceIds[idx];
+  const payload = JSON.stringify(buildCallbackCancelPayload(id, RTP_SP_ID));
   const headers = { 'Content-Type': 'application/json' };
   const url = endpoints.callbackCancel;
-  const payload = buildCallbackCancelPayload(resourceId, RTP_SP_ID);
+
+  currentRPS.add(1, tags);
 
   const start = Date.now();
-  const res = http.post(url, JSON.stringify(payload), { headers });
+  const res = http.post(url, payload, { headers });
   const duration = Date.now() - start;
 
   responseTimeTrend.add(duration, tags);
 
   if (res.status >= 200 && res.status < 300) {
     successCounter.add(1, tags);
-    data.vuCallbackCount[vuIndex]++;
-    data.callbackCount++;
-
-    if (!data.vuCallbacked) data.vuCallbacked = {};
-    data.vuCallbacked[data.currentIndices[vuIndex]] = true;
-
-    if (data.callbackCount % 50 === 0 || data.vuCallbackCount[vuIndex] === myCallbacks.length) {
-      console.log(`✓ VU #${__VU}: ${data.vuCallbackCount[vuIndex]}/${myCallbacks.length} done (Total: ${data.callbackCount}/${data.totalCallbacks}) | ID: ${resourceId.slice(0,8)}...`);
-    }
-
-    if (data.callbackCount >= data.totalCallbacks && !data.allCompleted) {
-      data.allCompleted = true;
+    data.callbackCount = iteration + 1;
+    if (iteration + 1 >= Math.min(ITERATIONS, resourceIds.length)) {
       testCompleted = true;
-      console.log(`✅ ALL ${data.totalCallbacks} CALLBACKS DONE! (${Math.round(elapsedSeconds)}s)`);
-      return { status: 200, message: 'Test done', noMetrics: false };
     }
   } else {
     failureCounter.add(1, tags);
-    console.error(`❌ VU #${__VU}: Callback failed ID=${resourceId?.slice(0,8)}...: ${res.status} | ${res.body?.slice(0,100)}`);
+    console.error(`❌ VU #${__VU}: Failed callback cancel for ID ${id}: Status ${res.status}`);
   }
 
-  check(res, { 'callback 2xx': (r) => r.status >= 200 && r.status < 300 });
+  check(res, { 'callback cancel: status is 2xx': (r) => r.status >= 200 && r.status < 300 });
 
-  data.currentIndices[vuIndex] = (data.currentIndices[vuIndex] + 1) % myCallbacks.length;
-  if (SLEEP_ITER > 0) sleep(SLEEP_ITER);
+  if (SLEEP_ITER > 0) {
+    sleep(SLEEP_ITER);
+  }
 
   return res;
 }
+
+const testCompletedRef = { value: false };
+
+export const teardown = createCallbackTeardown({
+  START_TIME,
+  VU_COUNT: VU_COUNT_SET,
+  testCompletedRef
+});
+
+Object.defineProperty(testCompletedRef, 'value', {
+  get: () => testCompleted,
+  set: (newValue) => { testCompleted = newValue; }
+});
+
+export const handleSummary = (opts) => {
+  return createHandleSummary({
+    START_TIME,
+    testName: 'MULTI-VU CALLBACK CANCEL STRESS TEST',
+    countTag: 'callbackCount',
+    reportPrefix: 'callback-cancel',
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT_SET),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
+  })(opts);
+};

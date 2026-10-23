@@ -207,7 +207,7 @@ export function cancelRtpInBatch({
   console.log(`Cancelling ${resourceIds.length} RTP requests in batches of ${batchSize}...`);
 
   const headers = buildHeaders(accessToken);
-  const basePath = `${senderConfig.sender_base}/rtps`;
+  const cancelUrl = endpoints.cancelRtp || `${senderConfig.sender_base}/rtps/cancel`;
   const cancelledIds = [];
   let successCount = 0;
   let failureCount = 0;
@@ -217,11 +217,15 @@ export function cancelRtpInBatch({
 
     for (let i = 0; i < batchSize && (batch * batchSize + i) < resourceIds.length; i++) {
       const resourceId = resourceIds[batch * batchSize + i].id;
-      const fullUrl = `${basePath}/${resourceId}/cancel`;
+      const payload = {
+        resourceId: resourceId,
+        reason: 'PAID'
+      };
 
       batchRequests.push({
         method: 'POST',
-        url: fullUrl,
+        url: cancelUrl,
+        body: JSON.stringify(payload),
         params: { headers },
       });
     }
@@ -233,6 +237,8 @@ export function cancelRtpInBatch({
       if (res.status >= 200 && res.status < 300) {
         batchSuccess++;
         cancelledIds.push(resourceIds[batch * batchSize + index]);
+      } else {
+        console.error(`❌ Cancel failed for resourceId ${resourceIds[batch * batchSize + index]?.id}: Status ${res.status} | Body: ${res.body}`);
       }
     });
 
