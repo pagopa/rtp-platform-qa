@@ -1,5 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import exec from 'k6/execution';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
 import {
   setupAuth,
@@ -101,7 +102,13 @@ export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
  * Authenticates as DEBTOR_SERVICE_PROVIDER.
  */
 export function setup() {
-  return setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+  const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+  return {
+    ...auth,
+    startTime: Date.now(),
+    totalActivations: ITERATIONS,
+    allCompleted: false
+  };
 }
 
 /**
@@ -109,9 +116,11 @@ export function setup() {
  */
 export function activate(data) {
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+  const iteration = exec.scenario.iterationInTest;
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
     stage: getStageLabel(SCENARIO, elapsedSeconds),
+    requestCount: String(iteration + 1),
     vu: String(__VU)
   };
 
@@ -150,14 +159,13 @@ export function activate(data) {
     console.error(`❌ VU #${__VU}: Activation failed — Status ${actRes.status}, Body: ${actRes.body}`);
   } else {
     let activationId = null;
-    if (actRes.headers['Location']) {
-      activationId = actRes.headers['Location'].split('/').pop();
-    } else if (actRes.json && actRes.json('activationId')) {
-      activationId = actRes.json('activationId');
+    const locationHeader = actRes.headers['Location'] || actRes.headers['location'];
+    if (locationHeader) {
+      activationId = locationHeader.split('/').pop();
     } else {
       try {
         const body = JSON.parse(actRes.body);
-        activationId = body.activationId || body.id || null;
+        activationId = body?.activationId || body?.id || null;
       } catch (e) {
         activationId = null;
       }
@@ -201,6 +209,9 @@ export function activate(data) {
 
   if (stepSuccess) {
     successCounter.add(1, tags);
+    if (iteration + 1 >= ITERATIONS) {
+      testCompletedRef.value = true;
+    }
   } else {
     failureCounter.add(1, tags);
   }
@@ -224,7 +235,16 @@ export const teardown = createActivationTeardown({
 /**
  * k6 handleSummary export.
  */
-export const handleSummary = (opts) => {
+export const handleSummary = (data) => {
+  const scenario = options.scenarios?.[SCENARIO];
+  if (SCENARIO === 'custom' || (scenario?.executor === 'constant-vus' && data.state)) {
+    const completed = SCENARIO === 'custom'
+      ? (data.metrics?.iterations?.values?.count ?? 0) >= ITERATIONS
+      : !data.state.isInterrupted;
+    testCompletedRef.value = completed;
+    data.setup_data = { ...data.setup_data, testCompleted: completed };
+  }
+
   return createHandleSummary({
     START_TIME,
     testName: 'ACTIVATION FLOW STRESS TEST',
@@ -233,5 +253,5 @@ export const handleSummary = (opts) => {
     VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT),
     testCompletedRef,
     scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
-  })(opts);
+  })(data);
 };
