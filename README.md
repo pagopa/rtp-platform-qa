@@ -290,6 +290,7 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 | RTP Reader | `RTP_READER_CLIENT_ID`, `_SECRET` |
 | Read RTP Activations | `READ_RTP_ACTIVATIONS_CLIENT_ID`, `_SECRET` |
 | PagoPA Integration | `PAGOPA_INTEGRATION_*_CLIENT_ID`, `*_CLIENT_SECRET` (3 clients) |
+| SelfCare Webhook | `SELFCARE_WEBHOOK_API_KEY`, `_TOKEN`, `_TENANT_ID`, `_PRODUCT_ID` |
 | CBI | `CBI_CLIENT_ID`, `_SECRET`, `_PFX_BASE64`, `_PFX_PASSWORD_BASE64`, `CBI_ACTIVATED_FISCAL_CODE`, `CBI_PAYEE_ID`, `CREDITOR_AGENT_ID` |
 | Third-Party Providers | `POSTE_CLIENT_ID`, `_SECRET`, `POSTE_ACTIVATED_FISCAL_CODE`, `ICCREA_ACTIVATED_FISCAL_CODE` |
 | Mock Service Provider | `DEBTOR_SERVICE_PROVIDER_MOCK_PFX_BASE64`, `_PASSWORD_BASE64`, `DEBTOR_SERVICE_PROVIDER_MOCK_QSEALC_PFX_BASE64`, `_PASSWORD_BASE64`, `MOCK_*_FISCAL_CODE` |
@@ -341,6 +342,10 @@ Secrets must be updated manually by admins when rotated. The full list of requir
 | `PAGOPA_INTEGRATION_PAYEE_REGISTRY_CONSENT_CLIENT_SECRET` | Client secret for the PagoPA payee registry consent |
 | `PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID` | Client ID for the PagoPA service registry |
 | `PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET` | Client secret for the PagoPA service registry |
+| `SELFCARE_WEBHOOK_API_KEY` | `x-api-key` for the SelfCare webhook |
+| `SELFCARE_WEBHOOK_TOKEN` | Bearer token for the SelfCare webhook |
+| `SELFCARE_WEBHOOK_TENANT_ID` | SelfCare tenant ID sent in webhook notifications |
+| `SELFCARE_WEBHOOK_PRODUCT_ID` | SelfCare product ID sent in webhook notifications |
 
 ### RTP Reader
 
