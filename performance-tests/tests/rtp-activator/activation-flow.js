@@ -1,91 +1,257 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+import exec from 'k6/execution';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { setupAuth, randomFiscalCode, commonOptions, buildHeaders, endpoints, ActorCredentials } from '../../utils/utils.js';
-import { activationConfig } from '../../config/config.js';
+import {
+  setupAuth,
+  randomFiscalCode,
+  buildHeaders,
+  endpoints,
+  getStageLabel,
+  getOptions,
+  describeScenarioVUs,
+  ActorCredentials
+} from '../../utils/utils.js';
+import { createHandleSummary } from '../../utils/summary-utils.js';
+import { createStandardMetrics } from '../../utils/metrics-utils.js';
+import { createActivationTeardown } from '../../utils/teardown-utils.js';
 
-const {
-  DEBTOR_SERVICE_PROVIDER_ID
-} = __ENV;
+/**
+ * @file Activation Flow Stress Test (k6)
+ * @description
+ * Complete activation lifecycle stress test:
+ * 1. POST /activations?toPublish=true (creates activation)
+ * 2. GET /activations/{activationId} (retrieves activation details)
+ * 3. DELETE /activations/{activationId} (deactivates activation)
+ *
+ * ## Inputs
+ * - Environment variables:
+ *   - `DEBTOR_SERVICE_PROVIDER_ID` (required): Debtor Service Provider identifier used in payloads.
+ *   - `SCENARIO` (string, optional, default: 'custom'): Load profile to execute.
+ *   - `VU_COUNT_SET` (number, optional, default: 10): Number of Virtual Users.
+ *   - `ITERATIONS` (number, optional, default: 1000): Total iterations across all VUs (for custom scenario).
+ *   - `SLEEP_ITER` (number, seconds, optional, default: 0): Sleep time between iterations.
+ */
 
+/** Run start timestamp (ms). */
+const START_TIME = Date.now();
 
-export let options = {
-  ...commonOptions,
-  scenarios: {
-    activate: {
-      executor: 'constant-arrival-rate',
-      rate: 10, timeUnit: '1s', duration: '1m',
-      preAllocatedVUs: 10, maxVUs: 50,
-      exec: 'activate'
-    }
-  },
-  thresholds: {
-    http_req_failed: ['rate<0.01'],
-    checks:          ['rate>0.95']
-  }
-};
+/** Debtor Service Provider ID from environment (required). */
+const DEBTOR_SERVICE_PROVIDER_ID = String(__ENV.DEBTOR_SERVICE_PROVIDER_ID || '');
 
-export function setup() {
-  const { access_token } = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
-  const activationIds = [];
-  const headers = buildHeaders(access_token);
-  for (let i = 0; i < 20; i++) {
-    const fc = randomFiscalCode();
-    const res = http.post(
-      endpoints.activations,
-      JSON.stringify({ payer: { fiscalCode: fc, rtpSpId: DEBTOR_SERVICE_PROVIDER_ID } }),
-      { headers }
-    );
-    if (res.status === 201) {
-      activationIds.push(res.headers['Location'].split('/').pop());
-    }
-  }
-  return { access_token, activationIds };
+if (!DEBTOR_SERVICE_PROVIDER_ID) {
+  throw new Error('❌ DEBTOR_SERVICE_PROVIDER_ID cannot be null or undefined');
 }
 
+/** Number of virtual users. */
+const VU_COUNT = Number(__ENV.VU_COUNT_SET) || 10;
+
+/** Total shared iterations for the scenario. */
+const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
+
+/** Optional per-iteration sleep (seconds). */
+const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
+
+/** Load profile to use. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO \"${SCENARIO}\". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
+
+/** Custom performance metrics */
+const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
+
+/** Mutable ref object for test completion state. */
+const testCompletedRef = { value: false };
+
+/**
+ * k6 execution options.
+ * @type {import('k6/options').Options}
+ */
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
+  ? {
+      ...getOptions(SCENARIO, 'activate'),
+      setupTimeout: '5m'
+    }
+  : {
+      ...getOptions('stress_test_fixed_user', 'activate'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT,
+          iterations: ITERATIONS,
+          maxDuration: '30m',
+          gracefulStop: '30m',
+          exec: 'activate'
+        }
+      }
+    };
+
+/**
+ * k6 setup lifecycle function.
+ * Authenticates as DEBTOR_SERVICE_PROVIDER.
+ */
+export function setup() {
+  const auth = setupAuth(ActorCredentials.DEBTOR_SERVICE_PROVIDER);
+  return {
+    ...auth,
+    startTime: Date.now(),
+    totalActivations: ITERATIONS,
+    allCompleted: false
+  };
+}
+
+/**
+ * Complete activation lifecycle worker executed per iteration.
+ */
 export function activate(data) {
-  const headers = {
-    'Authorization': `Bearer ${data.access_token}`,
-    'Content-Type':  'application/json',
-    'Version':       'v1',
-    'RequestId':     uuidv4(),
+  const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+  const iteration = exec.scenario.iterationInTest;
+  const tags = {
+    timeWindow: Math.floor(elapsedSeconds / 10) * 10,
+    stage: getStageLabel(SCENARIO, elapsedSeconds),
+    requestCount: String(iteration + 1),
+    vu: String(__VU)
   };
 
-  const debtor_fc = Math.floor(Math.random() * 1e11).toString().padStart(11, '0');
+  currentRPS.add(1, tags);
+
+  const headers = {
+    ...buildHeaders(data.access_token),
+    'Content-Type': 'application/json',
+    'Version': 'v1',
+    'RequestId': uuidv4()
+  };
+
+  const debtorFiscalCode = randomFiscalCode();
   const activationPayload = {
     payer: {
-      fiscalCode: debtor_fc,
-      rtpSpId:   DEBTOR_SERVICE_PROVIDER_ID
+      fiscalCode: debtorFiscalCode,
+      rtpSpId: DEBTOR_SERVICE_PROVIDER_ID
     }
   };
 
-  console.log('> payload for activation:', JSON.stringify(activationPayload));
+  const start = Date.now();
+  let stepSuccess = true;
+
+  // 1. POST /activations?toPublish=true (create activation)
   const actRes = http.post(
-    `${activationConfig.activation_base}/activations?toPublish=true`,
+    `${endpoints.activations}?toPublish=true`,
     JSON.stringify(activationPayload),
     { headers }
   );
-  console.log(`> POST /activations?toPublish=true → status=${actRes.status}, body=${actRes.body}`);
-  check(actRes, { 'activation 201': r => r.status === 201 });
 
-  if (actRes.status === 201) {
-    const activationId = actRes.headers['Location'].split('/').pop();
+  const isActOk = actRes.status === 201;
+  check(actRes, { 'activation: status is 201': () => isActOk });
 
-    const getByIdRes = http.get(
-    `${activationConfig.activation_base}/activations/${activationId}`,
-      { headers }
-    );
-    console.log(`> GET /activations/${activationId} → status=${getByIdRes.status}`);
-    check(getByIdRes, { 'get by id 200': r => r.status === 200 });
+  if (!isActOk) {
+    stepSuccess = false;
+    console.error(`❌ VU #${__VU}: Activation failed — Status ${actRes.status}, Body: ${actRes.body}`);
+  } else {
+    let activationId = null;
+    const locationHeader = actRes.headers['Location'] || actRes.headers['location'];
+    if (locationHeader) {
+      activationId = locationHeader.split('/').pop();
+    } else {
+      try {
+        const body = JSON.parse(actRes.body);
+        activationId = body?.activationId || body?.id || null;
+      } catch (e) {
+        activationId = null;
+      }
+    }
 
-    const deactRes = http.del(
-    `${activationConfig.activation_base}/activations/${activationId}`,
-      null,
-      { headers }
-    );
-    console.log(`> DELETE /activations/${activationId} → status=${deactRes.status}`);
-    check(deactRes, { 'deactivation 204': r => r.status === 204 });
+    if (activationId) {
+      // 2. GET /activations/{activationId} (verify retrieval)
+      const getByIdRes = http.get(
+        `${endpoints.activations}/${activationId}`,
+        { headers }
+      );
+      const isGetOk = getByIdRes.status === 200;
+      check(getByIdRes, { 'get by id: status is 200': () => isGetOk });
+
+      if (!isGetOk) {
+        stepSuccess = false;
+        console.error(`❌ VU #${__VU}: Get activation by ID failed for ${activationId}: Status ${getByIdRes.status}`);
+      }
+
+      // 3. DELETE /activations/{activationId} (deactivate)
+      const deactRes = http.del(
+        `${endpoints.activations}/${activationId}`,
+        null,
+        { headers }
+      );
+      const isDeactOk = deactRes.status === 204;
+      check(deactRes, { 'deactivation: status is 204': () => isDeactOk });
+
+      if (!isDeactOk) {
+        stepSuccess = false;
+        console.error(`❌ VU #${__VU}: Deactivation failed for ${activationId}: Status ${deactRes.status}`);
+      }
+    } else {
+      stepSuccess = false;
+      console.error(`❌ VU #${__VU}: Activation succeeded but failed to extract activationId from response`);
+    }
   }
 
-  sleep(1);
+  const duration = Date.now() - start;
+  responseTimeTrend.add(duration, tags);
+
+  if (stepSuccess) {
+    successCounter.add(1, tags);
+    if (iteration + 1 >= ITERATIONS) {
+      testCompletedRef.value = true;
+    }
+  } else {
+    failureCounter.add(1, tags);
+  }
+
+  if (SLEEP_ITER > 0) {
+    sleep(SLEEP_ITER);
+  }
+
+  return actRes;
 }
+
+/**
+ * k6 teardown export.
+ */
+export const teardown = createActivationTeardown({
+  START_TIME,
+  VU_COUNT,
+  testCompletedRef
+});
+
+/**
+ * k6 handleSummary export.
+ */
+export const handleSummary = (data) => {
+  const scenario = options.scenarios?.[SCENARIO];
+  if (SCENARIO === 'custom' || (scenario?.executor === 'constant-vus' && data.state)) {
+    const completed = SCENARIO === 'custom'
+      ? (data.metrics?.iterations?.values?.count ?? 0) >= ITERATIONS
+      : !data.state.isInterrupted;
+    testCompletedRef.value = completed;
+    data.setup_data = { ...data.setup_data, testCompleted: completed };
+  }
+
+  return createHandleSummary({
+    START_TIME,
+    testName: 'ACTIVATION FLOW STRESS TEST',
+    countTag: 'requestCount',
+    reportPrefix: 'activation-flow',
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
+  })(data);
+};
