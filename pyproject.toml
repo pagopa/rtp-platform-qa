@@ -86,6 +86,7 @@ markers = [
   "timeout: Tests with timeouts",
   "functional: Functional tests",
   "webform: Tests on RTP webform",
+  "selfcare_webhook: mark tests that exercise the SelfCare webhook endpoint",
 ]
 
 [tool.hatch.build.targets.wheel]
