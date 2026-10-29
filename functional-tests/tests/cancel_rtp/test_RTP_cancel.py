@@ -4,11 +4,21 @@ import allure
 import pytest
 
 from api.RTP_cancel_api import cancel_rtp, cancel_rtp_v2
+from api.RTP_get_api import get_rtp
 from api.RTP_process_sender import send_gpd_message
+from config.configuration import secrets
 from utils.constants_text_helper import CANCEL_REASON_MODT, CANCEL_REASON_PAID
 from utils.dataset_gpd_message import generate_gpd_message_payload
 
 _INVALID_CANCEL_REASON = "INVALID_REASON"
+
+
+def _assert_rtp_status(reader_token, resource_id, expected_status):
+    response = get_rtp(access_token=reader_token, rtp_id=resource_id)
+    assert response.status_code == 200, f"Error retrieving RTP status: {response.status_code}. Body: {response.text}"
+
+    actual_status = response.json()["status"]
+    assert actual_status == expected_status, f"Expected RTP status {expected_status}, got {actual_status}"
 
 
 @allure.epic("RTP Cancel")
@@ -170,3 +180,151 @@ def test_cancel_rtp_with_invalid_reason_v2(
 
     cancel_response = cancel_rtp_v2(creditor_service_provider_token_a, resource_id, _INVALID_CANCEL_REASON)
     assert cancel_response.status_code == 400, "Expected 400 Bad Request for invalid cancel reason"
+
+
+@allure.epic("RTP Cancel")
+@allure.feature("RTP Cancel")
+@allure.story("Service provider cancels RTP using mock NAV scenarios")
+@allure.title("RTP cancellation with CNCL mock NAV")
+@allure.tag("functional", "rtp_cancel", "mock")
+@pytest.mark.cancel
+@pytest.mark.mock
+def test_cancel_rtp_mock_cncl_cancel_nav(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+):
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201, "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CREATE", status="VALID", nav=secrets.mock_cncl_cancel_nav
+    )
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
+    assert cancel_response.status_code == 204
+    _assert_rtp_status(rtp_reader_access_token, resource_id, "CANCELLED_ACCR")
+
+
+@allure.epic("RTP Cancel")
+@allure.feature("RTP Cancel")
+@allure.story("Service provider cancels RTP using mock NAV scenarios")
+@allure.title("RTP cancellation with invalid mock NAV")
+@allure.tag("functional", "rtp_cancel", "mock")
+@pytest.mark.cancel
+@pytest.mark.mock
+def test_cancel_rtp_mock_invalid_nav(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+):
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201, "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CREATE", status="VALID", nav=secrets.mock_invalid_nav
+    )
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
+    assert cancel_response.status_code == 204
+    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+
+
+@allure.epic("RTP Cancel")
+@allure.feature("RTP Cancel")
+@allure.story("Service provider cancels RTP using mock NAV scenarios")
+@allure.title("RTP cancellation with non-conformant mock response body")
+@allure.tag("functional", "rtp_cancel", "mock")
+@pytest.mark.cancel
+@pytest.mark.mock
+def test_cancel_rtp_mock_non_conformant_body_nav(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+):
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201, "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code,
+        operation="CREATE",
+        status="VALID",
+        nav=secrets.mock_non_conformant_body_nav,
+    )
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
+    assert cancel_response.status_code == 204
+    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+
+
+@allure.epic("RTP Cancel")
+@allure.feature("RTP Cancel")
+@allure.story("Service provider cancels RTP using mock NAV scenarios")
+@allure.title("RTP cancellation with simple-string mock response")
+@allure.tag("functional", "rtp_cancel", "mock")
+@pytest.mark.cancel
+@pytest.mark.mock
+def test_cancel_rtp_mock_simple_string_nav(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+):
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201, "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CREATE", status="VALID", nav=secrets.mock_simple_string_nav
+    )
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
+    assert cancel_response.status_code == 204
+    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+
+
+@allure.epic("RTP Cancel")
+@allure.feature("RTP Cancel")
+@allure.story("Service provider cancels RTP using mock NAV scenarios")
+@allure.title("RTP cancellation with unquoted-string mock response")
+@allure.tag("functional", "rtp_cancel", "mock")
+@pytest.mark.cancel
+@pytest.mark.mock
+def test_cancel_rtp_mock_string_no_quotes_nav(
+    rtp_consumer_access_token,
+    rtp_reader_access_token,
+    activate_payer,
+    random_fiscal_code,
+    creditor_service_provider_token_a,
+):
+    activation_response = activate_payer(random_fiscal_code)
+    assert activation_response.status_code == 201, "Error activating debtor"
+
+    message_payload = generate_gpd_message_payload(
+        fiscal_code=random_fiscal_code, operation="CREATE", status="VALID", nav=secrets.mock_string_no_quotes_nav
+    )
+    send_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=message_payload)
+    assert send_response.status_code == 200
+
+    resource_id = send_response.json()["resourceId"]
+    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
+    assert cancel_response.status_code == 204
+    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")

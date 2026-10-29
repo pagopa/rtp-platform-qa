@@ -134,6 +134,12 @@ secrets.mock_no_links_fiscal_code = os.getenv("MOCK_NO_LINKS_FISCAL_CODE")
 secrets.mock_extra_field_fiscal_code = os.getenv("MOCK_EXTRA_FIELD_FISCAL_CODE")
 secrets.ec_tax_code = os.getenv("EC_TAX_CODE")
 
+secrets.mock_cncl_cancel_nav = os.getenv("MOCK_CNCL_CANCEL_NAV")
+secrets.mock_invalid_nav = os.getenv("MOCK_INVALID_NAV")
+secrets.mock_non_conformant_body_nav = os.getenv("MOCK_NON_CONFORMANT_BODY_NAV")
+secrets.mock_simple_string_nav = os.getenv("MOCK_SIMPLE_STRING_NAV")
+secrets.mock_string_no_quotes_nav = os.getenv("MOCK_STRING_NO_QUOTES_NAV")
+
 secrets.mock_rjct_extra_field_fiscal_code = os.getenv("MOCK_RJCT_EXTRA_FIELD_FISCAL_CODE")
 secrets.mock_rjct_no_links_fiscal_code = os.getenv("MOCK_RJCT_NO_LINKS_FISCAL_CODE")
 secrets.mock_server_error_fiscal_code = os.getenv("MOCK_SERVER_ERROR_FISCAL_CODE")
