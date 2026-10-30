@@ -1,8 +1,11 @@
 from datetime import timedelta
-from datetime_utils import generate_utc_timestamp
-from config.configuration import secrets
+
+from utils.datetime_utils import generate_utc_timestamp
 
 SC_DELEGATIONS_TOPIC = "SC-Delegations"
+SELFCARE_TENANT_ID = "AR"
+SELFCARE_PRODUCT_ID = "prod-rtp"
+SELFCARE_NOTIFICATION_ID = "6ae36f27300fdbc0e35d8b79"
 
 
 def generate_selfcare_delegation_created_payload() -> dict:
@@ -35,10 +38,9 @@ def _generate_selfcare_delegation_payload(
     updated_at: str | None,
     closed_at: str | None,
 ) -> dict:
-    product_id = secrets.selfcare_webhook.product_id
     return {
-        "tenantId": secrets.selfcare_webhook.tenant_id,
-        "productId": product_id,
+        "tenantId": SELFCARE_TENANT_ID,
+        "productId": SELFCARE_PRODUCT_ID,
         "topic": SC_DELEGATIONS_TOPIC,
         "payload": {
             "id": "c3e8b1d0-5f2a-4a67-9b14-7e0d2c9f8a36",
@@ -52,7 +54,7 @@ def _generate_selfcare_delegation_payload(
             "toTaxCode": "09876543210",
             "toType": "PT",
             "institutionToName": "Tech Pagamenti S.r.l.",
-            "productId": product_id,
+            "productId": SELFCARE_PRODUCT_ID,
             "type": "PT",
             "status": status,
             "createdAt": created_at,
