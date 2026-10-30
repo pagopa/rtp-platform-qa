@@ -8,12 +8,13 @@ from api.RTP_get_api import get_rtp
 from api.RTP_process_sender import send_gpd_message
 from config.configuration import secrets
 from utils.constants_text_helper import CANCEL_REASON_MODT, CANCEL_REASON_PAID
-from utils.dataset_gpd_message import generate_gpd_message_payload
+from utils.dataset_gpd_message import generate_gpd_delete_message_payload, generate_gpd_message_payload
 
 _INVALID_CANCEL_REASON = "INVALID_REASON"
 
 
 def _assert_rtp_status(reader_token, resource_id, expected_status):
+    """Retrieve an RTP and verify its status after cancellation."""
     response = get_rtp(access_token=reader_token, rtp_id=resource_id)
     assert response.status_code == 200, f"Error retrieving RTP status: {response.status_code}. Body: {response.text}"
 
@@ -194,8 +195,8 @@ def test_cancel_rtp_mock_cncl_cancel_nav(
     rtp_reader_access_token,
     activate_payer,
     random_fiscal_code,
-    creditor_service_provider_token_a,
 ):
+    """Verify GPD DELETE with a CNCL mock response produces CANCELLED_ACCR."""
     activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201, "Error activating debtor"
 
@@ -206,9 +207,10 @@ def test_cancel_rtp_mock_cncl_cancel_nav(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
-    assert cancel_response.status_code == 204
-    _assert_rtp_status(rtp_reader_access_token, resource_id, "CANCELLED_ACCR")
+    delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
+    delete_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+    assert delete_response.status_code == 200, "Expected HTTP 200 for GPD DELETE"
+    _assert_rtp_status(reader_token=rtp_reader_access_token, resource_id=resource_id, expected_status="CANCELLED_ACCR")
 
 
 @allure.epic("RTP Cancel")
@@ -223,8 +225,8 @@ def test_cancel_rtp_mock_invalid_nav(
     rtp_reader_access_token,
     activate_payer,
     random_fiscal_code,
-    creditor_service_provider_token_a,
 ):
+    """Verify GPD DELETE with an invalid mock response leaves the RTP in RFC_SENT."""
     activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201, "Error activating debtor"
 
@@ -235,9 +237,10 @@ def test_cancel_rtp_mock_invalid_nav(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
-    assert cancel_response.status_code == 204
-    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+    delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
+    delete_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+    assert delete_response.status_code == 200, "Expected HTTP 200 for GPD DELETE"
+    _assert_rtp_status(reader_token=rtp_reader_access_token, resource_id=resource_id, expected_status="RFC_SENT")
 
 
 @allure.epic("RTP Cancel")
@@ -252,8 +255,8 @@ def test_cancel_rtp_mock_non_conformant_body_nav(
     rtp_reader_access_token,
     activate_payer,
     random_fiscal_code,
-    creditor_service_provider_token_a,
 ):
+    """Verify GPD DELETE with a non-conformant mock body leaves the RTP in RFC_SENT."""
     activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201, "Error activating debtor"
 
@@ -267,9 +270,10 @@ def test_cancel_rtp_mock_non_conformant_body_nav(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
-    assert cancel_response.status_code == 204
-    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+    delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
+    delete_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+    assert delete_response.status_code == 200, "Expected HTTP 200 for GPD DELETE"
+    _assert_rtp_status(reader_token=rtp_reader_access_token, resource_id=resource_id, expected_status="RFC_SENT")
 
 
 @allure.epic("RTP Cancel")
@@ -284,8 +288,8 @@ def test_cancel_rtp_mock_simple_string_nav(
     rtp_reader_access_token,
     activate_payer,
     random_fiscal_code,
-    creditor_service_provider_token_a,
 ):
+    """Verify GPD DELETE with a quoted-string mock response leaves the RTP in RFC_SENT."""
     activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201, "Error activating debtor"
 
@@ -296,9 +300,10 @@ def test_cancel_rtp_mock_simple_string_nav(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
-    assert cancel_response.status_code == 204
-    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+    delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
+    delete_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+    assert delete_response.status_code == 200, "Expected HTTP 200 for GPD DELETE"
+    _assert_rtp_status(reader_token=rtp_reader_access_token, resource_id=resource_id, expected_status="RFC_SENT")
 
 
 @allure.epic("RTP Cancel")
@@ -313,8 +318,8 @@ def test_cancel_rtp_mock_string_no_quotes_nav(
     rtp_reader_access_token,
     activate_payer,
     random_fiscal_code,
-    creditor_service_provider_token_a,
 ):
+    """Verify GPD DELETE with an unquoted-string mock response leaves the RTP in RFC_SENT."""
     activation_response = activate_payer(random_fiscal_code)
     assert activation_response.status_code == 201, "Error activating debtor"
 
@@ -325,6 +330,7 @@ def test_cancel_rtp_mock_string_no_quotes_nav(
     assert send_response.status_code == 200
 
     resource_id = send_response.json()["resourceId"]
-    cancel_response = cancel_rtp(creditor_service_provider_token_a, resource_id, CANCEL_REASON_PAID)
-    assert cancel_response.status_code == 204
-    _assert_rtp_status(rtp_reader_access_token, resource_id, "RFC_SENT")
+    delete_payload = generate_gpd_delete_message_payload(msg_id=message_payload["id"], iuv=message_payload["iuv"])
+    delete_response = send_gpd_message(access_token=rtp_consumer_access_token, message_payload=delete_payload)
+    assert delete_response.status_code == 200, "Expected HTTP 200 for GPD DELETE"
+    _assert_rtp_status(reader_token=rtp_reader_access_token, resource_id=resource_id, expected_status="RFC_SENT")
