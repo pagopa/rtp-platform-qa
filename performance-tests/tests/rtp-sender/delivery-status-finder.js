@@ -3,10 +3,11 @@ import { check, sleep } from 'k6';
 import {
   ActorCredentials,
   buildHeaders,
-  determineStage,
+  getStageLabel,
   endpoints,
   getOptions,
   setupAuth,
+  describeScenarioVUs,
 } from '../../utils/utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 import { createHandleSummary } from '../../utils/summary-utils.js';
@@ -27,6 +28,7 @@ import { shuffleArray, distributeItemsAmongGroups } from '../../utils/batch-util
  * ## Inputs — Environment variables
  * | Variable        | Default | Description                                     |
  * |-----------------|---------|--------------------------------------------------|
+ * | `SCENARIO`       | custom  | Load profile (custom, stress_test, soak_test, spike_test) |
  * | `VU_COUNT_SET`  | 10      | Number of virtual users                          |
  * | `ITERATIONS`    | 1000    | Total shared iterations across all VUs           |
  * | `SLEEP_ITER`    | 0       | Optional sleep (seconds) between iterations       |
@@ -54,6 +56,21 @@ const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
 
 /** Optional sleep between iterations in seconds (env: SLEEP_ITER, default: 0). @type {number} */
 const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
+
+/** Load profile to use. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
 
 /**
  * Delivery-status inputs loaded from the fixture file produced by
@@ -96,20 +113,25 @@ const testCompletedRef = { value: false };
  *
  * @type {import('k6/options').Options}
  */
-export const options = {
-  ...getOptions('stress_test_fixed_user', 'checkDeliveryStatus'),
-  setupTimeout: '5m',
-  scenarios: {
-    stress_test_fixed_user: {
-      executor: 'shared-iterations',
-      vus: VU_COUNT_SET,
-      iterations: ITERATIONS,
-      maxDuration: '240m',
-      gracefulStop: '30s',
-      exec: 'checkDeliveryStatus',
-    },
-  },
-};
+export const options = PREDEFINED_SCENARIOS.includes(SCENARIO)
+  ? {
+      ...getOptions(SCENARIO, 'checkDeliveryStatus'),
+      setupTimeout: '5m',
+    }
+  : {
+      ...getOptions('stress_test_fixed_user', 'checkDeliveryStatus'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT_SET,
+          iterations: ITERATIONS,
+          maxDuration: '240m',
+          gracefulStop: '30s',
+          exec: 'checkDeliveryStatus',
+        },
+      },
+    };
 
 /**
  * @typedef {Object} SetupData
@@ -178,7 +200,7 @@ export function checkDeliveryStatus(data) {
 
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
-    stage: determineStage(elapsedSeconds),
+    stage: getStageLabel(SCENARIO, elapsedSeconds),
     vu: String(vu),
   };
 
@@ -245,11 +267,14 @@ export function checkDeliveryStatus(data) {
 /**
  * k6 `handleSummary` export created by the summary factory.
  */
-export const handleSummary = createHandleSummary({
-  START_TIME,
-  testName: 'GetDeliveryStatus STRESS TEST',
-  countTag: 'requestCount',
-  reportPrefix: 'deliveryStatus',
-  VU_COUNT: VU_COUNT_SET,
-  testCompletedRef,
-});
+export const handleSummary = (opts) => {
+  return createHandleSummary({
+    START_TIME,
+    testName: 'GetDeliveryStatus STRESS TEST',
+    countTag: 'requestCount',
+    reportPrefix: 'deliveryStatus',
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT_SET),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined,
+  })(opts);
+};

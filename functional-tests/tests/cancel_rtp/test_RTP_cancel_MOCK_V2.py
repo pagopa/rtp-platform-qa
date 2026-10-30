@@ -1,25 +1,3 @@
-"""Tests for RTP cancellation (v2) against the EPC v4 cancellation mock scenarios.
-
-Each test triggers a dedicated mock scenario on `postRequestToPayCancellationRequest-v4`
-(see pagopa/cstar-securehub-infra-api-spec, mock_policy_cancel_epc_v4.xml) by forcing a
-specific notice number on the RTP, then asserts the RTP status once the async
-rtp-sender-v2 cancellation flow has processed the EPC mock response.
-
-PR #26 (`SRTP-1968-cancel-sidecar`, rtp-sender-v2) is merged and deployed: the sidecar EPC
-proxy now extracts the `Sts.Conf` confirmation (CNCL/RJCR) from the raw EPC response.
-
-Confirmed with rtp-sender-v2 maintainers (PR #26 review): an EPC response containing fields
-not declared in the OpenAPI spec (cases 14/15, extra `invalid-field`) is intentionally treated
-as an invalid message and is NOT tolerated for accept/reject purposes, so those cases expect
-RFC_SENT rather than CANCELLED_ACCR/CANCELLED_REJECTED.
-
-Confirmed with the team (Luigi De Marco, Francesco Muscianisi): for the EPC HTTP error
-scenarios (cases 7-14, notice numbers ...006-...013), the PSP synchronously rejects the
-cancel request itself with 422 ("Service Provider rejection") per standard for these error
-codes, rather than accepting it with 204. The RTP is then checked and must end up in
-ERROR_CANCEL.
-"""
-
 import allure
 import pytest
 
