@@ -1,3 +1,5 @@
+from datetime import timedelta
+from datetime_utils import generate_utc_timestamp
 from config.configuration import secrets
 
 SC_DELEGATIONS_TOPIC = "SC-Delegations"
@@ -8,6 +10,7 @@ def generate_selfcare_delegation_created_payload() -> dict:
     return _generate_selfcare_delegation_payload(
         status="ACTIVE",
         event_type="ADD",
+        created_at=generate_utc_timestamp(),
         updated_at=None,
         closed_at=None,
     )
@@ -15,16 +18,22 @@ def generate_selfcare_delegation_created_payload() -> dict:
 
 def generate_selfcare_delegation_deleted_payload() -> dict:
     """SC-Delegations notification for a delegation that has been DELETED."""
+    closed_at = generate_utc_timestamp()
     return _generate_selfcare_delegation_payload(
         status="DELETED",
         event_type="UPDATE",
-        updated_at="2026-10-20T08:30:00.000Z",
-        closed_at="2026-10-20T08:30:00.000Z",
+        created_at=generate_utc_timestamp(timedelta(days=-1)),
+        updated_at=closed_at,
+        closed_at=closed_at,
     )
 
 
 def _generate_selfcare_delegation_payload(
-    status: str, event_type: str, updated_at: str | None, closed_at: str | None
+    status: str,
+    event_type: str,
+    created_at: str,
+    updated_at: str | None,
+    closed_at: str | None,
 ) -> dict:
     product_id = secrets.selfcare_webhook.product_id
     return {
@@ -46,7 +55,7 @@ def _generate_selfcare_delegation_payload(
             "productId": product_id,
             "type": "PT",
             "status": status,
-            "createdAt": "2026-10-15T10:15:03.204Z",
+            "createdAt": created_at,
             "updatedAt": updated_at,
             "closedAt": closed_at,
             "isTest": False,
