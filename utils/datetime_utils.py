@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 
 def get_yesterday_and_today() -> tuple[str, str]:
@@ -78,3 +78,15 @@ def generate_future_time(minutes: int = 1) -> str:
         Timestamp string in ISO format
     """
     return (datetime.now() + timedelta(minutes=minutes)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+def generate_utc_timestamp(offset: timedelta = timedelta()) -> str:
+    """Generate a UTC timestamp in ISO format with milliseconds, e.g. 2026-10-15T10:15:03.204Z.
+
+    Args:
+        offset: Shift from the current time (negative for the past)
+
+    Returns:
+        Timestamp string in ISO format with milliseconds and Z suffix
+    """
+    now = datetime.now(timezone.utc) + offset
+    return now.isoformat(timespec="milliseconds").replace("+00:00", "Z")

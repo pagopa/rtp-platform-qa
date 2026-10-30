@@ -70,6 +70,13 @@ secrets.pagopa_integration_payee_registry_consent = Dynaconf(
     client_secret=os.getenv("PAGOPA_INTEGRATION_PAYEE_REGISTRY_CONSENT_CLIENT_SECRET"),
 )
 
+secrets.selfcare_webhook = Dynaconf(
+    api_key=os.getenv("SELFCARE_WEBHOOK_API_KEY"),
+    token=os.getenv("SELFCARE_WEBHOOK_TOKEN"),
+    tenant_id=os.getenv("SELFCARE_WEBHOOK_TENANT_ID"),
+    product_id=os.getenv("SELFCARE_WEBHOOK_PRODUCT_ID"),
+)
+
 secrets.pagopa_integration_service_registry = Dynaconf(
     client_id=os.getenv("PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_ID"),
     client_secret=os.getenv("PAGOPA_INTEGRATION_SERVICE_REGISTRY_CLIENT_SECRET"),
