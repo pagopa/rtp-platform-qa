@@ -27,7 +27,7 @@ functional-tests = [
   "allure-pytest>=2.13",
   "allure-python-commons==2.13.5",
   "cryptography==44.0.2",
-  "urllib3==2.5.0",
+  "urllib3==2.8.0",
 ]
 bdd-tests = [
   "behave>=1.2.6",
