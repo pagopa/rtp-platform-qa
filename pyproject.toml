@@ -26,7 +26,7 @@ functional-tests = [
   "pytest-timeout>=2.2",
   "allure-pytest>=2.13",
   "allure-python-commons==2.13.5",
-  "cryptography==44.0.2",
+  "cryptography==50.0.0",
   "urllib3==2.5.0",
 ]
 bdd-tests = [
