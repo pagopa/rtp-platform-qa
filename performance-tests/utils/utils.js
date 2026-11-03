@@ -592,6 +592,7 @@ export const endpoints = {
   getByFiscalCode: `${activationConfig.activation_base}/activations/payer`,
   gpdMessage: `${senderConfig.sender_base}/gpd/message`,
   deliveryStatus: `${senderConfig.sender_base}/rtps/delivery-status`,
+  payees: `${senderConfig.sender_base}/payees/payees`,
 };
 
 /**
