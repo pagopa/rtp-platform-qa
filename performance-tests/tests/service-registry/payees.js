@@ -102,7 +102,7 @@ export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
 export function setup() {
   const auth = setupAuth(ActorCredentials.PAGOPA_INTEGRATION_PAYEE_REGISTRY);
   return {
-    accessToken: auth.access_token,
+    access_token: auth.access_token,
     startTime: Date.now(),
     totalIterations: ITERATIONS
   };
@@ -115,7 +115,7 @@ export function setup() {
  * - sends GET request to /payees/payees with pagination
  * - checks status 200, increments success/failure counters
  *
- * @param {{ accessToken: string }} data - Setup data containing the access token
+ * @param {{ access_token: string }} data - Setup data containing the access token
  * @returns {Response} The HTTP response object
  */
 export function testGetPayees(data) {
@@ -132,7 +132,7 @@ export function testGetPayees(data) {
 
   currentRPS.add(1, tags);
 
-  const headers = buildHeaders(data.accessToken || data.access_token);
+  const headers = buildHeaders(data.access_token);
   headers['RequestId'] = uuidv4();
   headers['Version'] = 'v1';
 
