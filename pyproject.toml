@@ -42,7 +42,7 @@ ux-tests = [
 ]
 contract-tests = [
   "schemathesis>=3.23",
-  "pytest==8.4.1",
+  "pytest==9.0.3",
   "allure-pytest>=2.13",
   "allure-python-commons==2.13.5",
 ]
