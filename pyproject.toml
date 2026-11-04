@@ -14,7 +14,7 @@ dependencies = [
   "dynaconf>=3.2",
   "python-dotenv>=1.0",
   "faker==22.5.1",
-  "certifi==2025.7.14",
+  "certifi==2026.10.18",
   "pyperclip==1.9.0",
   "schwifty==2025.1.0",
   "pydantic-settings>=2.6.0",
@@ -27,7 +27,7 @@ functional-tests = [
   "allure-pytest>=2.13",
   "allure-python-commons==2.13.5",
   "cryptography==50.0.0",
-  "urllib3==2.5.0",
+  "urllib3==2.8.0",
 ]
 bdd-tests = [
   "behave>=1.2.6",
