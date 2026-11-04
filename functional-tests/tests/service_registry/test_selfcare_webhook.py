@@ -7,7 +7,8 @@ from requests import Response
 from api.selfcare_webhook_api import post_selfcare_webhook
 from config.configuration import secrets
 from utils.dataset_selfcare_webhook_data import (
-    SELFCARE_NOTIFICATION_ID,
+    SELFCARE_CREATED_NOTIFICATION_ID,
+    SELFCARE_DELETED_NOTIFICATION_ID,
     generate_selfcare_delegation_created_payload,
     generate_selfcare_delegation_deleted_payload,
 )
@@ -40,7 +41,7 @@ def test_selfcare_webhook_delegation_created() -> None:
         payload=generate_selfcare_delegation_created_payload(),
         token=secrets.selfcare_webhook.token,
         api_key=secrets.selfcare_webhook.api_key,
-        notification_id=SELFCARE_NOTIFICATION_ID,
+        notification_id=SELFCARE_CREATED_NOTIFICATION_ID,
     )
 
     assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -56,9 +57,9 @@ def test_selfcare_webhook_delegation_created() -> None:
 def test_selfcare_webhook_delegation_deleted() -> None:
     response = post_selfcare_webhook(
         payload=generate_selfcare_delegation_deleted_payload(),
-        token=secrets.selfcare_webhook.token,
+        token=secrets.selfcare_webhook.deleted_token,
         api_key=secrets.selfcare_webhook.api_key,
-        notification_id=SELFCARE_NOTIFICATION_ID,
+        notification_id=SELFCARE_DELETED_NOTIFICATION_ID,
     )
 
     assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
@@ -76,7 +77,7 @@ def test_selfcare_webhook_missing_api_key() -> None:
         payload=generate_selfcare_delegation_created_payload(),
         token=secrets.selfcare_webhook.token,
         api_key=None,
-        notification_id=SELFCARE_NOTIFICATION_ID,
+        notification_id=SELFCARE_CREATED_NOTIFICATION_ID,
     )
 
     assert_unauthorized(response, INVALID_API_KEY_MESSAGE)
@@ -94,7 +95,7 @@ def test_selfcare_webhook_invalid_api_key() -> None:
         payload=generate_selfcare_delegation_created_payload(),
         token=secrets.selfcare_webhook.token,
         api_key=INVALID_API_KEY,
-        notification_id=SELFCARE_NOTIFICATION_ID,
+        notification_id=SELFCARE_CREATED_NOTIFICATION_ID,
     )
 
     assert_unauthorized(response, INVALID_API_KEY_MESSAGE)
@@ -112,7 +113,7 @@ def test_selfcare_webhook_missing_authorization() -> None:
         payload=generate_selfcare_delegation_created_payload(),
         token=None,
         api_key=secrets.selfcare_webhook.api_key,
-        notification_id=SELFCARE_NOTIFICATION_ID,
+        notification_id=SELFCARE_CREATED_NOTIFICATION_ID,
     )
 
     assert_unauthorized(response, INVALID_TOKEN_MESSAGE)
@@ -130,7 +131,7 @@ def test_selfcare_webhook_invalid_token() -> None:
         payload=generate_selfcare_delegation_created_payload(),
         token=INVALID_TOKEN,
         api_key=secrets.selfcare_webhook.api_key,
-        notification_id=SELFCARE_NOTIFICATION_ID,
+        notification_id=SELFCARE_CREATED_NOTIFICATION_ID,
     )
 
     assert_unauthorized(response, INVALID_TOKEN_MESSAGE)

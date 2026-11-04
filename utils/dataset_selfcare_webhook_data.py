@@ -5,7 +5,8 @@ from utils.datetime_utils import generate_utc_timestamp
 SC_DELEGATIONS_TOPIC = "SC-Delegations"
 SELFCARE_TENANT_ID = "AR"
 SELFCARE_PRODUCT_ID = "prod-rtp"
-SELFCARE_NOTIFICATION_ID = "6ae36f27300fdbc0e35d8b79"
+SELFCARE_CREATED_NOTIFICATION_ID = "6ae9ad975cce07a6def42661"
+SELFCARE_DELETED_NOTIFICATION_ID = "6ae36f27300fdbc0e35d8b12"
 
 
 def generate_selfcare_delegation_created_payload() -> dict:
