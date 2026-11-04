@@ -1,0 +1,154 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","2134","RTP form cancellation with reason MODT","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_cancel_v3","",""
+"","362","A Service Provider tries to activates a debtor without having the correct credentials","bdd-tests","2026-11-04","passed","2026-11-04","Debtor_Activation","RTP","",""
+"","1734","Takeover fails without authentication","bdd-tests","2026-11-04","passed","2026-11-04","Debtor_Activation_Takeover","RTP","",""
+"","1","Successful login","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Web_Sending","RTP","",""
+"","1878","A debtor Service Provider tries to activates a debtor 2 times, failing the second attempt","bdd-tests","2026-11-04","passed","2026-11-04","Debtor_Activation","RTP","",""
+"","2311","Takeover fails with invalid OTP","bdd-tests","2026-11-04","passed","2026-11-04","Debtor_Activation_Takeover","RTP","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","65665","test_activation_contract[DELETE /activations/{activationId}]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"","2317","A debtor Service Provider activates a debtor","bdd-tests","2026-11-04","passed","2026-11-04","Debtor_Activation","RTP","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","5784","test_send_api_contract[GET /rtps/delivery-status]","contract-tests.tests","2026-11-04","failed","2026-11-04","","test_api_send_rtp","",""
+"","1347","An authenticated Service Provider cannot send an RTP to an unactivated debtor","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Sending","RTP","",""
+"","3123","RTP form cancellation with reason MODT","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_cancel_v4","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","69479","test_activation_contract[GET /activations/payer]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","68802","test_activation_contract[GET /activations/{activationId}]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","82846","test_activation_contract[GET /activations]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"","2809","Attempt to cancel a non-existing RTP","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Cancellation","RTP","",""
+"","2678","RTP form cancellation with reason PAID","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_cancel_v3","",""
+"","2884","RTP form is filled and submitted","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_cancel_v4","",""
+"","2148","An authenticated creditor Service Provider can send an RTP to an activated debtor","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Sending","RTP","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","70278","test_send_api_contract[POST /rtps/status-update]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_api_send_rtp","",""
+"","1791","RTP form is filled and submitted","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_submission_v3","",""
+"","3643","Successfully cancel a Request to Pay","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Cancellation","RTP","",""
+"","2431","A debtor Service Provider cannot send an RTP","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Sending","RTP","",""
+"","3096","Attempt to cancel an already cancelled RTP","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Cancellation","RTP","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","38934","test_send_api_contract[POST /rtps/cancel]","contract-tests.tests","2026-11-04","failed","2026-11-04","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","75192","test_activation_contract[POST /activations/takeover/{otp}]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","80055","test_send_api_contract[GET /rtps]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_api_send_rtp","",""
+"","2931","RTP form cancellation with reason PAID","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_cancel_v4","",""
+"","2527","RTP form is filled and submitted","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_cancel_v3","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","77240","test_send_api_contract[POST /rtps/status-update/cancel]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","71076","test_activation_contract[GET /activations/payer/{payerId}/status]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"","1306","Whitespaces is allowed in description and company name field","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_submission_v4","",""
+"","1940","An authenticated Service Provider cannot send an RTP to an activated debtor","bdd-tests","2026-11-04","passed","2026-11-04","RTP_Sending","RTP","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","168549","test_send_api_contract[POST /gpd/message]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_api_send_rtp","",""
+"","1157","Whitespaces is allowed in description and company name field","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_submission_v3","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","91115","test_activation_contract[POST /activations]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_activation","",""
+"","3183","A debtor Service Provider successfully takes over an activation from another provider","bdd-tests","2026-11-04","passed","2026-11-04","Debtor_Activation_Takeover","RTP","",""
+"","2065","RTP form is filled and submitted","ux-tests.tests","2026-11-04","passed","2026-11-04","","test_RTP_submission_v4","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","70811","test_send_api_contract[GET /rtps/{rtpId}]","contract-tests.tests","2026-11-04","passed","2026-11-04","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","561","test_send_api_contract[POST /rtps]","contract-tests.tests","2026-11-04","failed","2026-11-04","","test_api_send_rtp","",""
