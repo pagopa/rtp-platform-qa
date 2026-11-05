@@ -15,6 +15,9 @@ from utils.activation_helpers import activate_with_sp_a, activate_with_sp_b
 from utils.http_utils import extract_id_from_location
 
 
+# Resolves the takeover OTP expiration time in seconds from environment variables
+# (supporting both plain seconds and ISO-8601 duration format, e.g., 'PT2M'),
+# falling back to config.yaml or default (120s).
 def _get_takeover_otp_expiration_seconds() -> int:
     """Resolve takeover OTP TTL in seconds from env or config (defaults to 120s)."""
     env_val = os.getenv("TAKEOVER_OTP_EXPIRATION_SECONDS") or os.getenv("TAKEOVER_OTP_EXPIRATION")
