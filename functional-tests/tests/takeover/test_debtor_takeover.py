@@ -18,19 +18,24 @@ from utils.http_utils import extract_id_from_location
 def _get_takeover_otp_expiration_seconds() -> int:
     """Resolve takeover OTP TTL in seconds from env or config (defaults to 120s)."""
     env_val = os.getenv("TAKEOVER_OTP_EXPIRATION_SECONDS") or os.getenv("TAKEOVER_OTP_EXPIRATION")
-    if env_val:
-        if env_val.startswith("PT"):
-            m = re.match(r"PT(?:(\d+)M)?(?:(\d+)S)?", env_val)
-            if m:
-                mins = int(m.group(1) or 0)
-                secs = int(m.group(2) or 0)
-                return mins * 60 + secs
-        try:
-            return int(env_val)
-        except ValueError:
-            pass
-    return int(getattr(config, "takeover_otp_expiration_seconds", 120))
+    default_return_value = int(getattr(config, "takeover_otp_expiration_seconds", 120))
+    if not env_val:
+        return default_return_value
+    if not env_val.startswith("PT"):
+        return _cast_to_int(env_val, default_return_value)
+    matches = re.match(r"PT(?:(\d+)M)?(?:(\d+)S)?", env_val)
+    if not matches:
+        return _cast_to_int(env_val, default_return_value)
+    mins = int(matches.group(1) or 0)
+    secs = int(matches.group(2) or 0)
+    return mins * 60 + secs
 
+def _cast_to_int(value: str, default_return: int ) -> int:
+    """Cast a string to int, raising ValueError if it fails."""
+    try:
+        return int(value)
+    except ValueError:
+        return default_return
 
 @allure.epic("Debtor Takeover")
 @allure.feature("Takeover happy path")
