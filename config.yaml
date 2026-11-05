@@ -114,6 +114,7 @@ activation_takeover: "/activations/takeover"
 takeover_api_version: 'v1'
 activation_by_id_path: "/activations/{activationId}"
 activation_takeover_path: "/activations/takeover/{otp}"
+takeover_otp_expiration_seconds: 120
 takeover_notification_url: "https://api-rtp.uat.cstar.pagopa.it/rtp/mock/takeover/takeover"
 
 # ============================

@@ -1,3 +1,5 @@
+import os
+import re
 import time
 import uuid
 from datetime import UTC, datetime
@@ -7,11 +9,36 @@ import pytest
 
 from api.debtor_activation_api import activate, get_activation_by_id, get_activation_by_payer_id
 from api.debtor_takeover_api import send_takeover_notification, takeover_activation
-from config.configuration import secrets
+from config.configuration import config, secrets
 from utils.activation_error_codes import ActivationErrorCode
 from utils.activation_helpers import activate_with_sp_a, activate_with_sp_b
 from utils.http_utils import extract_id_from_location
 
+
+# Resolves the takeover OTP expiration time in seconds from environment variables
+# (supporting both plain seconds and ISO-8601 duration format, e.g., 'PT2M'),
+# falling back to config.yaml or default (120s).
+def _get_takeover_otp_expiration_seconds() -> int:
+    """Resolve takeover OTP TTL in seconds from env or config (defaults to 120s)."""
+    env_val = os.getenv("TAKEOVER_OTP_EXPIRATION_SECONDS") or os.getenv("TAKEOVER_OTP_EXPIRATION")
+    default_return_value = int(getattr(config, "takeover_otp_expiration_seconds", 120))
+    if not env_val:
+        return default_return_value
+    if not env_val.startswith("PT"):
+        return _cast_to_int(env_val, default_return_value)
+    matches = re.match(r"PT(?:(\d+)M)?(?:(\d+)S)?", env_val)
+    if not matches:
+        return _cast_to_int(env_val, default_return_value)
+    mins = int(matches.group(1) or 0)
+    secs = int(matches.group(2) or 0)
+    return mins * 60 + secs
+
+def _cast_to_int(value: str, default_return: int ) -> int:
+    """Cast a string to int, raising ValueError if it fails."""
+    try:
+        return int(value)
+    except ValueError:
+        return default_return
 
 @allure.epic("Debtor Takeover")
 @allure.feature("Takeover happy path")
@@ -402,3 +429,54 @@ def test_takeover_redeemer_not_owning_otp_service_provider_id_forbidden(
     assert res.status_code == 403, f"Expected 403 Forbidden, got {res.status_code}: {res.text}"
     assert res.json()["errors"][0]["code"] == ActivationErrorCode.SERVICE_PROVIDER_ID_NOT_OWNED.code
     assert res.json()["errors"][0]["description"] == ActivationErrorCode.SERVICE_PROVIDER_ID_NOT_OWNED.description
+
+
+@allure.epic("Debtor Takeover")
+@allure.feature("Takeover unhappy path")
+@allure.title("Test Takeover Fails with Expired OTP")
+@allure.story("Takeover fails because of expired OTP")
+@pytest.mark.functional
+@allure.tag("functional", "unhappy_path", "activation", "takeover", "otp_expired")
+@pytest.mark.unhappy_path
+def test_takeover_fails_expired_otp(
+    random_fiscal_code, debtor_service_provider_token_a, debtor_service_provider_token_b
+):
+    """Test that takeover fails when the generated OTP is expired.
+
+    1. Activate debtor with Service Provider A (201).
+    2. Attempt activation with Service Provider B -> returns 409 Conflict + OTP in Location header.
+    3. Wait until OTP expiration (default: 120s / PT2M).
+    4. Attempt takeover with the expired OTP -> expects 401 Unauthorized,
+       error code 01011008F (EXPIRED_TAKEOVER_OTP), and increments OER error counters.
+    """
+    activation_response = activate_with_sp_a(debtor_service_provider_token_a, random_fiscal_code)
+    assert activation_response.status_code == 201, (
+        f"Failed to activate user with service provider A: {activation_response.text}"
+    )
+
+    second_activation_response = activate_with_sp_b(debtor_service_provider_token_b, random_fiscal_code)
+    assert second_activation_response.status_code == 409, (
+        f"Expected 409 conflict, got {second_activation_response.status_code}"
+    )
+
+    otp = extract_id_from_location(second_activation_response.headers.get("Location"))
+    assert otp is not None, "Missing Location header in 409 response"
+
+    expiration_seconds = _get_takeover_otp_expiration_seconds()
+    time.sleep(expiration_seconds + 3)
+
+    takeover_response = takeover_activation(
+        debtor_service_provider_token_b,
+        random_fiscal_code,
+        secrets.debtor_service_provider_B.service_provider_id,
+        otp,
+    )
+
+    assert takeover_response.status_code == 401, (
+        f"Expected 401 Unauthorized for expired OTP, got {takeover_response.status_code}: {takeover_response.text}"
+    )
+
+    res_json = takeover_response.json()
+    assert res_json.get("errors") and len(res_json["errors"]) > 0, "Expected non-empty errors array in response"
+    assert res_json["errors"][0]["code"] == ActivationErrorCode.EXPIRED_TAKEOVER_OTP.code
+    assert res_json["errors"][0]["description"] == ActivationErrorCode.EXPIRED_TAKEOVER_OTP.description
