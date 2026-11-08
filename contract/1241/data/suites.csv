@@ -1,0 +1,130 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","83314","test_send_api_contract[GET /rtps/{rtpId}]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","88799","test_send_api_contract[POST /rtps/status-update/cancel]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","48980","test_send_api_contract[POST /rtps/cancel]","contract-tests.tests","2026-11-08","failed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","84889","test_send_api_contract[POST /rtps/status-update]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","86553","test_activation_contract[GET /activations/payer]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","97219","test_activation_contract[POST /activations]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","88040","test_send_api_contract[GET /rtps]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","74614","test_activation_contract[DELETE /activations/{activationId}]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","186382","test_send_api_contract[POST /gpd/message]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","84479","test_activation_contract[GET /activations/{activationId}]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","95552","test_activation_contract[GET /activations]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","88684","test_activation_contract[GET /activations/payer/{payerId}/status]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Activation API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+","81976","test_activation_contract[POST /activations/takeover/{otp}]","contract-tests.tests","2026-11-08","passed","2026-11-08","","test_activation","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","7876","test_send_api_contract[GET /rtps/delivery-status]","contract-tests.tests","2026-11-08","failed","2026-11-08","","test_api_send_rtp","",""
+"Parametrized contract test generated from the Send API OpenAPI spec.
+
+Schemathesis derives one test case per endpoint defined in the spec, generating
+request data (path params, query params, body) that is valid according to the schema.
+Each case is executed against the live API and the response is validated with
+CONTRACT_CHECKS.
+
+An additional assertion verifies that the Location header is present on 201 responses
+from POST /rtps, as required by the spec.
+","630","test_send_api_contract[POST /rtps]","contract-tests.tests","2026-11-08","failed","2026-11-08","","test_api_send_rtp","",""
