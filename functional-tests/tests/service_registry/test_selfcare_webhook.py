@@ -12,6 +12,7 @@ from utils.dataset_selfcare_webhook_data import (
     generate_selfcare_delegation_created_payload,
     generate_selfcare_delegation_deleted_payload,
 )
+from utils.response_assertions_utils import assert_response_code
 
 INVALID_API_KEY = "11111111111111111"
 INVALID_TOKEN = "not-a-jwt-valid"
@@ -171,3 +172,39 @@ def test_selfcare_webhook_invalid_notification_id() -> None:
     )
 
     assert_unauthorized(response, NOTIFICATION_ID_MISMATCH_MESSAGE)
+
+
+@allure.epic("Service Registry Payees")
+@allure.feature("SelfCare Webhook")
+@allure.story("SelfCare notifies rtp-payees of delegation changes")
+@allure.title("Delegation notification with wrong envelope productId returns 400")
+@allure.tag("functional", "unhappy_path", "selfcare_webhook")
+@pytest.mark.unhappy_path
+@pytest.mark.selfcare_webhook
+def test_selfcare_webhook_wrong_envelope_product_id() -> None:
+    response = post_selfcare_webhook(
+        payload={
+            **generate_selfcare_delegation_created_payload(),
+            "productId": "prod-other",
+        },
+        token=secrets.selfcare_webhook.token,
+        api_key=secrets.selfcare_webhook.api_key,
+        notification_id=SELFCARE_CREATED_NOTIFICATION_ID,
+    )
+
+    assert_response_code(
+        response=response,
+        expected_code=400,
+        operation="SelfCare webhook",
+        status="wrong envelope productId",
+    )
+
+    body = response.json()
+    errors = body["errors"]
+    assert len(errors) == 1, f"Expected one validation error, got {len(errors)}: {body}"
+
+    error = errors[0]
+    assert error["code"] == "03021000E", f"Unexpected validation error code: {error}"
+    assert error["description"] == 'productId: must match "^prod-rtp$"', (
+        f"Unexpected validation error description: {error}"
+    )
