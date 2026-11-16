@@ -38,6 +38,7 @@ STATUS_UPDATE_RTP_URL = config.rtp_creation_base_url_path + config.status_update
 STATUS_UPDATE_CANCEL_RTP_URL = config.rtp_creation_base_url_path + config.status_update_cancel_rtp_path
 SERVICE_PROVIDER_MOCK_URL = config.mock_service_provider_url
 SERVICE_PROVIDERS_URL = config.rtp_creation_base_url_path + config.service_providers_registry
+RTP_SERVICE_PROVIDERS_URL = config.rtp_creation_base_url_path + config.rtp_service_providers_path
 ACTIVATION_PAYER_STATUS_URL = config.activation_base_url_path + config.activation_payer_status_path
 TAKEOVER_URL = config.activation_base_url_path + config.activation_takeover
 TAKEOVER_NOTIFICATION_URL = config.takeover_notification_url

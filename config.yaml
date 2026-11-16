@@ -57,6 +57,7 @@ selfcare_webhook_path: "service-providers/selfcare/webhook"
 
 service_providers_registry: 'service_providers/service-providers'
 service_providers_registry_api_version: 'v1'
+rtp_service_providers_path: "service-providers/registry"
 
 # ============================
 # CALLBACK URL - v1
