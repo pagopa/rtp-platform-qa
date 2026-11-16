@@ -72,21 +72,25 @@ def test_get_service_providers_v2_includes_qsealc_enabled(pagopa_service_provide
 @allure.epic("RTP Service Providers API")
 @allure.feature("Versioned Service Providers")
 @allure.story("Retrieve valid TSP and SP details")
-@allure.title("GET v1 service providers returns valid provider details")
+@allure.title("GET {version} service providers returns valid provider details")
 @allure.tag("functional", "happy_path", "get", "rtp_service_providers")
+@pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.happy_path
 @pytest.mark.get
-def test_get_service_providers_v1_returns_valid_provider_details(pagopa_service_providers_registry_token: str) -> None:
+def test_get_service_providers_returns_valid_provider_details(
+    pagopa_service_providers_registry_token: str,
+    version: str,
+) -> None:
     response = get_rtp_service_providers(
         access_token=pagopa_service_providers_registry_token,
-        version="v1",
+        version=version,
     )
 
     assert_response_code(
         response=response,
         expected_code=200,
         operation="GET RTP service providers",
-        status="v1",
+        status=version,
     )
     data = response.json()
     assert isinstance(data, dict), "Response body should be an object"
@@ -141,16 +145,17 @@ def test_get_service_providers_v1_returns_valid_provider_details(pagopa_service_
 @allure.epic("RTP Service Providers API")
 @allure.feature("Versioned Service Providers")
 @allure.story("Reject invalid credentials")
-@allure.title("GET service providers rejects invalid authorization")
+@allure.title("GET {version} service providers rejects invalid authorization")
 @allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
+@pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.unhappy_path
 @pytest.mark.get
-def test_get_service_providers_rejects_invalid_auth() -> None:
-    response = get_rtp_service_providers(access_token="invalid_token", version="v1")
+def test_get_service_providers_rejects_invalid_auth(version: str) -> None:
+    response = get_rtp_service_providers(access_token="invalid_token", version=version)
 
     assert_response_code(
         response=response,
         expected_code=401,
         operation="GET RTP service providers",
-        status="invalid authorization",
+        status=f"invalid authorization with {version}",
     )
