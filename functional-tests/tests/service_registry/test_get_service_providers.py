@@ -4,6 +4,9 @@ import pytest
 from api.rtp_service_providers_api import get_rtp_service_providers
 from utils.response_assertions_utils import assert_response_code
 
+# JWT with alg=none and exp=0.
+EXPIRED_UNSIGNED_TOKEN = "Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjB9."
+
 
 @allure.epic("RTP Service Providers API")
 @allure.feature("Versioned Service Providers")
@@ -144,18 +147,133 @@ def test_get_service_providers_returns_valid_provider_details(
 
 @allure.epic("RTP Service Providers API")
 @allure.feature("Versioned Service Providers")
-@allure.story("Reject invalid credentials")
-@allure.title("GET {version} service providers rejects invalid authorization")
+@allure.story("Reject missing or invalid credentials")
+@allure.title("GET {version} service providers rejects {auth_case} authorization")
 @allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
+@pytest.mark.parametrize(
+    ("access_token", "auth_case"),
+    [
+        pytest.param(None, "missing", id="missing"),
+        pytest.param("invalid_token", "invalid", id="invalid"),
+        pytest.param(EXPIRED_UNSIGNED_TOKEN, "expired-and-unsigned", id="expired-unsigned"),
+    ],
+)
 @pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.unhappy_path
 @pytest.mark.get
-def test_get_service_providers_rejects_invalid_auth(version: str) -> None:
-    response = get_rtp_service_providers(access_token="invalid_token", version=version)
+def test_get_service_providers_rejects_missing_or_invalid_auth(
+    access_token: str | None,
+    auth_case: str,
+    version: str,
+) -> None:
+    response = get_rtp_service_providers(access_token=access_token, version=version)
 
     assert_response_code(
         response=response,
         expected_code=401,
         operation="GET RTP service providers",
-        status=f"invalid authorization with {version}",
+        status=f"{auth_case} authorization with {version}",
+    )
+
+
+@allure.epic("RTP Service Providers API")
+@allure.feature("Versioned Service Providers")
+@allure.story("Reject credentials without a service providers registry read role")
+@allure.title("GET {version} service providers rejects valid token without registry role")
+@allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
+@pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
+@pytest.mark.unhappy_path
+@pytest.mark.get
+def test_get_service_providers_rejects_token_without_registry_role(
+    rtp_reader_access_token: str,
+    version: str,
+) -> None:
+    response = get_rtp_service_providers(access_token=rtp_reader_access_token, version=version)
+
+    assert_response_code(
+        response=response,
+        expected_code=403,
+        operation="GET RTP service providers",
+        status=f"valid token without registry role with {version}",
+    )
+
+
+@allure.epic("RTP Service Providers API")
+@allure.feature("Versioned Service Providers")
+@allure.story("Reject requests without a RequestId header")
+@allure.title("GET {version} service providers rejects requests missing RequestId")
+@allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
+@pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
+@pytest.mark.unhappy_path
+@pytest.mark.get
+def test_get_service_providers_rejects_missing_request_id(
+    pagopa_service_providers_registry_token: str,
+    version: str,
+) -> None:
+    response = get_rtp_service_providers(
+        access_token=pagopa_service_providers_registry_token,
+        version=version,
+        include_request_id=False,
+    )
+
+    assert_response_code(
+        response=response,
+        expected_code=400,
+        operation="GET RTP service providers",
+        status=f"missing RequestId with {version}",
+    )
+
+
+@allure.epic("RTP Service Providers API")
+@allure.feature("Versioned Service Providers")
+@allure.story("Reject requests without a Version header")
+@allure.title("GET service providers rejects requests missing Version")
+@allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
+@pytest.mark.unhappy_path
+@pytest.mark.get
+def test_get_service_providers_rejects_missing_version(
+    pagopa_service_providers_registry_token: str,
+) -> None:
+    response = get_rtp_service_providers(
+        access_token=pagopa_service_providers_registry_token,
+        version=None,
+    )
+
+    assert_response_code(
+        response=response,
+        expected_code=400,
+        operation="GET RTP service providers",
+        status="missing Version",
+    )
+
+
+@allure.epic("RTP Service Providers API")
+@allure.feature("Versioned Service Providers")
+@allure.story("Reject malformed Version headers")
+@allure.title("GET service providers rejects {invalid_case} Version header")
+@allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
+@pytest.mark.parametrize(
+    ("version", "invalid_case"),
+    [
+        pytest.param("v1\x01", "non-printable", id="non-printable"),
+        pytest.param("v" * 65, "over-64-characters", id="over-64-characters"),
+    ],
+)
+@pytest.mark.unhappy_path
+@pytest.mark.get
+def test_get_service_providers_rejects_invalid_version_header(
+    pagopa_service_providers_registry_token: str,
+    version: str,
+    invalid_case: str,
+) -> None:
+    response = get_rtp_service_providers(
+        access_token=pagopa_service_providers_registry_token,
+        version=version,
+    )
+
+    assert_response_code(
+        response=response,
+        expected_code=400,
+        operation="GET RTP service providers",
+        status=f"{invalid_case} Version header",
     )
