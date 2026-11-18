@@ -3,18 +3,44 @@ import pytest
 
 from api.debtor_activation_api import activate
 from api.RTP_send_api import send_rtp_v2
-from config.configuration import config, secrets
+from config.configuration import config
+from utils.constants_epc_send_mock import (
+    MOCK_SEND_FISCAL_CODE_400,
+    MOCK_SEND_FISCAL_CODE_400_CHK_A0007,
+    MOCK_SEND_FISCAL_CODE_400_TRUNCATED_JSON,
+    MOCK_SEND_FISCAL_CODE_401,
+    MOCK_SEND_FISCAL_CODE_404,
+    MOCK_SEND_FISCAL_CODE_406,
+    MOCK_SEND_FISCAL_CODE_410,
+    MOCK_SEND_FISCAL_CODE_415,
+    MOCK_SEND_FISCAL_CODE_422,
+    MOCK_SEND_FISCAL_CODE_429,
+    MOCK_SEND_FISCAL_CODE_500,
+    MOCK_SEND_FISCAL_CODE_502,
+    MOCK_SEND_FISCAL_CODE_502_NO_BODY,
+    MOCK_SEND_FISCAL_CODE_503,
+    MOCK_SEND_FISCAL_CODE_504,
+    MOCK_SEND_FISCAL_CODE_ACTC,
+    MOCK_SEND_FISCAL_CODE_ACTC_EXTRA_FIELD,
+    MOCK_SEND_FISCAL_CODE_ACTC_NO_LINKS,
+    MOCK_SEND_FISCAL_CODE_NON_JSON,
+    MOCK_SEND_FISCAL_CODE_PROCESSED_STRING,
+    MOCK_SEND_FISCAL_CODE_RJCT,
+    MOCK_SEND_FISCAL_CODE_RJCT_EXTRA_FIELD,
+    MOCK_SEND_FISCAL_CODE_RJCT_NO_LINKS,
+    MOCK_SEND_FISCAL_CODE_SUCCESS_STRING,
+    MOCK_SEND_FISCAL_CODE_TRUNCATED_JSON,
+    RTP_STATUS_ACCEPTED,
+    RTP_STATUS_REJECTED,
+    RTP_STATUS_SENT,
+    SEND_ERROR_INTERNAL_SERVER,
+    SEND_ERROR_INVALID_RESPONSE,
+)
 from utils.constants_secrets_helper import DEBTOR_SERVICE_PROVIDER_C_ID
 from utils.dataset_RTP_data import generate_rtp_data
 from utils.fiscal_code_utils import fake_fc
 from utils.regex_utils import uuidv4_pattern
-from utils.rtp_send_helpers import (
-    send_rtp_v2_and_get_status_via_rest,
-)
-
-# ── THROUGH_WEB_API_V2 variants ──────────────────────────────────────────────
-# These replicate the _THROUGH_WEB_API tests using the v2 REST send endpoint
-# (same URL /rtps but with Version: v2 header).
+from utils.rtp_send_helpers import send_rtp_v2_get_status
 
 
 @allure.epic("RTP Send")
@@ -62,190 +88,336 @@ def test_cannot_send_rtp_not_activated_user_THROUGH_WEB_API_V2(creditor_service_
     assert send_response.status_code == 422
 
 
+# Each entry: (scenario_id, payer_fiscal_code, expected_status, description).
+# These are cases where the send REST call itself is accepted (201) and the RTP either reaches a
+# terminal status (ACTC -> ACCEPTED, RJCT -> REJECTED; unknown fields in the EPC response are
+# tolerated) or stays in SENT because the EPC mock response carries no status report.
+# A None fiscal code means a random one, which no mock branch matches.
+_HAPPY_PATH_SCENARIOS = [
+    pytest.param(
+        "actc",
+        MOCK_SEND_FISCAL_CODE_ACTC,
+        RTP_STATUS_ACCEPTED,
+        "EPC returns 201 with a complete ACTC report (with `_links`), so the RTP ends in ACCEPTED.",
+        id="actc",
+    ),
+    pytest.param(
+        "actc_no_links",
+        MOCK_SEND_FISCAL_CODE_ACTC_NO_LINKS,
+        RTP_STATUS_ACCEPTED,
+        "EPC returns 201 with an ACTC report without `_links` (optional in the schema), so the RTP ends in ACCEPTED.",
+        id="actc_no_links",
+    ),
+    pytest.param(
+        "actc_extra_field",
+        MOCK_SEND_FISCAL_CODE_ACTC_EXTRA_FIELD,
+        RTP_STATUS_ACCEPTED,
+        "EPC returns 201 with an ACTC report plus an extra field not declared in the schema: the "
+        "unknown field is ignored and the RTP ends in ACCEPTED.",
+        id="actc_extra_field",
+    ),
+    pytest.param(
+        "rjct",
+        MOCK_SEND_FISCAL_CODE_RJCT,
+        RTP_STATUS_REJECTED,
+        "EPC returns 400 with a valid RJCT report (reason MS03): the send call is accepted (201) "
+        "and the RTP ends in REJECTED.",
+        id="rjct",
+    ),
+    pytest.param(
+        "rjct_no_links",
+        MOCK_SEND_FISCAL_CODE_RJCT_NO_LINKS,
+        RTP_STATUS_REJECTED,
+        "EPC returns 400 with a valid RJCT report without `_links`: the send call is accepted "
+        "(201) and the RTP ends in REJECTED.",
+        id="rjct_no_links",
+    ),
+    pytest.param(
+        "rjct_extra_field",
+        MOCK_SEND_FISCAL_CODE_RJCT_EXTRA_FIELD,
+        RTP_STATUS_REJECTED,
+        "EPC returns 400 with a RJCT report plus an extra field not declared in the schema: the "
+        "unknown field is ignored, the send call is accepted (201) and the RTP ends in REJECTED.",
+        id="rjct_extra_field",
+    ),
+    pytest.param(
+        "success_string",
+        MOCK_SEND_FISCAL_CODE_SUCCESS_STRING,
+        RTP_STATUS_SENT,
+        'EPC returns 201 with the JSON string `"success"`, which carries no status report, so the RTP stays in SENT.',
+        id="success_string",
+    ),
+    pytest.param(
+        "processed_string",
+        MOCK_SEND_FISCAL_CODE_PROCESSED_STRING,
+        RTP_STATUS_SENT,
+        'EPC returns 201 with the JSON string `"<uuid> processed correctly"`, which carries no '
+        "status report, so the RTP stays in SENT.",
+        id="processed_string",
+    ),
+    pytest.param(
+        "no_match_fallback",
+        None,
+        RTP_STATUS_SENT,
+        "No known fiscal code is in the request, so the mock policy falls back to its default 201"
+        " `{}` response, which carries no status report: the RTP stays in SENT.",
+        id="no_match_fallback",
+    ),
+]
+
+
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with synchronous ACTC response")
-@allure.title("An RTP sent with synchronous acceptance is in status ACCEPTED - DS-05 ACTC - through Web API V2")
-@allure.tag("functional", "happy_path", "rtp_send", "ds_05_actc")
+@allure.story("Service provider sends RTP - EPC v4 mock scenarios")
+@allure.title("Sending an RTP - EPC v4 mock happy path scenario: {scenario_id}")
+@allure.tag("functional", "happy_path", "rtp_send", "epc_v4_mock")
 @pytest.mark.send
+@pytest.mark.mock
 @pytest.mark.happy_path
-def test_send_rtp_sync_accepted_ds05_actc_THROUGH_WEB_API_V2(
+@pytest.mark.parametrize("scenario_id, payer_fiscal_code, expected_status, description", _HAPPY_PATH_SCENARIOS)
+def test_send_rtp_v2_epc_mock_happy_path(
     debtor_service_provider_token_c,
     creditor_service_provider_token_a,
     rtp_reader_access_token,
+    random_fiscal_code,
+    scenario_id,
+    payer_fiscal_code,
+    expected_status,
+    description,
 ):
-    status = send_rtp_v2_and_get_status_via_rest(
+    """Send an RTP (v2) against an EPC v4 mock scenario where the send call is accepted (201)
+    and assert the resulting RTP status.
+    """
+    allure.dynamic.description(description)
+
+    status = send_rtp_v2_get_status(
         debtor_service_provider_token_c,
         creditor_service_provider_token_a,
         rtp_reader_access_token,
-        secrets.mock_actc_fiscal_code_v2,
+        payer_fiscal_code or random_fiscal_code,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
     )
-    assert status == "ACCEPTED"
+    assert status == expected_status, f"Expected status {expected_status}, got {status}"
+
+
+# Each entry: (scenario_id, payer_fiscal_code, expected_send_status, expected_error_code,
+#              expected_status, description).
+# These are cases where the PSP synchronously rejects the send call itself:
+#   - EPC 201 responses whose body cannot be parsed (non-JSON, truncated JSON) -> 422 with code
+#     02031008E (Service Provider invalid response); the RTP stays in SENT;
+#   - EPC 4xx/5xx error responses (standard or anomalous body) -> 500 with code 02091000F
+#     (Internal server error); no RTP is persisted (expected_status None).
+_UNHAPPY_PATH_SCENARIOS = [
+    pytest.param(
+        "non_json",
+        MOCK_SEND_FISCAL_CODE_NON_JSON,
+        422,
+        SEND_ERROR_INVALID_RESPONSE,
+        RTP_STATUS_SENT,
+        "EPC returns 201 with a non-JSON body (`InvalidResponse`) that cannot be parsed: the send"
+        " call is rejected with 422 (Service Provider invalid response) and the RTP stays in "
+        "SENT.",
+        id="non_json",
+    ),
+    pytest.param(
+        "truncated_json",
+        MOCK_SEND_FISCAL_CODE_TRUNCATED_JSON,
+        422,
+        SEND_ERROR_INVALID_RESPONSE,
+        RTP_STATUS_SENT,
+        'EPC returns 201 with a truncated JSON body (`{"InvalidResponse"`): the send call is '
+        "rejected with 422 (Service Provider invalid response) and the RTP stays in SENT.",
+        id="truncated_json",
+    ),
+    pytest.param(
+        "epc_502_no_body",
+        MOCK_SEND_FISCAL_CODE_502_NO_BODY,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 502 with no body: the send call is rejected with 500 (Internal server error)"
+        " and no RTP is persisted.",
+        id="epc_502_no_body",
+    ),
+    pytest.param(
+        "epc_400_truncated_json",
+        MOCK_SEND_FISCAL_CODE_400_TRUNCATED_JSON,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        'EPC returns 400 with a truncated JSON body (`{"InvalidResponse"`): the send call is '
+        "rejected with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_400_truncated_json",
+    ),
+    pytest.param(
+        "epc_400_chk_a0007",
+        MOCK_SEND_FISCAL_CODE_400_CHK_A0007,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 400 with an RTP_05.CHK.A0007 error body whose status (500) does not match "
+        "the HTTP status: the send call is rejected with 500 (Internal server error) and no RTP "
+        "is persisted.",
+        id="epc_400_chk_a0007",
+    ),
+    pytest.param(
+        "epc_400",
+        MOCK_SEND_FISCAL_CODE_400,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 400 Bad Request with a standard error body: the send call is rejected with "
+        "500 (Internal server error) and no RTP is persisted.",
+        id="epc_400",
+    ),
+    pytest.param(
+        "epc_401",
+        MOCK_SEND_FISCAL_CODE_401,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 401 Unauthorized with a standard error body: the send call is rejected with "
+        "500 (Internal server error) and no RTP is persisted.",
+        id="epc_401",
+    ),
+    pytest.param(
+        "epc_404",
+        MOCK_SEND_FISCAL_CODE_404,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 404 Not Found with a standard error body: the send call is rejected with 500"
+        " (Internal server error) and no RTP is persisted.",
+        id="epc_404",
+    ),
+    pytest.param(
+        "epc_406",
+        MOCK_SEND_FISCAL_CODE_406,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 406 Not Acceptable with a standard error body: the send call is rejected "
+        "with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_406",
+    ),
+    pytest.param(
+        "epc_410",
+        MOCK_SEND_FISCAL_CODE_410,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 410 Gone with a standard error body: the send call is rejected with 500 "
+        "(Internal server error) and no RTP is persisted.",
+        id="epc_410",
+    ),
+    pytest.param(
+        "epc_415",
+        MOCK_SEND_FISCAL_CODE_415,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 415 Unsupported Media Type with a standard error body: the send call is "
+        "rejected with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_415",
+    ),
+    pytest.param(
+        "epc_422",
+        MOCK_SEND_FISCAL_CODE_422,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 422 Unprocessable Entity with a standard error body: the send call is "
+        "rejected with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_422",
+    ),
+    pytest.param(
+        "epc_429",
+        MOCK_SEND_FISCAL_CODE_429,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 429 Too Many Requests with a standard error body: the send call is rejected "
+        "with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_429",
+    ),
+    pytest.param(
+        "epc_500",
+        MOCK_SEND_FISCAL_CODE_500,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 500 Internal Server Error with a standard error body: the send call is "
+        "rejected with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_500",
+    ),
+    pytest.param(
+        "epc_502",
+        MOCK_SEND_FISCAL_CODE_502,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 502 Bad Gateway with a standard error body: the send call is rejected with "
+        "500 (Internal server error) and no RTP is persisted.",
+        id="epc_502",
+    ),
+    pytest.param(
+        "epc_503",
+        MOCK_SEND_FISCAL_CODE_503,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 503 Service Unavailable with a standard error body: the send call is "
+        "rejected with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_503",
+    ),
+    pytest.param(
+        "epc_504",
+        MOCK_SEND_FISCAL_CODE_504,
+        500,
+        SEND_ERROR_INTERNAL_SERVER,
+        None,
+        "EPC returns 504 Gateway Timeout with a standard error body: the send call is rejected "
+        "with 500 (Internal server error) and no RTP is persisted.",
+        id="epc_504",
+    ),
+]
 
 
 @allure.epic("RTP Send")
 @allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with synchronous RJCT response")
-@allure.title("An RTP sent with synchronous rejection is in status REJECTED - DS-08P N - through Web API V2")
-@allure.tag("functional", "happy_path", "rtp_send", "ds_08p_n")
+@allure.story("Service provider sends RTP - EPC v4 mock scenarios")
+@allure.title("Sending an RTP - EPC v4 mock unhappy path scenario: {scenario_id}")
+@allure.tag("functional", "unhappy_path", "rtp_send", "epc_v4_mock")
 @pytest.mark.send
-@pytest.mark.happy_path
-def test_send_rtp_sync_rejected_ds08p_n_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-):
-    status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        secrets.mock_rjct_fiscal_code_v2,
-    )
-    assert status == "REJECTED"
-
-
-@allure.epic("RTP Send")
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with synchronous ACTC response missing _links")
-@allure.title("An RTP sent when EPC response omits _links is in status ACCEPTED - through Web API V2")
-@allure.tag("functional", "happy_path", "rtp_send", "optional_epc_fields")
-@pytest.mark.send
-@pytest.mark.happy_path
-def test_send_rtp_sync_accepted_no_links_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-):
-    status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        secrets.mock_no_links_fiscal_code_v2,
-    )
-    assert status == "ACCEPTED"
-
-
-@allure.epic("RTP Send")
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with a synchronous ACTC response containing an unexpected field")
-@allure.title("An RTP sent when EPC ACTC response contains an unknown field is in status ACCEPTED - through Web API V2")
-@allure.tag("functional", "happy_path", "rtp_send", "optional_epc_fields")
-@pytest.mark.send
-@pytest.mark.happy_path
-def test_send_rtp_sync_accepted_extra_field_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-):
-    status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        secrets.mock_extra_field_fiscal_code_v2,
-    )
-    assert status == "ACCEPTED"
-
-
-@allure.epic("RTP Send")
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with synchronous RJCT response containing extra fields")
-@allure.title(
-    "An RTP sent with synchronous rejection containing extra fields results in status REJECTED - through Web API V2"
-)
-@allure.tag("functional", "happy_path", "rtp_send", "mock_rjct_extra_fields")
-@pytest.mark.send
-@pytest.mark.happy_path
-def test_send_rtp_sync_rejected_with_extra_fields_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-):
-    status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        secrets.mock_rjct_extra_field_fiscal_code_v2,
-    )
-    assert status == "REJECTED"
-
-
-@allure.epic("RTP Send")
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with synchronous RJCT response without _links")
-@allure.title(
-    "An RTP sent with synchronous rejection and missing _links results in status REJECTED - through Web API V2"
-)
-@allure.tag("functional", "happy_path", "rtp_send", "mock_rjct_no_links")
-@pytest.mark.send
-@pytest.mark.happy_path
-def test_send_rtp_sync_rejected_no_links_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-    rtp_reader_access_token,
-):
-    status = send_rtp_v2_and_get_status_via_rest(
-        debtor_service_provider_token_c,
-        creditor_service_provider_token_a,
-        rtp_reader_access_token,
-        secrets.mock_rjct_no_links_fiscal_code_v2,
-    )
-    assert status == "REJECTED"
-
-
-@allure.epic("RTP Send")
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with a malformed synchronous EPC response")
-@allure.title("Sending an RTP when EPC returns a malformed/invalid response body returns 500 - through Web API V2")
-@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_invalid_response")
-@pytest.mark.send
+@pytest.mark.mock
 @pytest.mark.unhappy_path
-def test_send_rtp_sync_invalid_response_THROUGH_WEB_API_V2(
-    debtor_service_provider_token_c,
-    creditor_service_provider_token_a,
-):
-    payer_id = secrets.mock_invalid_response_fiscal_code_v2
-
-    activation_response = activate(
-        debtor_service_provider_token_c,
-        payer_id,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
-    )
-    assert activation_response.status_code in (201, 409), (
-        f"Error activating debtor: {activation_response.status_code} {activation_response.text}"
-    )
-
-    rtp_data = generate_rtp_data(payer_id=payer_id)
-    send_response = send_rtp_v2(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
-    assert send_response.status_code == 500
-    assert send_response.json()["code"] == "02091000F"
-
-
-@allure.epic("RTP Send")
-@allure.feature("RTP Send")
-@allure.story("Service provider sends an RTP with an unexpected synchronous EPC error response")
-@allure.title(
-    "Sending an RTP when EPC returns an unexpected status code error (RTP_05.CHK.A0007) returns 500 "
-    "- through Web API V2"
+@pytest.mark.parametrize(
+    "scenario_id, payer_fiscal_code, expected_send_status, expected_error_code, expected_status, description",
+    _UNHAPPY_PATH_SCENARIOS,
 )
-@allure.tag("functional", "unhappy_path", "rtp_send", "mock_400_chk_a0007")
-@pytest.mark.send
-@pytest.mark.unhappy_path
-def test_send_rtp_sync_unexpected_status_error_THROUGH_WEB_API_V2(
+def test_send_rtp_v2_epc_mock_unhappy_path(
     debtor_service_provider_token_c,
     creditor_service_provider_token_a,
+    rtp_reader_access_token,
+    scenario_id,
+    payer_fiscal_code,
+    expected_send_status,
+    expected_error_code,
+    expected_status,
+    description,
 ):
-    payer_id = secrets.mock_chk_error_fiscal_code_v2
+    """Send an RTP (v2) against an EPC v4 mock error/edge-case scenario and assert both the send
+    call's HTTP status and error code, and the resulting RTP status (None when no RTP is persisted).
+    """
+    allure.dynamic.description(description)
 
-    activation_response = activate(
+    status = send_rtp_v2_get_status(
         debtor_service_provider_token_c,
-        payer_id,
-        DEBTOR_SERVICE_PROVIDER_C_ID,
+        creditor_service_provider_token_a,
+        rtp_reader_access_token,
+        payer_fiscal_code,
+        expected_send_status=expected_send_status,
+        service_provider_id=DEBTOR_SERVICE_PROVIDER_C_ID,
+        expected_error_code=expected_error_code,
     )
-    assert activation_response.status_code in (201, 409), (
-        f"Error activating debtor: {activation_response.status_code} {activation_response.text}"
-    )
-
-    rtp_data = generate_rtp_data(payer_id=payer_id)
-    send_response = send_rtp_v2(access_token=creditor_service_provider_token_a, rtp_payload=rtp_data)
-    assert send_response.status_code == 500
-    assert send_response.json()["code"] == "02091000F"
+    assert status == expected_status, f"Expected status {expected_status}, got {status}"
