@@ -17,6 +17,7 @@ def send_and_cancel_rtp_v2_get_status(
     reason: str,
     expected_cancel_status: int = 204,
     service_provider_id: str | None = None,
+    expected_error_code: str | None = None,
 ) -> str:
     """Activate a debtor, send an RTP via REST API v2 with a forced notice number, cancel it via
     the v2 cancel endpoint, and return the resulting RTP status.
@@ -32,9 +33,12 @@ def send_and_cancel_rtp_v2_get_status(
         notice_number: 18-digit notice number forced on the RTP to trigger the EPC mock scenario.
         reason: Cancellation reason. Must be one of: PAID, MODT.
         expected_cancel_status: Expected HTTP status code from the cancel call. Usually 204 (accepted),
-            but EPC mock HTTP error scenarios may be synchronously rejected by the PSP with 422.
+            but EPC mock error scenarios may be synchronously rejected by the PSP with 422 (EPC 4xx
+            or invalid EPC response) or 500 (EPC 5xx).
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
             to service provider C (MOCKSP05); pass a different one when the test needs it.
+        expected_error_code: If provided, the `code` field expected in the cancel call's error body
+            (e.g. "02031008E" for an invalid EPC response, "02091000F" for an internal server error).
 
     Returns:
         The RTP status string (e.g. "CANCELLED_ACCR", "CANCELLED_REJECTED", "ERROR_CANCEL", "RFC_SENT").
@@ -65,6 +69,12 @@ def send_and_cancel_rtp_v2_get_status(
         f"Expected status {expected_cancel_status} cancelling RTP, got {cancel_response.status_code}. "
         f"Body: {cancel_response.text[:200]}"
     )
+    if expected_error_code is not None:
+        error_code = cancel_response.json().get("code")
+        assert error_code == expected_error_code, (
+            f"Expected error code {expected_error_code} cancelling RTP, got {error_code}. "
+            f"Body: {cancel_response.text[:200]}"
+        )
 
     get_response = get_rtp(access_token=reader_token, rtp_id=resource_id)
     assert get_response.status_code == 200
