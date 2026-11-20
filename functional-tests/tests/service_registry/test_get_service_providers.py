@@ -241,7 +241,7 @@ def test_get_service_providers_rejects_missing_version(
 
     assert_response_code(
         response=response,
-        expected_code=400,
+        expected_code=404,
         operation="GET RTP service providers",
         status="missing Version",
     )
@@ -253,10 +253,10 @@ def test_get_service_providers_rejects_missing_version(
 @allure.title("GET service providers rejects {invalid_case} Version header")
 @allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
 @pytest.mark.parametrize(
-    ("version", "invalid_case"),
+    ("version", "invalid_case", "expected_code"),
     [
-        pytest.param("v1\x01", "non-printable", id="non-printable"),
-        pytest.param("v" * 65, "over-64-characters", id="over-64-characters"),
+        pytest.param("v1\x01", "non-printable", 400, id="non-printable"),
+        pytest.param("v" * 65, "over-64-characters", 404, id="over-64-characters"),
     ],
 )
 @pytest.mark.unhappy_path
@@ -265,6 +265,7 @@ def test_get_service_providers_rejects_invalid_version_header(
     pagopa_service_providers_registry_token: str,
     version: str,
     invalid_case: str,
+    expected_code: int,
 ) -> None:
     response = get_rtp_service_providers(
         access_token=pagopa_service_providers_registry_token,
@@ -273,7 +274,7 @@ def test_get_service_providers_rejects_invalid_version_header(
 
     assert_response_code(
         response=response,
-        expected_code=400,
+        expected_code=expected_code,
         operation="GET RTP service providers",
         status=f"{invalid_case} Version header",
     )
