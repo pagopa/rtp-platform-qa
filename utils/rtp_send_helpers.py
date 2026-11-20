@@ -237,54 +237,67 @@ def send_rtp_and_get_status_by_notice_number_via_rest(
     )
 
 
-def send_rtp_v2_and_get_status_via_rest(
+def send_rtp_v2_get_status(
     debtor_token: str,
     creditor_token: str,
     reader_token: str,
     payer_id: str,
-    **kwargs,
-) -> str:
-    """Activate a debtor, send an RTP via REST API v2 (/rtps with Version: v2), and return the resulting RTP status.
+    expected_send_status: int = 201,
+    service_provider_id: str | None = None,
+    expected_error_code: str | None = None,
+) -> str | None:
+    """Activate a debtor, send an RTP via REST API v2 and return the resulting RTP status.
 
-    Keyword Args:
-        expected_send_status: Expected HTTP status code from the send response. Defaults to 201.
+    The payer fiscal code drives the EPC v4 send mock scenario (`mock_policy_epc_v4.xml`).
+
+    Args:
+        debtor_token: Bearer access token for the debtor service provider (used to activate the payer).
+        creditor_token: Bearer access token for the creditor service provider (used to send the RTP).
+        reader_token: Bearer access token for the RTP reader (used to read the RTP status).
+        payer_id: Fiscal code used as payer ID.
+        expected_send_status: Expected HTTP status code from the send call. 201 when the send is
+            accepted, otherwise the status of the synchronous rejection (e.g. 422, 500).
         service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
             to service provider C (MOCKSP05); pass a different one when the test needs it.
+        expected_error_code: If provided, the `code` field expected in the send call's error body
+            (e.g. "02031008E" for an invalid EPC response, "02091000F" for an internal server error).
+
+    Returns:
+        The RTP status string (e.g. "ACCEPTED", "REJECTED", "SENT"), or None when the send was
+        rejected and no RTP was persisted for the notice number.
     """
-    kwargs.setdefault("service_provider_id", secrets.debtor_service_provider_C.service_provider_id)
-    return _send_rtp_via_rest(
-        debtor_token,
-        creditor_token,
-        reader_token,
-        payer_id,
-        lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
-        **kwargs,
+    if service_provider_id is None:
+        service_provider_id = secrets.debtor_service_provider_C.service_provider_id
+
+    rtp_data = generate_rtp_data(payer_id=payer_id)
+    notice_number = rtp_data["paymentNotice"]["noticeNumber"]
+
+    activation_response = activate(debtor_token, rtp_data["payer"]["payerId"], service_provider_id)
+    assert activation_response.status_code in (201, 409), "Error activating debtor"
+
+    send_response = send_rtp_v2(access_token=creditor_token, rtp_payload=rtp_data)
+    assert send_response.status_code == expected_send_status, (
+        f"Expected status {expected_send_status} sending RTP, got {send_response.status_code}. "
+        f"Body: {send_response.text[:200]}"
     )
+    if expected_error_code is not None:
+        error_code = send_response.json().get("code")
+        assert error_code == expected_error_code, (
+            f"Expected error code {expected_error_code} sending RTP, got {error_code}. Body: {send_response.text[:200]}"
+        )
 
+    if send_response.status_code == 201:
+        assert "Location" in send_response.headers, (
+            f"Expected Location header in response. Body: {send_response.text[:200]}"
+        )
+        resource_id = send_response.headers["Location"].split("/")[-1]
+        get_response = get_rtp(access_token=reader_token, rtp_id=resource_id)
+        assert get_response.status_code == 200
+        return get_response.json()["status"]
 
-def send_rtp_v2_and_get_status_by_notice_number_via_rest(
-    debtor_token: str,
-    creditor_token: str,
-    reader_token: str,
-    payer_id: str,
-    **kwargs,
-) -> str:
-    """Activate a debtor, send an RTP via REST API v2 expecting a synchronous RJCT (422),
-    then retrieve the RTP status by notice number.
-
-    Keyword Args:
-        expected_send_status: Expected HTTP status code from the send response. Defaults to 422.
-        service_provider_id: Debtor service provider ID to activate the debtor with. Defaults
-            to service provider C (MOCKSP05); pass a different one when the test needs it.
-        expected_error_body: If provided, asserted against the JSON body of the send response.
-    """
-    kwargs.setdefault("expected_send_status", 422)
-    kwargs.setdefault("service_provider_id", secrets.debtor_service_provider_C.service_provider_id)
-    return _send_rtp_by_notice_number_via_rest(
-        debtor_token,
-        creditor_token,
-        reader_token,
-        payer_id,
-        lambda token, payload: send_rtp_v2(access_token=token, rtp_payload=payload),
-        **kwargs,
+    get_response = api_get_rtp_by_notice_number(reader_token, notice_number)
+    assert get_response.status_code == 200, (
+        f"Error retrieving RTP by notice number. Status Code: {get_response.status_code}"
     )
+    payload = get_response.json()
+    return payload[-1]["status"] if payload else None
