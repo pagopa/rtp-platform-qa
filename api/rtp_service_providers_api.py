@@ -2,7 +2,7 @@ import uuid
 
 import requests
 
-from api.utils.endpoints import RTP_SERVICE_PROVIDERS_URL
+from api.utils.endpoints import SERVICE_PROVIDERS_REGISTRY_URL
 from api.utils.http_utils import HTTP_TIMEOUT
 
 
@@ -13,7 +13,7 @@ def get_rtp_service_providers(
     include_request_id: bool = True,
 ) -> requests.Response:
     return requests.get(
-        url=RTP_SERVICE_PROVIDERS_URL,
+        url=SERVICE_PROVIDERS_REGISTRY_URL,
         headers={
             **({"Authorization": access_token} if access_token is not None else {}),
             **({"Version": version} if version is not None else {}),
