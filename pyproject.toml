@@ -87,6 +87,7 @@ markers = [
   "functional: Functional tests",
   "webform: Tests on RTP webform",
   "selfcare_webhook: mark tests that exercise the SelfCare webhook endpoint",
+  "service_registry: mark tests that exercise the Service Registry and Payee Registry endpoints",
 ]
 
 [tool.hatch.build.targets.wheel]

@@ -1,12 +1,16 @@
 """Tests for the versioned RTP Service Providers API.
 
-Notes on test assumptions:
+Notes on test assumptions and gateway behavior:
 - Test data: Assertions expecting non-empty `tsps` and `sps` lists assume that the target
   environment (e.g., UAT/DEV) has already been seeded with active technical service
   providers and service providers.
 - Role isolation: `test_get_service_providers_rejects_token_without_registry_role` relies on
   the `rtp_reader_access_token` client (RTP Reader) lacking the service providers registry
   read role in Keycloak/APIM. A role expansion for this client would cause this test to fail.
+- Gateway routing: In Azure API Management (APIM), API versioning is header-based via the
+  `Version` header. When this header is missing or contains an unmapped/overlong value,
+  APIM fails route resolution at gateway level and returns HTTP 404 Not Found ('Resource not found')
+  instead of 400 Bad Request.
 """
 
 import allure
@@ -63,6 +67,7 @@ def _assert_error_response(
 @allure.tag("functional", "happy_path", "get", "rtp_service_providers")
 @pytest.mark.happy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_v1_omits_qsealc_enabled(pagopa_service_providers_registry_token: str) -> None:
     response = get_rtp_service_providers(
         access_token=pagopa_service_providers_registry_token,
@@ -97,6 +102,7 @@ def test_get_service_providers_v1_omits_qsealc_enabled(pagopa_service_providers_
 @allure.tag("functional", "happy_path", "get", "rtp_service_providers")
 @pytest.mark.happy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_v2_includes_qsealc_enabled(pagopa_service_providers_registry_token: str) -> None:
     response = get_rtp_service_providers(
         access_token=pagopa_service_providers_registry_token,
@@ -132,6 +138,7 @@ def test_get_service_providers_v2_includes_qsealc_enabled(pagopa_service_provide
 @pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.happy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_returns_valid_provider_details(
     pagopa_service_providers_registry_token: str,
     version: str,
@@ -214,6 +221,7 @@ def test_get_service_providers_returns_valid_provider_details(
 @pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.unhappy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_rejects_missing_or_invalid_auth(
     access_token: str | None,
     auth_case: str,
@@ -238,6 +246,7 @@ def test_get_service_providers_rejects_missing_or_invalid_auth(
 @pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.unhappy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_rejects_token_without_registry_role(
     rtp_reader_access_token: str,
     version: str,
@@ -270,6 +279,7 @@ def test_get_service_providers_rejects_token_without_registry_role(
 @pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
 @pytest.mark.unhappy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_rejects_missing_request_id(
     pagopa_service_providers_registry_token: str,
     version: str,
@@ -296,9 +306,19 @@ def test_get_service_providers_rejects_missing_request_id(
 @allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
 @pytest.mark.unhappy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_rejects_missing_version(
     pagopa_service_providers_registry_token: str,
 ) -> None:
+    """Verify that requests missing the Version header are rejected.
+
+    Note on 404 response:
+        In Azure API Management (APIM), versioning for this endpoint is configured
+        via header routing ('Version' header). When this header is omitted, APIM cannot
+        match the request to any registered API version route and responds with
+        HTTP 404 Not Found ({"statusCode": 404, "message": "Resource not found"})
+        at the gateway routing level, rather than a 400 Bad Request.
+    """
     response = get_rtp_service_providers(
         access_token=pagopa_service_providers_registry_token,
         version=None,
@@ -324,11 +344,14 @@ def test_get_service_providers_rejects_missing_version(
         # Note: requests does not raise InvalidHeader client-side for \x01 (it only blocks \r and \n).
         # The request reaches the server, where the HTTP layer rejects it with HTTP 400 Bad Request.
         pytest.param("v1\x01", "non-printable", 400, "text/html", id="non-printable"),
+        # Note: In APIM, an unmapped/overlong Version header fails gateway version routing,
+        # returning HTTP 404 Not Found ("Resource not found") from the gateway.
         pytest.param("v" * 65, "over-64-characters", 404, "application/json", id="over-64-characters"),
     ],
 )
 @pytest.mark.unhappy_path
 @pytest.mark.get
+@pytest.mark.service_registry
 def test_get_service_providers_rejects_invalid_version_header(
     pagopa_service_providers_registry_token: str,
     version: str,
