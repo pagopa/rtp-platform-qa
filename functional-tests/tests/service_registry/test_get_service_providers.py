@@ -23,6 +23,10 @@ from utils.response_assertions_utils import assert_response_code
 # JWT with alg=none and exp=0.
 EXPIRED_UNSIGNED_TOKEN = "Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjB9."
 
+TSPS = "tsps"
+SPS = "sps"
+QSEALC_ENABLED = "qsealc_enabled"
+
 
 def _assert_error_response(
     response: Response,
@@ -60,6 +64,30 @@ def _assert_error_response(
         assert response.text.strip(), f"Expected non-empty error body for {operation} ({status})"
 
 
+def _assert_valid_service_providers_response(response: Response, version: str) -> dict:
+    """Assert successful status code and base schema structure for service providers response.
+
+    Note:
+        Assumes the target environment (e.g. UAT) is pre-seeded with at least one active TSP and SP.
+    """
+    assert_response_code(
+        response=response,
+        expected_code=200,
+        operation="GET RTP service providers",
+        status=version,
+    )
+    data = response.json()
+    assert isinstance(data, dict), "Response body should be an object"
+    assert TSPS in data, f"Response should contain '{TSPS}'"
+    assert SPS in data, f"Response should contain '{SPS}'"
+    assert isinstance(data[TSPS], list), f"'{TSPS}' should be a list"
+    assert isinstance(data[SPS], list), f"'{SPS}' should be a list"
+    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
+    assert data[TSPS], "Expected at least one technical service provider (assumes pre-seeded environment)"
+    assert data[SPS], "Expected at least one service provider (assumes pre-seeded environment)"
+    return data
+
+
 @allure.epic("RTP Service Providers API")
 @allure.feature("Versioned Service Providers")
 @allure.story("Retrieve the v1 service providers collection")
@@ -73,25 +101,10 @@ def test_get_service_providers_v1_omits_qsealc_enabled(pagopa_service_providers_
         access_token=pagopa_service_providers_registry_token,
         version="v1",
     )
+    data = _assert_valid_service_providers_response(response, version="v1")
 
-    assert_response_code(
-        response=response,
-        expected_code=200,
-        operation="GET RTP service providers",
-        status="v1",
-    )
-    data = response.json()
-    assert isinstance(data, dict), "Response body should be an object"
-    assert "tsps" in data, "Response should contain 'tsps'"
-    assert "sps" in data, "Response should contain 'sps'"
-    assert isinstance(data["tsps"], list), "'tsps' should be a list"
-    assert isinstance(data["sps"], list), "'sps' should be a list"
-    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
-    assert data["tsps"], "Expected at least one technical service provider (assumes pre-seeded environment)"
-    assert data["sps"], "Expected at least one service provider (assumes pre-seeded environment)"
-
-    assert all(isinstance(tsp, dict) and "qsealc_enabled" not in tsp for tsp in data["tsps"]), (
-        "Every v1 TSP should be an object without 'qsealc_enabled'"
+    assert all(isinstance(tsp, dict) and QSEALC_ENABLED not in tsp for tsp in data[TSPS]), (
+        f"Every v1 TSP should be an object without '{QSEALC_ENABLED}'"
     )
 
 
@@ -108,25 +121,10 @@ def test_get_service_providers_v2_includes_qsealc_enabled(pagopa_service_provide
         access_token=pagopa_service_providers_registry_token,
         version="v2",
     )
+    data = _assert_valid_service_providers_response(response, version="v2")
 
-    assert_response_code(
-        response=response,
-        expected_code=200,
-        operation="GET RTP service providers",
-        status="v2",
-    )
-    data = response.json()
-    assert isinstance(data, dict), "Response body should be an object"
-    assert "tsps" in data, "Response should contain 'tsps'"
-    assert "sps" in data, "Response should contain 'sps'"
-    assert isinstance(data["tsps"], list), "'tsps' should be a list"
-    assert isinstance(data["sps"], list), "'sps' should be a list"
-    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
-    assert data["tsps"], "Expected at least one technical service provider (assumes pre-seeded environment)"
-    assert data["sps"], "Expected at least one service provider (assumes pre-seeded environment)"
-
-    assert all(isinstance(tsp, dict) and isinstance(tsp.get("qsealc_enabled"), bool) for tsp in data["tsps"]), (
-        "Every v2 TSP should include a boolean 'qsealc_enabled'"
+    assert all(isinstance(tsp, dict) and isinstance(tsp.get(QSEALC_ENABLED), bool) for tsp in data[TSPS]), (
+        f"Every v2 TSP should include a boolean '{QSEALC_ENABLED}'"
     )
 
 
@@ -147,22 +145,9 @@ def test_get_service_providers_returns_valid_provider_details(
         access_token=pagopa_service_providers_registry_token,
         version=version,
     )
-
-    assert_response_code(
-        response=response,
-        expected_code=200,
-        operation="GET RTP service providers",
-        status=version,
-    )
-    data = response.json()
-    assert isinstance(data, dict), "Response body should be an object"
-    assert isinstance(data.get("tsps"), list), "'tsps' should be a list"
-    assert isinstance(data.get("sps"), list), "'sps' should be a list"
-    tsps = data["tsps"]
-    sps = data["sps"]
-    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
-    assert tsps, "Expected at least one technical service provider (assumes pre-seeded environment)"
-    assert sps, "Expected at least one service provider (assumes pre-seeded environment)"
+    data = _assert_valid_service_providers_response(response, version=version)
+    tsps = data[TSPS]
+    sps = data[SPS]
 
     tsp_string_fields = ("id", "name", "service_endpoint", "certificate_serial_number")
     oauth2_string_fields = (
