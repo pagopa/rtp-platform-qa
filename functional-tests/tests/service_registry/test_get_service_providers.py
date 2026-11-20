@@ -88,6 +88,69 @@ def _assert_valid_service_providers_response(response: Response, version: str) -
     return data
 
 
+def _assert_valid_tsp(tsp: dict) -> None:
+    """Validate a TSP dict field-by-field with descriptive error messages including TSP ID."""
+    assert isinstance(tsp, dict), f"Expected TSP to be a dict, got {type(tsp)}"
+    tsp_id = tsp.get("id", "<unknown>")
+    tsp_string_fields = ("id", "name", "service_endpoint", "certificate_serial_number")
+    for field in tsp_string_fields:
+        assert isinstance(tsp.get(field), str), (
+            f"TSP '{tsp_id}' missing or invalid string field '{field}': {tsp.get(field)!r}"
+        )
+
+    assert isinstance(tsp.get("mtls_enabled"), bool), (
+        f"TSP '{tsp_id}' field 'mtls_enabled' must be a boolean, got {tsp.get('mtls_enabled')!r}"
+    )
+
+    if "takeover_endpoint" in tsp:
+        assert isinstance(tsp["takeover_endpoint"], str), (
+            f"TSP '{tsp_id}' field 'takeover_endpoint' must be a string, got {tsp['takeover_endpoint']!r}"
+        )
+
+    if "oauth2" in tsp:
+        oauth2 = tsp["oauth2"]
+        assert isinstance(oauth2, dict), (
+            f"TSP '{tsp_id}' field 'oauth2' must be a dict, got {type(oauth2)}"
+        )
+        assert isinstance(oauth2.get("token_endpoint"), str), (
+            f"TSP '{tsp_id}' oauth2.token_endpoint must be a string, got {oauth2.get('token_endpoint')!r}"
+        )
+        assert oauth2.get("method") in {"GET", "POST"}, (
+            f"TSP '{tsp_id}' oauth2.method must be 'GET' or 'POST', got {oauth2.get('method')!r}"
+        )
+        oauth2_string_fields = (
+            "credentials_transport_mode",
+            "client_id",
+            "client_secret_kv_url",
+            "client_secret_env_var",
+            "scope",
+        )
+        for field in oauth2_string_fields:
+            if field in oauth2:
+                assert isinstance(oauth2[field], str), (
+                    f"TSP '{tsp_id}' oauth2.{field} must be a string, got {oauth2[field]!r}"
+                )
+        if "mtls_enabled" in oauth2:
+            assert isinstance(oauth2["mtls_enabled"], bool), (
+                f"TSP '{tsp_id}' oauth2.mtls_enabled must be a boolean, got {oauth2['mtls_enabled']!r}"
+            )
+
+
+def _assert_valid_sp(sp: dict) -> None:
+    """Validate an SP dict field-by-field with descriptive error messages including SP ID."""
+    assert isinstance(sp, dict), f"Expected SP to be a dict, got {type(sp)}"
+    sp_id = sp.get("id", "<unknown>")
+    sp_string_fields = ("id", "name", "tsp_id")
+    for field in sp_string_fields:
+        assert isinstance(sp.get(field), str), (
+            f"SP '{sp_id}' missing or invalid string field '{field}': {sp.get(field)!r}"
+        )
+    if "psp_tax_code" in sp:
+        assert isinstance(sp["psp_tax_code"], str), (
+            f"SP '{sp_id}' field 'psp_tax_code' must be a string, got {sp['psp_tax_code']!r}"
+        )
+
+
 @allure.epic("RTP Service Providers API")
 @allure.feature("Versioned Service Providers")
 @allure.story("Retrieve the v1 service providers collection")
@@ -149,42 +212,11 @@ def test_get_service_providers_returns_valid_provider_details(
     tsps = data[TSPS]
     sps = data[SPS]
 
-    tsp_string_fields = ("id", "name", "service_endpoint", "certificate_serial_number")
-    oauth2_string_fields = (
-        "credentials_transport_mode",
-        "client_id",
-        "client_secret_kv_url",
-        "client_secret_env_var",
-        "scope",
-    )
-    assert all(
-        isinstance(tsp, dict)
-        and all(isinstance(tsp.get(field), str) for field in tsp_string_fields)
-        and isinstance(tsp.get("mtls_enabled"), bool)
-        and ("takeover_endpoint" not in tsp or isinstance(tsp["takeover_endpoint"], str))
-        and (
-            "oauth2" not in tsp
-            or (
-                isinstance(tsp["oauth2"], dict)
-                and isinstance(tsp["oauth2"].get("token_endpoint"), str)
-                and tsp["oauth2"].get("method") in {"GET", "POST"}
-                and all(
-                    field not in tsp["oauth2"] or isinstance(tsp["oauth2"][field], str)
-                    for field in oauth2_string_fields
-                )
-                and ("mtls_enabled" not in tsp["oauth2"] or isinstance(tsp["oauth2"]["mtls_enabled"], bool))
-            )
-        )
-        for tsp in tsps
-    ), "Every TSP should match the documented response schema"
+    for tsp in tsps:
+        _assert_valid_tsp(tsp)
 
-    sp_string_fields = ("id", "name", "tsp_id")
-    assert all(
-        isinstance(sp, dict)
-        and all(isinstance(sp.get(field), str) for field in sp_string_fields)
-        and ("psp_tax_code" not in sp or isinstance(sp["psp_tax_code"], str))
-        for sp in sps
-    ), "Every SP should match the documented response schema"
+    for sp in sps:
+        _assert_valid_sp(sp)
 
     tsp_ids = {tsp["id"] for tsp in tsps}
     assert all(sp["tsp_id"] in tsp_ids for sp in sps), "Every SP should reference an existing TSP"
