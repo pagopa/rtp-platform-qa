@@ -20,8 +20,10 @@ from requests import Response
 from api.rtp_service_providers_api import get_rtp_service_providers
 from utils.response_assertions_utils import assert_response_code
 
-# JWT with alg=none and exp=0.
-EXPIRED_UNSIGNED_TOKEN = "Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjB9."
+# Unsigned JWT (alg=none) with a future expiration date (year 2100) to isolate unsigned rejection from expiration.
+UNSIGNED_TOKEN = "Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjQxMDI0NDQ4MDAsInN1YiI6InRlc3QifQ."
+# Expired JWT (exp=0) to test rejection of expired credentials.
+EXPIRED_TOKEN = "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjAsInN1YiI6InRlc3QifQ.ZHVtbXlfc2lnbmF0dXJl"
 
 TSPS = "tsps"
 SPS = "sps"
@@ -232,7 +234,8 @@ def test_get_service_providers_returns_valid_provider_details(
     [
         pytest.param(None, "missing", id="missing"),
         pytest.param("invalid_token", "invalid", id="invalid"),
-        pytest.param(EXPIRED_UNSIGNED_TOKEN, "expired-and-unsigned", id="expired-unsigned"),
+        pytest.param(UNSIGNED_TOKEN, "unsigned", id="unsigned"),
+        pytest.param(EXPIRED_TOKEN, "expired", id="expired"),
     ],
 )
 @pytest.mark.parametrize("version", ["v1", "v2"], ids=["v1", "v2"])
@@ -244,6 +247,7 @@ def test_get_service_providers_rejects_missing_or_invalid_auth(
     auth_case: str,
     version: str,
 ) -> None:
+    """Verify that requests with missing, invalid, unsigned, or expired tokens are rejected with 401."""
     response = get_rtp_service_providers(access_token=access_token, version=version)
 
     _assert_error_response(
