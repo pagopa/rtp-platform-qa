@@ -25,12 +25,16 @@ def get_rtp_service_providers(
     :return: The HTTP response from the Service Providers Registry endpoint.
     :rtype: requests.Response
     """
+    headers: dict[str, str] = {}
+    if access_token is not None:
+        headers["Authorization"] = access_token
+    if version is not None:
+        headers["Version"] = version
+    if include_request_id:
+        headers["RequestId"] = str(uuid.uuid4())
+
     return requests.get(
         url=SERVICE_PROVIDERS_REGISTRY_URL,
-        headers={
-            **({"Authorization": access_token} if access_token is not None else {}),
-            **({"Version": version} if version is not None else {}),
-            **({"RequestId": str(uuid.uuid4())} if include_request_id else {}),
-        },
+        headers=headers,
         timeout=HTTP_TIMEOUT,
     )
