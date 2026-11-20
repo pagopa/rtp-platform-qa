@@ -1,11 +1,59 @@
+"""Tests for the versioned RTP Service Providers API.
+
+Notes on test assumptions:
+- Test data: Assertions expecting non-empty `tsps` and `sps` lists assume that the target
+  environment (e.g., UAT/DEV) has already been seeded with active technical service
+  providers and service providers.
+- Role isolation: `test_get_service_providers_rejects_token_without_registry_role` relies on
+  the `rtp_reader_access_token` client (RTP Reader) lacking the service providers registry
+  read role in Keycloak/APIM. A role expansion for this client would cause this test to fail.
+"""
+
 import allure
 import pytest
+from requests import Response
 
 from api.rtp_service_providers_api import get_rtp_service_providers
 from utils.response_assertions_utils import assert_response_code
 
 # JWT with alg=none and exp=0.
 EXPIRED_UNSIGNED_TOKEN = "Bearer eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjB9."
+
+
+def _assert_error_response(
+    response: Response,
+    expected_code: int,
+    operation: str,
+    status: str,
+    expected_content_type: str | None = "application/json",
+    require_body: bool = True,
+) -> None:
+    """Assert status code, and optionally non-empty body and Content-Type for error responses."""
+    assert_response_code(
+        response=response,
+        expected_code=expected_code,
+        operation=operation,
+        status=status,
+    )
+    if expected_content_type is not None:
+        content_type = response.headers.get("Content-Type", "")
+        assert expected_content_type in content_type, (
+            f"Expected Content-Type containing '{expected_content_type}' for {operation} ({status}), "
+            f"got '{content_type}'"
+        )
+        if "application/json" in expected_content_type:
+            try:
+                body = response.json()
+                assert isinstance(body, dict), f"Expected JSON error body to be an object, got {type(body)}"
+                if "statusCode" in body:
+                    assert body["statusCode"] == expected_code, (
+                        f"Expected body.statusCode to be {expected_code}, got {body['statusCode']}"
+                    )
+            except ValueError:
+                pytest.fail(f"Expected valid JSON in error response for {operation} ({status}): {response.text}")
+
+    if require_body:
+        assert response.text.strip(), f"Expected non-empty error body for {operation} ({status})"
 
 
 @allure.epic("RTP Service Providers API")
@@ -33,7 +81,9 @@ def test_get_service_providers_v1_omits_qsealc_enabled(pagopa_service_providers_
     assert "sps" in data, "Response should contain 'sps'"
     assert isinstance(data["tsps"], list), "'tsps' should be a list"
     assert isinstance(data["sps"], list), "'sps' should be a list"
-    assert data["tsps"], "Expected at least one technical service provider"
+    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
+    assert data["tsps"], "Expected at least one technical service provider (assumes pre-seeded environment)"
+    assert data["sps"], "Expected at least one service provider (assumes pre-seeded environment)"
 
     assert all(isinstance(tsp, dict) and "qsealc_enabled" not in tsp for tsp in data["tsps"]), (
         "Every v1 TSP should be an object without 'qsealc_enabled'"
@@ -65,7 +115,9 @@ def test_get_service_providers_v2_includes_qsealc_enabled(pagopa_service_provide
     assert "sps" in data, "Response should contain 'sps'"
     assert isinstance(data["tsps"], list), "'tsps' should be a list"
     assert isinstance(data["sps"], list), "'sps' should be a list"
-    assert data["tsps"], "Expected at least one technical service provider"
+    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
+    assert data["tsps"], "Expected at least one technical service provider (assumes pre-seeded environment)"
+    assert data["sps"], "Expected at least one service provider (assumes pre-seeded environment)"
 
     assert all(isinstance(tsp, dict) and isinstance(tsp.get("qsealc_enabled"), bool) for tsp in data["tsps"]), (
         "Every v2 TSP should include a boolean 'qsealc_enabled'"
@@ -101,8 +153,9 @@ def test_get_service_providers_returns_valid_provider_details(
     assert isinstance(data.get("sps"), list), "'sps' should be a list"
     tsps = data["tsps"]
     sps = data["sps"]
-    assert tsps, "Expected at least one technical service provider"
-    assert sps, "Expected at least one service provider"
+    # Note: Assumes the target environment has at least one pre-seeded TSP and SP.
+    assert tsps, "Expected at least one technical service provider (assumes pre-seeded environment)"
+    assert sps, "Expected at least one service provider (assumes pre-seeded environment)"
 
     tsp_string_fields = ("id", "name", "service_endpoint", "certificate_serial_number")
     oauth2_string_fields = (
@@ -168,11 +221,12 @@ def test_get_service_providers_rejects_missing_or_invalid_auth(
 ) -> None:
     response = get_rtp_service_providers(access_token=access_token, version=version)
 
-    assert_response_code(
+    _assert_error_response(
         response=response,
         expected_code=401,
         operation="GET RTP service providers",
         status=f"{auth_case} authorization with {version}",
+        expected_content_type="application/json",
     )
 
 
@@ -188,13 +242,23 @@ def test_get_service_providers_rejects_token_without_registry_role(
     rtp_reader_access_token: str,
     version: str,
 ) -> None:
+    """Verify that a valid token without the service providers registry read role is rejected with 403.
+
+    Assumption:
+        This test relies on `rtp_reader_access_token` (RTP Reader client) lacking the read
+        permission for the Service Providers Registry in Keycloak/APIM. A future role change
+        granting this client registry access would cause this test to fail.
+    """
     response = get_rtp_service_providers(access_token=rtp_reader_access_token, version=version)
 
-    assert_response_code(
+    # Note: APIM rejects missing JWT claims/roles at gateway level with an empty 403 Forbidden (no Content-Type).
+    _assert_error_response(
         response=response,
         expected_code=403,
         operation="GET RTP service providers",
         status=f"valid token without registry role with {version}",
+        expected_content_type=None,
+        require_body=False,
     )
 
 
@@ -216,11 +280,12 @@ def test_get_service_providers_rejects_missing_request_id(
         include_request_id=False,
     )
 
-    assert_response_code(
+    _assert_error_response(
         response=response,
         expected_code=400,
         operation="GET RTP service providers",
         status=f"missing RequestId with {version}",
+        expected_content_type="application/json",
     )
 
 
@@ -239,11 +304,12 @@ def test_get_service_providers_rejects_missing_version(
         version=None,
     )
 
-    assert_response_code(
+    _assert_error_response(
         response=response,
         expected_code=404,
         operation="GET RTP service providers",
         status="missing Version",
+        expected_content_type="application/json",
     )
 
 
@@ -253,10 +319,12 @@ def test_get_service_providers_rejects_missing_version(
 @allure.title("GET service providers rejects {invalid_case} Version header")
 @allure.tag("functional", "unhappy_path", "get", "rtp_service_providers")
 @pytest.mark.parametrize(
-    ("version", "invalid_case", "expected_code"),
+    ("version", "invalid_case", "expected_code", "expected_content_type"),
     [
-        pytest.param("v1\x01", "non-printable", 400, id="non-printable"),
-        pytest.param("v" * 65, "over-64-characters", 404, id="over-64-characters"),
+        # Note: requests does not raise InvalidHeader client-side for \x01 (it only blocks \r and \n).
+        # The request reaches the server, where the HTTP layer rejects it with HTTP 400 Bad Request.
+        pytest.param("v1\x01", "non-printable", 400, "text/html", id="non-printable"),
+        pytest.param("v" * 65, "over-64-characters", 404, "application/json", id="over-64-characters"),
     ],
 )
 @pytest.mark.unhappy_path
@@ -266,15 +334,17 @@ def test_get_service_providers_rejects_invalid_version_header(
     version: str,
     invalid_case: str,
     expected_code: int,
+    expected_content_type: str,
 ) -> None:
     response = get_rtp_service_providers(
         access_token=pagopa_service_providers_registry_token,
         version=version,
     )
 
-    assert_response_code(
+    _assert_error_response(
         response=response,
         expected_code=expected_code,
         operation="GET RTP service providers",
         status=f"{invalid_case} Version header",
+        expected_content_type=expected_content_type,
     )
