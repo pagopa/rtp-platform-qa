@@ -1,49 +1,132 @@
 /**
- * k6 performance test script for stress testing the Service Registry endpoint.
+ * @file Service Registry Endpoint Stress Test (k6)
+ * @description
+ * High-throughput performance and load testing for the Service Registry endpoint:
+ *   GET /service_providers/service-providers
+ *
+ * ## Inputs — Environment Variables
+ * | Variable                                    | Default | Description                                                     |
+ * |---------------------------------------------|---------|-----------------------------------------------------------------|
+ * | `SCENARIO`                                  | custom  | Load profile (custom, stress_test, soak_test, spike_test)        |
+ * | `VU_COUNT_SET`                              | 10      | Number of virtual users                                          |
+ * | `ITERATIONS`                                | 1000    | Total shared iterations across all VUs (custom scenario)        |
+ * | `SLEEP_ITER`                                | 0       | Sleep time (seconds) between iterations                         |
+ * | `SERVICE_REGISTRY_READER_CLIENT_ID`          | -       | Client ID for OAuth token retrieval (required)                  |
+ * | `SERVICE_REGISTRY_READER_CLIENT_SECRET`      | -       | Client secret for OAuth token retrieval (required)              |
  */
 
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import { setupAuth, buildHeaders, determineStage, getOptions, ActorCredentials } from '../../utils/utils.js';
-import { serviceRegistryConfig } from '../../config/config.js';
+import exec from 'k6/execution';
+import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
+import {
+  setupAuth,
+  buildHeaders,
+  getStageLabel,
+  getOptions,
+  describeScenarioVUs,
+  ActorCredentials,
+  endpoints
+} from '../../utils/utils.js';
 import { createHandleSummary } from '../../utils/summary-utils.js';
 import { createStandardMetrics } from '../../utils/metrics-utils.js';
 
+/** Run start timestamp (ms). */
 const START_TIME = Date.now();
+
+/** Number of virtual users (env: VU_COUNT_SET, default: 10). */
+const VU_COUNT_SET = Number(__ENV.VU_COUNT_SET) || 10;
+
+/** Total shared iterations (env: ITERATIONS, default: 1000). */
+const ITERATIONS = Number(__ENV.ITERATIONS) || 1000;
+
+/** Optional per-iteration sleep in seconds (env: SLEEP_ITER, default: 0). */
+const SLEEP_ITER = Number(__ENV.SLEEP_ITER) || 0;
+
+/** Load profile to use. */
+const SCENARIO = __ENV.SCENARIO || 'custom';
+
+/** Scenario names backed by progressiveOptions in utils.js */
+const PREDEFINED_SCENARIOS = [
+  'stress_test', 'soak_test', 'spike_test',
+  'stress_test_fixed_user', 'soak_test_fixed_user', 'spike_test_fixed_user'
+];
+
+if (SCENARIO !== 'custom' && !PREDEFINED_SCENARIOS.includes(SCENARIO)) {
+  throw new Error(
+    `❌ Unknown SCENARIO "${SCENARIO}". Expected one of: 'custom', ${PREDEFINED_SCENARIOS.map((s) => `'${s}'`).join(', ')}`
+  );
+}
+
+/** Standard performance metrics */
 const { currentRPS, failureCounter, successCounter, responseTimeTrend } = createStandardMetrics();
 
+/** Mutable ref object for test completion state. */
+const testCompletedRef = { value: false };
+
 /**
- * Defines test options based on the provided scenario name and test ID.
+ * k6 execution options.
+ * @type {import('k6/options').Options}
  */
-export let options = getOptions(__ENV.SCENARIO, 'testServiceRegistry');
+export let options = PREDEFINED_SCENARIOS.includes(SCENARIO)
+  ? {
+      ...getOptions(SCENARIO, 'testServiceRegistry'),
+      setupTimeout: '5m'
+    }
+  : {
+      ...getOptions('stress_test_fixed_user', 'testServiceRegistry'),
+      setupTimeout: '5m',
+      scenarios: {
+        stress_test_fixed_user: {
+          executor: 'shared-iterations',
+          vus: VU_COUNT_SET,
+          iterations: ITERATIONS,
+          maxDuration: '240m',
+          gracefulStop: '30s',
+          exec: 'testServiceRegistry'
+        }
+      }
+    };
 
 /**
  * Performs initial authentication as a service registry reader.
  *
- * @returns an object containing the access token to be used in test execution
+ * @returns {Object} Shared data object containing the access token
  */
 export function setup() {
-  return setupAuth(ActorCredentials.SERVICE_REGISTRY_READER);
+  const auth = setupAuth(ActorCredentials.SERVICE_REGISTRY_READER);
+  return {
+    access_token: auth.access_token,
+    startTime: Date.now(),
+    totalIterations: ITERATIONS
+  };
 }
 
 /**
  * Executes the main test logic by making a GET request to the service registry endpoint.
  *
- * @param {Object} data - the setup data containing the access token
- * @returns the HTTP response from the service registry
+ * @param {{ access_token: string }} data - Setup data containing the access token
+ * @returns {Response} The HTTP response from the service registry
  */
 export function testServiceRegistry(data) {
+  const vu = __VU;
   const elapsedSeconds = (Date.now() - START_TIME) / 1000;
+  const iteration = exec.scenario.iterationInTest;
 
   const tags = {
     timeWindow: Math.floor(elapsedSeconds / 10) * 10,
-    stage: determineStage(elapsedSeconds)
+    stage: getStageLabel(SCENARIO, elapsedSeconds),
+    requestCount: String(iteration + 1),
+    vu: String(vu)
   };
 
   currentRPS.add(1, tags);
 
   const headers = buildHeaders(data.access_token);
-  const url = serviceRegistryConfig.baseUrl + '/service-providers';
+  headers['RequestId'] = uuidv4();
+  headers['Version'] = 'v1';
+
+  const url = endpoints.serviceRegistry;
 
   const start = Date.now();
   const res = http.get(url, { headers });
@@ -51,29 +134,48 @@ export function testServiceRegistry(data) {
 
   responseTimeTrend.add(duration, tags);
 
-  const successStatus = 200;
-
-  if (res.status === successStatus) {
-    successCounter.add(1, tags);
-  } else {
-    failureCounter.add(1, tags);
-  }
-
+  const isOk = res.status === 200;
   check(res, {
-    'service registry: status is 200': (r) => r.status === successStatus
+    'service registry: status is 200': () => isOk
   });
 
-  sleep(Math.random() * 2 + 0.5);
+  if (isOk) {
+    successCounter.add(1, tags);
+    if (iteration + 1 >= ITERATIONS) {
+      testCompletedRef.value = true;
+    }
+  } else {
+    failureCounter.add(1, tags);
+    console.error(`❌ VU #${vu}: GET service-providers failed — HTTP ${res.status}`);
+  }
+
+  if (SLEEP_ITER > 0) {
+    sleep(SLEEP_ITER);
+  }
+
   return res;
 }
 
 /**
- * Provides a summary report configuration for this test run.
+ * Summary report generator for this test run.
  */
-export const handleSummary = createHandleSummary({
-  START_TIME,
-  testName: 'SERVICE REGISTRY STRESS TEST',
-  countTag: 'fetchedServiceProvidersCount',
-  reportPrefix: 'service-registry',
-  VU_COUNT: 1000
-});
+export const handleSummary = (data) => {
+  const scenario = options.scenarios?.[SCENARIO];
+  if (SCENARIO === 'custom' || (scenario?.executor === 'constant-vus' && data.state)) {
+    const completed = SCENARIO === 'custom'
+      ? (data.metrics?.iterations?.values?.count ?? 0) >= ITERATIONS
+      : !data.state.isInterrupted;
+    testCompletedRef.value = completed;
+    data.setup_data = { ...data.setup_data, testCompleted: completed };
+  }
+
+  return createHandleSummary({
+    START_TIME,
+    testName: 'SERVICE REGISTRY STRESS TEST',
+    countTag: 'requestCount',
+    reportPrefix: 'service-registry',
+    VU_COUNT: describeScenarioVUs(SCENARIO, VU_COUNT_SET),
+    testCompletedRef,
+    scenarioConfig: options.scenarios ? options.scenarios[SCENARIO] : undefined
+  })(data);
+};

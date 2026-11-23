@@ -1,5 +1,5 @@
 import http from 'k6/http';
-import {activationConfig, callbackConfig, senderConfig} from '../config/config.js';
+import {activationConfig, callbackConfig, senderConfig, serviceRegistryConfig} from '../config/config.js';
 
 export const config = activationConfig;
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
@@ -593,6 +593,7 @@ export const endpoints = {
   gpdMessage: `${senderConfig.sender_base}/gpd/message`,
   deliveryStatus: `${senderConfig.sender_base}/rtps/delivery-status`,
   payees: `${senderConfig.sender_base}/payees/payees`,
+  serviceRegistry: `${serviceRegistryConfig.baseUrl}/service-providers`,
 };
 
 /**
